@@ -1,6 +1,7 @@
 const screens = document.querySelectorAll(".screen");
 
 function showScreen(id) {
+
   screens.forEach(screen => {
     screen.classList.remove("active");
   });
@@ -13,6 +14,10 @@ function showScreen(id) {
   }
 }
 
+
+/* ===============================
+   ORDER DATA
+================================ */
 
 let order = {
   location: "",
@@ -55,6 +60,28 @@ function calculatePrice() {
 
 
 /* ===============================
+   ROLE SELECTION
+================================ */
+
+document
+  .getElementById("customerRoleBtn")
+  .addEventListener("click", () => {
+
+    showScreen("requestScreen");
+
+  });
+
+
+document
+  .getElementById("operatorRoleBtn")
+  .addEventListener("click", () => {
+
+    openOperatorScreen();
+
+  });
+
+
+/* ===============================
    CUSTOMER REQUEST
 ================================ */
 
@@ -63,7 +90,10 @@ document
   .addEventListener("click", () => {
 
     const location =
-      document.getElementById("locationInput").value.trim();
+      document
+        .getElementById("locationInput")
+        .value
+        .trim();
 
     const equipment =
       document.getElementById("equipmentSelect").value;
@@ -75,7 +105,10 @@ document
       document.getElementById("operatorSelect").value;
 
     const notes =
-      document.getElementById("notesInput").value.trim();
+      document
+        .getElementById("notesInput")
+        .value
+        .trim();
 
 
     if (!location) {
@@ -102,24 +135,26 @@ document
     order.price = calculatePrice();
 
 
-    document.getElementById("matchedEquipment").textContent =
-      order.equipment;
+    document.getElementById("matchedEquipment")
+      .textContent = order.equipment;
 
-    document.getElementById("matchedLocation").textContent =
-      order.location;
+    document.getElementById("matchedLocation")
+      .textContent = order.location;
 
-    document.getElementById("workingEquipment").textContent =
-      order.equipment;
+    document.getElementById("workingEquipment")
+      .textContent = order.equipment;
 
-    document.getElementById("workingLocation").textContent =
-      order.location;
+    document.getElementById("workingLocation")
+      .textContent = order.location;
 
 
     showScreen("searchingScreen");
 
 
     setTimeout(() => {
+
       showScreen("matchedScreen");
+
     }, 2500);
 
   });
@@ -156,42 +191,49 @@ function startTracking() {
 
 
   const steps = [
+
     {
       top: "18%",
       right: "55%",
       distance: "2.4 كم",
       eta: "8 دقائق"
     },
+
     {
       top: "30%",
       right: "45%",
       distance: "2.0 كم",
       eta: "7 دقائق"
     },
+
     {
       top: "42%",
       right: "40%",
       distance: "1.5 كم",
       eta: "5 دقائق"
     },
+
     {
       top: "55%",
       right: "30%",
       distance: "900 م",
       eta: "3 دقائق"
     },
+
     {
       top: "65%",
       right: "20%",
       distance: "400 م",
       eta: "1 دقيقة"
     },
+
     {
       top: "75%",
       right: "12%",
       distance: "0 م",
       eta: "الآن"
     }
+
   ];
 
 
@@ -217,8 +259,11 @@ function startTracking() {
       status.textContent =
         "وصلت المعدة إلى موقعك";
 
+
       setTimeout(() => {
+
         showScreen("arrivedScreen");
+
       }, 1500);
 
       return;
@@ -228,6 +273,7 @@ function startTracking() {
     index++;
 
     setTimeout(move, 1400);
+
   }
 
 
@@ -264,6 +310,7 @@ function updateTimer() {
 
   if (!workStartTime) return;
 
+
   const elapsed =
     Math.floor(
       (Date.now() - workStartTime) / 1000
@@ -281,15 +328,19 @@ function updateTimer() {
 
 
   const formatted =
+
     String(hours).padStart(2, "0") +
     ":" +
+
     String(minutes).padStart(2, "0") +
     ":" +
+
     String(seconds).padStart(2, "0");
 
 
-  document.getElementById("timer").textContent =
-    formatted;
+  document.getElementById("timer")
+    .textContent = formatted;
+
 }
 
 
@@ -303,9 +354,12 @@ document
 
     clearInterval(timerInterval);
 
+
     const elapsed =
       workStartTime
-        ? Math.floor((Date.now() - workStartTime) / 1000)
+        ? Math.floor(
+            (Date.now() - workStartTime) / 1000
+          )
         : 0;
 
 
@@ -319,17 +373,27 @@ document
 
     const finalPrice =
       Math.max(
+
         minimumPrice,
+
         extraHours > 0
+
           ? Math.round(
-              (minimumPrice / (durationHours[order.duration] || 4))
-              * extraHours
+              (
+                minimumPrice /
+                (
+                  durationHours[order.duration] || 4
+                )
+              ) * extraHours
             )
+
           : minimumPrice
+
       );
 
 
-    document.getElementById("finalPrice").textContent =
+    document.getElementById("finalPrice")
+      .textContent =
       finalPrice + " ريال";
 
 
@@ -354,7 +418,9 @@ document
       document
         .querySelectorAll(".payment-option")
         .forEach(item => {
+
           item.classList.remove("selected");
+
         });
 
 
@@ -364,9 +430,9 @@ document
         button.dataset.payment;
 
 
-      document
-        .getElementById("confirmPaymentBtn")
-        .disabled = false;
+      document.getElementById(
+        "confirmPaymentBtn"
+      ).disabled = false;
 
     });
 
@@ -417,6 +483,7 @@ document
           const value =
             Number(star.dataset.rating);
 
+
           star.classList.toggle(
             "selected",
             value <= selectedRating
@@ -425,9 +492,9 @@ document
         });
 
 
-      document
-        .getElementById("ratingBtn")
-        .disabled = false;
+      document.getElementById(
+        "ratingBtn"
+      ).disabled = false;
 
     });
 
@@ -462,37 +529,39 @@ document
 
 function openOperatorScreen() {
 
-  document.getElementById("operatorEquipment").textContent =
+  document.getElementById(
+    "operatorEquipment"
+  ).textContent =
     order.equipment || "بوكلين";
 
-  document.getElementById("operatorLocation").textContent =
+
+  document.getElementById(
+    "operatorLocation"
+  ).textContent =
     order.location || "موقع العميل";
 
-  document.getElementById("operatorDuration").textContent =
+
+  document.getElementById(
+    "operatorDuration"
+  ).textContent =
     order.duration || "4 ساعات";
 
-  document.getElementById("operatorPrice").textContent =
+
+  document.getElementById(
+    "operatorPrice"
+  ).textContent =
     (order.price || 1000) + " ريال";
 
-  document.getElementById("operatorNotes").textContent =
+
+  document.getElementById(
+    "operatorNotes"
+  ).textContent =
     order.notes || "لا توجد ملاحظات";
+
 
   showScreen("operatorScreen");
 
 }
-
-
-/* ===============================
-   OPERATOR DEMO BUTTON
-================================ */
-
-document
-  .getElementById("operatorDemoBtn")
-  .addEventListener("click", () => {
-
-    openOperatorScreen();
-
-  });
 
 
 /* ===============================
@@ -520,6 +589,6 @@ document
 
     alert("تم رفض الطلب");
 
-    showScreen("requestScreen");
+    showScreen("roleScreen");
 
   });
