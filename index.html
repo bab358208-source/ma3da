@@ -11,16 +11,34 @@
 
 <header class="header">
   <div class="logo">مِعدة</div>
-
-  <button class="login-btn" id="operatorDemoBtn">
-    وضع المشغل
-  </button>
 </header>
 
 <main>
 
+  <!-- اختيار الدور -->
+  <section id="roleScreen" class="screen active">
+    <div class="hero">
+      <div class="hero-icon">🚜</div>
+      <h1>مرحبًا بك في مِعدة</h1>
+      <p>اختر طريقة استخدامك للتطبيق</p>
+    </div>
+
+    <div class="card">
+
+      <button id="customerRoleBtn" class="main-btn">
+        👤 أنا عميل
+      </button>
+
+      <button id="operatorRoleBtn" class="main-btn">
+        🚜 أنا صاحب معدة / مشغل
+      </button>
+
+    </div>
+  </section>
+
+
   <!-- طلب معدة -->
-  <section id="requestScreen" class="screen active">
+  <section id="requestScreen" class="screen">
     <div class="hero">
       <div class="hero-icon">🚜</div>
       <h1>اطلب معدتك الآن</h1>
@@ -28,6 +46,7 @@
     </div>
 
     <div class="card">
+
       <label>📍 موقع العمل</label>
       <input id="locationInput" type="text" placeholder="اكتب موقع العمل">
 
@@ -63,6 +82,7 @@
       <button id="requestBtn" class="main-btn">
         اطلب الآن
       </button>
+
     </div>
   </section>
 
@@ -80,11 +100,14 @@
   <!-- تم العثور -->
   <section id="matchedScreen" class="screen">
     <div class="card">
+
       <div class="success-icon">✓</div>
+
       <h2>تم العثور على مشغل</h2>
 
       <div class="driver-card">
         <div class="driver-avatar">ف</div>
+
         <div>
           <strong>فهد القحطاني</strong>
           <span>مشغل معدات</span>
@@ -104,6 +127,7 @@
       <button id="trackingBtn" class="main-btn">
         تتبع المعدة
       </button>
+
     </div>
   </section>
 
@@ -111,13 +135,20 @@
   <!-- التتبع -->
   <section id="trackingScreen" class="screen">
     <div class="card">
+
       <h2>تتبع المعدة</h2>
 
       <div class="map">
+
         <div class="road road1"></div>
         <div class="road road2"></div>
+
         <div class="map-point customer">📍</div>
-        <div id="equipmentMarker" class="map-point equipment">🚜</div>
+
+        <div id="equipmentMarker" class="map-point equipment">
+          🚜
+        </div>
+
       </div>
 
       <div class="tracking-info">
@@ -125,7 +156,10 @@
         <span id="etaText">8 دقائق</span>
       </div>
 
-      <p id="trackingStatus">المعدة في الطريق إليك</p>
+      <p id="trackingStatus">
+        المعدة في الطريق إليك
+      </p>
+
     </div>
   </section>
 
@@ -133,13 +167,19 @@
   <!-- وصلت -->
   <section id="arrivedScreen" class="screen">
     <div class="card center">
+
       <div class="success-icon">✓</div>
+
       <h2>وصلت المعدة 🚜</h2>
-      <p>المشغل فهد القحطاني وصل إلى موقع العمل.</p>
+
+      <p>
+        المشغل فهد القحطاني وصل إلى موقع العمل.
+      </p>
 
       <button id="startWorkBtn" class="main-btn">
         بدء العمل
       </button>
+
     </div>
   </section>
 
@@ -147,19 +187,27 @@
   <!-- العمل -->
   <section id="workingScreen" class="screen">
     <div class="card center">
+
       <div class="work-icon">🚜</div>
+
       <h2>العمل جارٍ</h2>
 
       <div id="timer" class="timer">
         00:00:00
       </div>
 
-      <p id="workingEquipment">بوكلين</p>
-      <p id="workingLocation">موقع العميل</p>
+      <p id="workingEquipment">
+        بوكلين
+      </p>
+
+      <p id="workingLocation">
+        موقع العميل
+      </p>
 
       <button id="endWorkBtn" class="main-btn">
         إنهاء العمل
       </button>
+
     </div>
   </section>
 
@@ -167,17 +215,25 @@
   <!-- انتهاء -->
   <section id="completedScreen" class="screen">
     <div class="card center">
+
       <div class="success-icon">✓</div>
+
       <h2>تم إنهاء العمل</h2>
 
       <div class="price-box">
+
         <span>المبلغ المستحق</span>
-        <strong id="finalPrice">1,000 ريال</strong>
+
+        <strong id="finalPrice">
+          1,000 ريال
+        </strong>
+
       </div>
 
       <button id="paymentBtn" class="main-btn">
         الانتقال للدفع
       </button>
+
     </div>
   </section>
 
@@ -185,6 +241,7 @@
   <!-- الدفع -->
   <section id="paymentScreen" class="screen">
     <div class="card">
+
       <h2>اختر طريقة الدفع</h2>
 
       <div class="payment-options">
@@ -209,6 +266,7 @@
       <button id="confirmPaymentBtn" class="main-btn" disabled>
         تأكيد الدفع
       </button>
+
     </div>
   </section>
 
@@ -216,20 +274,27 @@
   <!-- التقييم -->
   <section id="ratingScreen" class="screen">
     <div class="card center">
+
       <h2>قيّم تجربتك</h2>
-      <p>كيف كانت تجربتك مع مِعدة؟</p>
+
+      <p>
+        كيف كانت تجربتك مع مِعدة؟
+      </p>
 
       <div class="stars">
+
         <button data-rating="1">★</button>
         <button data-rating="2">★</button>
         <button data-rating="3">★</button>
         <button data-rating="4">★</button>
         <button data-rating="5">★</button>
+
       </div>
 
       <button id="ratingBtn" class="main-btn" disabled>
         إرسال التقييم
       </button>
+
     </div>
   </section>
 
@@ -237,13 +302,19 @@
   <!-- شكراً -->
   <section id="thankYouScreen" class="screen">
     <div class="card center">
+
       <div class="success-icon">✓</div>
+
       <h2>شكرًا لك ❤️</h2>
-      <p>تم استلام تقييمك بنجاح.</p>
+
+      <p>
+        تم استلام تقييمك بنجاح.
+      </p>
 
       <button id="newRequestBtn" class="main-btn">
         طلب جديد
       </button>
+
     </div>
   </section>
 
@@ -254,30 +325,41 @@
     <div class="operator-page">
 
       <div class="operator-header">
+
         <span class="live-dot"></span>
 
         <div>
           <strong>طلب جديد</strong>
           <small>يوجد عميل قريب منك</small>
         </div>
+
       </div>
+
 
       <div class="operator-request-card">
 
         <div class="request-title">
+
           <span>🚜</span>
 
           <div>
-            <h2 id="operatorEquipment">بوكلين</h2>
+            <h2 id="operatorEquipment">
+              بوكلين
+            </h2>
+
             <p>مع مشغل</p>
           </div>
+
         </div>
+
 
         <div class="operator-info">
 
           <div class="operator-info-row">
             <span>📍 موقع العمل</span>
-            <strong id="operatorLocation">موقع العميل</strong>
+            <strong id="operatorLocation">
+              موقع العميل
+            </strong>
           </div>
 
           <div class="operator-info-row">
@@ -287,22 +369,34 @@
 
           <div class="operator-info-row">
             <span>⏱️ مدة العمل</span>
-            <strong id="operatorDuration">4 ساعات</strong>
+            <strong id="operatorDuration">
+              4 ساعات
+            </strong>
           </div>
 
           <div class="operator-info-row">
             <span>💰 السعر التقديري</span>
-            <strong id="operatorPrice">1,000 ريال</strong>
+            <strong id="operatorPrice">
+              1,000 ريال
+            </strong>
           </div>
 
         </div>
 
+
         <div class="operator-notes">
+
           <span>📝 ملاحظات العميل</span>
-          <p id="operatorNotes">لا توجد ملاحظات</p>
+
+          <p id="operatorNotes">
+            لا توجد ملاحظات
+          </p>
+
         </div>
 
+
         <div class="operator-buttons">
+
           <button id="rejectRequestBtn" class="reject-btn">
             رفض الطلب
           </button>
@@ -310,17 +404,23 @@
           <button id="acceptRequestBtn" class="accept-btn">
             قبول الطلب
           </button>
+
         </div>
 
       </div>
 
+
       <div class="operator-status">
+
         <span>🟢</span>
 
         <div>
           <strong>أنت متصل</strong>
-          <small>ستصلك الطلبات القريبة منك</small>
+          <small>
+            ستصلك الطلبات القريبة منك
+          </small>
         </div>
+
       </div>
 
     </div>
