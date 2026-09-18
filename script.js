@@ -745,3 +745,56 @@ document
     showScreen("phoneScreen");
 
   });
+/* ===============================
+   SAVE EQUIPMENT
+================================ */
+
+document
+  .getElementById("saveEquipmentBtn")
+  .addEventListener("click", () => {
+
+    const type =
+      document.getElementById("equipmentType").value;
+
+    const model =
+      document.getElementById("equipmentModel").value.trim();
+
+    const year =
+      document.getElementById("equipmentYear").value.trim();
+
+    const city =
+      document.getElementById("equipmentCity").value.trim();
+
+    const availability =
+      document.getElementById("equipmentAvailability").value;
+
+
+    if (!type || !model || !year || !city) {
+
+      alert("فضلاً أكمل جميع بيانات المعدة");
+
+      return;
+    }
+
+
+    const equipment = {
+      type: type,
+      model: model,
+      year: year,
+      city: city,
+      availability: availability
+    };
+
+
+    localStorage.setItem(
+      "myEquipment",
+      JSON.stringify(equipment)
+    );
+
+
+    alert("تم حفظ المعدة بنجاح 🚜");
+
+
+    openOperatorScreen();
+
+  });
