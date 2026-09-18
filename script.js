@@ -55,30 +55,9 @@ function calculatePrice() {
   const hours =
     durationHours[order.duration] || 4;
 
-  return hourly * hours;
-}
+  return hourly * 
 
 
-/* ===============================
-   ROLE SELECTION
-================================ */
-
-document
-  .getElementById("customerRoleBtn")
-  .addEventListener("click", () => {
-
-    showScreen("requestScreen");
-
-  });
-
-
-document
-  .getElementById("operatorRoleBtn")
-  .addEventListener("click", () => {
-
-    openOperatorScreen();
-
-  });
 
 
 /* ===============================
