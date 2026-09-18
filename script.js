@@ -59,7 +59,6 @@ function calculatePrice() {
 
 
 
-
 /* ===============================
    CUSTOMER REQUEST
 ================================ */
