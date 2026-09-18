@@ -527,7 +527,7 @@ document
    OPERATOR SCREEN
 ================================ */
 
-function openOperatorScreen() {
+function openOperatorScreen() {displayMyEquipment();
 
   document.getElementById(
     "operatorEquipment"
