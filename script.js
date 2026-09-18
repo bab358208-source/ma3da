@@ -118,9 +118,26 @@ if (requestBtn) {
 
     showScreen("searchingScreen");
 
-    setTimeout(() => {
-      showScreen("matchedScreen");
-    }, 2500);
+const acceptanceCheck = setInterval(() => {
+
+  const accepted =
+    localStorage.getItem("orderAccepted");
+
+  if (accepted === "true") {
+
+    clearInterval(acceptanceCheck);
+
+    document.getElementById("matchedEquipment").textContent =
+      order.equipment;
+
+    document.getElementById("matchedLocation").textContent =
+      order.location;
+
+    showScreen("matchedScreen");
+
+  }
+
+}, 1000);
 
   });
 
