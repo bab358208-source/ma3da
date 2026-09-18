@@ -776,18 +776,7 @@ if (imageFile) {
 }
 
 
-    localStorage.setItem(
-      "myEquipment",
-      JSON.stringify(equipment)
-    );
-
-
-    alert("تم حفظ المعدة بنجاح 🚜");
-
-
-    openOperatorScreen();
-
-  });
+    
 /* ===============================
    DISPLAY MY EQUIPMENT
 ================================ */
