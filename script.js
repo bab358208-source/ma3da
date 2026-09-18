@@ -775,7 +775,7 @@ if (imageFile) {
 
 }
 
-
+});
     
 /* ===============================
    DISPLAY MY EQUIPMENT
