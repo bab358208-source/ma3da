@@ -704,13 +704,15 @@ document
       showScreen("requestScreen");
 
     }
+if (selectedRole === "operator") {
 
+  showScreen("addEquipmentScreen");
 
-    if (selectedRole === "operator") {
+}
 
-      openOperatorScreen();
+    
 
-    }
+    
 
   });
 
