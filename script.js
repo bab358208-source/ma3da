@@ -526,14 +526,10 @@ document
 /* ===============================
    OPERATOR SCREEN
 ================================ */
-
 function openOperatorScreen() {
-
   showScreen("operatorScreen");
-
-  displayMyEquipment();
-
 }
+
 
   document.getElementById(
     "operatorEquipment"
