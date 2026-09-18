@@ -508,6 +508,7 @@ document
 ================================ */
 function openOperatorScreen() {
   showScreen("operatorScreen");
+  displayMyEquipment();
 }
 
 
