@@ -697,10 +697,9 @@ document
 /* ===============================
    SAVE EQUIPMENT
 ================================ */
-alert("وصل إلى كود حفظ المعدة");
-document
-  .getElementById("saveEquipmentBtn")
-  .addEventListener("click", () => {
+const saveEquipmentBtn = document.getElementById("saveEquipmentBtn");
+
+saveEquipmentBtn.onclick = function () {
 
     const type =
       document.getElementById("equipmentType").value;
