@@ -527,7 +527,13 @@ document
    OPERATOR SCREEN
 ================================ */
 
-function openOperatorScreen() {displayMyEquipment()};
+function openOperatorScreen() {
+
+  showScreen("operatorScreen");
+
+  displayMyEquipment();
+
+}
 
   document.getElementById(
     "operatorEquipment"
