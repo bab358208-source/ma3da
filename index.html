@@ -35,7 +35,90 @@
 
     </div>
   </section>
+<!-- تسجيل الدخول برقم الجوال -->
+<section id="phoneScreen" class="screen">
 
+  <div class="hero">
+    <div class="hero-icon">📱</div>
+
+    <h1>تسجيل الدخول</h1>
+
+    <p id="phoneRoleText">
+      أدخل رقم جوالك للمتابعة
+    </p>
+  </div>
+
+  <div class="card">
+
+    <label>📱 رقم الجوال</label>
+
+    <div class="phone-input">
+
+      <span class="country-code">+966</span>
+
+      <input
+        id="phoneInput"
+        type="tel"
+        inputmode="numeric"
+        maxlength="9"
+        placeholder="5XXXXXXXX"
+      >
+
+    </div>
+
+    <p id="phoneError" class="phone-error"></p>
+
+    <button id="sendCodeBtn" class="main-btn">
+      إرسال رمز التحقق
+    </button>
+
+    <button id="backRoleBtn" type="button" class="back-btn">
+      ← الرجوع
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- رمز التحقق -->
+<section id="otpScreen" class="screen">
+
+  <div class="hero">
+    <div class="hero-icon">🔐</div>
+
+    <h1>رمز التحقق</h1>
+
+    <p id="otpText">
+      أدخل رمز التحقق
+    </p>
+  </div>
+
+  <div class="card">
+
+    <label>🔢 رمز التحقق</label>
+
+    <input
+      id="otpInput"
+      type="tel"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="1234"
+    >
+
+    <p id="otpError" class="phone-error"></p>
+
+    <button id="verifyCodeBtn" class="main-btn">
+      تأكيد
+    </button>
+
+    <button id="backPhoneBtn" type="button" class="back-btn">
+      ← تغيير رقم الجوال
+    </button>
+
+  </div>
+
+</section>
 
   <!-- طلب معدة -->
   <section id="requestScreen" class="screen">
