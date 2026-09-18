@@ -56,8 +56,9 @@ function calculatePrice() {
   const hours =
     durationHours[order.duration] || 4;
 
-  return hourly * 
+  return hourly * hours;
 
+}
 
 
 /* ===============================
