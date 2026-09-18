@@ -119,7 +119,66 @@
   </div>
 
 </section>
+<!-- إضافة معدة -->
+<section id="addEquipmentScreen" class="screen">
 
+  <div class="hero">
+    <div class="hero-icon">🚜</div>
+
+    <h1>أضف معدتك</h1>
+
+    <p>أدخل بيانات المعدة لتبدأ استقبال الطلبات</p>
+  </div>
+
+  <div class="card">
+
+    <label>🚜 نوع المعدة</label>
+
+    <select id="equipmentType">
+      <option value="">اختر نوع المعدة</option>
+      <option>بوكلين</option>
+      <option>شيول</option>
+      <option>قلاب</option>
+      <option>كرين</option>
+      <option>حفار</option>
+      <option>بلدوزر</option>
+    </select>
+
+    <label>🏷️ الماركة / الموديل</label>
+    <input
+      id="equipmentModel"
+      type="text"
+      placeholder="مثال: كوماتسو PC200"
+    >
+
+    <label>📅 سنة الصنع</label>
+    <input
+      id="equipmentYear"
+      type="number"
+      placeholder="2020"
+    >
+
+    <label>📍 المدينة</label>
+    <input
+      id="equipmentCity"
+      type="text"
+      placeholder="مثال: جدة"
+    >
+
+    <label>🟢 حالة المعدة</label>
+
+    <select id="equipmentAvailability">
+      <option value="available">متاحة الآن</option>
+      <option value="unavailable">غير متاحة</option>
+    </select>
+
+    <button id="saveEquipmentBtn" class="main-btn">
+      حفظ المعدة
+    </button>
+
+  </div>
+
+</section>
   <!-- طلب معدة -->
   <section id="requestScreen" class="screen">
     <div class="hero">
