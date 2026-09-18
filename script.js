@@ -592,3 +592,154 @@ document
     showScreen("roleScreen");
 
   });
+/* ===============================
+   PHONE LOGIN
+================================ */
+
+let selectedRole = "";
+
+
+/* العميل */
+
+document
+  .getElementById("customerRoleBtn")
+  .addEventListener("click", () => {
+
+    selectedRole = "customer";
+
+    document.getElementById("phoneRoleText").textContent =
+      "تسجيل الدخول كعميل";
+
+    showScreen("phoneScreen");
+
+  });
+
+
+/* صاحب المعدة */
+
+document
+  .getElementById("operatorRoleBtn")
+  .addEventListener("click", () => {
+
+    selectedRole = "operator";
+
+    document.getElementById("phoneRoleText").textContent =
+      "تسجيل الدخول كصاحب معدة / مشغل";
+
+    showScreen("phoneScreen");
+
+  });
+
+
+/* إرسال رمز التحقق */
+
+document
+  .getElementById("sendCodeBtn")
+  .addEventListener("click", () => {
+
+    const phone =
+      document
+        .getElementById("phoneInput")
+        .value
+        .trim();
+
+    const error =
+      document.getElementById("phoneError");
+
+
+    if (!/^5\d{8}$/.test(phone)) {
+
+      error.textContent =
+        "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+
+      return;
+    }
+
+
+    error.textContent = "";
+
+
+    document.getElementById("otpText").textContent =
+      "أدخل رمز التحقق المرسل إلى +966 " + phone;
+
+
+    showScreen("otpScreen");
+
+
+    alert("رمز التحقق التجريبي هو: 1234");
+
+  });
+
+
+/* التحقق من الرمز */
+
+document
+  .getElementById("verifyCodeBtn")
+  .addEventListener("click", () => {
+
+    const code =
+      document
+        .getElementById("otpInput")
+        .value
+        .trim();
+
+    const error =
+      document.getElementById("otpError");
+
+
+    if (code !== "1234") {
+
+      error.textContent =
+        "رمز التحقق غير صحيح";
+
+      return;
+    }
+
+
+    error.textContent = "";
+
+
+    if (selectedRole === "customer") {
+
+      showScreen("requestScreen");
+
+    }
+
+
+    if (selectedRole === "operator") {
+
+      openOperatorScreen();
+
+    }
+
+  });
+
+
+/* الرجوع لاختيار الدور */
+
+document
+  .getElementById("backRoleBtn")
+  .addEventListener("click", () => {
+
+    document.getElementById("phoneInput").value = "";
+
+    document.getElementById("phoneError").textContent = "";
+
+    showScreen("roleScreen");
+
+  });
+
+
+/* تغيير رقم الجوال */
+
+document
+  .getElementById("backPhoneBtn")
+  .addEventListener("click", () => {
+
+    document.getElementById("otpInput").value = "";
+
+    document.getElementById("otpError").textContent = "";
+
+    showScreen("phoneScreen");
+
+  });
