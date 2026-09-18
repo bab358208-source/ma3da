@@ -798,7 +798,25 @@ function displayMyEquipment() {
 
   const equipment = JSON.parse(saved);
 
-  const image = document.getElementById("myEquipmentImage");
+  document.getElementById("myEquipmentType").textContent =
+    equipment.type || "-";
+
+  document.getElementById("myEquipmentModel").textContent =
+    equipment.model || "-";
+
+  document.getElementById("myEquipmentYear").textContent =
+    equipment.year || "-";
+
+  document.getElementById("myEquipmentCity").textContent =
+    equipment.city || "-";
+
+  document.getElementById("myEquipmentAvailability").textContent =
+    equipment.availability === "available"
+      ? "متاحة الآن"
+      : "غير متاحة";
+
+  const image =
+    document.getElementById("myEquipmentImage");
 
   if (image && equipment.image) {
     image.src = equipment.image;
