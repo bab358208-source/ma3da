@@ -523,11 +523,11 @@ if (acceptRequestBtn) {
 
   acceptRequestBtn.addEventListener("click", () => {
 
-    alert("تم قبول الطلب بنجاح 🚜");
+  alert("تم قبول الطلب بنجاح 🚜");
 
-    showScreen("matchedScreen");
+  showScreen("workingScreen");
 
-  });
+});
 
 }
 
