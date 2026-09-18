@@ -531,40 +531,6 @@ function openOperatorScreen() {
 }
 
 
-  document.getElementById(
-    "operatorEquipment"
-  ).textContent =
-    order.equipment || "بوكلين";
-
-
-  document.getElementById(
-    "operatorLocation"
-  ).textContent =
-    order.location || "موقع العميل";
-
-
-  document.getElementById(
-    "operatorDuration"
-  ).textContent =
-    order.duration || "4 ساعات";
-
-
-  document.getElementById(
-    "operatorPrice"
-  ).textContent =
-    (order.price || 1000) + " ريال";
-
-
-  document.getElementById(
-    "operatorNotes"
-  ).textContent =
-    order.notes || "لا توجد ملاحظات";
-
-
-  showScreen("operatorScreen");
-
-}
-
 
 /* ===============================
    ACCEPT REQUEST
