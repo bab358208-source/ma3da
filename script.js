@@ -1,3 +1,4 @@
+alert("JavaScript يعمل");
 const screens = document.querySelectorAll(".screen");
 
 function showScreen(id) {
