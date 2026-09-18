@@ -527,7 +527,7 @@ document
    OPERATOR SCREEN
 ================================ */
 
-function openOperatorScreen() {displayMyEquipment();
+function openOperatorScreen() {displayMyEquipment()};
 
   document.getElementById(
     "operatorEquipment"
@@ -842,39 +842,19 @@ if (imageFile) {
 /* ===============================
    DISPLAY MY EQUIPMENT
 ================================ */
-
 function displayMyEquipment() {
 
-  const saved =
-    localStorage.getItem("myEquipment");
+  const saved = localStorage.getItem("myEquipment");
 
   if (!saved) return;
 
   const equipment = JSON.parse(saved);
-  const image =
-  document.getElementById("myEquipmentImage");
 
-if (equipment.image) {
-  image.src = equipment.image;
-  image.style.display = "block";
-} else {
-  image.style.display = "none";
-}
+  const image = document.getElementById("myEquipmentImage");
 
-  document.getElementById("myEquipmentType").textContent =
-    equipment.type;
+  if (image && equipment.image) {
+    image.src = equipment.image;
+    image.style.display = "block";
+  }
 
-  document.getElementById("myEquipmentModel").textContent =
-    equipment.model;
-
-  document.getElementById("myEquipmentYear").textContent =
-    equipment.year;
-
-  document.getElementById("myEquipmentCity").textContent =
-    equipment.city;
-
-  document.getElementById("myEquipmentAvailability").textContent =
-    equipment.availability === "available"
-      ? "متاحة الآن 🟢"
-      : "غير متاحة 🔴";
 }
