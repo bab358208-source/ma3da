@@ -777,13 +777,54 @@ document
     }
 
 
-    const equipment = {
-      type: type,
-      model: model,
-      year: year,
-      city: city,
-      availability: availability
-    };
+    const imageInput =
+  document.getElementById("equipmentImage");
+
+const imageFile =
+  imageInput.files[0];
+
+const equipment = {
+  type: type,
+  model: model,
+  year: year,
+  city: city,
+  availability: availability,
+  image: ""
+};
+
+if (imageFile) {
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+
+    equipment.image = reader.result;
+
+    localStorage.setItem(
+      "myEquipment",
+      JSON.stringify(equipment)
+    );
+
+    alert("تم حفظ المعدة بنجاح 🚜");
+
+    openOperatorScreen();
+
+  };
+
+  reader.readAsDataURL(imageFile);
+
+} else {
+
+  localStorage.setItem(
+    "myEquipment",
+    JSON.stringify(equipment)
+  );
+
+  alert("تم حفظ المعدة بنجاح 🚜");
+
+  openOperatorScreen();
+
+}
 
 
     localStorage.setItem(
