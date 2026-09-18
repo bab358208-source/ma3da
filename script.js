@@ -521,13 +521,15 @@ const acceptRequestBtn =
 
 if (acceptRequestBtn) {
 
-  acceptRequestBtn.addEventListener("click", () => {
+ acceptRequestBtn.addEventListener("click", () => {
+
+  localStorage.setItem("orderAccepted", "true");
 
   alert("تم قبول الطلب بنجاح 🚜");
 
   showScreen("workingScreen");
 
-});
+}); 
 
 }
 
