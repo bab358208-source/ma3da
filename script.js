@@ -851,6 +851,15 @@ function displayMyEquipment() {
   if (!saved) return;
 
   const equipment = JSON.parse(saved);
+  const image =
+  document.getElementById("myEquipmentImage");
+
+if (equipment.image) {
+  image.src = equipment.image;
+  image.style.display = "block";
+} else {
+  image.style.display = "none";
+}
 
   document.getElementById("myEquipmentType").textContent =
     equipment.type;
