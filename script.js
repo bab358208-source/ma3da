@@ -798,3 +798,33 @@ document
     openOperatorScreen();
 
   });
+/* ===============================
+   DISPLAY MY EQUIPMENT
+================================ */
+
+function displayMyEquipment() {
+
+  const saved =
+    localStorage.getItem("myEquipment");
+
+  if (!saved) return;
+
+  const equipment = JSON.parse(saved);
+
+  document.getElementById("myEquipmentType").textContent =
+    equipment.type;
+
+  document.getElementById("myEquipmentModel").textContent =
+    equipment.model;
+
+  document.getElementById("myEquipmentYear").textContent =
+    equipment.year;
+
+  document.getElementById("myEquipmentCity").textContent =
+    equipment.city;
+
+  document.getElementById("myEquipmentAvailability").textContent =
+    equipment.availability === "available"
+      ? "متاحة الآن 🟢"
+      : "غير متاحة 🔴";
+}
