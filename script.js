@@ -385,7 +385,7 @@ if (endWorkBtn) {
     if (selectedRole === "operator") {
 
   localStorage.setItem("workEnded", "true");
-
+localStorage.setItem("finalPrice", finalPrice);
   showScreen("operatorCompletedScreen");
 
 } else {
