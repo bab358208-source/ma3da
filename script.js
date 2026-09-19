@@ -66,7 +66,8 @@ const requestBtn =
 if (requestBtn) {
 
   requestBtn.addEventListener("click", () => {
-
+localStorage.removeItem("workEnded");
+localStorage.removeItem("finalPrice");
     const location =
       document.getElementById("locationInput").value.trim();
 
