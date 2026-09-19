@@ -1133,35 +1133,3 @@ if (backFromChatBtn) {
   });
 
 }
-const callCustomerBtn =
-  document.getElementById("callCustomerBtn");
-
-if (callCustomerBtn) {
-
-  callCustomerBtn.addEventListener("click", () => {
-
-    window.location.href = "tel:0550000000";
-
-  });
-
-}
-const callCustomerBtn =
-  document.getElementById("callCustomerBtn");
-
-if (callCustomerBtn) {
-
-  callCustomerBtn.addEventListener("click", () => {
-
-    if (selectedRole === "customer") {
-
-      window.location.href = "tel:0500000000";
-
-    } else if (selectedRole === "operator") {
-
-      window.location.href = "tel:0550000000";
-
-    }
-
-  });
-
-}
