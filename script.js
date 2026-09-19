@@ -196,7 +196,15 @@ if (requestBtn) {
     updateOperatorScreen();
 
     showScreen("searchingScreen");
-    startAcceptanceWatcher();
+
+const searchingScreen =
+  document.getElementById("searchingScreen");
+
+if (searchingScreen) {
+  searchingScreen.classList.add("active");
+}
+
+startAcceptanceWatcher();
   });
 }
 
