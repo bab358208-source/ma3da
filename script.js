@@ -163,7 +163,18 @@ if (trackingBtn) {
   });
 
 }
+const chatBtn =
+  document.getElementById("chatBtn");
 
+if (chatBtn) {
+
+  chatBtn.addEventListener("click", () => {
+
+    showScreen("chatScreen");
+
+  });
+
+}
 
 function startTracking() {
 
