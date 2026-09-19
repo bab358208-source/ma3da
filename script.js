@@ -277,18 +277,23 @@ if (startWorkBtn) {
 
     showScreen("workingScreen");
 
-    workStartTime = Date.now();
+    if (selectedRole === "customer") {
 
-    updateTimer();
+      workStartTime = Date.now();
 
-    clearInterval(timerInterval);
+      updateTimer();
 
-    timerInterval =
-      setInterval(updateTimer, 1000);
+      clearInterval(timerInterval);
+
+      timerInterval =
+        setInterval(updateTimer, 1000);
+
+    }
 
   });
 
 }
+
 
 
 function updateTimer() {
