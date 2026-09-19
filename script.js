@@ -1365,16 +1365,54 @@ const customerRoleBtn =
     "customerRoleBtn"
   );
 
-
 if (customerRoleBtn) {
 
   customerRoleBtn.addEventListener(
     "click",
     () => {
 
-      selectedRole =
-        "customer";
+      selectedRole = "customer";
 
+      const accepted =
+        localStorage.getItem("orderAccepted");
+
+      const savedOrder =
+        localStorage.getItem("currentOrder");
+
+      /* إذا كان الطلب مقبولاً بالفعل */
+      if (
+        accepted === "true" &&
+        savedOrder
+      ) {
+
+        try {
+
+          order =
+            JSON.parse(savedOrder);
+
+          document.getElementById(
+            "matchedEquipment"
+          ).textContent =
+            order.equipment || "-";
+
+          document.getElementById(
+            "matchedLocation"
+          ).textContent =
+            order.location || "-";
+
+          showScreen(
+            "matchedScreen"
+          );
+
+          return;
+
+        } catch (error) {
+
+          console.error(error);
+
+        }
+
+      }
 
       document
         .getElementById(
@@ -1382,7 +1420,6 @@ if (customerRoleBtn) {
         )
         .textContent =
         "تسجيل الدخول كعميل";
-
 
       showScreen(
         "phoneScreen"
