@@ -66,8 +66,11 @@ const requestBtn =
 if (requestBtn) {
 
   requestBtn.addEventListener("click", () => {
-localStorage.removeItem("workEnded");
-localStorage.removeItem("finalPrice");
+
+    localStorage.removeItem("workEnded");
+    localStorage.removeItem("finalPrice");
+    localStorage.removeItem("orderAccepted");
+
     const location =
       document.getElementById("locationInput").value.trim();
 
@@ -119,26 +122,26 @@ localStorage.removeItem("finalPrice");
 
     showScreen("searchingScreen");
 
-const acceptanceCheck = setInterval(() => {
+    const acceptanceCheck = setInterval(() => {
 
-  const accepted =
-    localStorage.getItem("orderAccepted");
+      const accepted =
+        localStorage.getItem("orderAccepted");
 
-  if (accepted === "true") {
+      if (accepted === "true") {
 
-    clearInterval(acceptanceCheck);
+        clearInterval(acceptanceCheck);
 
-    document.getElementById("matchedEquipment").textContent =
-      order.equipment;
+        document.getElementById("matchedEquipment").textContent =
+          order.equipment;
 
-    document.getElementById("matchedLocation").textContent =
-      order.location;
+        document.getElementById("matchedLocation").textContent =
+          order.location;
 
-    showScreen("matchedScreen");
+        showScreen("matchedScreen");
 
-  }
+      }
 
-}, 1000);
+    }, 1000);
 
   });
 
@@ -163,6 +166,31 @@ if (trackingBtn) {
   });
 
 }
+
+
+/* ===============================
+   CUSTOMER CALL
+================================ */
+
+const callBtn =
+  document.getElementById("callBtn");
+
+if (callBtn) {
+
+  callBtn.addEventListener("click", () => {
+
+    window.location.href =
+      "tel:0550000000";
+
+  });
+
+}
+
+
+/* ===============================
+   CHAT OPEN
+================================ */
+
 const chatBtn =
   document.getElementById("chatBtn");
 
@@ -172,48 +200,120 @@ if (chatBtn) {
 
     showScreen("chatScreen");
 
+    const chatInput =
+      document.getElementById("chatInput");
+
+    if (chatInput) {
+      setTimeout(() => {
+        chatInput.focus();
+      }, 100);
+    }
+
   });
 
 }
+
+
+/* ===============================
+   CHAT SEND
+================================ */
+
 const sendChatBtn =
   document.getElementById("sendChatBtn");
 
 if (sendChatBtn) {
 
-  sendChatBtn.addEventListener("click", () => {
+  sendChatBtn.addEventListener("click", sendChatMessage);
 
-    const chatInput =
-      document.getElementById("chatInput");
+}
 
-    const chatMessages =
-      document.getElementById("chatMessages");
 
-    const message =
-      chatInput.value.trim();
+function sendChatMessage() {
 
-    if (!message) return;
+  const chatInput =
+    document.getElementById("chatInput");
 
-    const messageElement =
-      document.createElement("div");
+  const chatMessages =
+    document.getElementById("chatMessages");
 
-    messageElement.className =
-      "message sent";
+  if (!chatInput || !chatMessages) {
+    return;
+  }
 
-    messageElement.textContent =
-      message;
+  const message =
+    chatInput.value.trim();
 
-    chatMessages.appendChild(
-      messageElement
-    );
+  if (!message) {
+    return;
+  }
 
-    chatInput.value = "";
+  const messageElement =
+    document.createElement("div");
 
-    chatMessages.scrollTop =
-      chatMessages.scrollHeight;
+  messageElement.className =
+    "message sent";
+
+  messageElement.textContent =
+    message;
+
+  chatMessages.appendChild(
+    messageElement
+  );
+
+  chatInput.value = "";
+
+  chatMessages.scrollTop =
+    chatMessages.scrollHeight;
+
+  chatInput.focus();
+
+}
+
+
+/* إرسال الرسالة بزر Enter */
+
+const chatInput =
+  document.getElementById("chatInput");
+
+if (chatInput) {
+
+  chatInput.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      sendChatMessage();
+
+    }
 
   });
 
 }
+
+
+/* ===============================
+   CHAT BACK
+================================ */
+
+const backFromChatBtn =
+  document.getElementById("backFromChatBtn");
+
+if (backFromChatBtn) {
+
+  backFromChatBtn.addEventListener("click", () => {
+
+    showScreen("matchedScreen");
+
+  });
+
+}
+
+
+/* ===============================
+   TRACKING FUNCTION
+================================ */
+
 function startTracking() {
 
   const marker =
@@ -282,13 +382,20 @@ function startTracking() {
 
   function move() {
 
-    const step = steps[index];
+    const step =
+      steps[index];
 
-    marker.style.top = step.top;
-    marker.style.right = step.right;
+    marker.style.top =
+      step.top;
 
-    distance.textContent = step.distance;
-    eta.textContent = step.eta;
+    marker.style.right =
+      step.right;
+
+    distance.textContent =
+      step.distance;
+
+    eta.textContent =
+      step.eta;
 
     if (index === steps.length - 1) {
 
@@ -296,7 +403,9 @@ function startTracking() {
         "وصلت المعدة إلى موقعك";
 
       setTimeout(() => {
+
         showScreen("arrivedScreen");
+
       }, 1500);
 
       return;
@@ -305,9 +414,11 @@ function startTracking() {
     index++;
 
     setTimeout(move, 1400);
+
   }
 
   move();
+
 }
 
 
@@ -329,7 +440,8 @@ if (startWorkBtn) {
 
     if (selectedRole === "customer") {
 
-      workStartTime = Date.now();
+      workStartTime =
+        Date.now();
 
       updateTimer();
 
@@ -337,33 +449,47 @@ if (startWorkBtn) {
 
       timerInterval =
         setInterval(updateTimer, 1000);
-      const customerWorkCheck = setInterval(() => {
 
-  if (localStorage.getItem("workEnded") === "true") {
+      const customerWorkCheck =
+        setInterval(() => {
 
-    clearInterval(customerWorkCheck);
-    clearInterval(timerInterval);
+          if (
+            localStorage.getItem("workEnded")
+            === "true"
+          ) {
 
-    const savedPrice =
-      localStorage.getItem("finalPrice");
+            clearInterval(
+              customerWorkCheck
+            );
 
-    if (savedPrice) {
+            clearInterval(
+              timerInterval
+            );
 
-      const finalPriceElement =
-        document.getElementById("finalPrice");
+            const savedPrice =
+              localStorage.getItem("finalPrice");
 
-      if (finalPriceElement) {
-        finalPriceElement.textContent =
-          savedPrice + " ريال";
-      }
+            if (savedPrice) {
 
-    }
+              const finalPriceElement =
+                document.getElementById("finalPrice");
 
-    showScreen("completedScreen");
+              if (finalPriceElement) {
 
-  }
+                finalPriceElement.textContent =
+                  savedPrice + " ريال";
 
-}, 1000);
+              }
+
+            }
+
+            showScreen(
+              "completedScreen"
+            );
+
+          }
+
+        }, 1000);
 
     }
 
@@ -372,10 +498,15 @@ if (startWorkBtn) {
 }
 
 
+/* ===============================
+   TIMER
+================================ */
 
 function updateTimer() {
 
-  if (!workStartTime) return;
+  if (!workStartTime) {
+    return;
+  }
 
   const elapsed =
     Math.floor(
@@ -383,10 +514,14 @@ function updateTimer() {
     );
 
   const hours =
-    Math.floor(elapsed / 3600);
+    Math.floor(
+      elapsed / 3600
+    );
 
   const minutes =
-    Math.floor((elapsed % 3600) / 60);
+    Math.floor(
+      (elapsed % 3600) / 60
+    );
 
   const seconds =
     elapsed % 60;
@@ -402,8 +537,40 @@ function updateTimer() {
     document.getElementById("timer");
 
   if (timer) {
-    timer.textContent = formatted;
+
+    timer.textContent =
+      formatted;
+
   }
+
+}
+
+
+/* ===============================
+   WORKING SCREEN CALL
+================================ */
+
+const callCustomerBtn =
+  document.getElementById("callCustomerBtn");
+
+if (callCustomerBtn) {
+
+  callCustomerBtn.addEventListener("click", () => {
+
+    if (selectedRole === "customer") {
+
+      window.location.href =
+        "tel:0550000000";
+
+    } else {
+
+      window.location.href =
+        "tel:0500000000";
+
+    }
+
+  });
+
 }
 
 
@@ -431,7 +598,9 @@ if (endWorkBtn) {
       order.price || 1000;
 
     const extraHours =
-      Math.floor(elapsed / 3600);
+      Math.floor(
+        elapsed / 3600
+      );
 
     const finalPrice =
       Math.max(
@@ -443,7 +612,11 @@ if (endWorkBtn) {
           ? Math.round(
               (
                 minimumPrice /
-                (durationHours[order.duration] || 4)
+                (
+                  durationHours[
+                    order.duration
+                  ] || 4
+                )
               ) * extraHours
             )
 
@@ -455,21 +628,35 @@ if (endWorkBtn) {
       document.getElementById("finalPrice");
 
     if (finalPriceElement) {
+
       finalPriceElement.textContent =
         finalPrice + " ريال";
+
     }
 
     if (selectedRole === "operator") {
 
-  localStorage.setItem("workEnded", "true");
-localStorage.setItem("finalPrice", finalPrice);
-  showScreen("operatorCompletedScreen");
+      localStorage.setItem(
+        "workEnded",
+        "true"
+      );
 
-} else {
+      localStorage.setItem(
+        "finalPrice",
+        finalPrice
+      );
 
-  showScreen("completedScreen");
+      showScreen(
+        "operatorCompletedScreen"
+      );
 
-}
+    } else {
+
+      showScreen(
+        "completedScreen"
+      );
+
+    }
 
   });
 
@@ -491,19 +678,30 @@ document
       document
         .querySelectorAll(".payment-option")
         .forEach(item => {
-          item.classList.remove("selected");
+
+          item.classList.remove(
+            "selected"
+          );
+
         });
 
-      button.classList.add("selected");
+      button.classList.add(
+        "selected"
+      );
 
       selectedPayment =
         button.dataset.payment;
 
       const confirmButton =
-        document.getElementById("confirmPaymentBtn");
+        document.getElementById(
+          "confirmPaymentBtn"
+        );
 
       if (confirmButton) {
-        confirmButton.disabled = false;
+
+        confirmButton.disabled =
+          false;
+
       }
 
     });
@@ -517,24 +715,37 @@ const paymentBtn =
 if (paymentBtn) {
 
   paymentBtn.addEventListener("click", () => {
-    showScreen("paymentScreen");
+
+    showScreen(
+      "paymentScreen"
+    );
+
   });
 
 }
 
 
 const confirmPaymentBtn =
-  document.getElementById("confirmPaymentBtn");
+  document.getElementById(
+    "confirmPaymentBtn"
+  );
 
 if (confirmPaymentBtn) {
 
-  confirmPaymentBtn.addEventListener("click", () => {
+  confirmPaymentBtn.addEventListener(
+    "click",
+    () => {
 
-    if (!selectedPayment) return;
+      if (!selectedPayment) {
+        return;
+      }
 
-    showScreen("ratingScreen");
+      showScreen(
+        "ratingScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -552,14 +763,18 @@ document
     button.addEventListener("click", () => {
 
       selectedRating =
-        Number(button.dataset.rating);
+        Number(
+          button.dataset.rating
+        );
 
       document
         .querySelectorAll(".stars button")
         .forEach(star => {
 
           const value =
-            Number(star.dataset.rating);
+            Number(
+              star.dataset.rating
+            );
 
           star.classList.toggle(
             "selected",
@@ -569,10 +784,15 @@ document
         });
 
       const ratingBtn =
-        document.getElementById("ratingBtn");
+        document.getElementById(
+          "ratingBtn"
+        );
 
       if (ratingBtn) {
-        ratingBtn.disabled = false;
+
+        ratingBtn.disabled =
+          false;
+
       }
 
     });
@@ -585,9 +805,16 @@ const ratingBtn =
 
 if (ratingBtn) {
 
-  ratingBtn.addEventListener("click", () => {
-    showScreen("thankYouScreen");
-  });
+  ratingBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "thankYouScreen"
+      );
+
+    }
+  );
 
 }
 
@@ -597,13 +824,20 @@ if (ratingBtn) {
 ================================ */
 
 const newRequestBtn =
-  document.getElementById("newRequestBtn");
+  document.getElementById(
+    "newRequestBtn"
+  );
 
 if (newRequestBtn) {
 
-  newRequestBtn.addEventListener("click", () => {
-    location.reload();
-  });
+  newRequestBtn.addEventListener(
+    "click",
+    () => {
+
+      location.reload();
+
+    }
+  );
 
 }
 
@@ -614,7 +848,9 @@ if (newRequestBtn) {
 
 function openOperatorScreen() {
 
-  showScreen("operatorScreen");
+  showScreen(
+    "operatorScreen"
+  );
 
   displayMyEquipment();
 
@@ -626,19 +862,31 @@ function openOperatorScreen() {
 ================================ */
 
 const acceptRequestBtn =
-  document.getElementById("acceptRequestBtn");
+  document.getElementById(
+    "acceptRequestBtn"
+  );
 
 if (acceptRequestBtn) {
 
- acceptRequestBtn.addEventListener("click", () => {
+  acceptRequestBtn.addEventListener(
+    "click",
+    () => {
 
-  localStorage.setItem("orderAccepted", "true");
+      localStorage.setItem(
+        "orderAccepted",
+        "true"
+      );
 
-  alert("تم قبول الطلب بنجاح 🚜");
+      alert(
+        "تم قبول الطلب بنجاح 🚜"
+      );
 
-  showScreen("workingScreen");
+      showScreen(
+        "workingScreen"
+      );
 
-}); 
+    }
+  );
 
 }
 
@@ -648,17 +896,26 @@ if (acceptRequestBtn) {
 ================================ */
 
 const rejectRequestBtn =
-  document.getElementById("rejectRequestBtn");
+  document.getElementById(
+    "rejectRequestBtn"
+  );
 
 if (rejectRequestBtn) {
 
-  rejectRequestBtn.addEventListener("click", () => {
+  rejectRequestBtn.addEventListener(
+    "click",
+    () => {
 
-    alert("تم رفض الطلب");
+      alert(
+        "تم رفض الطلب"
+      );
 
-    showScreen("roleScreen");
+      showScreen(
+        "roleScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -673,20 +930,32 @@ let selectedRole = "";
 /* العميل */
 
 const customerRoleBtn =
-  document.getElementById("customerRoleBtn");
+  document.getElementById(
+    "customerRoleBtn"
+  );
 
 if (customerRoleBtn) {
 
-  customerRoleBtn.addEventListener("click", () => {
+  customerRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    selectedRole = "customer";
+      selectedRole =
+        "customer";
 
-    document.getElementById("phoneRoleText").textContent =
-      "تسجيل الدخول كعميل";
+      document
+        .getElementById(
+          "phoneRoleText"
+        )
+        .textContent =
+        "تسجيل الدخول كعميل";
 
-    showScreen("phoneScreen");
+      showScreen(
+        "phoneScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -694,20 +963,32 @@ if (customerRoleBtn) {
 /* صاحب المعدة */
 
 const operatorRoleBtn =
-  document.getElementById("operatorRoleBtn");
+  document.getElementById(
+    "operatorRoleBtn"
+  );
 
 if (operatorRoleBtn) {
 
-  operatorRoleBtn.addEventListener("click", () => {
+  operatorRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    selectedRole = "operator";
+      selectedRole =
+        "operator";
 
-    document.getElementById("phoneRoleText").textContent =
-      "تسجيل الدخول كصاحب معدة / مشغل";
+      document
+        .getElementById(
+          "phoneRoleText"
+        )
+        .textContent =
+        "تسجيل الدخول كصاحب معدة / مشغل";
 
-    showScreen("phoneScreen");
+      showScreen(
+        "phoneScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -715,36 +996,59 @@ if (operatorRoleBtn) {
 /* إرسال رمز التحقق */
 
 const sendCodeBtn =
-  document.getElementById("sendCodeBtn");
+  document.getElementById(
+    "sendCodeBtn"
+  );
 
 if (sendCodeBtn) {
 
-  sendCodeBtn.addEventListener("click", () => {
+  sendCodeBtn.addEventListener(
+    "click",
+    () => {
 
-    const phone =
-      document.getElementById("phoneInput").value.trim();
+      const phone =
+        document
+          .getElementById(
+            "phoneInput"
+          )
+          .value
+          .trim();
 
-    const error =
-      document.getElementById("phoneError");
+      const error =
+        document.getElementById(
+          "phoneError"
+        );
 
-    if (!/^5\d{8}$/.test(phone)) {
+      if (!/^5\d{8}$/.test(phone)) {
+
+        error.textContent =
+          "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+
+        return;
+
+      }
 
       error.textContent =
-        "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+        "";
 
-      return;
+      document
+        .getElementById(
+          "otpText"
+        )
+        .textContent =
+        "أدخل رمز التحقق المرسل إلى +966 "
+        + phone;
+
+      showScreen(
+        "otpScreen"
+      );
+
+      alert(
+        "رمز التحقق التجريبي هو: 1234"
+      );
+
     }
-
-    error.textContent = "";
-
-    document.getElementById("otpText").textContent =
-      "أدخل رمز التحقق المرسل إلى +966 " + phone;
-
-    showScreen("otpScreen");
-
-    alert("رمز التحقق التجريبي هو: 1234");
-
-  });
+  );
 
 }
 
@@ -752,39 +1056,63 @@ if (sendCodeBtn) {
 /* التحقق من الرمز */
 
 const verifyCodeBtn =
-  document.getElementById("verifyCodeBtn");
+  document.getElementById(
+    "verifyCodeBtn"
+  );
 
 if (verifyCodeBtn) {
 
-  verifyCodeBtn.addEventListener("click", () => {
+  verifyCodeBtn.addEventListener(
+    "click",
+    () => {
 
-    const code =
-      document.getElementById("otpInput").value.trim();
+      const code =
+        document
+          .getElementById(
+            "otpInput"
+          )
+          .value
+          .trim();
 
-    const error =
-      document.getElementById("otpError");
+      const error =
+        document.getElementById(
+          "otpError"
+        );
 
-    if (code !== "1234") {
+      if (code !== "1234") {
+
+        error.textContent =
+          "رمز التحقق غير صحيح";
+
+        return;
+
+      }
 
       error.textContent =
-        "رمز التحقق غير صحيح";
+        "";
 
-      return;
+      if (
+        selectedRole ===
+        "customer"
+      ) {
+
+        showScreen(
+          "requestScreen"
+        );
+
+      } else if (
+        selectedRole ===
+        "operator"
+      ) {
+
+        showScreen(
+          "addEquipmentScreen"
+        );
+
+      }
+
     }
-
-    error.textContent = "";
-
-    if (selectedRole === "customer") {
-
-      showScreen("requestScreen");
-
-    } else if (selectedRole === "operator") {
-
-      showScreen("addEquipmentScreen");
-
-    }
-
-  });
+  );
 
 }
 
@@ -792,19 +1120,34 @@ if (verifyCodeBtn) {
 /* الرجوع لاختيار الدور */
 
 const backRoleBtn =
-  document.getElementById("backRoleBtn");
+  document.getElementById(
+    "backRoleBtn"
+  );
 
 if (backRoleBtn) {
 
-  backRoleBtn.addEventListener("click", () => {
+  backRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    document.getElementById("phoneInput").value = "";
+      document
+        .getElementById(
+          "phoneInput"
+        )
+        .value = "";
 
-    document.getElementById("phoneError").textContent = "";
+      document
+        .getElementById(
+          "phoneError"
+        )
+        .textContent = "";
 
-    showScreen("roleScreen");
+      showScreen(
+        "roleScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -812,19 +1155,34 @@ if (backRoleBtn) {
 /* تغيير رقم الجوال */
 
 const backPhoneBtn =
-  document.getElementById("backPhoneBtn");
+  document.getElementById(
+    "backPhoneBtn"
+  );
 
 if (backPhoneBtn) {
 
-  backPhoneBtn.addEventListener("click", () => {
+  backPhoneBtn.addEventListener(
+    "click",
+    () => {
 
-    document.getElementById("otpInput").value = "";
+      document
+        .getElementById(
+          "otpInput"
+        )
+        .value = "";
 
-    document.getElementById("otpError").textContent = "";
+      document
+        .getElementById(
+          "otpError"
+        )
+        .textContent = "";
 
-    showScreen("phoneScreen");
+      showScreen(
+        "phoneScreen"
+      );
 
-  });
+    }
+  );
 
 }
 
@@ -834,11 +1192,16 @@ if (backPhoneBtn) {
 ================================ */
 
 const saveEquipmentBtn =
-  document.getElementById("saveEquipmentBtn");
+  document.getElementById(
+    "saveEquipmentBtn"
+  );
 
 if (saveEquipmentBtn) {
 
-  saveEquipmentBtn.addEventListener("click", saveEquipment);
+  saveEquipmentBtn.addEventListener(
+    "click",
+    saveEquipment
+  );
 
 }
 
@@ -846,40 +1209,75 @@ if (saveEquipmentBtn) {
 function saveEquipment() {
 
   const type =
-    document.getElementById("equipmentType").value;
+    document
+      .getElementById(
+        "equipmentType"
+      )
+      .value;
 
   const model =
-    document.getElementById("equipmentModel").value.trim();
+    document
+      .getElementById(
+        "equipmentModel"
+      )
+      .value
+      .trim();
 
   const year =
-    document.getElementById("equipmentYear").value.trim();
+    document
+      .getElementById(
+        "equipmentYear"
+      )
+      .value
+      .trim();
 
   const city =
-    document.getElementById("equipmentCity").value.trim();
+    document
+      .getElementById(
+        "equipmentCity"
+      )
+      .value
+      .trim();
 
   const availability =
-    document.getElementById("equipmentAvailability").value;
+    document
+      .getElementById(
+        "equipmentAvailability"
+      )
+      .value;
 
-  if (!type || !model || !year || !city) {
+  if (
+    !type ||
+    !model ||
+    !year ||
+    !city
+  ) {
 
-    alert("فضلاً أكمل جميع بيانات المعدة");
+    alert(
+      "فضلاً أكمل جميع بيانات المعدة"
+    );
 
     return;
+
   }
 
   const imageInput =
-    document.getElementById("equipmentImage");
+    document.getElementById(
+      "equipmentImage"
+    );
 
   const imageFile =
     imageInput.files[0];
 
   const equipment = {
+
     type: type,
     model: model,
     year: year,
     city: city,
     availability: availability,
     image: ""
+
   };
 
 
@@ -891,10 +1289,14 @@ function saveEquipment() {
 
       localStorage.setItem(
         "myEquipment",
-        JSON.stringify(equipment)
+        JSON.stringify(
+          equipment
+        )
       );
 
-      alert("تم حفظ المعدة بنجاح 🚜");
+      alert(
+        "تم حفظ المعدة بنجاح 🚜"
+      );
 
       openOperatorScreen();
 
@@ -902,11 +1304,14 @@ function saveEquipment() {
 
       console.error(error);
 
-      alert("حدث خطأ أثناء حفظ بيانات المعدة");
+      alert(
+        "حدث خطأ أثناء حفظ بيانات المعدة"
+      );
 
     }
 
     return;
+
   }
 
 
@@ -922,95 +1327,136 @@ function saveEquipment() {
       const image =
         new Image();
 
-      image.onload = function () {
+      image.onload =
+        function () {
 
-        const maxWidth = 1000;
+          const maxWidth =
+            1000;
 
-        let width = image.width;
-        let height = image.height;
+          let width =
+            image.width;
 
-        if (width > maxWidth) {
+          let height =
+            image.height;
 
-          height =
-            Math.round(
-              height * (maxWidth / width)
+          if (
+            width >
+            maxWidth
+          ) {
+
+            height =
+              Math.round(
+                height *
+                (
+                  maxWidth /
+                  width
+                )
+              );
+
+            width =
+              maxWidth;
+
+          }
+
+          const canvas =
+            document.createElement(
+              "canvas"
             );
 
-          width = maxWidth;
+          canvas.width =
+            width;
 
-        }
+          canvas.height =
+            height;
 
-        const canvas =
-          document.createElement("canvas");
+          const ctx =
+            canvas.getContext(
+              "2d"
+            );
 
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx =
-          canvas.getContext("2d");
-
-        ctx.drawImage(
-          image,
-          0,
-          0,
-          width,
-          height
-        );
-
-        equipment.image =
-          canvas.toDataURL(
-            "image/jpeg",
-            0.75
+          ctx.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
           );
 
-        try {
+          equipment.image =
+            canvas.toDataURL(
+              "image/jpeg",
+              0.75
+            );
 
-          localStorage.setItem(
-            "myEquipment",
-            JSON.stringify(equipment)
-          );
+          try {
 
-          alert("تم حفظ المعدة بنجاح 🚜");
+            localStorage.setItem(
+              "myEquipment",
+              JSON.stringify(
+                equipment
+              )
+            );
 
-          openOperatorScreen();
+            alert(
+              "تم حفظ المعدة بنجاح 🚜"
+            );
 
-        } catch (error) {
+            openOperatorScreen();
 
-          console.error(error);
+          } catch (error) {
+
+            console.error(
+              error
+            );
+
+            alert(
+              "الصورة كبيرة جدًا، حاول اختيار صورة أخرى"
+            );
+
+          }
+
+        };
+
+
+      image.onerror =
+        function () {
 
           alert(
-            "الصورة كبيرة جدًا، حاول اختيار صورة أخرى"
+            "تعذر قراءة صورة المعدة"
           );
 
-        }
+        };
 
-      };
-
-      image.onerror = function () {
-
-        alert("تعذر قراءة صورة المعدة");
-
-      };
-
-      image.src = reader.result;
+      image.src =
+        reader.result;
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
-      alert("حدث خطأ أثناء معالجة الصورة");
+      alert(
+        "حدث خطأ أثناء معالجة الصورة"
+      );
 
     }
 
   };
 
-  reader.onerror = function () {
 
-    alert("تعذر قراءة الصورة");
+  reader.onerror =
+    function () {
 
-  };
+      alert(
+        "تعذر قراءة الصورة"
+      );
 
-  reader.readAsDataURL(imageFile);
+    };
+
+  reader.readAsDataURL(
+    imageFile
+  );
 
 }
 
@@ -1022,7 +1468,9 @@ function saveEquipment() {
 function displayMyEquipment() {
 
   const saved =
-    localStorage.getItem("myEquipment");
+    localStorage.getItem(
+      "myEquipment"
+    );
 
   if (!saved) {
     return;
@@ -1033,59 +1481,85 @@ function displayMyEquipment() {
   try {
 
     equipment =
-      JSON.parse(saved);
+      JSON.parse(
+        saved
+      );
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     return;
+
   }
 
 
   const type =
-    document.getElementById("myEquipmentType");
+    document.getElementById(
+      "myEquipmentType"
+    );
 
   const model =
-    document.getElementById("myEquipmentModel");
+    document.getElementById(
+      "myEquipmentModel"
+    );
 
   const year =
-    document.getElementById("myEquipmentYear");
+    document.getElementById(
+      "myEquipmentYear"
+    );
 
   const city =
-    document.getElementById("myEquipmentCity");
+    document.getElementById(
+      "myEquipmentCity"
+    );
 
   const availability =
-    document.getElementById("myEquipmentAvailability");
+    document.getElementById(
+      "myEquipmentAvailability"
+    );
 
   const image =
-    document.getElementById("myEquipmentImage");
+    document.getElementById(
+      "myEquipmentImage"
+    );
 
 
   if (type) {
+
     type.textContent =
       equipment.type || "-";
+
   }
 
   if (model) {
+
     model.textContent =
       equipment.model || "-";
+
   }
 
   if (year) {
+
     year.textContent =
       equipment.year || "-";
+
   }
 
   if (city) {
+
     city.textContent =
       equipment.city || "-";
+
   }
 
   if (availability) {
 
     availability.textContent =
-      equipment.availability === "available"
+      equipment.availability ===
+      "available"
         ? "متاحة الآن"
         : "غير متاحة";
 
@@ -1104,7 +1578,9 @@ function displayMyEquipment() {
 
     } else {
 
-      image.removeAttribute("src");
+      image.removeAttribute(
+        "src"
+      );
 
       image.style.display =
         "none";
@@ -1121,35 +1597,3 @@ function displayMyEquipment() {
 ================================ */
 
 displayMyEquipment();
-const backFromChatBtn =
-  document.getElementById("backFromChatBtn");
-
-if (backFromChatBtn) {
-
-  backFromChatBtn.addEventListener("click", () => {
-
-    showScreen("matchedScreen");
-
-  });
-
-}
-const callCustomerBtn =
-  document.getElementById("callCustomerBtn");
-
-if (callCustomerBtn) {
-
-  callCustomerBtn.addEventListener("click", () => {
-
-    if (selectedRole === "customer") {
-
-      window.location.href = "tel:0550000000";
-
-    } else {
-
-      window.location.href = "tel:0500000000";
-
-    }
-
-  });
-
-}
