@@ -2,7 +2,9 @@ const screens = document.querySelectorAll(".screen");
 
 function showScreen(id) {
   screens.forEach(s => s.classList.remove("active"));
+
   const screen = document.getElementById(id);
+
   if (screen) {
     screen.classList.add("active");
     window.scrollTo(0, 0);
@@ -17,6 +19,7 @@ let selectedRole = "";
 let workStartTime = null;
 let timerInterval = null;
 let acceptanceWatcher = null;
+let workEndWatcher = null;
 let selectedPayment = "";
 let selectedRating = 0;
 
@@ -46,48 +49,83 @@ const durationHours = {
 };
 
 /* =========================
-   ORDER
+   ORDER STORAGE
 ========================= */
 
 function saveOrder() {
-  localStorage.setItem("currentOrder", JSON.stringify(order));
+  localStorage.setItem(
+    "currentOrder",
+    JSON.stringify(order)
+  );
 }
 
 function loadOrder() {
-  const saved = localStorage.getItem("currentOrder");
+  const saved =
+    localStorage.getItem("currentOrder");
+
   if (!saved) return false;
 
   try {
-    order = JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+
+    if (!parsed || typeof parsed !== "object") {
+      return false;
+    }
+
+    order = {
+      location: parsed.location || "",
+      equipment: parsed.equipment || "",
+      duration: parsed.duration || "",
+      operator: parsed.operator || "",
+      notes: parsed.notes || "",
+      price: Number(parsed.price) || 0
+    };
+
     return true;
+
   } catch {
     return false;
   }
 }
 
 function setOrderState(state) {
-  localStorage.setItem("orderState", state);
-}
-
-function getOrderState() {
-  return localStorage.getItem("orderState") || "";
-}
-
-function calculatePrice() {
-  return (
-    hourlyPrices[order.equipment] || 250
-  ) * (
-    durationHours[order.duration] || 4
+  localStorage.setItem(
+    "orderState",
+    state
   );
 }
 
+function getOrderState() {
+  return (
+    localStorage.getItem("orderState") || ""
+  );
+}
+
+function calculatePrice() {
+  const hourly =
+    hourlyPrices[order.equipment] || 250;
+
+  const hours =
+    durationHours[order.duration] || 4;
+
+  return hourly * hours;
+}
+
 /* =========================
-   SCREENS DATA
+   SCREEN DATA
 ========================= */
 
 function updateMatchedScreen() {
-  const equipment = document.getElementById("matchedEquipment");
-  const location = document.getElementById("matchedLocation");
+
+  const equipment =
+    document.getElementById(
+      "matchedEquipment"
+    );
+
+  const location =
+    document.getElementById(
+      "matchedLocation"
+    );
 
   if (equipment) {
     equipment.textContent =
@@ -97,149 +135,261 @@ function updateMatchedScreen() {
   }
 
   if (location) {
-    location.textContent = order.location || "موقع العميل";
+    location.textContent =
+      order.location || "موقع العميل";
   }
 }
 
 function updateWorkingScreen() {
-  const equipment = document.getElementById("workingEquipment");
-  const location = document.getElementById("workingLocation");
+
+  const equipment =
+    document.getElementById(
+      "workingEquipment"
+    );
+
+  const location =
+    document.getElementById(
+      "workingLocation"
+    );
 
   if (equipment) {
-    equipment.textContent = order.equipment || "بوكلين";
+    equipment.textContent =
+      order.equipment || "بوكلين";
   }
 
   if (location) {
-    location.textContent = order.location || "موقع العميل";
+    location.textContent =
+      order.location || "موقع العميل";
   }
 }
 
 function updateOperatorScreen() {
-  const equipment = document.getElementById("operatorEquipment");
-  const location = document.getElementById("operatorLocation");
-  const duration = document.getElementById("operatorDuration");
-  const price = document.getElementById("operatorPrice");
-  const notes = document.getElementById("operatorNotes");
 
-  if (equipment) equipment.textContent = order.equipment || "بوكلين";
-  if (location) location.textContent = order.location || "موقع العميل";
-  if (duration) duration.textContent = order.duration || "4 ساعات";
-  if (price) price.textContent = `${order.price || 1000} ريال`;
-  if (notes) notes.textContent = order.notes || "لا توجد ملاحظات";
+  const equipment =
+    document.getElementById(
+      "operatorEquipment"
+    );
+
+  const location =
+    document.getElementById(
+      "operatorLocation"
+    );
+
+  const duration =
+    document.getElementById(
+      "operatorDuration"
+    );
+
+  const price =
+    document.getElementById(
+      "operatorPrice"
+    );
+
+  const notes =
+    document.getElementById(
+      "operatorNotes"
+    );
+
+  if (equipment) {
+    equipment.textContent =
+      order.equipment || "بوكلين";
+  }
+
+  if (location) {
+    location.textContent =
+      order.location || "موقع العميل";
+  }
+
+  if (duration) {
+    duration.textContent =
+      order.duration || "4 ساعات";
+  }
+
+  if (price) {
+    price.textContent =
+      `${order.price || 1000} ريال`;
+  }
+
+  if (notes) {
+    notes.textContent =
+      order.notes || "لا توجد ملاحظات";
+  }
 }
 
 /* =========================
    CUSTOMER REQUEST
 ========================= */
 
-const requestBtn = document.getElementById("requestBtn");
+const requestBtn =
+  document.getElementById(
+    "requestBtn"
+  );
 
 if (requestBtn) {
-  requestBtn.addEventListener("click", () => {
 
-    const location =
-      document.getElementById("locationInput")?.value.trim();
+  requestBtn.addEventListener(
+    "click",
+    () => {
 
-    const equipment =
-      document.getElementById("equipmentSelect")?.value;
+      const location =
+        document
+          .getElementById(
+            "locationInput"
+          )
+          ?.value.trim();
 
-    const duration =
-      document.getElementById("durationSelect")?.value;
+      const equipment =
+        document
+          .getElementById(
+            "equipmentSelect"
+          )
+          ?.value;
 
-    const operator =
-      document.getElementById("operatorSelect")?.value;
+      const duration =
+        document
+          .getElementById(
+            "durationSelect"
+          )
+          ?.value;
 
-    const notes =
-      document.getElementById("notesInput")?.value.trim();
+      const operator =
+        document
+          .getElementById(
+            "operatorSelect"
+          )
+          ?.value;
 
-    if (!location) {
-      alert("اكتب موقع العمل");
-      return;
+      const notes =
+        document
+          .getElementById(
+            "notesInput"
+          )
+          ?.value.trim();
+
+      if (!location) {
+        alert("اكتب موقع العمل");
+        return;
+      }
+
+      if (!equipment) {
+        alert("اختر نوع المعدة");
+        return;
+      }
+
+      if (!duration) {
+        alert("اختر مدة العمل");
+        return;
+      }
+
+      order = {
+        location,
+        equipment,
+        duration,
+        operator,
+        notes,
+        price: 0
+      };
+
+      order.price =
+        calculatePrice();
+
+      /* حفظ الطلب */
+      saveOrder();
+
+      /* تنظيف حالة الطلب السابقة فقط */
+      [
+        "acceptedOrder",
+        "workEnded",
+        "finalPrice",
+        "orderAccepted"
+      ].forEach(key => {
+        localStorage.removeItem(key);
+      });
+
+      /* الطلب الآن يبحث */
+      setOrderState("searching");
+
+      selectedRole = "customer";
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+      updateOperatorScreen();
+
+      /* إظهار شاشة البحث */
+      showScreen(
+        "searchingScreen"
+      );
+
+      startAcceptanceWatcher();
     }
-
-    if (!equipment) {
-      alert("اختر نوع المعدة");
-      return;
-    }
-
-    if (!duration) {
-      alert("اختر مدة العمل");
-      return;
-    }
-
-    order = {
-      location,
-      equipment,
-      duration,
-      operator,
-      notes,
-      price: 0
-    };
-
-    order.price = calculatePrice();
-
-    saveOrder();
-
-    [
-      "acceptedOrder",
-      "workEnded",
-      "finalPrice",
-      "orderAccepted"
-    ].forEach(key => localStorage.removeItem(key));
-
-    setOrderState("searching");
-
-    selectedRole = "customer";
-
-    updateMatchedScreen();
-    updateWorkingScreen();
-    updateOperatorScreen();
-
-    showScreen("searchingScreen");
-    startAcceptanceWatcher();
-  });
+  );
 }
 
 /* =========================
-   ACCEPTANCE WATCHER
+   CUSTOMER SEARCH WATCHER
 ========================= */
 
 function stopAcceptanceWatcher() {
+
   if (acceptanceWatcher) {
-    clearInterval(acceptanceWatcher);
+
+    clearInterval(
+      acceptanceWatcher
+    );
+
     acceptanceWatcher = null;
   }
 }
 
 function startAcceptanceWatcher() {
+
   stopAcceptanceWatcher();
 
-  acceptanceWatcher = setInterval(() => {
+  acceptanceWatcher =
+    setInterval(() => {
 
-    if (selectedRole !== "customer") return;
+      /* لا نحتاج مراقبة إلا للعميل */
+      if (
+        selectedRole !== "customer"
+      ) {
+        return;
+      }
 
-    const searching =
-      document.getElementById("searchingScreen");
+      const searching =
+        document.getElementById(
+          "searchingScreen"
+        );
 
-    if (
-      !searching ||
-      !searching.classList.contains("active")
-    ) {
-      return;
-    }
+      if (
+        !searching ||
+        !searching.classList.contains(
+          "active"
+        )
+      ) {
+        return;
+      }
 
-    if (getOrderState() === "accepted") {
+      const state =
+        getOrderState();
 
-      stopAcceptanceWatcher();
+      /* عندما يقبل صاحب المعدة */
+      if (state === "accepted") {
 
-      if (loadOrder()) {
+        if (!loadOrder()) {
+          return;
+        }
+
+        stopAcceptanceWatcher();
+
         updateMatchedScreen();
         updateWorkingScreen();
-        showScreen("matchedScreen");
-      }
-    }
 
-  }, 500);
+        showScreen(
+          "matchedScreen"
+        );
+      }
+
+    }, 500);
 }
 
 /* =========================
@@ -247,43 +397,65 @@ function startAcceptanceWatcher() {
 ========================= */
 
 const customerRoleBtn =
-  document.getElementById("customerRoleBtn");
+  document.getElementById(
+    "customerRoleBtn"
+  );
 
 if (customerRoleBtn) {
-  customerRoleBtn.addEventListener("click", () => {
 
-    selectedRole = "customer";
+  customerRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    const text =
-      document.getElementById("phoneRoleText");
+      selectedRole = "customer";
 
-    if (text) {
-      text.textContent = "تسجيل الدخول كعميل";
+      const text =
+        document.getElementById(
+          "phoneRoleText"
+        );
+
+      if (text) {
+        text.textContent =
+          "تسجيل الدخول كعميل";
+      }
+
+      showScreen(
+        "phoneScreen"
+      );
     }
-
-    showScreen("phoneScreen");
-  });
+  );
 }
 
 const operatorRoleBtn =
-  document.getElementById("operatorRoleBtn");
+  document.getElementById(
+    "operatorRoleBtn"
+  );
 
 if (operatorRoleBtn) {
-  operatorRoleBtn.addEventListener("click", () => {
 
-    selectedRole = "operator";
-    stopAcceptanceWatcher();
+  operatorRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    const text =
-      document.getElementById("phoneRoleText");
+      selectedRole = "operator";
 
-    if (text) {
-      text.textContent =
-        "تسجيل الدخول كصاحب معدة / مشغل";
+      stopAcceptanceWatcher();
+
+      const text =
+        document.getElementById(
+          "phoneRoleText"
+        );
+
+      if (text) {
+        text.textContent =
+          "تسجيل الدخول كصاحب معدة / مشغل";
+      }
+
+      showScreen(
+        "phoneScreen"
+      );
     }
-
-    showScreen("phoneScreen");
-  });
+  );
 }
 
 /* =========================
@@ -291,102 +463,221 @@ if (operatorRoleBtn) {
 ========================= */
 
 const sendCodeBtn =
-  document.getElementById("sendCodeBtn");
+  document.getElementById(
+    "sendCodeBtn"
+  );
 
 if (sendCodeBtn) {
-  sendCodeBtn.addEventListener("click", () => {
 
-    const phone =
-      document.getElementById("phoneInput")?.value.trim();
+  sendCodeBtn.addEventListener(
+    "click",
+    () => {
 
-    const error =
-      document.getElementById("phoneError");
+      const phone =
+        document
+          .getElementById(
+            "phoneInput"
+          )
+          ?.value.trim();
 
-    if (!/^5\d{8}$/.test(phone)) {
-      if (error) {
-        error.textContent =
-          "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+      const error =
+        document.getElementById(
+          "phoneError"
+        );
+
+      if (
+        !/^5\d{8}$/.test(phone)
+      ) {
+
+        if (error) {
+          error.textContent =
+            "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+        }
+
+        return;
       }
-      return;
+
+      if (error) {
+        error.textContent = "";
+      }
+
+      const otpText =
+        document.getElementById(
+          "otpText"
+        );
+
+      if (otpText) {
+
+        otpText.textContent =
+          `أدخل رمز التحقق المرسل إلى +966 ${phone}`;
+      }
+
+      showScreen(
+        "otpScreen"
+      );
+
+      alert(
+        "رمز التحقق التجريبي هو: 1234"
+      );
     }
-
-    if (error) error.textContent = "";
-
-    const otpText =
-      document.getElementById("otpText");
-
-    if (otpText) {
-      otpText.textContent =
-        `أدخل رمز التحقق المرسل إلى +966 ${phone}`;
-    }
-
-    showScreen("otpScreen");
-
-    alert("رمز التحقق التجريبي هو: 1234");
-  });
+  );
 }
 
 const verifyCodeBtn =
-  document.getElementById("verifyCodeBtn");
+  document.getElementById(
+    "verifyCodeBtn"
+  );
 
 if (verifyCodeBtn) {
-  verifyCodeBtn.addEventListener("click", () => {
 
-    const code =
-      document.getElementById("otpInput")?.value.trim();
+  verifyCodeBtn.addEventListener(
+    "click",
+    () => {
 
-    const error =
-      document.getElementById("otpError");
+      const code =
+        document
+          .getElementById(
+            "otpInput"
+          )
+          ?.value.trim();
 
-    if (code !== "1234") {
+      const error =
+        document.getElementById(
+          "otpError"
+        );
+
+      if (code !== "1234") {
+
+        if (error) {
+          error.textContent =
+            "رمز التحقق غير صحيح";
+        }
+
+        return;
+      }
+
       if (error) {
-        error.textContent = "رمز التحقق غير صحيح";
+        error.textContent = "";
       }
-      return;
-    }
 
-    if (error) error.textContent = "";
+      /* =====================
+         CUSTOMER LOGIN
+      ===================== */
 
-    if (selectedRole === "customer") {
+      if (
+        selectedRole === "customer"
+      ) {
 
-      const state = getOrderState();
+        const state =
+          getOrderState();
 
-      if (state === "accepted" && loadOrder()) {
+        /* الطلب مقبول */
+        if (
+          state === "accepted" &&
+          loadOrder()
+        ) {
 
-        stopAcceptanceWatcher();
+          stopAcceptanceWatcher();
 
-        updateMatchedScreen();
-        updateWorkingScreen();
+          updateMatchedScreen();
+          updateWorkingScreen();
 
-        showScreen("matchedScreen");
+          showScreen(
+            "matchedScreen"
+          );
+
+          return;
+        }
+
+        /* الطلب ما زال يبحث */
+        if (
+          state === "searching" &&
+          loadOrder()
+        ) {
+
+          updateMatchedScreen();
+          updateWorkingScreen();
+
+          showScreen(
+            "searchingScreen"
+          );
+
+          startAcceptanceWatcher();
+
+          return;
+        }
+
+        /* لا يوجد طلب */
+        showScreen(
+          "requestScreen"
+        );
+
         return;
       }
 
-      if (state === "searching" && loadOrder()) {
+      /* =====================
+         OPERATOR LOGIN
+      ===================== */
 
-        showScreen("searchingScreen");
-        startAcceptanceWatcher();
-        return;
+      if (
+        selectedRole === "operator"
+      ) {
+
+        const state =
+          getOrderState();
+
+        /*
+         إذا يوجد طلب عميل
+         يظهر لصاحب المعدة مباشرة
+        */
+        if (
+          (
+            state === "searching" ||
+            state === "accepted"
+          ) &&
+          loadOrder()
+        ) {
+
+          updateOperatorScreen();
+          displayMyEquipment();
+
+          showScreen(
+            "operatorScreen"
+          );
+
+          return;
+        }
+
+        /*
+         إذا لا يوجد طلب،
+         يذهب لإضافة معدة
+        */
+        showScreen(
+          "addEquipmentScreen"
+        );
       }
-
-      showScreen("requestScreen");
-      return;
     }
-
-    if (selectedRole === "operator") {
-      showScreen("addEquipmentScreen");
-    }
-  });
+  );
 }
 
 /* =========================
-   OPERATOR
+   OPERATOR SCREEN
 ========================= */
 
 function openOperatorScreen() {
+
+  /*
+   إعادة تحميل الطلب من التخزين
+   قبل إظهاره لصاحب المعدة
+  */
+  loadOrder();
+
   updateOperatorScreen();
   displayMyEquipment();
-  showScreen("operatorScreen");
+
+  showScreen(
+    "operatorScreen"
+  );
 }
 
 /* =========================
@@ -394,35 +685,88 @@ function openOperatorScreen() {
 ========================= */
 
 const acceptRequestBtn =
-  document.getElementById("acceptRequestBtn");
+  document.getElementById(
+    "acceptRequestBtn"
+  );
 
 if (acceptRequestBtn) {
-  acceptRequestBtn.addEventListener("click", () => {
 
-    if (!loadOrder()) {
-      alert("لا يوجد طلب عميل محفوظ");
-      return;
+  acceptRequestBtn.addEventListener(
+    "click",
+    () => {
+
+      /*
+       تحميل طلب العميل مرة أخرى
+      */
+      if (!loadOrder()) {
+
+        alert(
+          "لا يوجد طلب عميل محفوظ"
+        );
+
+        return;
+      }
+
+      /*
+       التأكد أن الطلب موجود
+      */
+      if (
+        !order.location ||
+        !order.equipment
+      ) {
+
+        alert(
+          "بيانات طلب العميل غير مكتملة"
+        );
+
+        return;
+      }
+
+      /*
+       حفظ الطلب المقبول
+      */
+      localStorage.setItem(
+        "acceptedOrder",
+        JSON.stringify({
+          ...order,
+          operatorName:
+            "فهد القحطاني",
+          operatorRating:
+            "4.8"
+        })
+      );
+
+      /*
+       إعادة حفظ الطلب
+       حتى لا يضيع
+      */
+      saveOrder();
+
+      localStorage.setItem(
+        "orderAccepted",
+        "true"
+      );
+
+      setOrderState(
+        "accepted"
+      );
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+
+      alert(
+        "تم قبول الطلب بنجاح 🚜"
+      );
+
+      /*
+       صاحب المعدة يبقى في
+       شاشة العمل
+      */
+      showScreen(
+        "workingScreen"
+      );
     }
-
-    localStorage.setItem(
-      "acceptedOrder",
-      JSON.stringify({
-        ...order,
-        operatorName: "فهد القحطاني",
-        operatorRating: "4.8"
-      })
-    );
-
-    localStorage.setItem("orderAccepted", "true");
-    setOrderState("accepted");
-
-    updateMatchedScreen();
-    updateWorkingScreen();
-
-    alert("تم قبول الطلب بنجاح 🚜");
-
-    showScreen("workingScreen");
-  });
+  );
 }
 
 /* =========================
@@ -430,20 +774,37 @@ if (acceptRequestBtn) {
 ========================= */
 
 const rejectRequestBtn =
-  document.getElementById("rejectRequestBtn");
+  document.getElementById(
+    "rejectRequestBtn"
+  );
 
 if (rejectRequestBtn) {
-  rejectRequestBtn.addEventListener("click", () => {
 
-    localStorage.removeItem("acceptedOrder");
-    localStorage.removeItem("orderAccepted");
+  rejectRequestBtn.addEventListener(
+    "click",
+    () => {
 
-    setOrderState("rejected");
+      localStorage.removeItem(
+        "acceptedOrder"
+      );
 
-    alert("تم رفض الطلب");
+      localStorage.removeItem(
+        "orderAccepted"
+      );
 
-    showScreen("roleScreen");
-  });
+      setOrderState(
+        "rejected"
+      );
+
+      alert(
+        "تم رفض الطلب"
+      );
+
+      showScreen(
+        "roleScreen"
+      );
+    }
+  );
 }
 
 /* =========================
@@ -451,9 +812,12 @@ if (rejectRequestBtn) {
 ========================= */
 
 const saveEquipmentBtn =
-  document.getElementById("saveEquipmentBtn");
+  document.getElementById(
+    "saveEquipmentBtn"
+  );
 
 if (saveEquipmentBtn) {
+
   saveEquipmentBtn.addEventListener(
     "click",
     saveEquipment
@@ -463,25 +827,56 @@ if (saveEquipmentBtn) {
 function saveEquipment() {
 
   const type =
-    document.getElementById("equipmentType")?.value;
+    document
+      .getElementById(
+        "equipmentType"
+      )
+      ?.value;
 
   const model =
-    document.getElementById("equipmentModel")?.value.trim();
+    document
+      .getElementById(
+        "equipmentModel"
+      )
+      ?.value.trim();
 
   const year =
-    document.getElementById("equipmentYear")?.value.trim();
+    document
+      .getElementById(
+        "equipmentYear"
+      )
+      ?.value.trim();
 
   const city =
-    document.getElementById("equipmentCity")?.value.trim();
+    document
+      .getElementById(
+        "equipmentCity"
+      )
+      ?.value.trim();
 
   const availability =
-    document.getElementById("equipmentAvailability")?.value;
+    document
+      .getElementById(
+        "equipmentAvailability"
+      )
+      ?.value;
 
   const imageInput =
-    document.getElementById("equipmentImage");
+    document.getElementById(
+      "equipmentImage"
+    );
 
-  if (!type || !model || !year || !city) {
-    alert("فضلاً أكمل جميع بيانات المعدة");
+  if (
+    !type ||
+    !model ||
+    !year ||
+    !city
+  ) {
+
+    alert(
+      "فضلاً أكمل جميع بيانات المعدة"
+    );
+
     return;
   }
 
@@ -494,7 +889,8 @@ function saveEquipment() {
     image: ""
   };
 
-  const file = imageInput?.files[0];
+  const file =
+    imageInput?.files[0];
 
   if (!file) {
 
@@ -503,39 +899,63 @@ function saveEquipment() {
       JSON.stringify(equipment)
     );
 
-    alert("تم حفظ المعدة بنجاح 🚜");
+    alert(
+      "تم حفظ المعدة بنجاح 🚜"
+    );
+
     openOperatorScreen();
 
     return;
   }
 
-  const reader = new FileReader();
+  const reader =
+    new FileReader();
 
   reader.onload = () => {
 
-    const image = new Image();
+    const image =
+      new Image();
 
     image.onload = () => {
 
       const maxWidth = 1000;
 
-      let width = image.width;
-      let height = image.height;
+      let width =
+        image.width;
 
-      if (width > maxWidth) {
+      let height =
+        image.height;
+
+      if (
+        width > maxWidth
+      ) {
+
         height =
-          Math.round(height * maxWidth / width);
+          Math.round(
+            height *
+            maxWidth /
+            width
+          );
 
-        width = maxWidth;
+        width =
+          maxWidth;
       }
 
       const canvas =
-        document.createElement("canvas");
+        document.createElement(
+          "canvas"
+        );
 
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width =
+        width;
 
-      const ctx = canvas.getContext("2d");
+      canvas.height =
+        height;
+
+      const ctx =
+        canvas.getContext(
+          "2d"
+        );
 
       ctx.drawImage(
         image,
@@ -555,10 +975,15 @@ function saveEquipment() {
 
         localStorage.setItem(
           "myEquipment",
-          JSON.stringify(equipment)
+          JSON.stringify(
+            equipment
+          )
         );
 
-        alert("تم حفظ المعدة بنجاح 🚜");
+        alert(
+          "تم حفظ المعدة بنجاح 🚜"
+        );
+
         openOperatorScreen();
 
       } catch {
@@ -569,16 +994,21 @@ function saveEquipment() {
       }
     };
 
-    image.src = reader.result;
+    image.src =
+      reader.result;
   };
 
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(
+    file
+  );
 }
 
 function displayMyEquipment() {
 
   const saved =
-    localStorage.getItem("myEquipment");
+    localStorage.getItem(
+      "myEquipment"
+    );
 
   if (!saved) return;
 
@@ -588,16 +1018,24 @@ function displayMyEquipment() {
       JSON.parse(saved);
 
     const type =
-      document.getElementById("myEquipmentType");
+      document.getElementById(
+        "myEquipmentType"
+      );
 
     const model =
-      document.getElementById("myEquipmentModel");
+      document.getElementById(
+        "myEquipmentModel"
+      );
 
     const year =
-      document.getElementById("myEquipmentYear");
+      document.getElementById(
+        "myEquipmentYear"
+      );
 
     const city =
-      document.getElementById("myEquipmentCity");
+      document.getElementById(
+        "myEquipmentCity"
+      );
 
     const availability =
       document.getElementById(
@@ -609,14 +1047,31 @@ function displayMyEquipment() {
         "myEquipmentImage"
       );
 
-    if (type) type.textContent = equipment.type || "-";
-    if (model) model.textContent = equipment.model || "-";
-    if (year) year.textContent = equipment.year || "-";
-    if (city) city.textContent = equipment.city || "-";
+    if (type) {
+      type.textContent =
+        equipment.type || "-";
+    }
+
+    if (model) {
+      model.textContent =
+        equipment.model || "-";
+    }
+
+    if (year) {
+      year.textContent =
+        equipment.year || "-";
+    }
+
+    if (city) {
+      city.textContent =
+        equipment.city || "-";
+    }
 
     if (availability) {
+
       availability.textContent =
-        equipment.availability === "available"
+        equipment.availability ===
+        "available"
           ? "متاحة الآن"
           : "غير متاحة";
     }
@@ -624,16 +1079,29 @@ function displayMyEquipment() {
     if (image) {
 
       if (equipment.image) {
-        image.src = equipment.image;
-        image.style.display = "block";
+
+        image.src =
+          equipment.image;
+
+        image.style.display =
+          "block";
+
       } else {
-        image.removeAttribute("src");
-        image.style.display = "none";
+
+        image.removeAttribute(
+          "src"
+        );
+
+        image.style.display =
+          "none";
       }
     }
 
   } catch {
-    console.log("تعذر قراءة بيانات المعدة");
+
+    console.log(
+      "تعذر قراءة بيانات المعدة"
+    );
   }
 }
 
@@ -642,13 +1110,44 @@ function displayMyEquipment() {
 ========================= */
 
 const trackingBtn =
-  document.getElementById("trackingBtn");
+  document.getElementById(
+    "trackingBtn"
+  );
 
 if (trackingBtn) {
-  trackingBtn.addEventListener("click", () => {
-    showScreen("trackingScreen");
-    startTracking();
-  });
+
+  trackingBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "trackingScreen"
+      );
+
+      startTracking();
+    }
+  );
+}
+
+/* =========================
+   CUSTOMER CALL
+========================= */
+
+const callBtn =
+  document.getElementById(
+    "callBtn"
+  );
+
+if (callBtn) {
+
+  callBtn.addEventListener(
+    "click",
+    () => {
+
+      window.location.href =
+        "tel:0550000000";
+    }
+  );
 }
 
 /* =========================
@@ -656,49 +1155,85 @@ if (trackingBtn) {
 ========================= */
 
 const chatBtn =
-  document.getElementById("chatBtn");
+  document.getElementById(
+    "chatBtn"
+  );
 
 if (chatBtn) {
-  chatBtn.addEventListener("click", () => {
 
-    showScreen("chatScreen");
+  chatBtn.addEventListener(
+    "click",
+    () => {
 
-    setTimeout(() => {
-      document.getElementById("chatInput")?.focus();
-    }, 100);
-  });
+      showScreen(
+        "chatScreen"
+      );
+
+      setTimeout(() => {
+
+        document
+          .getElementById(
+            "chatInput"
+          )
+          ?.focus();
+
+      }, 100);
+    }
+  );
 }
 
 function sendChatMessage() {
 
   const input =
-    document.getElementById("chatInput");
+    document.getElementById(
+      "chatInput"
+    );
 
   const messages =
-    document.getElementById("chatMessages");
+    document.getElementById(
+      "chatMessages"
+    );
 
-  if (!input || !messages) return;
+  if (
+    !input ||
+    !messages
+  ) {
+    return;
+  }
 
-  const text = input.value.trim();
+  const text =
+    input.value.trim();
 
   if (!text) return;
 
   const message =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
-  message.className = "message sent";
-  message.textContent = text;
+  message.className =
+    "message sent";
 
-  messages.appendChild(message);
+  message.textContent =
+    text;
+
+  messages.appendChild(
+    message
+  );
 
   input.value = "";
-  messages.scrollTop = messages.scrollHeight;
+
+  messages.scrollTop =
+    messages.scrollHeight;
 }
 
 const sendChatBtn =
-  document.getElementById("sendChatBtn");
+  document.getElementById(
+    "sendChatBtn"
+  );
 
 if (sendChatBtn) {
+
   sendChatBtn.addEventListener(
     "click",
     sendChatMessage
@@ -706,26 +1241,44 @@ if (sendChatBtn) {
 }
 
 const chatInput =
-  document.getElementById("chatInput");
+  document.getElementById(
+    "chatInput"
+  );
 
 if (chatInput) {
-  chatInput.addEventListener("keydown", e => {
 
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendChatMessage();
+  chatInput.addEventListener(
+    "keydown",
+    e => {
+
+      if (
+        e.key === "Enter"
+      ) {
+
+        e.preventDefault();
+
+        sendChatMessage();
+      }
     }
-
-  });
+  );
 }
 
 const backFromChatBtn =
-  document.getElementById("backFromChatBtn");
+  document.getElementById(
+    "backFromChatBtn"
+  );
 
 if (backFromChatBtn) {
-  backFromChatBtn.addEventListener("click", () => {
-    showScreen("matchedScreen");
-  });
+
+  backFromChatBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "matchedScreen"
+      );
+    }
+  );
 }
 
 /* =========================
@@ -735,56 +1288,117 @@ if (backFromChatBtn) {
 function startTracking() {
 
   const marker =
-    document.getElementById("equipmentMarker");
+    document.getElementById(
+      "equipmentMarker"
+    );
 
   const distance =
-    document.getElementById("distanceText");
+    document.getElementById(
+      "distanceText"
+    );
 
   const eta =
-    document.getElementById("etaText");
+    document.getElementById(
+      "etaText"
+    );
 
   const status =
-    document.getElementById("trackingStatus");
+    document.getElementById(
+      "trackingStatus"
+    );
 
-  if (!marker || !distance || !eta || !status) {
+  if (
+    !marker ||
+    !distance ||
+    !eta ||
+    !status
+  ) {
     return;
   }
 
   const steps = [
-    ["18%", "55%", "2.4 كم", "8 دقائق"],
-    ["30%", "45%", "2.0 كم", "7 دقائق"],
-    ["42%", "40%", "1.5 كم", "5 دقائق"],
-    ["55%", "30%", "900 م", "3 دقائق"],
-    ["65%", "20%", "400 م", "1 دقيقة"],
-    ["75%", "12%", "0 م", "الآن"]
+    [
+      "18%",
+      "55%",
+      "2.4 كم",
+      "8 دقائق"
+    ],
+    [
+      "30%",
+      "45%",
+      "2.0 كم",
+      "7 دقائق"
+    ],
+    [
+      "42%",
+      "40%",
+      "1.5 كم",
+      "5 دقائق"
+    ],
+    [
+      "55%",
+      "30%",
+      "900 م",
+      "3 دقائق"
+    ],
+    [
+      "65%",
+      "20%",
+      "400 م",
+      "1 دقيقة"
+    ],
+    [
+      "75%",
+      "12%",
+      "0 م",
+      "الآن"
+    ]
   ];
 
   let index = 0;
 
   function move() {
 
-    const step = steps[index];
+    const step =
+      steps[index];
 
-    marker.style.top = step[0];
-    marker.style.right = step[1];
+    marker.style.top =
+      step[0];
 
-    distance.textContent = step[2];
-    eta.textContent = step[3];
+    marker.style.right =
+      step[1];
 
-    if (index === steps.length - 1) {
+    distance.textContent =
+      step[2];
+
+    eta.textContent =
+      step[3];
+
+    if (
+      index ===
+      steps.length - 1
+    ) {
 
       status.textContent =
         "وصلت المعدة إلى موقعك";
 
       setTimeout(() => {
-        showScreen("arrivedScreen");
+
+        showScreen(
+          "arrivedScreen"
+        );
+
       }, 1500);
 
       return;
     }
 
     index++;
-    setTimeout(move, 1400);
+
+    setTimeout(
+      move,
+      1400
+    );
   }
 
   move();
@@ -795,78 +1409,129 @@ function startTracking() {
 ========================= */
 
 const startWorkBtn =
-  document.getElementById("startWorkBtn");
+  document.getElementById(
+    "startWorkBtn"
+  );
 
 if (startWorkBtn) {
-  startWorkBtn.addEventListener("click", () => {
 
-    showScreen("workingScreen");
+  startWorkBtn.addEventListener(
+    "click",
+    () => {
 
-    if (selectedRole !== "customer") {
-      return;
-    }
+      showScreen(
+        "workingScreen"
+      );
 
-    workStartTime = Date.now();
+      if (
+        selectedRole !==
+        "customer"
+      ) {
+        return;
+      }
 
-    clearInterval(timerInterval);
+      workStartTime =
+        Date.now();
 
-    updateTimer();
+      clearInterval(
+        timerInterval
+      );
 
-    timerInterval =
-      setInterval(updateTimer, 1000);
+      updateTimer();
 
-    const check =
-      setInterval(() => {
+      timerInterval =
+        setInterval(
+          updateTimer,
+          1000
+        );
 
-        if (
-          localStorage.getItem("workEnded") === "true"
-        ) {
+      clearInterval(
+        workEndWatcher
+      );
 
-          clearInterval(check);
-          clearInterval(timerInterval);
+      workEndWatcher =
+        setInterval(
+          () => {
 
-          const price =
-            localStorage.getItem("finalPrice");
+            if (
+              localStorage.getItem(
+                "workEnded"
+              ) === "true"
+            ) {
 
-          if (price) {
-            const finalPrice =
-              document.getElementById("finalPrice");
+              clearInterval(
+                workEndWatcher
+              );
 
-            if (finalPrice) {
-              finalPrice.textContent =
-                `${price} ريال`;
+              clearInterval(
+                timerInterval
+              );
+
+              const price =
+                localStorage.getItem(
+                  "finalPrice"
+                );
+
+              if (price) {
+
+                const finalPrice =
+                  document.getElementById(
+                    "finalPrice"
+                  );
+
+                if (finalPrice) {
+
+                  finalPrice.textContent =
+                    `${price} ريال`;
+                }
+              }
+
+              showScreen(
+                "completedScreen"
+              );
             }
-          }
 
-          showScreen("completedScreen");
-        }
-
-      }, 1000);
-  });
+          },
+          1000
+        );
+    }
+  );
 }
 
 function updateTimer() {
 
-  if (!workStartTime) return;
+  if (!workStartTime) {
+    return;
+  }
 
   const elapsed =
     Math.floor(
-      (Date.now() - workStartTime) / 1000
+      (
+        Date.now() -
+        workStartTime
+      ) / 1000
     );
 
   const hours =
-    Math.floor(elapsed / 3600);
+    Math.floor(
+      elapsed / 3600
+    );
 
   const minutes =
-    Math.floor((elapsed % 3600) / 60);
+    Math.floor(
+      (elapsed % 3600) / 60
+    );
 
   const seconds =
     elapsed % 60;
 
   const timer =
-    document.getElementById("timer");
+    document.getElementById(
+      "timer"
+    );
 
   if (timer) {
+
     timer.textContent =
       `${String(hours).padStart(2, "0")}:` +
       `${String(minutes).padStart(2, "0")}:` +
@@ -875,16 +1540,24 @@ function updateTimer() {
 }
 
 /* =========================
-   CALL - OPERATOR ONLY
+   OPERATOR CALL
 ========================= */
 
 const callCustomerBtn =
-  document.getElementById("callCustomerBtn");
+  document.getElementById(
+    "callCustomerBtn"
+  );
 
 if (callCustomerBtn) {
-  callCustomerBtn.addEventListener("click", () => {
-    window.location.href = "tel:0550000000";
-  });
+
+  callCustomerBtn.addEventListener(
+    "click",
+    () => {
+
+      window.location.href =
+        "tel:0550000000";
+    }
+  );
 }
 
 /* =========================
@@ -892,45 +1565,69 @@ if (callCustomerBtn) {
 ========================= */
 
 const endWorkBtn =
-  document.getElementById("endWorkBtn");
+  document.getElementById(
+    "endWorkBtn"
+  );
 
 if (endWorkBtn) {
-  endWorkBtn.addEventListener("click", () => {
 
-    clearInterval(timerInterval);
+  endWorkBtn.addEventListener(
+    "click",
+    () => {
 
-    const finalPrice =
-      order.price || 1000;
-
-    const priceElement =
-      document.getElementById("finalPrice");
-
-    if (priceElement) {
-      priceElement.textContent =
-        `${finalPrice} ريال`;
-    }
-
-    if (selectedRole === "operator") {
-
-      localStorage.setItem(
-        "workEnded",
-        "true"
+      clearInterval(
+        timerInterval
       );
 
-      localStorage.setItem(
-        "finalPrice",
-        finalPrice
+      clearInterval(
+        workEndWatcher
       );
 
-      setOrderState("completed");
+      const finalPrice =
+        order.price || 1000;
 
-      showScreen("operatorCompletedScreen");
+      const priceElement =
+        document.getElementById(
+          "finalPrice"
+        );
 
-    } else {
+      if (priceElement) {
 
-      showScreen("completedScreen");
+        priceElement.textContent =
+          `${finalPrice} ريال`;
+      }
+
+      if (
+        selectedRole ===
+        "operator"
+      ) {
+
+        localStorage.setItem(
+          "workEnded",
+          "true"
+        );
+
+        localStorage.setItem(
+          "finalPrice",
+          finalPrice
+        );
+
+        setOrderState(
+          "completed"
+        );
+
+        showScreen(
+          "operatorCompletedScreen"
+        );
+
+      } else {
+
+        showScreen(
+          "completedScreen"
+        );
+      }
     }
-  });
+  );
 }
 
 /* =========================
@@ -938,52 +1635,83 @@ if (endWorkBtn) {
 ========================= */
 
 document
-  .querySelectorAll(".payment-option")
+  .querySelectorAll(
+    ".payment-option"
+  )
   .forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      document
-        .querySelectorAll(".payment-option")
-        .forEach(item =>
-          item.classList.remove("selected")
+        document
+          .querySelectorAll(
+            ".payment-option"
+          )
+          .forEach(item =>
+            item.classList.remove(
+              "selected"
+            )
+          );
+
+        button.classList.add(
+          "selected"
         );
 
-      button.classList.add("selected");
+        selectedPayment =
+          button.dataset.payment;
 
-      selectedPayment =
-        button.dataset.payment;
+        const confirm =
+          document.getElementById(
+            "confirmPaymentBtn"
+          );
 
-      const confirm =
-        document.getElementById(
-          "confirmPaymentBtn"
-        );
-
-      if (confirm) {
-        confirm.disabled = false;
+        if (confirm) {
+          confirm.disabled =
+            false;
+        }
       }
-    });
+    );
   });
 
 const paymentBtn =
-  document.getElementById("paymentBtn");
+  document.getElementById(
+    "paymentBtn"
+  );
 
 if (paymentBtn) {
-  paymentBtn.addEventListener("click", () => {
-    showScreen("paymentScreen");
-  });
+
+  paymentBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "paymentScreen"
+      );
+    }
+  );
 }
 
 const confirmPaymentBtn =
-  document.getElementById("confirmPaymentBtn");
+  document.getElementById(
+    "confirmPaymentBtn"
+  );
 
 if (confirmPaymentBtn) {
-  confirmPaymentBtn.addEventListener("click", () => {
 
-    if (!selectedPayment) return;
+  confirmPaymentBtn.addEventListener(
+    "click",
+    () => {
 
-    showScreen("ratingScreen");
-  });
+      if (!selectedPayment) {
+        return;
+      }
+
+      showScreen(
+        "ratingScreen"
+      );
+    }
+  );
 }
 
 /* =========================
@@ -991,40 +1719,64 @@ if (confirmPaymentBtn) {
 ========================= */
 
 document
-  .querySelectorAll(".stars button")
+  .querySelectorAll(
+    ".stars button"
+  )
   .forEach(button => {
 
-    button.addEventListener("click", () => {
+    button.addEventListener(
+      "click",
+      () => {
 
-      selectedRating =
-        Number(button.dataset.rating);
-
-      document
-        .querySelectorAll(".stars button")
-        .forEach(star => {
-
-          star.classList.toggle(
-            "selected",
-            Number(star.dataset.rating) <= selectedRating
+        selectedRating =
+          Number(
+            button.dataset.rating
           );
-        });
 
-      const ratingBtn =
-        document.getElementById("ratingBtn");
+        document
+          .querySelectorAll(
+            ".stars button"
+          )
+          .forEach(star => {
 
-      if (ratingBtn) {
-        ratingBtn.disabled = false;
+            star.classList.toggle(
+              "selected",
+              Number(
+                star.dataset.rating
+              ) <=
+              selectedRating
+            );
+          });
+
+        const ratingBtn =
+          document.getElementById(
+            "ratingBtn"
+          );
+
+        if (ratingBtn) {
+          ratingBtn.disabled =
+            false;
+        }
       }
-    });
+    );
   });
 
 const ratingBtn =
-  document.getElementById("ratingBtn");
+  document.getElementById(
+    "ratingBtn"
+  );
 
 if (ratingBtn) {
-  ratingBtn.addEventListener("click", () => {
-    showScreen("thankYouScreen");
-  });
+
+  ratingBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "thankYouScreen"
+      );
+    }
+  );
 }
 
 /* =========================
@@ -1032,26 +1784,42 @@ if (ratingBtn) {
 ========================= */
 
 const newRequestBtn =
-  document.getElementById("newRequestBtn");
+  document.getElementById(
+    "newRequestBtn"
+  );
 
 if (newRequestBtn) {
-  newRequestBtn.addEventListener("click", () => {
 
-    stopAcceptanceWatcher();
+  newRequestBtn.addEventListener(
+    "click",
+    () => {
 
-    [
-      "currentOrder",
-      "orderState",
-      "acceptedOrder",
-      "orderAccepted",
-      "workEnded",
-      "finalPrice"
-    ].forEach(key =>
-      localStorage.removeItem(key)
-    );
+      stopAcceptanceWatcher();
 
-    location.reload();
-  });
+      clearInterval(
+        timerInterval
+      );
+
+      clearInterval(
+        workEndWatcher
+      );
+
+      [
+        "currentOrder",
+        "orderState",
+        "acceptedOrder",
+        "orderAccepted",
+        "workEnded",
+        "finalPrice"
+      ].forEach(key =>
+        localStorage.removeItem(
+          key
+        )
+      );
+
+      location.reload();
+    }
+  );
 }
 
 /* =========================
@@ -1059,41 +1827,75 @@ if (newRequestBtn) {
 ========================= */
 
 const backRoleBtn =
-  document.getElementById("backRoleBtn");
+  document.getElementById(
+    "backRoleBtn"
+  );
 
 if (backRoleBtn) {
-  backRoleBtn.addEventListener("click", () => {
 
-    const phone =
-      document.getElementById("phoneInput");
+  backRoleBtn.addEventListener(
+    "click",
+    () => {
 
-    const error =
-      document.getElementById("phoneError");
+      const phone =
+        document.getElementById(
+          "phoneInput"
+        );
 
-    if (phone) phone.value = "";
-    if (error) error.textContent = "";
+      const error =
+        document.getElementById(
+          "phoneError"
+        );
 
-    showScreen("roleScreen");
-  });
+      if (phone) {
+        phone.value = "";
+      }
+
+      if (error) {
+        error.textContent = "";
+      }
+
+      showScreen(
+        "roleScreen"
+      );
+    }
+  );
 }
 
 const backPhoneBtn =
-  document.getElementById("backPhoneBtn");
+  document.getElementById(
+    "backPhoneBtn"
+  );
 
 if (backPhoneBtn) {
-  backPhoneBtn.addEventListener("click", () => {
 
-    const otp =
-      document.getElementById("otpInput");
+  backPhoneBtn.addEventListener(
+    "click",
+    () => {
 
-    const error =
-      document.getElementById("otpError");
+      const otp =
+        document.getElementById(
+          "otpInput"
+        );
 
-    if (otp) otp.value = "";
-    if (error) error.textContent = "";
+      const error =
+        document.getElementById(
+          "otpError"
+        );
 
-    showScreen("phoneScreen");
-  });
+      if (otp) {
+        otp.value = "";
+      }
+
+      if (error) {
+        error.textContent = "";
+      }
+
+      showScreen(
+        "phoneScreen"
+      );
+    }
+  );
 }
 
 /* =========================
