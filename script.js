@@ -1133,3 +1133,15 @@ if (backFromChatBtn) {
   });
 
 }
+const callCustomerBtn =
+  document.getElementById("callCustomerBtn");
+
+if (callCustomerBtn) {
+
+  callCustomerBtn.addEventListener("click", () => {
+
+    window.location.href = "tel:0550000000";
+
+  });
+
+}
