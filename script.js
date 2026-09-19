@@ -1144,7 +1144,7 @@ if (callCustomerBtn) {
 
       window.location.href = "tel:0550000000";
 
-    } else if (selectedRole === "operator") {
+    } else {
 
       window.location.href = "tel:0500000000";
 
