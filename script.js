@@ -421,15 +421,15 @@ if (acceptRequestBtn) {
       })
     );
 
-    localStorage.setItem("orderAccepted", "true");
-    setOrderState("accepted");
+localStorage.setItem("orderAccepted", "true");
+setOrderState("accepted");
 
-    updateMatchedScreen();
-    updateWorkingScreen();
+updateMatchedScreen();
+updateWorkingScreen();
 
-    alert("تم قبول الطلب بنجاح 🚜");
+alert("تم قبول الطلب بنجاح 🚜");
 
-    showScreen("workingScreen");
+showScreen("matchedScreen");
   });
 }
 
