@@ -377,7 +377,11 @@ if (endWorkBtn) {
         finalPrice + " ريال";
     }
 
-    showScreen("completedScreen");
+    if (selectedRole === "operator") {
+  showScreen("operatorCompletedScreen");
+} else {
+  showScreen("completedScreen");
+}
 
   });
 
