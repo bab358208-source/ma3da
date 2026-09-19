@@ -124,24 +124,33 @@ if (requestBtn) {
 
     const acceptanceCheck = setInterval(() => {
 
-      const accepted =
-        localStorage.getItem("orderAccepted");
+  const accepted =
+    localStorage.getItem("orderAccepted");
 
-      if (accepted === "true") {
+  if (accepted === "true") {
 
-        clearInterval(acceptanceCheck);
+    clearInterval(acceptanceCheck);
 
-        document.getElementById("matchedEquipment").textContent =
-          order.equipment;
+    const matchedEquipment =
+      document.getElementById("matchedEquipment");
 
-        document.getElementById("matchedLocation").textContent =
-          order.location;
+    const matchedLocation =
+      document.getElementById("matchedLocation");
 
-        showScreen("matchedScreen");
+    if (matchedEquipment) {
+      matchedEquipment.textContent =
+        order.equipment;
+    }
 
-      }
+    if (matchedLocation) {
+      matchedLocation.textContent =
+        order.location;
+    }
 
-    }, 1000);
+    showScreen("matchedScreen");
+  }
+
+}, 500);
 
   });
 
