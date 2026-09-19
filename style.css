@@ -595,3 +595,12 @@ textarea {
   margin: 0;
   padding: 10px 16px;
 }
+.chat-screen-active {
+  padding: 0 !important;
+}
+
+#chatScreen.active {
+  padding: 0 !important;
+  height: 100vh;
+  overflow: hidden;
+}
