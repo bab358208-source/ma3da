@@ -16,6 +16,13 @@ function showScreen(id) {
 
 
 /* ===============================
+   USER ROLE
+================================ */
+
+let selectedRole = "";
+
+
+/* ===============================
    ORDER DATA
 ================================ */
 
@@ -28,6 +35,7 @@ let order = {
   price: 0
 };
 
+
 const hourlyPrices = {
   "بوكلين": 250,
   "شيول": 220,
@@ -37,6 +45,7 @@ const hourlyPrices = {
   "بلدوزر": 300
 };
 
+
 const durationHours = {
   "ساعة واحدة": 1,
   "4 ساعات": 4,
@@ -44,6 +53,10 @@ const durationHours = {
   "يوم كامل": 10
 };
 
+
+/* ===============================
+   PRICE
+================================ */
 
 function calculatePrice() {
 
@@ -58,7 +71,32 @@ function calculatePrice() {
 
 
 /* ===============================
-   LOAD SAVED ORDER
+   SAVE ORDER
+================================ */
+
+function saveCurrentOrder() {
+
+  try {
+
+    localStorage.setItem(
+      "currentOrder",
+      JSON.stringify(order)
+    );
+
+  } catch (error) {
+
+    console.error(
+      "تعذر حفظ الطلب:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ===============================
+   LOAD ORDER
 ================================ */
 
 function loadSavedOrder() {
@@ -81,14 +119,18 @@ function loadSavedOrder() {
       duration: saved.duration || "",
       operator: saved.operator || "",
       notes: saved.notes || "",
-      price: saved.price || 0
+      price: Number(saved.price) || 0
     };
 
     return true;
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "تعذر تحميل الطلب:",
+      error
+    );
+
     return false;
 
   }
@@ -96,16 +138,21 @@ function loadSavedOrder() {
 
 
 /* ===============================
-   UPDATE MATCHED SCREEN
+   UPDATE MATCHED
 ================================ */
 
 function updateMatchedScreen() {
 
   const matchedEquipment =
-    document.getElementById("matchedEquipment");
+    document.getElementById(
+      "matchedEquipment"
+    );
 
   const matchedLocation =
-    document.getElementById("matchedLocation");
+    document.getElementById(
+      "matchedLocation"
+    );
+
 
   if (matchedEquipment) {
 
@@ -114,26 +161,33 @@ function updateMatchedScreen() {
 
   }
 
+
   if (matchedLocation) {
 
     matchedLocation.textContent =
       order.location || "موقع العميل";
 
   }
+
 }
 
 
 /* ===============================
-   UPDATE WORKING SCREEN
+   UPDATE WORKING
 ================================ */
 
 function updateWorkingScreen() {
 
   const workingEquipment =
-    document.getElementById("workingEquipment");
+    document.getElementById(
+      "workingEquipment"
+    );
 
   const workingLocation =
-    document.getElementById("workingLocation");
+    document.getElementById(
+      "workingLocation"
+    );
+
 
   if (workingEquipment) {
 
@@ -142,124 +196,47 @@ function updateWorkingScreen() {
 
   }
 
+
   if (workingLocation) {
 
     workingLocation.textContent =
       order.location || "موقع العميل";
 
   }
+
 }
 
 
 /* ===============================
-   CUSTOMER REQUEST
+   SHOW MATCHED
 ================================ */
 
-const requestBtn =
-  document.getElementById("requestBtn");
+function showMatchedScreen() {
 
-if (requestBtn) {
+  const loaded =
+    loadSavedOrder();
 
-  requestBtn.addEventListener("click", () => {
+  if (!loaded) {
 
-    localStorage.removeItem("workEnded");
-    localStorage.removeItem("finalPrice");
-    localStorage.removeItem("orderAccepted");
-
-    const location =
-      document
-        .getElementById("locationInput")
-        .value
-        .trim();
-
-    const equipment =
-      document
-        .getElementById("equipmentSelect")
-        .value;
-
-    const duration =
-      document
-        .getElementById("durationSelect")
-        .value;
-
-    const operator =
-      document
-        .getElementById("operatorSelect")
-        .value;
-
-    const notes =
-      document
-        .getElementById("notesInput")
-        .value
-        .trim();
-
-
-    if (!location) {
-
-      alert("اكتب موقع العمل");
-      return;
-
-    }
-
-    if (!equipment) {
-
-      alert("اختر نوع المعدة");
-      return;
-
-    }
-
-    if (!duration) {
-
-      alert("اختر مدة العمل");
-      return;
-
-    }
-
-
-    order.location =
-      location;
-
-    order.equipment =
-      equipment;
-
-    order.duration =
-      duration;
-
-    order.operator =
-      operator;
-
-    order.notes =
-      notes;
-
-    order.price =
-      calculatePrice();
-
-
-    /* حفظ الطلب */
-
-    localStorage.setItem(
-      "currentOrder",
-      JSON.stringify(order)
+    console.log(
+      "لا يوجد طلب محفوظ"
     );
 
+    return false;
 
-    updateMatchedScreen();
-    updateWorkingScreen();
-
-
-    /* فتح شاشة البحث */
-
-    showScreen(
-      "searchingScreen"
-    );
+  }
 
 
-    /* مراقبة قبول الطلب */
+  updateMatchedScreen();
+  updateWorkingScreen();
 
-    startAcceptanceWatcher();
 
-  });
+  showScreen(
+    "matchedScreen"
+  );
 
+
+  return true;
 }
 
 
@@ -269,7 +246,8 @@ if (requestBtn) {
 
 let acceptanceWatcher = null;
 
-function startAcceptanceWatcher() {
+
+function stopAcceptanceWatcher() {
 
   if (acceptanceWatcher) {
 
@@ -277,11 +255,66 @@ function startAcceptanceWatcher() {
       acceptanceWatcher
     );
 
+    acceptanceWatcher =
+      null;
+
   }
+
+}
+
+
+function startAcceptanceWatcher() {
+
+  stopAcceptanceWatcher();
 
 
   acceptanceWatcher =
     setInterval(() => {
+
+      /*
+       * مهم جدًا:
+       * لا ننتقل إلى شاشة العميل
+       * إذا كان المستخدم حاليًا صاحب معدة.
+       */
+
+      if (
+        selectedRole !==
+        "customer"
+      ) {
+
+        return;
+
+      }
+
+
+      const searchingScreen =
+        document.getElementById(
+          "searchingScreen"
+        );
+
+
+      /*
+       * لا نغيّر الشاشة إلا إذا
+       * كان العميل فعلًا في شاشة البحث.
+       */
+
+      if (
+        !searchingScreen ||
+        !searchingScreen.classList.contains(
+          "active"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      const status =
+        localStorage.getItem(
+          "orderStatus"
+        );
+
 
       const accepted =
         localStorage.getItem(
@@ -289,25 +322,14 @@ function startAcceptanceWatcher() {
         );
 
 
-      if (accepted === "true") {
+      if (
+        status === "accepted" ||
+        accepted === "true"
+      ) {
 
-        clearInterval(
-          acceptanceWatcher
-        );
+        stopAcceptanceWatcher();
 
-        acceptanceWatcher =
-          null;
-
-
-        loadSavedOrder();
-
-        updateMatchedScreen();
-        updateWorkingScreen();
-
-
-        showScreen(
-          "matchedScreen"
-        );
+        showMatchedScreen();
 
       }
 
@@ -317,38 +339,180 @@ function startAcceptanceWatcher() {
 
 
 /* ===============================
-   CHECK ACCEPTED ORDER
-   WHEN CUSTOMER RETURNS
+   CUSTOMER REQUEST
 ================================ */
 
-function checkExistingAcceptedOrder() {
-
-  const accepted =
-    localStorage.getItem(
-      "orderAccepted"
-    );
-
-  const hasOrder =
-    loadSavedOrder();
+const requestBtn =
+  document.getElementById(
+    "requestBtn"
+  );
 
 
-  if (
-    accepted === "true" &&
-    hasOrder
-  ) {
+if (requestBtn) {
 
-    updateMatchedScreen();
-    updateWorkingScreen();
+  requestBtn.addEventListener(
+    "click",
+    () => {
 
-    showScreen(
-      "matchedScreen"
-    );
+      const location =
+        document
+          .getElementById(
+            "locationInput"
+          )
+          .value
+          .trim();
 
-    return true;
 
-  }
+      const equipment =
+        document
+          .getElementById(
+            "equipmentSelect"
+          )
+          .value;
 
-  return false;
+
+      const duration =
+        document
+          .getElementById(
+            "durationSelect"
+          )
+          .value;
+
+
+      const operator =
+        document
+          .getElementById(
+            "operatorSelect"
+          )
+          .value;
+
+
+      const notes =
+        document
+          .getElementById(
+            "notesInput"
+          )
+          .value
+          .trim();
+
+
+      /* التحقق أولًا */
+
+      if (!location) {
+
+        alert(
+          "اكتب موقع العمل"
+        );
+
+        return;
+
+      }
+
+
+      if (!equipment) {
+
+        alert(
+          "اختر نوع المعدة"
+        );
+
+        return;
+
+      }
+
+
+      if (!duration) {
+
+        alert(
+          "اختر مدة العمل"
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * تنظيف حالة الطلب السابق
+       */
+
+      localStorage.removeItem(
+        "workEnded"
+      );
+
+      localStorage.removeItem(
+        "finalPrice"
+      );
+
+      localStorage.removeItem(
+        "orderAccepted"
+      );
+
+      localStorage.removeItem(
+        "orderStatus"
+      );
+
+      localStorage.removeItem(
+        "acceptedOrder"
+      );
+
+
+      /* إنشاء الطلب */
+
+      order.location =
+        location;
+
+      order.equipment =
+        equipment;
+
+      order.duration =
+        duration;
+
+      order.operator =
+        operator;
+
+      order.notes =
+        notes;
+
+      order.price =
+        calculatePrice();
+
+
+      /*
+       * حفظ الطلب
+       */
+
+      saveCurrentOrder();
+
+
+      /*
+       * الحالة الحالية:
+       * searching
+       */
+
+      localStorage.setItem(
+        "orderStatus",
+        "searching"
+      );
+
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+
+
+      selectedRole =
+        "customer";
+
+
+      showScreen(
+        "searchingScreen"
+      );
+
+
+      startAcceptanceWatcher();
+
+    }
+  );
+
 }
 
 
@@ -357,19 +521,25 @@ function checkExistingAcceptedOrder() {
 ================================ */
 
 const trackingBtn =
-  document.getElementById("trackingBtn");
+  document.getElementById(
+    "trackingBtn"
+  );
+
 
 if (trackingBtn) {
 
-  trackingBtn.addEventListener("click", () => {
+  trackingBtn.addEventListener(
+    "click",
+    () => {
 
-    showScreen(
-      "trackingScreen"
-    );
+      showScreen(
+        "trackingScreen"
+      );
 
-    startTracking();
+      startTracking();
 
-  });
+    }
+  );
 
 }
 
@@ -379,16 +549,22 @@ if (trackingBtn) {
 ================================ */
 
 const callBtn =
-  document.getElementById("callBtn");
+  document.getElementById(
+    "callBtn"
+  );
+
 
 if (callBtn) {
 
-  callBtn.addEventListener("click", () => {
+  callBtn.addEventListener(
+    "click",
+    () => {
 
-    window.location.href =
-      "tel:0550000000";
+      window.location.href =
+        "tel:0550000000";
 
-  });
+    }
+  );
 
 }
 
@@ -398,30 +574,40 @@ if (callBtn) {
 ================================ */
 
 const chatBtn =
-  document.getElementById("chatBtn");
+  document.getElementById(
+    "chatBtn"
+  );
+
 
 if (chatBtn) {
 
-  chatBtn.addEventListener("click", () => {
+  chatBtn.addEventListener(
+    "click",
+    () => {
 
-    showScreen(
-      "chatScreen"
-    );
+      showScreen(
+        "chatScreen"
+      );
 
-    const chatInput =
-      document.getElementById("chatInput");
 
-    if (chatInput) {
+      const chatInput =
+        document.getElementById(
+          "chatInput"
+        );
 
-      setTimeout(() => {
 
-        chatInput.focus();
+      if (chatInput) {
 
-      }, 100);
+        setTimeout(() => {
+
+          chatInput.focus();
+
+        }, 100);
+
+      }
 
     }
-
-  });
+  );
 
 }
 
@@ -431,7 +617,10 @@ if (chatBtn) {
 ================================ */
 
 const sendChatBtn =
-  document.getElementById("sendChatBtn");
+  document.getElementById(
+    "sendChatBtn"
+  );
+
 
 if (sendChatBtn) {
 
@@ -449,6 +638,7 @@ function sendChatMessage() {
     document.getElementById(
       "chatInput"
     );
+
 
   const chatMessages =
     document.getElementById(
@@ -476,7 +666,9 @@ function sendChatMessage() {
 
 
   const messageElement =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
 
   messageElement.className =
@@ -513,13 +705,16 @@ const chatInput =
     "chatInput"
   );
 
+
 if (chatInput) {
 
   chatInput.addEventListener(
     "keydown",
     (event) => {
 
-      if (event.key === "Enter") {
+      if (
+        event.key === "Enter"
+      ) {
 
         event.preventDefault();
 
@@ -541,6 +736,7 @@ const backFromChatBtn =
   document.getElementById(
     "backFromChatBtn"
   );
+
 
 if (backFromChatBtn) {
 
@@ -569,15 +765,18 @@ function startTracking() {
       "equipmentMarker"
     );
 
+
   const distance =
     document.getElementById(
       "distanceText"
     );
 
+
   const eta =
     document.getElementById(
       "etaText"
     );
+
 
   const status =
     document.getElementById(
@@ -656,12 +855,14 @@ function startTracking() {
     marker.style.top =
       step.top;
 
+
     marker.style.right =
       step.right;
 
 
     distance.textContent =
       step.distance;
+
 
     eta.textContent =
       step.eta;
@@ -691,6 +892,7 @@ function startTracking() {
 
 
     index++;
+
 
     setTimeout(
       move,
@@ -769,6 +971,7 @@ if (startWorkBtn) {
               clearInterval(
                 customerWorkCheck
               );
+
 
               clearInterval(
                 timerInterval
@@ -890,7 +1093,7 @@ function updateTimer() {
 
 
 /* ===============================
-   WORKING SCREEN CALL
+   WORKING CALL
 ================================ */
 
 const callCustomerBtn =
@@ -1026,6 +1229,12 @@ if (endWorkBtn) {
         );
 
 
+        localStorage.setItem(
+          "orderStatus",
+          "completed"
+        );
+
+
         showScreen(
           "operatorCompletedScreen"
         );
@@ -1048,8 +1257,7 @@ if (endWorkBtn) {
    PAYMENT
 ================================ */
 
-let selectedPayment =
-  "";
+let selectedPayment = "";
 
 
 document
@@ -1156,8 +1364,7 @@ if (confirmPaymentBtn) {
    RATING
 ================================ */
 
-let selectedRating =
-  0;
+let selectedRating = 0;
 
 
 document
@@ -1254,6 +1461,33 @@ if (newRequestBtn) {
     "click",
     () => {
 
+      stopAcceptanceWatcher();
+
+      localStorage.removeItem(
+        "currentOrder"
+      );
+
+      localStorage.removeItem(
+        "orderAccepted"
+      );
+
+      localStorage.removeItem(
+        "orderStatus"
+      );
+
+      localStorage.removeItem(
+        "acceptedOrder"
+      );
+
+      localStorage.removeItem(
+        "workEnded"
+      );
+
+      localStorage.removeItem(
+        "finalPrice"
+      );
+
+
       location.reload();
 
     }
@@ -1293,16 +1527,74 @@ if (acceptRequestBtn) {
     "click",
     () => {
 
+      /*
+       * تحميل طلب العميل
+       */
+
+      const hasOrder =
+        loadSavedOrder();
+
+
+      if (!hasOrder) {
+
+        alert(
+          "لا يوجد طلب عميل محفوظ"
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * حفظ حالة القبول
+       */
+
       localStorage.setItem(
         "orderAccepted",
         "true"
       );
 
 
+      localStorage.setItem(
+        "orderStatus",
+        "accepted"
+      );
+
+
+      /*
+       * حفظ نسخة من الطلب المقبول
+       */
+
+      localStorage.setItem(
+        "acceptedOrder",
+        JSON.stringify({
+          ...order,
+          operatorName:
+            "فهد القحطاني",
+          operatorRating:
+            "4.8"
+        })
+      );
+
+
+      /*
+       * تحديث بيانات الشاشات
+       */
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+
+
       alert(
         "تم قبول الطلب بنجاح 🚜"
       );
 
+
+      /*
+       * صاحب المعدة يبقى في وضعه
+       * ولا نرسل الصفحة إلى شاشة العميل.
+       */
 
       showScreen(
         "workingScreen"
@@ -1334,6 +1626,14 @@ if (rejectRequestBtn) {
         "orderAccepted"
       );
 
+      localStorage.removeItem(
+        "orderStatus"
+      );
+
+      localStorage.removeItem(
+        "acceptedOrder"
+      );
+
 
       alert(
         "تم رفض الطلب"
@@ -1351,19 +1651,14 @@ if (rejectRequestBtn) {
 
 
 /* ===============================
-   PHONE LOGIN
+   CUSTOMER ROLE
 ================================ */
-
-let selectedRole =
-  "";
-
-
-/* العميل */
 
 const customerRoleBtn =
   document.getElementById(
     "customerRoleBtn"
   );
+
 
 if (customerRoleBtn) {
 
@@ -1371,48 +1666,9 @@ if (customerRoleBtn) {
     "click",
     () => {
 
-      selectedRole = "customer";
+      selectedRole =
+        "customer";
 
-      const accepted =
-        localStorage.getItem("orderAccepted");
-
-      const savedOrder =
-        localStorage.getItem("currentOrder");
-
-      /* إذا كان الطلب مقبولاً بالفعل */
-      if (
-        accepted === "true" &&
-        savedOrder
-      ) {
-
-        try {
-
-          order =
-            JSON.parse(savedOrder);
-
-          document.getElementById(
-            "matchedEquipment"
-          ).textContent =
-            order.equipment || "-";
-
-          document.getElementById(
-            "matchedLocation"
-          ).textContent =
-            order.location || "-";
-
-          showScreen(
-            "matchedScreen"
-          );
-
-          return;
-
-        } catch (error) {
-
-          console.error(error);
-
-        }
-
-      }
 
       document
         .getElementById(
@@ -1420,6 +1676,7 @@ if (customerRoleBtn) {
         )
         .textContent =
         "تسجيل الدخول كعميل";
+
 
       showScreen(
         "phoneScreen"
@@ -1431,7 +1688,9 @@ if (customerRoleBtn) {
 }
 
 
-/* صاحب المعدة */
+/* ===============================
+   OPERATOR ROLE
+================================ */
 
 const operatorRoleBtn =
   document.getElementById(
@@ -1447,6 +1706,9 @@ if (operatorRoleBtn) {
 
       selectedRole =
         "operator";
+
+
+      stopAcceptanceWatcher();
 
 
       document
@@ -1542,6 +1804,130 @@ if (sendCodeBtn) {
 
 
 /* ===============================
+   CHECK ACCEPTED ORDER
+================================ */
+
+function checkExistingAcceptedOrder() {
+
+  const status =
+    localStorage.getItem(
+      "orderStatus"
+    );
+
+
+  const accepted =
+    localStorage.getItem(
+      "orderAccepted"
+    );
+
+
+  /*
+   * نتحقق من الحالتين
+   */
+
+  if (
+    status !== "accepted" &&
+    accepted !== "true"
+  ) {
+
+    return false;
+
+  }
+
+
+  /*
+   * أولًا نحاول تحميل الطلب الحالي
+   */
+
+  let hasOrder =
+    loadSavedOrder();
+
+
+  /*
+   * إذا لم يوجد، نحاول نسخة الطلب المقبول
+   */
+
+  if (!hasOrder) {
+
+    const acceptedOrder =
+      localStorage.getItem(
+        "acceptedOrder"
+      );
+
+
+    if (acceptedOrder) {
+
+      try {
+
+        const saved =
+          JSON.parse(
+            acceptedOrder
+          );
+
+
+        order = {
+
+          location:
+            saved.location || "",
+
+          equipment:
+            saved.equipment || "",
+
+          duration:
+            saved.duration || "",
+
+          operator:
+            saved.operator || "",
+
+          notes:
+            saved.notes || "",
+
+          price:
+            Number(
+              saved.price
+            ) || 0
+
+        };
+
+
+        hasOrder =
+          true;
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+      }
+
+    }
+
+  }
+
+
+  if (!hasOrder) {
+
+    return false;
+
+  }
+
+
+  updateMatchedScreen();
+  updateWorkingScreen();
+
+
+  showScreen(
+    "matchedScreen"
+  );
+
+
+  return true;
+
+}
+
+
+/* ===============================
    VERIFY OTP
 ================================ */
 
@@ -1587,7 +1973,9 @@ if (verifyCodeBtn) {
         "";
 
 
-      /* العميل */
+      /* =========================
+         CUSTOMER
+      ========================== */
 
       if (
         selectedRole ===
@@ -1595,8 +1983,8 @@ if (verifyCodeBtn) {
       ) {
 
         /*
-         * إذا كان هناك طلب مقبول مسبقًا
-         * نذهب مباشرة إلى شاشة العثور على المشغل
+         * إذا كان الطلب مقبولًا
+         * نذهب مباشرة للمطابقة.
          */
 
         if (
@@ -1608,17 +1996,43 @@ if (verifyCodeBtn) {
         }
 
 
+        /*
+         * إذا كان هناك طلب محفوظ
+         * ولكنه لم يُقبل بعد.
+         */
+
+        if (
+          loadSavedOrder()
+        ) {
+
+          showScreen(
+            "searchingScreen"
+          );
+
+
+          startAcceptanceWatcher();
+
+
+          return;
+
+        }
+
+
         showScreen(
           "requestScreen"
         );
 
 
+        return;
+
       }
 
 
-      /* صاحب المعدة */
+      /* =========================
+         OPERATOR
+      ========================== */
 
-      else if (
+      if (
         selectedRole ===
         "operator"
       ) {
@@ -1830,7 +2244,9 @@ function saveEquipment() {
   };
 
 
-  /* بدون صورة */
+  /* =========================
+     WITHOUT IMAGE
+  ========================== */
 
   if (!imageFile) {
 
@@ -1871,7 +2287,9 @@ function saveEquipment() {
   }
 
 
-  /* مع صورة */
+  /* =========================
+     WITH IMAGE
+  ========================== */
 
   const reader =
     new FileReader();
