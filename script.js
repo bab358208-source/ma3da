@@ -175,7 +175,45 @@ if (chatBtn) {
   });
 
 }
+const sendChatBtn =
+  document.getElementById("sendChatBtn");
 
+if (sendChatBtn) {
+
+  sendChatBtn.addEventListener("click", () => {
+
+    const chatInput =
+      document.getElementById("chatInput");
+
+    const chatMessages =
+      document.getElementById("chatMessages");
+
+    const message =
+      chatInput.value.trim();
+
+    if (!message) return;
+
+    const messageElement =
+      document.createElement("div");
+
+    messageElement.className =
+      "message sent";
+
+    messageElement.textContent =
+      message;
+
+    chatMessages.appendChild(
+      messageElement
+    );
+
+    chatInput.value = "";
+
+    chatMessages.scrollTop =
+      chatMessages.scrollHeight;
+
+  });
+
+}
 function startTracking() {
 
   const marker =
