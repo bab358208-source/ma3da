@@ -397,7 +397,24 @@ if (endWorkBtn) {
   });
 
 }
+if (selectedRole === "customer") {
 
+  const workEndCheck = setInterval(() => {
+
+    const workEnded =
+      localStorage.getItem("workEnded");
+
+    if (workEnded === "true") {
+
+      clearInterval(workEndCheck);
+
+      showScreen("completedScreen");
+
+    }
+
+  }, 1000);
+
+}
 
 /* ===============================
    PAYMENT
