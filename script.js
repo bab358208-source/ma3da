@@ -894,7 +894,14 @@ if (callCustomerBtn) {
     window.location.href = "tel:0550000000";
   });
 }
+const callBtn =
+  document.getElementById("callBtn");
 
+if (callBtn) {
+  callBtn.addEventListener("click", () => {
+    window.location.href = "tel:0550000000";
+  });
+}
 /* =========================
    END WORK
 ========================= */
