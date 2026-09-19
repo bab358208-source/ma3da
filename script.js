@@ -378,9 +378,15 @@ if (endWorkBtn) {
     }
 
     if (selectedRole === "operator") {
+
+  localStorage.setItem("workEnded", "true");
+
   showScreen("operatorCompletedScreen");
+
 } else {
+
   showScreen("completedScreen");
+
 }
 
   });
