@@ -1121,3 +1121,15 @@ function displayMyEquipment() {
 ================================ */
 
 displayMyEquipment();
+const backFromChatBtn =
+  document.getElementById("backFromChatBtn");
+
+if (backFromChatBtn) {
+
+  backFromChatBtn.addEventListener("click", () => {
+
+    showScreen("matchedScreen");
+
+  });
+
+}
