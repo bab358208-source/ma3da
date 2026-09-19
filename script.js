@@ -287,6 +287,33 @@ if (startWorkBtn) {
 
       timerInterval =
         setInterval(updateTimer, 1000);
+      const customerWorkCheck = setInterval(() => {
+
+  if (localStorage.getItem("workEnded") === "true") {
+
+    clearInterval(customerWorkCheck);
+    clearInterval(timerInterval);
+
+    const savedPrice =
+      localStorage.getItem("finalPrice");
+
+    if (savedPrice) {
+
+      const finalPriceElement =
+        document.getElementById("finalPrice");
+
+      if (finalPriceElement) {
+        finalPriceElement.textContent =
+          savedPrice + " ريال";
+      }
+
+    }
+
+    showScreen("completedScreen");
+
+  }
+
+}, 1000);
 
     }
 
