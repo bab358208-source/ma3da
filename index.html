@@ -714,7 +714,9 @@
     setDoc,
     getDoc
   } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
+import {
+  getAuth
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
   const firebaseConfig = {
     apiKey: "AIzaSyAhs0aanoWd1VvpkP-BVhH38cZkp19Y0m8",
     authDomain: "ma3da-58832.firebaseapp.com",
@@ -724,8 +726,11 @@
     appId: "1:15215528066:web:63cd0e3f87156343a48c9b"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const auth = getAuth(app);
+window.ma3daAuth = auth;
 
   window.ma3daDB = db;
   window.ma3daDoc = doc;
