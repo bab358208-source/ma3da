@@ -705,5 +705,24 @@
 
 <script src="./script.js"></script>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAhs0aanoWd1VvpkP-BVhH38cZkp19Y0m8",
+    authDomain: "ma3da-58832.firebaseapp.com",
+    projectId: "ma3da-58832",
+    storageBucket: "ma3da-58832.firebasestorage.app",
+    messagingSenderId: "15215528066",
+    appId: "1:15215528066:web:63cd0e3f87156343a48c9b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.ma3daDB = db;
+</script>
+
 </body>
 </html>
