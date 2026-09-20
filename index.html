@@ -706,9 +706,8 @@
 <script src="./script.js"></script>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
   const firebaseConfig = {
     apiKey: "AIzaSyAhs0aanoWd1VvpkP-BVhH38cZkp19Y0m8",
     authDomain: "ma3da-58832.firebaseapp.com",
@@ -722,6 +721,9 @@
   const db = getFirestore(app);
 
   window.ma3daDB = db;
+window.ma3daDoc = doc;
+window.ma3daSetDoc = setDoc;
+window.ma3daGetDoc = getDoc;
 </script>
 
 </body>
