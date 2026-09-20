@@ -468,7 +468,7 @@ if (saveEquipmentBtn) {
   );
 }
 
-function saveEquipment() {
+async function saveEquipment() {
 
   const type =
     document.getElementById("equipmentType")?.value;
@@ -502,17 +502,49 @@ function saveEquipment() {
     image: ""
   };
 
+  const saveToFirebase = async () => {
+
+    if (!window.ma3daDB) {
+      throw new Error("Firebase غير متصل");
+    }
+
+    const equipmentRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        "myEquipment"
+      );
+
+    await window.ma3daSetDoc(
+      equipmentRef,
+      equipment
+    );
+  };
+
   const file = imageInput?.files[0];
 
   if (!file) {
 
-    localStorage.setItem(
-      "myEquipment",
-      JSON.stringify(equipment)
-    );
+    try {
 
-    alert("تم حفظ المعدة بنجاح 🚜");
-    openOperatorScreen();
+      await saveToFirebase();
+
+      localStorage.setItem(
+        "myEquipment",
+        JSON.stringify(equipment)
+      );
+
+      alert("تم حفظ المعدة بنجاح 🚜");
+      openOperatorScreen();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "تعذر حفظ المعدة في قاعدة البيانات"
+      );
+    }
 
     return;
   }
@@ -523,7 +555,7 @@ function saveEquipment() {
 
     const image = new Image();
 
-    image.onload = () => {
+    image.onload = async () => {
 
       const maxWidth = 1000;
 
@@ -543,7 +575,8 @@ function saveEquipment() {
       canvas.width = width;
       canvas.height = height;
 
-      const ctx = canvas.getContext("2d");
+      const ctx =
+        canvas.getContext("2d");
 
       ctx.drawImage(
         image,
@@ -561,6 +594,8 @@ function saveEquipment() {
 
       try {
 
+        await saveToFirebase();
+
         localStorage.setItem(
           "myEquipment",
           JSON.stringify(equipment)
@@ -569,10 +604,12 @@ function saveEquipment() {
         alert("تم حفظ المعدة بنجاح 🚜");
         openOperatorScreen();
 
-      } catch {
+      } catch (error) {
+
+        console.error(error);
 
         alert(
-          "الصورة كبيرة جدًا، حاول اختيار صورة أخرى"
+          "تعذر حفظ المعدة في قاعدة البيانات"
         );
       }
     };
@@ -582,7 +619,6 @@ function saveEquipment() {
 
   reader.readAsDataURL(file);
 }
-
 function displayMyEquipment() {
 
   const saved =
@@ -1116,3 +1152,4 @@ if (backPhoneBtn) {
 ========================= */
 
 displayMyEquipment();
+
