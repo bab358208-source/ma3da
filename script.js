@@ -619,17 +619,31 @@ async function saveEquipment() {
 
   reader.readAsDataURL(file);
 }
-function displayMyEquipment() {
-
-  const saved =
-    localStorage.getItem("myEquipment");
-
-  if (!saved) return;
+async function displayMyEquipment() {
 
   try {
 
-    const equipment =
-      JSON.parse(saved);
+    if (!window.ma3daDB) {
+      console.log("Firebase غير متصل");
+      return;
+    }
+
+    const equipmentRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        "myEquipment"
+      );
+
+    const snapshot =
+      await window.ma3daGetDoc(equipmentRef);
+
+    if (!snapshot.exists()) {
+      console.log("لا توجد بيانات للمعدة");
+      return;
+    }
+
+    const equipment = snapshot.data();
 
     const type =
       document.getElementById("myEquipmentType");
@@ -653,10 +667,25 @@ function displayMyEquipment() {
         "myEquipmentImage"
       );
 
-    if (type) type.textContent = equipment.type || "-";
-    if (model) model.textContent = equipment.model || "-";
-    if (year) year.textContent = equipment.year || "-";
-    if (city) city.textContent = equipment.city || "-";
+    if (type) {
+      type.textContent =
+        equipment.type || "-";
+    }
+
+    if (model) {
+      model.textContent =
+        equipment.model || "-";
+    }
+
+    if (year) {
+      year.textContent =
+        equipment.year || "-";
+    }
+
+    if (city) {
+      city.textContent =
+        equipment.city || "-";
+    }
 
     if (availability) {
       availability.textContent =
@@ -668,19 +697,27 @@ function displayMyEquipment() {
     if (image) {
 
       if (equipment.image) {
+
         image.src = equipment.image;
         image.style.display = "block";
+
       } else {
+
         image.removeAttribute("src");
         image.style.display = "none";
+
       }
     }
 
-  } catch {
-    console.log("تعذر قراءة بيانات المعدة");
+  } catch (error) {
+
+    console.error(
+      "تعذر تحميل بيانات المعدة:",
+      error
+    );
+
   }
 }
-
 /* =========================
    MATCHED
 ========================= */
