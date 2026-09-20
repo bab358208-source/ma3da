@@ -1190,3 +1190,59 @@ if (backPhoneBtn) {
 
 displayMyEquipment();
 
+async function ma3daCreateAccount(email, password) {
+  try {
+    const { createUserWithEmailAndPassword } =
+      await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js");
+
+    const result =
+      await createUserWithEmailAndPassword(
+        window.ma3daAuth,
+        email,
+        password
+      );
+
+    console.log("تم إنشاء الحساب:", result.user.uid);
+
+    return result.user;
+
+  } catch (error) {
+
+    console.error(
+      "خطأ في إنشاء الحساب:",
+      error
+    );
+
+    alert("تعذر إنشاء الحساب: " + error.message);
+
+    return null;
+  }
+}
+async function ma3daLogin(email, password) {
+  try {
+    const { signInWithEmailAndPassword } =
+      await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js");
+
+    const result =
+      await signInWithEmailAndPassword(
+        window.ma3daAuth,
+        email,
+        password
+      );
+
+    console.log("تم تسجيل الدخول:", result.user.uid);
+
+    return result.user;
+
+  } catch (error) {
+
+    console.error(
+      "خطأ في تسجيل الدخول:",
+      error
+    );
+
+    alert("تعذر تسجيل الدخول: " + error.message);
+
+    return null;
+  }
+}
