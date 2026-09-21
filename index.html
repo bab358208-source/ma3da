@@ -37,6 +37,35 @@
   </section>
 <!-- تسجيل الدخول برقم الجوال -->
 <section id="phoneScreen" class="screen">
+  <div class="login-card">
+    <h2>تسجيل الدخول</h2>
+    <p>أدخل بريدك الإلكتروني وكلمة المرور</p>
+
+    <input
+      type="email"
+      id="emailInput"
+      placeholder="البريد الإلكتروني"
+      autocomplete="email"
+    >
+
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="كلمة المرور"
+      autocomplete="current-password"
+    >
+
+    <button id="sendCodeBtn">تسجيل الدخول</button>
+
+    <button id="createAccountBtn" type="button">
+      إنشاء حساب جديد
+    </button>
+
+    <button id="backRoleBtn" type="button">
+      رجوع
+    </button>
+  </div>
+</section>
 
   <div class="hero">
     <div class="hero-icon">📱</div>
@@ -702,7 +731,6 @@
   </section>
 
 </main>
-
 <script src="./script.js"></script>
 
 <script type="module">
@@ -714,11 +742,13 @@
     setDoc,
     getDoc
   } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import {
-  getAuth,
-  RecaptchaVerifier,
-  signInWithPhoneNumber
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyAhs0aanoWd1VvpkP-BVhH38cZkp19Y0m8",
     authDomain: "ma3da-58832.firebaseapp.com",
@@ -728,18 +758,25 @@ import {
     appId: "1:15215528066:web:63cd0e3f87156343a48c9b"
   };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
 
-const auth = getAuth(app);
-window.ma3daAuth = auth;
+  const db = getFirestore(app);
+
+  const auth = getAuth(app);
+
+  window.ma3daAuth = auth;
 
   window.ma3daDB = db;
   window.ma3daDoc = doc;
   window.ma3daSetDoc = setDoc;
   window.ma3daGetDoc = getDoc;
-</script>
 
+  window.ma3daCreateAccount =
+    createUserWithEmailAndPassword;
+
+  window.ma3daLogin =
+    signInWithEmailAndPassword;
+</script>
 
 </body>
 </html>
