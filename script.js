@@ -788,3 +788,17 @@ if(backPhoneBtn){
     showScreen("phoneScreen");
   });
 }
+const savedRole=localStorage.getItem("selectedRole");
+
+if(savedRole){
+  selectedRole=savedRole;
+
+  if(savedRole==="customer"){
+    showScreen("requestScreen");
+  }
+
+  if(savedRole==="operator"){
+    showScreen("operatorScreen");
+    displayMyEquipment();
+  }
+}
