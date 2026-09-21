@@ -298,11 +298,15 @@ if (operatorRoleBtn) {
    OTP
 ========================= */
 
+let ma3daRecaptchaVerifier = null;
+let ma3daConfirmationResult = null;
+
 const sendCodeBtn =
   document.getElementById("sendCodeBtn");
 
 if (sendCodeBtn) {
-  sendCodeBtn.addEventListener("click", () => {
+
+  sendCodeBtn.addEventListener("click", async () => {
 
     const phone =
       document.getElementById("phoneInput")?.value.trim();
@@ -311,34 +315,95 @@ if (sendCodeBtn) {
       document.getElementById("phoneError");
 
     if (!/^5\d{8}$/.test(phone)) {
+
       if (error) {
         error.textContent =
           "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
       }
+
       return;
     }
 
-    if (error) error.textContent = "";
-
-    const otpText =
-      document.getElementById("otpText");
-
-    if (otpText) {
-      otpText.textContent =
-        `أدخل رمز التحقق المرسل إلى +966 ${phone}`;
+    if (error) {
+      error.textContent = "";
     }
 
-    showScreen("otpScreen");
+    try {
 
-    alert("رمز التحقق التجريبي هو: 1234");
+      const {
+        RecaptchaVerifier,
+        signInWithPhoneNumber
+      } = await import(
+        "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+      );
+
+      const auth = window.ma3daAuth;
+
+      if (!auth) {
+        throw new Error("Firebase Authentication غير متصل");
+      }
+
+      if (!ma3daRecaptchaVerifier) {
+
+        ma3daRecaptchaVerifier =
+          new RecaptchaVerifier(
+            auth,
+            "recaptcha-container",
+            {
+              size: "normal"
+            }
+          );
+      }
+
+      const fullPhone =
+        "+966" + phone;
+
+      ma3daConfirmationResult =
+        await signInWithPhoneNumber(
+          auth,
+          fullPhone,
+          ma3daRecaptchaVerifier
+        );
+
+      const otpText =
+        document.getElementById("otpText");
+
+      if (otpText) {
+        otpText.textContent =
+          `أدخل رمز التحقق المرسل إلى ${fullPhone}`;
+      }
+
+      showScreen("otpScreen");
+
+    } catch (error) {
+
+      console.error(
+        "خطأ في إرسال رمز التحقق:",
+        error
+      );
+
+      if (ma3daRecaptchaVerifier) {
+        ma3daRecaptchaVerifier.clear();
+        ma3daRecaptchaVerifier = null;
+      }
+
+      if (document.getElementById("phoneError")) {
+        document.getElementById("phoneError").textContent =
+          "تعذر إرسال رمز التحقق. حاول مرة أخرى.";
+      }
+    }
+
   });
+
 }
+
 
 const verifyCodeBtn =
   document.getElementById("verifyCodeBtn");
 
 if (verifyCodeBtn) {
-  verifyCodeBtn.addEventListener("click", () => {
+
+  verifyCodeBtn.addEventListener("click", async () => {
 
     const code =
       document.getElementById("otpInput")?.value.trim();
@@ -346,45 +411,98 @@ if (verifyCodeBtn) {
     const error =
       document.getElementById("otpError");
 
-    if (code !== "1234") {
+    if (!/^\d{6}$/.test(code)) {
+
       if (error) {
-        error.textContent = "رمز التحقق غير صحيح";
+        error.textContent =
+          "أدخل رمز التحقق المكون من 6 أرقام";
       }
+
       return;
     }
 
-    if (error) error.textContent = "";
+    if (error) {
+      error.textContent = "";
+    }
 
-    if (selectedRole === "customer") {
+    try {
 
-      const state = getOrderState();
+      if (!ma3daConfirmationResult) {
+        throw new Error(
+          "لا يوجد طلب تحقق"
+        );
+      }
 
-      if (state === "accepted" && loadOrder()) {
+      const result =
+        await ma3daConfirmationResult.confirm(code);
 
-        stopAcceptanceWatcher();
+      const user =
+        result.user;
 
-        updateMatchedScreen();
-        updateWorkingScreen();
+      console.log(
+        "تم تسجيل الدخول بنجاح:",
+        user.uid
+      );
 
-        showScreen("matchedScreen");
+      if (selectedRole === "customer") {
+
+        const state =
+          getOrderState();
+
+        if (
+          state === "accepted" &&
+          loadOrder()
+        ) {
+
+          stopAcceptanceWatcher();
+
+          updateMatchedScreen();
+          updateWorkingScreen();
+
+          showScreen("matchedScreen");
+
+          return;
+        }
+
+        if (
+          state === "searching" &&
+          loadOrder()
+        ) {
+
+          showScreen("searchingScreen");
+
+          startAcceptanceWatcher();
+
+          return;
+        }
+
+        showScreen("requestScreen");
+
         return;
       }
 
-      if (state === "searching" && loadOrder()) {
+      if (selectedRole === "operator") {
 
-        showScreen("searchingScreen");
-        startAcceptanceWatcher();
-        return;
+        showScreen("addEquipmentScreen");
+
       }
 
-      showScreen("requestScreen");
-      return;
+    } catch (error) {
+
+      console.error(
+        "خطأ في التحقق من الرمز:",
+        error
+      );
+
+      if (document.getElementById("otpError")) {
+        document.getElementById("otpError").textContent =
+          "رمز التحقق غير صحيح أو انتهت صلاحيته";
+      }
+
     }
 
-    if (selectedRole === "operator") {
-      showScreen("addEquipmentScreen");
-    }
   });
+
 }
 
 /* =========================
