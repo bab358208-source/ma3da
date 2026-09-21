@@ -166,10 +166,11 @@ function startAcceptanceWatcher(){
 
 /* ROLE */
 const customerRoleBtn=document.getElementById("customerRoleBtn");
-
 if(customerRoleBtn){
   customerRoleBtn.addEventListener("click",()=>{
     selectedRole="customer";
+    localStorage.setItem("selectedRole","customer");
+
 
     const text=document.getElementById("phoneRoleText");
     if(text)text.textContent="تسجيل الدخول كعميل";
@@ -183,6 +184,7 @@ const operatorRoleBtn=document.getElementById("operatorRoleBtn");
 if(operatorRoleBtn){
   operatorRoleBtn.addEventListener("click",()=>{
     selectedRole="operator";
+    localStorage.setItem("selectedRole","operator");
     stopAcceptanceWatcher();
 
     const text=document.getElementById("phoneRoleText");
