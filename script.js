@@ -1260,7 +1260,6 @@ if (backPhoneBtn) {
    START
 ========================= */
 
-displayMyEquipment();
 
 async function ma3daCreateAccount(email, password) {
   try {
