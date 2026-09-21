@@ -1376,8 +1376,7 @@ if (createAccountBtn) {
       alert("كلمة المرور يجب أن تكون 6 أحرف أو أكثر");
       return;
     }
-
-    const user =
+        const user =
       await ma3daCreateAccount(email, password);
 
     if (!user) return;
@@ -1393,3 +1392,5 @@ if (createAccountBtn) {
     }
   });
 }
+
+
