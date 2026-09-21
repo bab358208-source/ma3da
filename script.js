@@ -1364,3 +1364,78 @@ async function ma3daLogin(email, password) {
     return null;
   }
 }
+/* =========================
+   EMAIL LOGIN - TEMPORARY
+========================= */
+
+const emailLoginBtn =
+  document.getElementById("sendCodeBtn");
+
+const createAccountBtn =
+  document.getElementById("createAccountBtn");
+
+if (emailLoginBtn) {
+  emailLoginBtn.addEventListener("click", async () => {
+
+    const email =
+      document.getElementById("emailInput")?.value.trim();
+
+    const password =
+      document.getElementById("passwordInput")?.value;
+
+    if (!email || !password) {
+      alert("أدخل البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+
+    const user = await ma3daLogin(email, password);
+
+    if (!user) return;
+
+    alert("تم تسجيل الدخول بنجاح ✅");
+
+    if (selectedRole === "customer") {
+      showScreen("requestScreen");
+    }
+
+    if (selectedRole === "operator") {
+      showScreen("addEquipmentScreen");
+    }
+  });
+}
+
+if (createAccountBtn) {
+  createAccountBtn.addEventListener("click", async () => {
+
+    const email =
+      document.getElementById("emailInput")?.value.trim();
+
+    const password =
+      document.getElementById("passwordInput")?.value;
+
+    if (!email || !password) {
+      alert("أدخل البريد الإلكتروني وكلمة المرور");
+      return;
+    }
+
+    if (password.length < 6) {
+      alert("كلمة المرور يجب أن تكون 6 أحرف أو أكثر");
+      return;
+    }
+
+    const user =
+      await ma3daCreateAccount(email, password);
+
+    if (!user) return;
+
+    alert("تم إنشاء الحساب بنجاح ✅");
+
+    if (selectedRole === "customer") {
+      showScreen("requestScreen");
+    }
+
+    if (selectedRole === "operator") {
+      showScreen("addEquipmentScreen");
+    }
+  });
+}
