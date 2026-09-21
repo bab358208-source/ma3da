@@ -35,76 +35,114 @@
 
     </div>
   </section>
-<!-- تسجيل الدخول برقم الجوال -->
+<!-- تسجيل الدخول -->
 <section id="phoneScreen" class="screen">
-  <div class="login-card">
-    <h2>تسجيل الدخول</h2>
-    <p>أدخل بريدك الإلكتروني وكلمة المرور</p>
-
-    <input
-      type="email"
-      id="emailInput"
-      placeholder="البريد الإلكتروني"
-      autocomplete="email"
-    >
-
-    <input
-      type="password"
-      id="passwordInput"
-      placeholder="كلمة المرور"
-      autocomplete="current-password"
-    >
-
-    <button id="sendCodeBtn">تسجيل الدخول</button>
-
-    <button id="createAccountBtn" type="button">
-      إنشاء حساب جديد
-    </button>
-
-    <button id="backRoleBtn" type="button">
-      رجوع
-    </button>
-  </div>
-</section>
 
   <div class="hero">
-    <div class="hero-icon">📱</div>
+    <div class="hero-icon">📧</div>
 
     <h1>تسجيل الدخول</h1>
 
     <p id="phoneRoleText">
-      أدخل رقم جوالك للمتابعة
+      تسجيل الدخول للمتابعة
     </p>
   </div>
 
   <div class="card">
 
-    <label>📱 رقم الجوال</label>
+    <label>📧 البريد الإلكتروني</label>
 
-    <div class="phone-input">
+    <input
+      id="emailInput"
+      type="email"
+      inputmode="email"
+      autocomplete="email"
+      placeholder="example@email.com"
+    >
 
-      <span class="country-code">+966</span>
+    <label>🔐 كلمة المرور</label>
 
-      <input
-        id="phoneInput"
-        type="tel"
-        inputmode="numeric"
-        maxlength="9"
-        placeholder="5XXXXXXXX"
-      >
+    <input
+      id="passwordInput"
+      type="password"
+      autocomplete="current-password"
+      placeholder="كلمة المرور"
+    >
 
-    </div>
+    <p id="emailError" class="phone-error"></p>
 
-    <p id="phoneError" class="phone-error"></p>
-
-    <button id="sendCodeBtn" class="main-btn">
-      إرسال رمز التحقق
+    <button
+      id="sendCodeBtn"
+      class="main-btn"
+      type="button"
+    >
+      تسجيل الدخول
     </button>
 
-    <button id="backRoleBtn" type="button" class="back-btn">
+    <button
+      id="createAccountBtn"
+      class="main-btn"
+      type="button"
+    >
+      إنشاء حساب جديد
+    </button>
+
+    <button
+      id="backRoleBtn"
+      type="button"
+      class="back-btn"
+    >
       ← الرجوع
     </button>
-<div id="recaptcha-container"></div>
+
+  </div>
+
+</section>
+
+
+<!-- رمز التحقق للجوال - محفوظ للمرحلة القادمة -->
+<section id="otpScreen" class="screen">
+
+  <div class="hero">
+    <div class="hero-icon">🔐</div>
+
+    <h1>رمز التحقق</h1>
+
+    <p id="otpText">
+      أدخل رمز التحقق
+    </p>
+  </div>
+
+  <div class="card">
+
+    <label>🔢 رمز التحقق</label>
+
+    <input
+      id="otpInput"
+      type="tel"
+      inputmode="numeric"
+      maxlength="6"
+      placeholder="123456"
+    >
+
+    <p id="otpError" class="phone-error"></p>
+
+    <button
+      id="verifyCodeBtn"
+      class="main-btn"
+      type="button"
+    >
+      تأكيد
+    </button>
+
+    <button
+      id="backPhoneBtn"
+      type="button"
+      class="back-btn"
+    >
+      ← تغيير رقم الجوال
+    </button>
+
   </div>
 
 </section>
