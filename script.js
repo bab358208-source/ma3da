@@ -298,27 +298,34 @@ if (operatorRoleBtn) {
    OTP
 ========================= */
 
-let ma3daRecaptchaVerifier = null;
-let ma3daConfirmationResult = null;
+/* =========================
+   EMAIL LOGIN
+========================= */
 
-const sendCodeBtn =
+const emailLoginBtn =
   document.getElementById("sendCodeBtn");
 
-if (sendCodeBtn) {
+const createAccountBtn =
+  document.getElementById("createAccountBtn");
 
-  sendCodeBtn.addEventListener("click", async () => {
+if (emailLoginBtn) {
 
-    const phone =
-      document.getElementById("phoneInput")?.value.trim();
+  emailLoginBtn.addEventListener("click", async () => {
+
+    const email =
+      document.getElementById("emailInput")?.value.trim();
+
+    const password =
+      document.getElementById("passwordInput")?.value;
 
     const error =
-      document.getElementById("phoneError");
+      document.getElementById("emailError");
 
-    if (!/^5\d{8}$/.test(phone)) {
+    if (!email || !password) {
 
       if (error) {
         error.textContent =
-          "أدخل رقم جوال سعودي صحيح يبدأ بـ 5";
+          "أدخل البريد الإلكتروني وكلمة المرور";
       }
 
       return;
@@ -328,176 +335,56 @@ if (sendCodeBtn) {
       error.textContent = "";
     }
 
-    try {
+    const user =
+      await ma3daLogin(email, password);
 
-      const {
-        RecaptchaVerifier,
-        signInWithPhoneNumber
-      } = await import(
-        "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-      );
+    if (!user) return;
 
-      const auth = window.ma3daAuth;
+    console.log(
+      "تم تسجيل الدخول بنجاح:",
+      user.uid
+    );
 
-      if (!auth) {
-        throw new Error("Firebase Authentication غير متصل");
-      }
+    if (selectedRole === "customer") {
 
-      if (!ma3daRecaptchaVerifier) {
+      const state =
+        getOrderState();
 
-        ma3daRecaptchaVerifier =
-          new RecaptchaVerifier(
-            auth,
-            "recaptcha-container",
-            {
-              size: "normal"
-            }
-          );
-      }
+      if (
+        state === "accepted" &&
+        loadOrder()
+      ) {
 
-      const fullPhone =
-        "+966" + phone;
+        stopAcceptanceWatcher();
 
-      ma3daConfirmationResult =
-        await signInWithPhoneNumber(
-          auth,
-          fullPhone,
-          ma3daRecaptchaVerifier
-        );
+        updateMatchedScreen();
+        updateWorkingScreen();
 
-      const otpText =
-        document.getElementById("otpText");
-
-      if (otpText) {
-        otpText.textContent =
-          `أدخل رمز التحقق المرسل إلى ${fullPhone}`;
-      }
-
-      showScreen("otpScreen");
-
-    } catch (error) {
-
-      console.error(
-        "خطأ في إرسال رمز التحقق:",
-        error
-      );
-
-      if (ma3daRecaptchaVerifier) {
-        ma3daRecaptchaVerifier.clear();
-        ma3daRecaptchaVerifier = null;
-      }
-
-      if (document.getElementById("phoneError")) {
-        document.getElementById("phoneError").textContent =
-          "تعذر إرسال رمز التحقق. حاول مرة أخرى.";
-      }
-    }
-
-  });
-
-}
-
-
-const verifyCodeBtn =
-  document.getElementById("verifyCodeBtn");
-
-if (verifyCodeBtn) {
-
-  verifyCodeBtn.addEventListener("click", async () => {
-
-    const code =
-      document.getElementById("otpInput")?.value.trim();
-
-    const error =
-      document.getElementById("otpError");
-
-    if (!/^\d{6}$/.test(code)) {
-
-      if (error) {
-        error.textContent =
-          "أدخل رمز التحقق المكون من 6 أرقام";
-      }
-
-      return;
-    }
-
-    if (error) {
-      error.textContent = "";
-    }
-
-    try {
-
-      if (!ma3daConfirmationResult) {
-        throw new Error(
-          "لا يوجد طلب تحقق"
-        );
-      }
-
-      const result =
-        await ma3daConfirmationResult.confirm(code);
-
-      const user =
-        result.user;
-
-      console.log(
-        "تم تسجيل الدخول بنجاح:",
-        user.uid
-      );
-
-      if (selectedRole === "customer") {
-
-        const state =
-          getOrderState();
-
-        if (
-          state === "accepted" &&
-          loadOrder()
-        ) {
-
-          stopAcceptanceWatcher();
-
-          updateMatchedScreen();
-          updateWorkingScreen();
-
-          showScreen("matchedScreen");
-
-          return;
-        }
-
-        if (
-          state === "searching" &&
-          loadOrder()
-        ) {
-
-          showScreen("searchingScreen");
-
-          startAcceptanceWatcher();
-
-          return;
-        }
-
-        showScreen("requestScreen");
+        showScreen("matchedScreen");
 
         return;
       }
 
-      if (selectedRole === "operator") {
+      if (
+        state === "searching" &&
+        loadOrder()
+      ) {
 
-        showScreen("addEquipmentScreen");
+        showScreen("searchingScreen");
 
+        startAcceptanceWatcher();
+
+        return;
       }
 
-    } catch (error) {
+      showScreen("requestScreen");
 
-      console.error(
-        "خطأ في التحقق من الرمز:",
-        error
-      );
+      return;
+    }
 
-      if (document.getElementById("otpError")) {
-        document.getElementById("otpError").textContent =
-          "رمز التحقق غير صحيح أو انتهت صلاحيته";
-      }
+    if (selectedRole === "operator") {
+
+      showScreen("addEquipmentScreen");
 
     }
 
@@ -505,6 +392,76 @@ if (verifyCodeBtn) {
 
 }
 
+
+if (createAccountBtn) {
+
+  createAccountBtn.addEventListener("click", async () => {
+
+    const email =
+      document.getElementById("emailInput")?.value.trim();
+
+    const password =
+      document.getElementById("passwordInput")?.value;
+
+    const error =
+      document.getElementById("emailError");
+
+    if (!email || !password) {
+
+      if (error) {
+        error.textContent =
+          "أدخل البريد الإلكتروني وكلمة المرور";
+      }
+
+      return;
+    }
+
+    if (password.length < 6) {
+
+      if (error) {
+        error.textContent =
+          "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
+      }
+
+      return;
+    }
+
+    if (error) {
+      error.textContent = "";
+    }
+
+    const user =
+      await ma3daCreateAccount(
+        email,
+        password
+      );
+
+    if (!user) return;
+
+    console.log(
+      "تم إنشاء الحساب بنجاح:",
+      user.uid
+    );
+
+    alert("تم إنشاء الحساب بنجاح ✅");
+
+    if (selectedRole === "customer") {
+
+      showScreen("requestScreen");
+
+      return;
+    }
+
+    if (selectedRole === "operator") {
+
+      showScreen("addEquipmentScreen");
+
+      return;
+    }
+
+  });
+
+}
 /* =========================
    OPERATOR
 ========================= */
