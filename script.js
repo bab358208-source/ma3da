@@ -57,22 +57,29 @@ async function saveOrder(){
 
   try{
 
-    const ref = window.ma3daDoc(
-      window.ma3daDB,
-      "requests",
-      user.uid
-    );
+    const ref = await window.ma3daAddDoc(
+  window.ma3daCollection(
+    window.ma3daDB,
+    "requests"
+  ),
+  {
+    ...order,
+    customerId:user.uid,
+    customerEmail:user.email || "",
+    status:"searching",
+    createdAt:Date.now()
+  }
+);
 
-    await window.ma3daSetDoc(ref,{
-      ...order,
-      customerId:user.uid,
-      customerEmail:user.email || "",
-      status:"searching",
-      createdAt:Date.now()
-    });
+localStorage.setItem(
+  "currentRequestId",
+  ref.id
+);
 
-    console.log("تم حفظ طلب العميل في Firebase:",user.uid);
-
+console.log(
+  "تم حفظ طلب العميل في Firebase:",
+  ref.id
+);
     return true;
 
   }catch(error){
