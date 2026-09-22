@@ -806,7 +806,7 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
+const auth = getAuth(app);
 
 const authReady = setPersistence(
   auth,
@@ -832,6 +832,12 @@ window.ma3daGetCurrentUser = async () => {
     );
   });
 };
+
+window.ma3daAuth = auth;
+window.ma3daDB = db;
+window.ma3daDoc = doc;
+window.ma3daSetDoc = setDoc;
+window.ma3daGetDoc = getDoc;
 
   window.ma3daCreateAccount = async (email, password) => {
     try {
