@@ -106,9 +106,11 @@ async function saveOrder(){
     );
 
     alert(
-      "تعذر حفظ الطلب في Firebase:\n" +
-      error.message
-    );
+  "خطأ Firebase:\n" +
+  error.code +
+  "\n" +
+  error.message
+);
 
     return false;
   }
