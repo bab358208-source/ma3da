@@ -150,7 +150,7 @@ function updateOperatorScreen(){
 const requestBtn=document.getElementById("requestBtn");
 
 if(requestBtn){
-  requestBtn.addEventListener("click",()=>{
+  requestBtn.addEventListener("click",async()=>{
     const location=document.getElementById("locationInput")?.value.trim();
     const equipment=document.getElementById("equipmentSelect")?.value;
     const duration=document.getElementById("durationSelect")?.value;
@@ -164,7 +164,7 @@ if(requestBtn){
     order={location,equipment,duration,operator,notes,price:0};
     order.price=calculatePrice();
 
-    saveOrder();
+    await saveOrder();
 
     ["acceptedOrder","workEnded","finalPrice","orderAccepted"]
       .forEach(key=>localStorage.removeItem(key));
