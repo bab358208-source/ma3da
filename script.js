@@ -343,6 +343,7 @@ if(rejectRequestBtn){
 }
 
 /* EQUIPMENT */
+/* EQUIPMENT */
 const saveEquipmentBtn=document.getElementById("saveEquipmentBtn");
 
 if(saveEquipmentBtn)
@@ -361,7 +362,23 @@ async function saveEquipment(){
     return;
   }
 
-  const equipment={type,model,year,city,availability,image:""};
+  const user=window.ma3daAuth?.currentUser;
+
+  if(!user){
+    alert("يجب تسجيل الدخول أولاً");
+    return;
+  }
+
+  const equipment={
+    type,
+    model,
+    year,
+    city,
+    availability,
+    image:"",
+    ownerId:user.uid,
+    ownerEmail:user.email||""
+  };
 
   const saveToFirebase=async()=>{
     if(!window.ma3daDB)throw new Error("Firebase غير متصل");
@@ -369,7 +386,7 @@ async function saveEquipment(){
     const ref=window.ma3daDoc(
       window.ma3daDB,
       "equipment",
-      "myEquipment"
+      user.uid
     );
 
     await window.ma3daSetDoc(ref,equipment);
@@ -438,10 +455,17 @@ async function displayMyEquipment(){
       return;
     }
 
+    const user=window.ma3daAuth?.currentUser;
+
+    if(!user){
+      console.log("لا يوجد مستخدم مسجل");
+      return;
+    }
+
     const ref=window.ma3daDoc(
       window.ma3daDB,
       "equipment",
-      "myEquipment"
+      user.uid
     );
 
     const snapshot=await window.ma3daGetDoc(ref);
@@ -452,6 +476,11 @@ async function displayMyEquipment(){
     }
 
     const equipment=snapshot.data();
+
+    localStorage.setItem(
+      "myEquipment",
+      JSON.stringify(equipment)
+    );
 
     const type=document.getElementById("myEquipmentType");
     const model=document.getElementById("myEquipmentModel");
@@ -479,8 +508,12 @@ async function displayMyEquipment(){
         image.style.display="none";
       }
     }
+
+    return true;
+
   }catch(error){
     console.error("تعذر تحميل بيانات المعدة:",error);
+    return false;
   }
 }
 
