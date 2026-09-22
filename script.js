@@ -835,3 +835,29 @@ if(savedRole){
     displayMyEquipment();
   }
 }
+const logoutBtn=document.getElementById("logoutBtn");
+
+if(logoutBtn){
+  logoutBtn.addEventListener("click",async()=>{
+    try{
+      if(window.ma3daAuth){
+        const {signOut}=await import(
+          "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+        );
+
+        await signOut(window.ma3daAuth);
+      }
+
+      localStorage.removeItem("selectedRole");
+      localStorage.removeItem("myEquipment");
+
+      selectedRole="";
+
+      showScreen("roleScreen");
+
+    }catch(error){
+      console.error("خطأ في تسجيل الخروج:",error);
+      alert("تعذر تسجيل الخروج");
+    }
+  });
+}
