@@ -39,8 +39,51 @@ const durationHours={
 };
 
 /* ORDER */
-function saveOrder(){
-  localStorage.setItem("currentOrder",JSON.stringify(order));
+async function saveOrder(){
+
+  localStorage.setItem(
+    "currentOrder",
+    JSON.stringify(order)
+  );
+
+  const user = window.ma3daGetCurrentUser
+    ? await window.ma3daGetCurrentUser()
+    : window.ma3daAuth?.currentUser;
+
+  if(!user || !window.ma3daDB){
+    console.log("لم يتم حفظ الطلب في Firebase");
+    return false;
+  }
+
+  try{
+
+    const ref = window.ma3daDoc(
+      window.ma3daDB,
+      "requests",
+      user.uid
+    );
+
+    await window.ma3daSetDoc(ref,{
+      ...order,
+      customerId:user.uid,
+      customerEmail:user.email || "",
+      status:"searching",
+      createdAt:Date.now()
+    });
+
+    console.log("تم حفظ طلب العميل في Firebase:",user.uid);
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      "تعذر حفظ طلب العميل:",
+      error
+    );
+
+    return false;
+  }
 }
 
 function loadOrder(){
