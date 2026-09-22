@@ -790,7 +790,9 @@
   getAuth,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -805,6 +807,13 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("تم تفعيل حفظ تسجيل الدخول");
+  })
+  .catch(error => {
+    console.error("خطأ في حفظ تسجيل الدخول:", error);
+  });
   window.ma3daGetCurrentUser = () => {
   return new Promise(resolve => {
     const unsubscribe = onAuthStateChanged(auth, user => {
