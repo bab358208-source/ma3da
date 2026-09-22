@@ -50,36 +50,52 @@ async function saveOrder(){
     ? await window.ma3daGetCurrentUser()
     : window.ma3daAuth?.currentUser;
 
-  if(!user || !window.ma3daDB){
-    console.log("لم يتم حفظ الطلب في Firebase");
+  if(!user){
+    alert("لا يوجد مستخدم مسجل الدخول");
+    console.error("لا يوجد مستخدم مسجل");
+    return false;
+  }
+
+  if(!window.ma3daDB){
+    alert("Firebase غير متصل");
+    console.error("ma3daDB غير موجود");
+    return false;
+  }
+
+  if(!window.ma3daAddDoc || !window.ma3daCollection){
+    alert("أدوات حفظ الطلب غير جاهزة");
+    console.error(
+      "ma3daAddDoc أو ma3daCollection غير موجود"
+    );
     return false;
   }
 
   try{
 
     const ref = await window.ma3daAddDoc(
-  window.ma3daCollection(
-    window.ma3daDB,
-    "requests"
-  ),
-  {
-    ...order,
-    customerId:user.uid,
-    customerEmail:user.email || "",
-    status:"searching",
-    createdAt:Date.now()
-  }
-);
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      ),
+      {
+        ...order,
+        customerId: user.uid,
+        customerEmail: user.email || "",
+        status: "searching",
+        createdAt: Date.now()
+      }
+    );
 
-localStorage.setItem(
-  "currentRequestId",
-  ref.id
-);
+    localStorage.setItem(
+      "currentRequestId",
+      ref.id
+    );
 
-console.log(
-  "تم حفظ طلب العميل في Firebase:",
-  ref.id
-);
+    console.log(
+      "تم حفظ طلب العميل في Firebase:",
+      ref.id
+    );
+
     return true;
 
   }catch(error){
@@ -89,18 +105,11 @@ console.log(
       error
     );
 
-    return false;
-  }
-}
+    alert(
+      "تعذر حفظ الطلب في Firebase:\n" +
+      error.message
+    );
 
-function loadOrder(){
-  const saved=localStorage.getItem("currentOrder");
-  if(!saved)return false;
-
-  try{
-    order=JSON.parse(saved);
-    return true;
-  }catch{
     return false;
   }
 }
