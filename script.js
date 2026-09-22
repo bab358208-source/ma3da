@@ -319,6 +319,7 @@ async function openOperatorAfterLogin(){
 
 if(emailLoginBtn){
   emailLoginBtn.addEventListener("click",async()=>{
+
     const {email,password,error}=getEmailData();
 
     if(!email||!password){
@@ -337,39 +338,128 @@ if(emailLoginBtn){
       return;
     }
 
-    const user=await window.ma3daLogin(email,password);
+    emailLoginBtn.disabled=true;
 
-    if(!user)return;
+    try{
 
-    console.log("تم تسجيل الدخول بنجاح:",user.uid);
+      const loginPromise=
+        window.ma3daLogin(email,password);
 
-    localStorage.setItem("selectedRole",selectedRole);
+      const timeoutPromise=
+        new Promise((resolve)=>{
+          setTimeout(()=>{
+            resolve({
+              timeout:true
+            });
+          },5000);
+        });
 
-    if(selectedRole==="customer"){
+      const result=
+        await Promise.race([
+          loginPromise,
+          timeoutPromise
+        ]);
 
-      const state=getOrderState();
+      if(result?.timeout){
 
-      if(state==="accepted"&&loadOrder()){
-        stopAcceptanceWatcher();
-        updateMatchedScreen();
-        updateWorkingScreen();
-        showScreen("matchedScreen");
+        if(error)
+          error.textContent=
+            "تعذر تسجيل الدخول. حاول مرة أخرى.";
+
+        alert(
+          "تسجيل الدخول استغرق أكثر من 5 ثوانٍ."
+        );
+
         return;
       }
 
-      if(state==="searching"&&loadOrder()){
-        showScreen("searchingScreen");
-        startAcceptanceWatcher();
+      const user=result;
+
+      if(!user)return;
+
+      console.log(
+        "تم تسجيل الدخول بنجاح:",
+        user.uid
+      );
+
+      localStorage.setItem(
+        "selectedRole",
+        selectedRole
+      );
+
+      if(selectedRole==="customer"){
+
+        const state=getOrderState();
+
+        if(state==="accepted"&&loadOrder()){
+
+          stopAcceptanceWatcher();
+
+          updateMatchedScreen();
+          updateWorkingScreen();
+
+          showScreen("matchedScreen");
+
+          return;
+        }
+
+        if(state==="searching"&&loadOrder()){
+
+          showScreen("searchingScreen");
+
+          startAcceptanceWatcher();
+
+          return;
+        }
+
+        showScreen("requestScreen");
+
         return;
       }
 
-      showScreen("requestScreen");
-      return;
+      if(selectedRole==="operator"){
+
+        await openOperatorAfterLogin();
+
+      }
+
+    }catch(error){
+
+      console.error(
+        "خطأ في تسجيل دخول العميل/صاحب المعدة:",
+        error
+      );
+
+      if(error){
+
+        if(error.code==="auth/invalid-credential"){
+
+          if(
+            document.getElementById("emailError")
+          ){
+            document.getElementById("emailError")
+              .textContent=
+              "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+          }
+
+        }else{
+
+          if(
+            document.getElementById("emailError")
+          ){
+            document.getElementById("emailError")
+              .textContent=
+              "تعذر تسجيل الدخول. حاول مرة أخرى.";
+          }
+        }
+      }
+
+    }finally{
+
+      emailLoginBtn.disabled=false;
+
     }
 
-    if(selectedRole==="operator"){
-      await openOperatorAfterLogin();
-    }
   });
 }
 
