@@ -1198,22 +1198,14 @@ if(backFromRequestBtn){
     showScreen("roleScreen");
   });
 }
-
+/* RESTORE SESSION */
 /* RESTORE SESSION */
 (async()=>{
 
-  const user = await Promise.race([
-  window.ma3daGetCurrentUser
-    ? window.ma3daGetCurrentUser()
-    : Promise.resolve(window.ma3daAuth?.currentUser),
-
-  new Promise(resolve =>
-    setTimeout(() => {
-      alert("تعذر التحقق من تسجيل الدخول. حاول مرة أخرى.");
-      resolve(null);
-    }, 5000)
-  )
-]);
+  const user=
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
 
   const savedRole=
     localStorage.getItem("selectedRole");
