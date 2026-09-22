@@ -455,12 +455,14 @@ async function displayMyEquipment(){
       return;
     }
 
-    const user=window.ma3daAuth?.currentUser;
+    const user = window.ma3daAuthReady
+  ? await window.ma3daAuthReady
+  : window.ma3daAuth?.currentUser;
 
-    if(!user){
-      console.log("لا يوجد مستخدم مسجل");
-      return;
-    }
+if(!user){
+  console.log("لا يوجد مستخدم مسجل");
+  return;
+}
 
     const ref=window.ma3daDoc(
       window.ma3daDB,
