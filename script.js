@@ -4,7 +4,9 @@ const screens = document.querySelectorAll(".screen");
 
 function showScreen(id){
   screens.forEach(s=>s.classList.remove("active"));
+
   const screen=document.getElementById(id);
+
   if(screen){
     screen.classList.add("active");
     window.scrollTo(0,0);
@@ -29,13 +31,19 @@ let order={
 };
 
 const hourlyPrices={
-  "بوكلين":250,"شيول":220,"قلاب":180,
-  "كرين":350,"حفار":250,"بلدوزر":300
+  "بوكلين":250,
+  "شيول":220,
+  "قلاب":180,
+  "كرين":350,
+  "حفار":250,
+  "بلدوزر":300
 };
 
 const durationHours={
-  "ساعة واحدة":1,"4 ساعات":4,
-  "8 ساعات":8,"يوم كامل":10
+  "ساعة واحدة":1,
+  "4 ساعات":4,
+  "8 ساعات":8,
+  "يوم كامل":10
 };
 
 /* ORDER */
@@ -106,11 +114,11 @@ async function saveOrder(){
     );
 
     alert(
-  "خطأ Firebase:\n" +
-  error.code +
-  "\n" +
-  error.message
-);
+      "خطأ Firebase:\n" +
+      error.code +
+      "\n" +
+      error.message
+    );
 
     return false;
   }
@@ -124,262 +132,616 @@ function getOrderState(){
   return localStorage.getItem("orderState")||"";
 }
 
+/* LOAD ORDER */
+function loadOrder(){
+
+  const saved =
+    localStorage.getItem("currentOrder");
+
+  if(!saved){
+    return false;
+  }
+
+  try{
+
+    order=JSON.parse(saved);
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      "تعذر تحميل الطلب:",
+      error
+    );
+
+    localStorage.removeItem(
+      "currentOrder"
+    );
+
+    return false;
+  }
+}
+
 function calculatePrice(){
-  return (hourlyPrices[order.equipment]||250)*
+
+  return (hourlyPrices[order.equipment]||250) *
          (durationHours[order.duration]||4);
 }
 
 /* SCREEN DATA */
 function updateMatchedScreen(){
-  const equipment=document.getElementById("matchedEquipment");
-  const location=document.getElementById("matchedLocation");
+
+  const equipment=
+    document.getElementById("matchedEquipment");
+
+  const location=
+    document.getElementById("matchedLocation");
 
   if(equipment)
     equipment.textContent=order.equipment?
-      `${order.equipment} - CAT 320`:"بوكلين - CAT 320";
+      `${order.equipment} - CAT 320`:
+      "بوكلين - CAT 320";
 
   if(location)
-    location.textContent=order.location||"موقع العميل";
+    location.textContent=
+      order.location||"موقع العميل";
 }
 
 function updateWorkingScreen(){
-  const equipment=document.getElementById("workingEquipment");
-  const location=document.getElementById("workingLocation");
 
-  if(equipment)equipment.textContent=order.equipment||"بوكلين";
-  if(location)location.textContent=order.location||"موقع العميل";
+  const equipment=
+    document.getElementById("workingEquipment");
+
+  const location=
+    document.getElementById("workingLocation");
+
+  if(equipment)
+    equipment.textContent=
+      order.equipment||"بوكلين";
+
+  if(location)
+    location.textContent=
+      order.location||"موقع العميل";
 }
 
 function updateOperatorScreen(){
-  const equipment=document.getElementById("operatorEquipment");
-  const location=document.getElementById("operatorLocation");
-  const duration=document.getElementById("operatorDuration");
-  const price=document.getElementById("operatorPrice");
-  const notes=document.getElementById("operatorNotes");
 
-  if(equipment)equipment.textContent=order.equipment||"بوكلين";
-  if(location)location.textContent=order.location||"موقع العميل";
-  if(duration)duration.textContent=order.duration||"4 ساعات";
-  if(price)price.textContent=`${order.price||1000} ريال`;
-  if(notes)notes.textContent=order.notes||"لا توجد ملاحظات";
+  const equipment=
+    document.getElementById("operatorEquipment");
+
+  const location=
+    document.getElementById("operatorLocation");
+
+  const duration=
+    document.getElementById("operatorDuration");
+
+  const price=
+    document.getElementById("operatorPrice");
+
+  const notes=
+    document.getElementById("operatorNotes");
+
+  if(equipment)
+    equipment.textContent=
+      order.equipment||"بوكلين";
+
+  if(location)
+    location.textContent=
+      order.location||"موقع العميل";
+
+  if(duration)
+    duration.textContent=
+      order.duration||"4 ساعات";
+
+  if(price)
+    price.textContent=
+      `${order.price||1000} ريال`;
+
+  if(notes)
+    notes.textContent=
+      order.notes||"لا توجد ملاحظات";
 }
 
 /* CUSTOMER REQUEST */
-const requestBtn=document.getElementById("requestBtn");
+const requestBtn=
+  document.getElementById("requestBtn");
 
 if(requestBtn){
-  requestBtn.addEventListener("click",async()=>{
-    const location=document.getElementById("locationInput")?.value.trim();
-    const equipment=document.getElementById("equipmentSelect")?.value;
-    const duration=document.getElementById("durationSelect")?.value;
-    const operator=document.getElementById("operatorSelect")?.value;
-    const notes=document.getElementById("notesInput")?.value.trim();
 
-    if(!location)return alert("اكتب موقع العمل");
-    if(!equipment)return alert("اختر نوع المعدة");
-    if(!duration)return alert("اختر مدة العمل");
+  requestBtn.addEventListener(
+    "click",
+    async()=>{
 
-    order={location,equipment,duration,operator,notes,price:0};
-    order.price=calculatePrice();
+      const location=
+        document
+          .getElementById("locationInput")
+          ?.value.trim();
 
-    await saveOrder();
+      const equipment=
+        document
+          .getElementById("equipmentSelect")
+          ?.value;
 
-    ["acceptedOrder","workEnded","finalPrice","orderAccepted"]
-      .forEach(key=>localStorage.removeItem(key));
+      const duration=
+        document
+          .getElementById("durationSelect")
+          ?.value;
 
-    setOrderState("searching");
-    selectedRole="customer";
-    localStorage.setItem("selectedRole","customer");
+      const operator=
+        document
+          .getElementById("operatorSelect")
+          ?.value;
 
-    updateMatchedScreen();
-    updateWorkingScreen();
-    updateOperatorScreen();
+      const notes=
+        document
+          .getElementById("notesInput")
+          ?.value.trim();
 
-    showScreen("searchingScreen");
-    startAcceptanceWatcher();
-  });
+      if(!location)
+        return alert("اكتب موقع العمل");
+
+      if(!equipment)
+        return alert("اختر نوع المعدة");
+
+      if(!duration)
+        return alert("اختر مدة العمل");
+
+      order={
+        location,
+        equipment,
+        duration,
+        operator,
+        notes,
+        price:0
+      };
+
+      order.price=
+        calculatePrice();
+
+      const saved=
+        await saveOrder();
+
+      if(!saved){
+        return;
+      }
+
+      [
+        "acceptedOrder",
+        "workEnded",
+        "finalPrice",
+        "orderAccepted"
+      ].forEach(key=>
+        localStorage.removeItem(key)
+      );
+
+      setOrderState("searching");
+
+      selectedRole="customer";
+
+      localStorage.setItem(
+        "selectedRole",
+        "customer"
+      );
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+      updateOperatorScreen();
+
+      showScreen("searchingScreen");
+
+      startAcceptanceWatcher();
+    }
+  );
 }
 
 /* ACCEPTANCE WATCHER */
 function stopAcceptanceWatcher(){
+
   if(acceptanceWatcher){
-    clearInterval(acceptanceWatcher);
+
+    clearInterval(
+      acceptanceWatcher
+    );
+
     acceptanceWatcher=null;
   }
 }
 
 function startAcceptanceWatcher(){
+
   stopAcceptanceWatcher();
 
-  acceptanceWatcher=setInterval(()=>{
-    if(selectedRole!=="customer")return;
+  acceptanceWatcher=setInterval(
+    ()=>{
+      
+      if(selectedRole!=="customer")
+        return;
 
-    const searching=document.getElementById("searchingScreen");
+      const searching=
+        document.getElementById(
+          "searchingScreen"
+        );
 
-    if(!searching||!searching.classList.contains("active"))return;
+      if(
+        !searching ||
+        !searching.classList.contains("active")
+      )
+        return;
 
-    if(getOrderState()==="accepted"){
-      stopAcceptanceWatcher();
+      if(getOrderState()==="accepted"){
 
-      if(loadOrder()){
-        updateMatchedScreen();
-        updateWorkingScreen();
-        showScreen("matchedScreen");
+        stopAcceptanceWatcher();
+
+        if(loadOrder()){
+
+          updateMatchedScreen();
+          updateWorkingScreen();
+
+          showScreen(
+            "matchedScreen"
+          );
+        }
       }
-    }
-  },500);
+
+    },
+    500
+  );
 }
 
 /* ROLE */
-const customerRoleBtn=document.getElementById("customerRoleBtn");
+const customerRoleBtn=
+  document.getElementById(
+    "customerRoleBtn"
+  );
 
 if(customerRoleBtn){
-  customerRoleBtn.addEventListener("click",()=>{
-    selectedRole="customer";
-    localStorage.setItem("selectedRole","customer");
 
-    const text=document.getElementById("phoneRoleText");
+  customerRoleBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      selectedRole="customer";
 
-    if(text)
-      text.textContent="تسجيل الدخول كعميل";
+      localStorage.setItem(
+        "selectedRole",
+        "customer"
+      );
 
-    showScreen("phoneScreen");
-  });
+      const text=
+        document.getElementById(
+          "phoneRoleText"
+        );
+
+      if(text)
+        text.textContent=
+          "تسجيل الدخول كعميل";
+
+      showScreen("phoneScreen");
+    }
+  );
 }
 
-const operatorRoleBtn=document.getElementById("operatorRoleBtn");
+const operatorRoleBtn=
+  document.getElementById(
+    "operatorRoleBtn"
+  );
 
 if(operatorRoleBtn){
-  operatorRoleBtn.addEventListener("click",()=>{
-    selectedRole="operator";
-    localStorage.setItem("selectedRole","operator");
 
-    stopAcceptanceWatcher();
+  operatorRoleBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      selectedRole="operator";
 
-    const text=document.getElementById("phoneRoleText");
+      localStorage.setItem(
+        "selectedRole",
+        "operator"
+      );
 
-    if(text)
-      text.textContent="تسجيل الدخول كصاحب معدة / مشغل";
+      stopAcceptanceWatcher();
 
-    showScreen("phoneScreen");
-  });
+      const text=
+        document.getElementById(
+          "phoneRoleText"
+        );
+
+      if(text)
+        text.textContent=
+          "تسجيل الدخول كصاحب معدة / مشغل";
+
+      showScreen("phoneScreen");
+    }
+  );
 }
 
 /* EMAIL LOGIN */
-const emailLoginBtn=document.getElementById("sendCodeBtn");
-const createAccountBtn=document.getElementById("createAccountBtn");
+const emailLoginBtn=
+  document.getElementById("sendCodeBtn");
+
+const createAccountBtn=
+  document.getElementById(
+    "createAccountBtn"
+  );
 
 function getEmailData(){
+
   return{
-    email:document.getElementById("emailInput")?.value.trim(),
-    password:document.getElementById("passwordInput")?.value,
-    error:document.getElementById("emailError")
+    email:
+      document
+        .getElementById("emailInput")
+        ?.value.trim(),
+
+    password:
+      document
+        .getElementById("passwordInput")
+        ?.value,
+
+    error:
+      document.getElementById(
+        "emailError"
+      )
   };
 }
 
 /* فتح صفحة صاحب المعدة حسب وجود معدة */
 async function openOperatorAfterLogin(){
 
-  const user=window.ma3daGetCurrentUser
-    ? await window.ma3daGetCurrentUser()
-    : window.ma3daAuth?.currentUser;
+  const user=
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
 
   if(!user){
-    alert("تعذر استعادة تسجيل الدخول");
+
+    alert(
+      "تعذر استعادة تسجيل الدخول"
+    );
+
     showScreen("phoneScreen");
+
     return;
   }
 
   if(!window.ma3daDB){
+
     alert("Firebase غير متصل");
+
     return;
   }
 
   try{
-    const ref=window.ma3daDoc(
-      window.ma3daDB,
-      "equipment",
-      user.uid
-    );
 
-    const snapshot=await window.ma3daGetDoc(ref);
+    const ref=
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+
+    const snapshot=
+      await window.ma3daGetDoc(ref);
 
     if(snapshot.exists()){
+
       await displayMyEquipment();
-      showScreen("operatorScreen");
+
+      showScreen(
+        "operatorScreen"
+      );
+
     }else{
-      showScreen("addEquipmentScreen");
+
+      showScreen(
+        "addEquipmentScreen"
+      );
     }
 
   }catch(error){
-    console.error("خطأ في فحص المعدة:",error);
-    alert("تعذر تحميل بيانات المعدة");
+
+    console.error(
+      "خطأ في فحص المعدة:",
+      error
+    );
+
+    alert(
+      "تعذر تحميل بيانات المعدة"
+    );
   }
 }
 
 if(emailLoginBtn){
-  emailLoginBtn.addEventListener("click",async()=>{
 
-    const {email,password,error}=getEmailData();
+  emailLoginBtn.addEventListener(
+    "click",
+    async()=>{
 
-    if(!email||!password){
-      if(error)
-        error.textContent="أدخل البريد الإلكتروني وكلمة المرور";
-      return;
-    }
+      const {
+        email,
+        password,
+        error
+      }=getEmailData();
 
-    if(error)error.textContent="";
-
-    if(typeof window.ma3daLogin!=="function"){
-      if(error)
-        error.textContent="Firebase لم يجهز بعد، أعد تحميل الصفحة";
-
-      console.error("ma3daLogin غير موجود");
-      return;
-    }
-
-    emailLoginBtn.disabled=true;
-
-    try{
-
-      const loginPromise=
-        window.ma3daLogin(email,password);
-
-      const timeoutPromise=
-        new Promise((resolve)=>{
-          setTimeout(()=>{
-            resolve({
-              timeout:true
-            });
-          },5000);
-        });
-
-      const result=
-        await Promise.race([
-          loginPromise,
-          timeoutPromise
-        ]);
-
-      if(result?.timeout){
+      if(!email||!password){
 
         if(error)
           error.textContent=
-            "تعذر تسجيل الدخول. حاول مرة أخرى.";
+            "أدخل البريد الإلكتروني وكلمة المرور";
 
-        alert(
-          "تسجيل الدخول استغرق أكثر من 5 ثوانٍ."
+        return;
+      }
+
+      if(error)
+        error.textContent="";
+
+      if(
+        typeof window.ma3daLogin!=="function"
+      ){
+
+        if(error)
+          error.textContent=
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+
+        console.error(
+          "ma3daLogin غير موجود"
         );
 
         return;
       }
 
-      const user=result;
+      try{
 
-      if(!user)return;
+        const user=
+          await window.ma3daLogin(
+            email,
+            password
+          );
+
+        if(!user)
+          return;
+
+        console.log(
+          "تم تسجيل الدخول بنجاح:",
+          user.uid
+        );
+
+        localStorage.setItem(
+          "selectedRole",
+          selectedRole
+        );
+
+        if(selectedRole==="customer"){
+
+          const state=
+            getOrderState();
+
+          if(
+            state==="accepted" &&
+            loadOrder()
+          ){
+
+            stopAcceptanceWatcher();
+
+            updateMatchedScreen();
+            updateWorkingScreen();
+
+            showScreen(
+              "matchedScreen"
+            );
+
+            return;
+          }
+
+          if(
+            state==="searching" &&
+            loadOrder()
+          ){
+
+            showScreen(
+              "searchingScreen"
+            );
+
+            startAcceptanceWatcher();
+
+            return;
+          }
+
+          showScreen(
+            "requestScreen"
+          );
+
+          return;
+        }
+
+        if(selectedRole==="operator"){
+
+          await openOperatorAfterLogin();
+        }
+
+      }catch(loginError){
+
+        console.error(
+          "خطأ داخل تسجيل الدخول:",
+          loginError
+        );
+
+        if(error){
+
+          error.textContent=
+            loginError?.message ||
+            "تعذر تسجيل الدخول";
+        }
+      }
+    }
+  );
+}
+
+/* CREATE ACCOUNT */
+if(createAccountBtn){
+
+  createAccountBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const {
+        email,
+        password,
+        error
+      }=getEmailData();
+
+      if(!email||!password){
+
+        if(error)
+          error.textContent=
+            "أدخل البريد الإلكتروني وكلمة المرور";
+
+        return;
+      }
+
+      if(password.length<6){
+
+        if(error)
+          error.textContent=
+            "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
+
+        return;
+      }
+
+      if(error)
+        error.textContent="";
+
+      if(
+        typeof window.ma3daCreateAccount!=="function"
+      ){
+
+        if(error)
+          error.textContent=
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+
+        console.error(
+          "ma3daCreateAccount غير موجود"
+        );
+
+        return;
+      }
+
+      const user=
+        await window.ma3daCreateAccount(
+          email,
+          password
+        );
+
+      if(!user)
+        return;
 
       console.log(
-        "تم تسجيل الدخول بنجاح:",
+        "تم إنشاء الحساب بنجاح:",
         user.uid
+      );
+
+      alert(
+        "تم إنشاء الحساب بنجاح ✅"
       );
 
       localStorage.setItem(
@@ -389,211 +751,198 @@ if(emailLoginBtn){
 
       if(selectedRole==="customer"){
 
-        const state=getOrderState();
-
-        if(state==="accepted"&&loadOrder()){
-
-          stopAcceptanceWatcher();
-
-          updateMatchedScreen();
-          updateWorkingScreen();
-
-          showScreen("matchedScreen");
-
-          return;
-        }
-
-        if(state==="searching"&&loadOrder()){
-
-          showScreen("searchingScreen");
-
-          startAcceptanceWatcher();
-
-          return;
-        }
-
-        showScreen("requestScreen");
-
-        return;
+        showScreen(
+          "requestScreen"
+        );
       }
 
       if(selectedRole==="operator"){
 
         await openOperatorAfterLogin();
-
       }
-
-    }catch(error){
-
-      console.error(
-        "خطأ في تسجيل دخول العميل/صاحب المعدة:",
-        error
-      );
-
-      if(error){
-
-        if(error.code==="auth/invalid-credential"){
-
-          if(
-            document.getElementById("emailError")
-          ){
-            document.getElementById("emailError")
-              .textContent=
-              "البريد الإلكتروني أو كلمة المرور غير صحيحة";
-          }
-
-        }else{
-
-          if(
-            document.getElementById("emailError")
-          ){
-            document.getElementById("emailError")
-              .textContent=
-              "تعذر تسجيل الدخول. حاول مرة أخرى.";
-          }
-        }
-      }
-
-    }finally{
-
-      emailLoginBtn.disabled=false;
-
     }
-
-  });
-}
-
-/* CREATE ACCOUNT */
-if(createAccountBtn){
-  createAccountBtn.addEventListener("click",async()=>{
-    const {email,password,error}=getEmailData();
-
-    if(!email||!password){
-      if(error)
-        error.textContent="أدخل البريد الإلكتروني وكلمة المرور";
-      return;
-    }
-
-    if(password.length<6){
-      if(error)
-        error.textContent="كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
-      return;
-    }
-
-    if(error)error.textContent="";
-
-    if(typeof window.ma3daCreateAccount!=="function"){
-      if(error)
-        error.textContent="Firebase لم يجهز بعد، أعد تحميل الصفحة";
-
-      console.error("ma3daCreateAccount غير موجود");
-      return;
-    }
-
-    const user=await window.ma3daCreateAccount(email,password);
-
-    if(!user)return;
-
-    console.log("تم إنشاء الحساب بنجاح:",user.uid);
-
-    alert("تم إنشاء الحساب بنجاح ✅");
-
-    localStorage.setItem("selectedRole",selectedRole);
-
-    if(selectedRole==="customer"){
-      showScreen("requestScreen");
-    }
-
-    if(selectedRole==="operator"){
-      await openOperatorAfterLogin();
-    }
-  });
+  );
 }
 
 /* OPERATOR */
 async function openOperatorScreen(){
+
   await displayMyEquipment();
+
   updateOperatorScreen();
-  showScreen("operatorScreen");
+
+  showScreen(
+    "operatorScreen"
+  );
 }
 
 /* ACCEPT REQUEST */
-const acceptRequestBtn=document.getElementById("acceptRequestBtn");
+const acceptRequestBtn=
+  document.getElementById(
+    "acceptRequestBtn"
+  );
 
 if(acceptRequestBtn){
-  acceptRequestBtn.addEventListener("click",()=>{
-    if(!loadOrder()){
-      alert("لا يوجد طلب عميل محفوظ");
-      return;
+
+  acceptRequestBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      if(!loadOrder()){
+
+        alert(
+          "لا يوجد طلب عميل محفوظ"
+        );
+
+        return;
+      }
+
+      localStorage.setItem(
+        "acceptedOrder",
+        JSON.stringify({
+          ...order,
+          operatorName:
+            "فهد القحطاني",
+          operatorRating:
+            "4.8"
+        })
+      );
+
+      localStorage.setItem(
+        "orderAccepted",
+        "true"
+      );
+
+      setOrderState(
+        "accepted"
+      );
+
+      updateMatchedScreen();
+      updateWorkingScreen();
+
+      alert(
+        "تم قبول الطلب بنجاح 🚜"
+      );
+
+      showScreen(
+        "matchedScreen"
+      );
     }
-
-    localStorage.setItem(
-      "acceptedOrder",
-      JSON.stringify({
-        ...order,
-        operatorName:"فهد القحطاني",
-        operatorRating:"4.8"
-      })
-    );
-
-    localStorage.setItem("orderAccepted","true");
-    setOrderState("accepted");
-
-    updateMatchedScreen();
-    updateWorkingScreen();
-
-    alert("تم قبول الطلب بنجاح 🚜");
-    showScreen("matchedScreen");
-  });
+  );
 }
 
 /* REJECT */
-const rejectRequestBtn=document.getElementById("rejectRequestBtn");
+const rejectRequestBtn=
+  document.getElementById(
+    "rejectRequestBtn"
+  );
 
 if(rejectRequestBtn){
-  rejectRequestBtn.addEventListener("click",()=>{
-    localStorage.removeItem("acceptedOrder");
-    localStorage.removeItem("orderAccepted");
 
-    setOrderState("rejected");
+  rejectRequestBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      localStorage.removeItem(
+        "acceptedOrder"
+      );
 
-    alert("تم رفض الطلب");
-    showScreen("roleScreen");
-  });
+      localStorage.removeItem(
+        "orderAccepted"
+      );
+
+      setOrderState(
+        "rejected"
+      );
+
+      alert(
+        "تم رفض الطلب"
+      );
+
+      showScreen(
+        "roleScreen"
+      );
+    }
+  );
 }
 
 /* EQUIPMENT */
-const saveEquipmentBtn=document.getElementById("saveEquipmentBtn");
+const saveEquipmentBtn=
+  document.getElementById(
+    "saveEquipmentBtn"
+  );
 
 if(saveEquipmentBtn){
-  saveEquipmentBtn.addEventListener("click",saveEquipment);
+
+  saveEquipmentBtn.addEventListener(
+    "click",
+    saveEquipment
+  );
 }
 
 async function saveEquipment(){
 
-  const type=document.getElementById("equipmentType")?.value;
-  const model=document.getElementById("equipmentModel")?.value.trim();
-  const year=document.getElementById("equipmentYear")?.value.trim();
-  const city=document.getElementById("equipmentCity")?.value.trim();
-  const availability=document.getElementById("equipmentAvailability")?.value;
-  const imageInput=document.getElementById("equipmentImage");
+  const type=
+    document
+      .getElementById("equipmentType")
+      ?.value;
+
+  const model=
+    document
+      .getElementById("equipmentModel")
+      ?.value.trim();
+
+  const year=
+    document
+      .getElementById("equipmentYear")
+      ?.value.trim();
+
+  const city=
+    document
+      .getElementById("equipmentCity")
+      ?.value.trim();
+
+  const availability=
+    document
+      .getElementById(
+        "equipmentAvailability"
+      )
+      ?.value;
+
+  const imageInput=
+    document.getElementById(
+      "equipmentImage"
+    );
 
   if(!type||!model||!year||!city){
-    alert("فضلاً أكمل جميع بيانات المعدة");
+
+    alert(
+      "فضلاً أكمل جميع بيانات المعدة"
+    );
+
     return;
   }
 
-  const user=window.ma3daGetCurrentUser
-    ? await window.ma3daGetCurrentUser()
-    : window.ma3daAuth?.currentUser;
+  const user=
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
 
   if(!user){
-    alert("يجب تسجيل الدخول أولاً");
+
+    alert(
+      "يجب تسجيل الدخول أولاً"
+    );
+
     return;
   }
 
   if(!window.ma3daDB){
-    alert("Firebase غير متصل");
+
+    alert(
+      "Firebase غير متصل"
+    );
+
     return;
   }
 
@@ -609,20 +958,27 @@ async function saveEquipment(){
   };
 
   const saveToFirebase=async()=>{
-    const ref=window.ma3daDoc(
-      window.ma3daDB,
-      "equipment",
-      user.uid
-    );
 
-    await window.ma3daSetDoc(ref,equipment);
+    const ref=
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+
+    await window.ma3daSetDoc(
+      ref,
+      equipment
+    );
   };
 
-  const file=imageInput?.files[0];
+  const file=
+    imageInput?.files[0];
 
   if(!file){
 
     try{
+
       await saveToFirebase();
 
       localStorage.setItem(
@@ -630,42 +986,67 @@ async function saveEquipment(){
         JSON.stringify(equipment)
       );
 
-      alert("تم حفظ المعدة بنجاح 🚜");
+      alert(
+        "تم حفظ المعدة بنجاح 🚜"
+      );
 
       await displayMyEquipment();
-      showScreen("operatorScreen");
+
+      showScreen(
+        "operatorScreen"
+      );
 
     }catch(error){
+
       console.error(error);
-      alert("تعذر حفظ المعدة في قاعدة البيانات");
+
+      alert(
+        "تعذر حفظ المعدة في قاعدة البيانات"
+      );
     }
 
     return;
   }
 
-  const reader=new FileReader();
+  const reader=
+    new FileReader();
 
   reader.onload=()=>{
-    const image=new Image();
+
+    const image=
+      new Image();
 
     image.onload=async()=>{
 
       const maxWidth=1000;
 
-      let width=image.width;
-      let height=image.height;
+      let width=
+        image.width;
+
+      let height=
+        image.height;
 
       if(width>maxWidth){
-        height=Math.round(height*maxWidth/width);
-        width=maxWidth;
+
+        height=
+          Math.round(
+            maxWidth*height/width
+          );
+
+        width=
+          maxWidth;
       }
 
-      const canvas=document.createElement("canvas");
+      const canvas=
+        document.createElement(
+          "canvas"
+        );
 
       canvas.width=width;
       canvas.height=height;
 
-      const ctx=canvas.getContext("2d");
+      const ctx=
+        canvas.getContext("2d");
 
       ctx.drawImage(
         image,
@@ -676,7 +1057,10 @@ async function saveEquipment(){
       );
 
       equipment.image=
-        canvas.toDataURL("image/jpeg",0.75);
+        canvas.toDataURL(
+          "image/jpeg",
+          0.75
+        );
 
       try{
 
@@ -687,18 +1071,28 @@ async function saveEquipment(){
           JSON.stringify(equipment)
         );
 
-        alert("تم حفظ المعدة بنجاح 🚜");
+        alert(
+          "تم حفظ المعدة بنجاح 🚜"
+        );
 
         await displayMyEquipment();
-        showScreen("operatorScreen");
+
+        showScreen(
+          "operatorScreen"
+        );
 
       }catch(error){
+
         console.error(error);
-        alert("تعذر حفظ المعدة في قاعدة البيانات");
+
+        alert(
+          "تعذر حفظ المعدة في قاعدة البيانات"
+        );
       }
     };
 
-    image.src=reader.result;
+    image.src=
+      reader.result;
   };
 
   reader.readAsDataURL(file);
@@ -710,59 +1104,105 @@ async function displayMyEquipment(){
   try{
 
     if(!window.ma3daDB){
-      console.log("Firebase غير متصل");
+
+      console.log(
+        "Firebase غير متصل"
+      );
+
       return false;
     }
 
-    const user=window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
+    const user=
+      window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
 
     if(!user){
-      console.log("لا يوجد مستخدم مسجل");
+
+      console.log(
+        "لا يوجد مستخدم مسجل"
+      );
+
       return false;
     }
 
-    const ref=window.ma3daDoc(
-      window.ma3daDB,
-      "equipment",
-      user.uid
-    );
+    const ref=
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
 
-    const snapshot=await window.ma3daGetDoc(ref);
+    const snapshot=
+      await window.ma3daGetDoc(
+        ref
+      );
 
     if(!snapshot.exists()){
-      console.log("لا توجد بيانات للمعدة");
+
+      console.log(
+        "لا توجد بيانات للمعدة"
+      );
+
       return false;
     }
 
-    const equipment=snapshot.data();
+    const equipment=
+      snapshot.data();
 
     localStorage.setItem(
       "myEquipment",
       JSON.stringify(equipment)
     );
 
-    const type=document.getElementById("myEquipmentType");
-    const model=document.getElementById("myEquipmentModel");
-    const year=document.getElementById("myEquipmentYear");
-    const city=document.getElementById("myEquipmentCity");
-    const availability=document.getElementById("myEquipmentAvailability");
-    const image=document.getElementById("myEquipmentImage");
+    const type=
+      document.getElementById(
+        "myEquipmentType"
+      );
+
+    const model=
+      document.getElementById(
+        "myEquipmentModel"
+      );
+
+    const year=
+      document.getElementById(
+        "myEquipmentYear"
+      );
+
+    const city=
+      document.getElementById(
+        "myEquipmentCity"
+      );
+
+    const availability=
+      document.getElementById(
+        "myEquipmentAvailability"
+      );
+
+    const image=
+      document.getElementById(
+        "myEquipmentImage"
+      );
 
     if(type)
-      type.textContent=equipment.type||"-";
+      type.textContent=
+        equipment.type||"-";
 
     if(model)
-      model.textContent=equipment.model||"-";
+      model.textContent=
+        equipment.model||"-";
 
     if(year)
-      year.textContent=equipment.year||"-";
+      year.textContent=
+        equipment.year||"-";
 
     if(city)
-      city.textContent=equipment.city||"-";
+      city.textContent=
+        equipment.city||"-";
 
     if(availability){
+
       availability.textContent=
         equipment.availability==="available"
         ? "متاحة الآن"
@@ -773,14 +1213,20 @@ async function displayMyEquipment(){
 
       if(equipment.image){
 
-        image.src=equipment.image;
-        image.style.display="block";
+        image.src=
+          equipment.image;
+
+        image.style.display=
+          "block";
 
       }else{
 
-        image.removeAttribute("src");
-        image.style.display="none";
+        image.removeAttribute(
+          "src"
+        );
 
+        image.style.display=
+          "none";
       }
     }
 
@@ -798,128 +1244,252 @@ async function displayMyEquipment(){
 }
 
 /* MATCHED */
-const trackingBtn=document.getElementById("trackingBtn");
+const trackingBtn=
+  document.getElementById(
+    "trackingBtn"
+  );
 
 if(trackingBtn){
-  trackingBtn.addEventListener("click",()=>{
-    showScreen("trackingScreen");
-    startTracking();
-  });
+
+  trackingBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      showScreen(
+        "trackingScreen"
+      );
+
+      startTracking();
+    }
+  );
 }
 
 /* CHAT */
-const chatBtn=document.getElementById("chatBtn");
+const chatBtn=
+  document.getElementById(
+    "chatBtn"
+  );
 
 if(chatBtn){
-  chatBtn.addEventListener("click",()=>{
-    showScreen("chatScreen");
 
-    setTimeout(()=>{
-      document.getElementById("chatInput")?.focus();
-    },100);
-  });
+  chatBtn.addEventListener(
+    "click",
+    ()=>{
+      
+      showScreen(
+        "chatScreen"
+      );
+
+      setTimeout(
+        ()=>{
+          document
+            .getElementById(
+              "chatInput"
+            )
+            ?.focus();
+        },
+        100
+      );
+    }
+  );
 }
 
 function sendChatMessage(){
 
-  const input=document.getElementById("chatInput");
-  const messages=document.getElementById("chatMessages");
+  const input=
+    document.getElementById(
+      "chatInput"
+    );
 
-  if(!input||!messages)return;
+  const messages=
+    document.getElementById(
+      "chatMessages"
+    );
 
-  const text=input.value.trim();
+  if(!input||!messages)
+    return;
 
-  if(!text)return;
+  const text=
+    input.value.trim();
 
-  const message=document.createElement("div");
+  if(!text)
+    return;
 
-  message.className="message sent";
-  message.textContent=text;
+  const message=
+    document.createElement(
+      "div"
+    );
 
-  messages.appendChild(message);
+  message.className=
+    "message sent";
+
+  message.textContent=
+    text;
+
+  messages.appendChild(
+    message
+  );
 
   input.value="";
 
-  messages.scrollTop=messages.scrollHeight;
+  messages.scrollTop=
+    messages.scrollHeight;
 }
 
-const sendChatBtn=document.getElementById("sendChatBtn");
+const sendChatBtn=
+  document.getElementById(
+    "sendChatBtn"
+  );
 
-if(sendChatBtn)
+if(sendChatBtn){
+
   sendChatBtn.addEventListener(
     "click",
     sendChatMessage
   );
+}
 
-const chatInput=document.getElementById("chatInput");
+const chatInput=
+  document.getElementById(
+    "chatInput"
+  );
 
 if(chatInput){
 
-  chatInput.addEventListener("keydown",e=>{
+  chatInput.addEventListener(
+    "keydown",
+    e=>{
 
-    if(e.key==="Enter"){
+      if(e.key==="Enter"){
 
-      e.preventDefault();
+        e.preventDefault();
 
-      sendChatMessage();
+        sendChatMessage();
+      }
     }
-  });
+  );
 }
 
 const backFromChatBtn=
-  document.getElementById("backFromChatBtn");
+  document.getElementById(
+    "backFromChatBtn"
+  );
 
 if(backFromChatBtn){
 
-  backFromChatBtn.addEventListener("click",()=>{
-    showScreen("matchedScreen");
-  });
+  backFromChatBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "matchedScreen"
+      );
+    }
+  );
 }
 
 /* TRACKING */
 function startTracking(){
 
   const marker=
-    document.getElementById("equipmentMarker");
+    document.getElementById(
+      "equipmentMarker"
+    );
 
   const distance=
-    document.getElementById("distanceText");
+    document.getElementById(
+      "distanceText"
+    );
 
   const eta=
-    document.getElementById("etaText");
+    document.getElementById(
+      "etaText"
+    );
 
   const status=
-    document.getElementById("trackingStatus");
+    document.getElementById(
+      "trackingStatus"
+    );
 
-  if(!marker||!distance||!eta||!status)return;
+  if(
+    !marker||
+    !distance||
+    !eta||
+    !status
+  )
+    return;
 
   const steps=[
-    ["18%","55%","2.4 كم","8 دقائق"],
-    ["30%","45%","2.0 كم","7 دقائق"],
-    ["42%","40%","1.5 كم","5 دقائق"],
-    ["55%","30%","900 م","3 دقائق"],
-    ["65%","20%","400 م","1 دقيقة"],
-    ["75%","12%","0 م","الآن"]
+    [
+      "18%",
+      "55%",
+      "2.4 كم",
+      "8 دقائق"
+    ],
+    [
+      "30%",
+      "45%",
+      "2.0 كم",
+      "7 دقائق"
+    ],
+    [
+      "42%",
+      "40%",
+      "1.5 كم",
+      "5 دقائق"
+    ],
+    [
+      "55%",
+      "30%",
+      "900 م",
+      "3 دقائق"
+    ],
+    [
+      "65%",
+      "20%",
+      "400 م",
+      "1 دقيقة"
+    ],
+    [
+      "75%",
+      "12%",
+      "0 م",
+      "الآن"
+    ]
   ];
 
   let index=0;
 
   function move(){
 
-    const step=steps[index];
+    const step=
+      steps[index];
 
-    marker.style.top=step[0];
-    marker.style.right=step[1];
+    marker.style.top=
+      step[0];
 
-    distance.textContent=step[2];
-    eta.textContent=step[3];
+    marker.style.right=
+      step[1];
 
-    if(index===steps.length-1){
+    distance.textContent=
+      step[2];
 
-      status.textContent="وصلت المعدة إلى موقعك";
+    eta.textContent=
+      step[3];
+
+    if(
+      index===
+      steps.length-1
+    ){
+
+      status.textContent=
+        "وصلت المعدة إلى موقعك";
 
       setTimeout(
-        ()=>showScreen("arrivedScreen"),
+        ()=>{
+          showScreen(
+            "arrivedScreen"
+          );
+        },
         1500
       );
 
@@ -928,7 +1498,10 @@ function startTracking(){
 
     index++;
 
-    setTimeout(move,1400);
+    setTimeout(
+      move,
+      1400
+    );
   }
 
   move();
@@ -936,72 +1509,115 @@ function startTracking(){
 
 /* START WORK */
 const startWorkBtn=
-  document.getElementById("startWorkBtn");
+  document.getElementById(
+    "startWorkBtn"
+  );
 
 if(startWorkBtn){
 
-  startWorkBtn.addEventListener("click",()=>{
+  startWorkBtn.addEventListener(
+    "click",
+    ()=>{
 
-    showScreen("workingScreen");
+      showScreen(
+        "workingScreen"
+      );
 
-    if(selectedRole!=="customer")return;
+      if(
+        selectedRole!=="customer"
+      )
+        return;
 
-    workStartTime=Date.now();
+      workStartTime=
+        Date.now();
 
-    clearInterval(timerInterval);
+      clearInterval(
+        timerInterval
+      );
 
-    updateTimer();
+      updateTimer();
 
-    timerInterval=
-      setInterval(updateTimer,1000);
+      timerInterval=
+        setInterval(
+          updateTimer,
+          1000
+        );
 
-    const check=setInterval(()=>{
+      const check=
+        setInterval(
+          ()=>{
 
-      if(localStorage.getItem("workEnded")==="true"){
+            if(
+              localStorage.getItem(
+                "workEnded"
+              )==="true"
+            ){
 
-        clearInterval(check);
-        clearInterval(timerInterval);
+              clearInterval(
+                check
+              );
 
-        const price=
-          localStorage.getItem("finalPrice");
+              clearInterval(
+                timerInterval
+              );
 
-        if(price){
+              const price=
+                localStorage.getItem(
+                  "finalPrice"
+                );
 
-          const finalPrice=
-            document.getElementById("finalPrice");
+              if(price){
 
-          if(finalPrice)
-            finalPrice.textContent=
-              `${price} ريال`;
-        }
+                const finalPrice=
+                  document.getElementById(
+                    "finalPrice"
+                  );
 
-        showScreen("completedScreen");
-      }
+                if(finalPrice)
+                  finalPrice.textContent=
+                    `${price} ريال`;
+              }
 
-    },1000);
-  });
+              showScreen(
+                "completedScreen"
+              );
+            }
+
+          },
+          1000
+        );
+    }
+  );
 }
 
 function updateTimer(){
 
-  if(!workStartTime)return;
+  if(!workStartTime)
+    return;
 
   const elapsed=
     Math.floor(
-      (Date.now()-workStartTime)/1000
+      (Date.now()-workStartTime)/
+      1000
     );
 
   const hours=
-    Math.floor(elapsed/3600);
+    Math.floor(
+      elapsed/3600
+    );
 
   const minutes=
-    Math.floor((elapsed%3600)/60);
+    Math.floor(
+      (elapsed%3600)/60
+    );
 
   const seconds=
     elapsed%60;
 
   const timer=
-    document.getElementById("timer");
+    document.getElementById(
+      "timer"
+    );
 
   if(timer){
 
@@ -1014,281 +1630,421 @@ function updateTimer(){
 
 /* CALL */
 const callCustomerBtn=
-  document.getElementById("callCustomerBtn");
+  document.getElementById(
+    "callCustomerBtn"
+  );
 
 if(callCustomerBtn){
 
-  callCustomerBtn.addEventListener("click",()=>{
-    window.location.href="tel:0550000000";
-  });
+  callCustomerBtn.addEventListener(
+    "click",
+    ()=>{
+      window.location.href=
+        "tel:0550000000";
+    }
+  );
 }
 
 const callBtn=
-  document.getElementById("callBtn");
+  document.getElementById(
+    "callBtn"
+  );
 
 if(callBtn){
 
-  callBtn.addEventListener("click",()=>{
-    window.location.href="tel:0550000000";
-  });
+  callBtn.addEventListener(
+    "click",
+    ()=>{
+      window.location.href=
+        "tel:0550000000";
+    }
+  );
 }
 
 /* END WORK */
 const endWorkBtn=
-  document.getElementById("endWorkBtn");
+  document.getElementById(
+    "endWorkBtn"
+  );
 
 if(endWorkBtn){
 
-  endWorkBtn.addEventListener("click",()=>{
+  endWorkBtn.addEventListener(
+    "click",
+    ()=>{
 
-    clearInterval(timerInterval);
-
-    const finalPrice=order.price||1000;
-
-    const priceElement=
-      document.getElementById("finalPrice");
-
-    if(priceElement)
-      priceElement.textContent=
-        `${finalPrice} ريال`;
-
-    if(selectedRole==="operator"){
-
-      localStorage.setItem(
-        "workEnded",
-        "true"
+      clearInterval(
+        timerInterval
       );
 
-      localStorage.setItem(
-        "finalPrice",
-        finalPrice
-      );
+      const finalPrice=
+        order.price||1000;
 
-      setOrderState("completed");
+      const priceElement=
+        document.getElementById(
+          "finalPrice"
+        );
 
-      showScreen("operatorCompletedScreen");
+      if(priceElement)
+        priceElement.textContent=
+          `${finalPrice} ريال`;
 
-    }else{
+      if(
+        selectedRole==="operator"
+      ){
 
-      showScreen("completedScreen");
+        localStorage.setItem(
+          "workEnded",
+          "true"
+        );
+
+        localStorage.setItem(
+          "finalPrice",
+          finalPrice
+        );
+
+        setOrderState(
+          "completed"
+        );
+
+        showScreen(
+          "operatorCompletedScreen"
+        );
+
+      }else{
+
+        showScreen(
+          "completedScreen"
+        );
+      }
     }
-  });
+  );
 }
 
 /* PAYMENT */
 document
-  .querySelectorAll(".payment-option")
+  .querySelectorAll(
+    ".payment-option"
+  )
   .forEach(button=>{
 
-    button.addEventListener("click",()=>{
+    button.addEventListener(
+      "click",
+      ()=>{
 
-      document
-        .querySelectorAll(".payment-option")
-        .forEach(item=>
-          item.classList.remove("selected")
+        document
+          .querySelectorAll(
+            ".payment-option"
+          )
+          .forEach(item=>
+            item.classList.remove(
+              "selected"
+            )
+          );
+
+        button.classList.add(
+          "selected"
         );
 
-      button.classList.add("selected");
+        selectedPayment=
+          button.dataset.payment;
 
-      selectedPayment=
-        button.dataset.payment;
+        const confirm=
+          document.getElementById(
+            "confirmPaymentBtn"
+          );
 
-      const confirm=
-        document.getElementById(
-          "confirmPaymentBtn"
-        );
-
-      if(confirm)
-        confirm.disabled=false;
-    });
+        if(confirm)
+          confirm.disabled=
+            false;
+      }
+    );
   });
 
 const paymentBtn=
-  document.getElementById("paymentBtn");
+  document.getElementById(
+    "paymentBtn"
+  );
 
 if(paymentBtn){
 
-  paymentBtn.addEventListener("click",()=>{
-    showScreen("paymentScreen");
-  });
+  paymentBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "paymentScreen"
+      );
+    }
+  );
 }
 
 const confirmPaymentBtn=
-  document.getElementById("confirmPaymentBtn");
+  document.getElementById(
+    "confirmPaymentBtn"
+  );
 
 if(confirmPaymentBtn){
 
-  confirmPaymentBtn.addEventListener("click",()=>{
+  confirmPaymentBtn.addEventListener(
+    "click",
+    ()=>{
 
-    if(!selectedPayment)return;
+      if(!selectedPayment)
+        return;
 
-    showScreen("ratingScreen");
-  });
+      showScreen(
+        "ratingScreen"
+      );
+    }
+  );
 }
 
 /* RATING */
 document
-  .querySelectorAll(".stars button")
+  .querySelectorAll(
+    ".stars button"
+  )
   .forEach(button=>{
 
-    button.addEventListener("click",()=>{
+    button.addEventListener(
+      "click",
+      ()=>{
 
-      selectedRating=
-        Number(button.dataset.rating);
-
-      document
-        .querySelectorAll(".stars button")
-        .forEach(star=>{
-
-          star.classList.toggle(
-            "selected",
-            Number(star.dataset.rating)
-              <=selectedRating
+        selectedRating=
+          Number(
+            button.dataset.rating
           );
-        });
 
-      const ratingBtn=
-        document.getElementById("ratingBtn");
+        document
+          .querySelectorAll(
+            ".stars button"
+          )
+          .forEach(star=>{
 
-      if(ratingBtn)
-        ratingBtn.disabled=false;
-    });
+            star.classList.toggle(
+              "selected",
+              Number(
+                star.dataset.rating
+              )<=selectedRating
+            );
+          });
+
+        const ratingBtn=
+          document.getElementById(
+            "ratingBtn"
+          );
+
+        if(ratingBtn)
+          ratingBtn.disabled=
+            false;
+      }
+    );
   });
 
 const ratingBtn=
-  document.getElementById("ratingBtn");
+  document.getElementById(
+    "ratingBtn"
+  );
 
 if(ratingBtn){
 
-  ratingBtn.addEventListener("click",()=>{
-    showScreen("thankYouScreen");
-  });
+  ratingBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "thankYouScreen"
+      );
+    }
+  );
 }
 
 /* NEW REQUEST */
 const newRequestBtn=
-  document.getElementById("newRequestBtn");
+  document.getElementById(
+    "newRequestBtn"
+  );
 
 if(newRequestBtn){
 
-  newRequestBtn.addEventListener("click",()=>{
+  newRequestBtn.addEventListener(
+    "click",
+    ()=>{
 
-    stopAcceptanceWatcher();
+      stopAcceptanceWatcher();
 
-    [
-      "currentOrder",
-      "orderState",
-      "acceptedOrder",
-      "orderAccepted",
-      "workEnded",
-      "finalPrice"
-    ].forEach(key=>
-      localStorage.removeItem(key)
-    );
+      [
+        "currentOrder",
+        "orderState",
+        "acceptedOrder",
+        "orderAccepted",
+        "workEnded",
+        "finalPrice"
+      ].forEach(key=>
+        localStorage.removeItem(
+          key
+        )
+      );
 
-    location.reload();
-  });
+      location.reload();
+    }
+  );
 }
 
 /* BACK ROLE */
 const backRoleBtn=
-  document.getElementById("backRoleBtn");
+  document.getElementById(
+    "backRoleBtn"
+  );
 
 if(backRoleBtn){
 
-  backRoleBtn.addEventListener("click",()=>{
+  backRoleBtn.addEventListener(
+    "click",
+    ()=>{
 
-    const email=
-      document.getElementById("emailInput");
+      const email=
+        document.getElementById(
+          "emailInput"
+        );
 
-    const password=
-      document.getElementById("passwordInput");
+      const password=
+        document.getElementById(
+          "passwordInput"
+        );
 
-    const error=
-      document.getElementById("emailError");
+      const error=
+        document.getElementById(
+          "emailError"
+        );
 
-    if(email)email.value="";
-    if(password)password.value="";
-    if(error)error.textContent="";
+      if(email)
+        email.value="";
 
-    showScreen("roleScreen");
-  });
+      if(password)
+        password.value="";
+
+      if(error)
+        error.textContent="";
+
+      showScreen(
+        "roleScreen"
+      );
+    }
+  );
 }
 
 /* BACK FROM OTP */
 const backPhoneBtn=
-  document.getElementById("backPhoneBtn");
+  document.getElementById(
+    "backPhoneBtn"
+  );
 
 if(backPhoneBtn){
 
-  backPhoneBtn.addEventListener("click",()=>{
+  backPhoneBtn.addEventListener(
+    "click",
+    ()=>{
 
-    const otp=
-      document.getElementById("otpInput");
+      const otp=
+        document.getElementById(
+          "otpInput"
+        );
 
-    const error=
-      document.getElementById("otpError");
+      const error=
+        document.getElementById(
+          "otpError"
+        );
 
-    if(otp)otp.value="";
-    if(error)error.textContent="";
+      if(otp)
+        otp.value="";
 
-    showScreen("phoneScreen");
-  });
+      if(error)
+        error.textContent="";
+
+      showScreen(
+        "phoneScreen"
+      );
+    }
+  );
 }
 
 /* LOGOUT */
 const logoutBtn=
-  document.getElementById("logoutBtn");
+  document.getElementById(
+    "logoutBtn"
+  );
 
 if(logoutBtn){
 
-  logoutBtn.addEventListener("click",async()=>{
+  logoutBtn.addEventListener(
+    "click",
+    async()=>{
 
-    try{
+      try{
 
-      if(window.ma3daAuth){
+        if(window.ma3daAuth){
 
-        const {signOut}=await import(
-          "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+          const {
+            signOut
+          }=await import(
+            "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+          );
+
+          await signOut(
+            window.ma3daAuth
+          );
+        }
+
+        localStorage.removeItem(
+          "selectedRole"
         );
 
-        await signOut(window.ma3daAuth);
+        selectedRole="";
+
+        showScreen(
+          "roleScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "خطأ في تسجيل الخروج:",
+          error
+        );
+
+        alert(
+          "تعذر تسجيل الخروج"
+        );
       }
-
-      localStorage.removeItem("selectedRole");
-
-      selectedRole="";
-
-      showScreen("roleScreen");
-
-    }catch(error){
-
-      console.error(
-        "خطأ في تسجيل الخروج:",
-        error
-      );
-
-      alert("تعذر تسجيل الخروج");
     }
-  });
+  );
 }
 
 /* BACK CUSTOMER */
 const backFromRequestBtn=
-  document.getElementById("backFromRequestBtn");
+  document.getElementById(
+    "backFromRequestBtn"
+  );
 
 if(backFromRequestBtn){
 
-  backFromRequestBtn.addEventListener("click",()=>{
+  backFromRequestBtn.addEventListener(
+    "click",
+    ()=>{
 
-    localStorage.removeItem("selectedRole");
+      localStorage.removeItem(
+        "selectedRole"
+      );
 
-    selectedRole="";
+      selectedRole="";
 
-    showScreen("roleScreen");
-  });
+      showScreen(
+        "roleScreen"
+      );
+    }
+  );
 }
-/* RESTORE SESSION */
+
 /* RESTORE SESSION */
 (async()=>{
 
@@ -1298,52 +2054,74 @@ if(backFromRequestBtn){
       : window.ma3daAuth?.currentUser;
 
   const savedRole=
-    localStorage.getItem("selectedRole");
+    localStorage.getItem(
+      "selectedRole"
+    );
 
   if(!user){
 
     selectedRole="";
 
-    localStorage.removeItem("selectedRole");
+    localStorage.removeItem(
+      "selectedRole"
+    );
 
-    showScreen("roleScreen");
+    showScreen(
+      "roleScreen"
+    );
 
     return;
   }
 
   if(!savedRole){
 
-    showScreen("roleScreen");
+    showScreen(
+      "roleScreen"
+    );
 
     return;
   }
 
-  selectedRole=savedRole;
+  selectedRole=
+    savedRole;
 
   if(savedRole==="customer"){
 
-    const state=getOrderState();
+    const state=
+      getOrderState();
 
-    if(state==="accepted"&&loadOrder()){
+    if(
+      state==="accepted" &&
+      loadOrder()
+    ){
 
       updateMatchedScreen();
       updateWorkingScreen();
 
-      showScreen("matchedScreen");
+      showScreen(
+        "matchedScreen"
+      );
 
       return;
     }
 
-    if(state==="searching"&&loadOrder()){
+    if(
+      state==="searching" &&
+      loadOrder()
+    ){
 
-      showScreen("searchingScreen");
+      showScreen(
+        "searchingScreen"
+      );
 
       startAcceptanceWatcher();
 
       return;
     }
 
-    showScreen("requestScreen");
+    showScreen(
+      "requestScreen"
+    );
 
     return;
   }
