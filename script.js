@@ -862,3 +862,12 @@ if(logoutBtn){
     }
   });
 }
+const backFromRequestBtn = document.getElementById("backFromRequestBtn");
+
+if(backFromRequestBtn){
+  backFromRequestBtn.addEventListener("click",()=>{
+    localStorage.removeItem("selectedRole");
+    selectedRole="";
+    showScreen("roleScreen");
+  });
+}
