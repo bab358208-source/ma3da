@@ -822,20 +822,45 @@ if(backPhoneBtn){
     showScreen("phoneScreen");
   });
 }
-const savedRole=localStorage.getItem("selectedRole");
+(async()=>{
+  const savedRole = localStorage.getItem("selectedRole");
 
-if(savedRole){
-  selectedRole=savedRole;
+  if(!savedRole) return;
 
-  if(savedRole==="customer"){
+  selectedRole = savedRole;
+
+  if(savedRole === "customer"){
     showScreen("requestScreen");
+    return;
   }
 
-  if(savedRole==="operator"){
-    showScreen("operatorScreen");
-    displayMyEquipment();
+  if(savedRole === "operator"){
+    const user = window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+    if(!user){
+      console.log("لم يتم استعادة تسجيل الدخول بعد");
+      showScreen("phoneScreen");
+      return;
+    }
+
+    const ref = window.ma3daDoc(
+      window.ma3daDB,
+      "equipment",
+      user.uid
+    );
+
+    const snapshot = await window.ma3daGetDoc(ref);
+
+    if(snapshot.exists()){
+      await displayMyEquipment();
+      showScreen("operatorScreen");
+    }else{
+      showScreen("addEquipmentScreen");
+    }
   }
-}
+})();
 const logoutBtn=document.getElementById("logoutBtn");
 
 if(logoutBtn){
