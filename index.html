@@ -842,19 +842,25 @@ window.ma3daGetDoc = getDoc;
 window.ma3daAddDoc = addDoc;
 window.ma3daCollection = collection;
 
-  window.ma3daCreateAccount = async (email, password) => {
-    try {
-      const result = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+window.ma3daCreateAccount = async (email, password) => {
+  try {
+    const result = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      console.log("تم إنشاء الحساب:", result.user.uid);
-      return result.user;
+    console.log("تم إنشاء الحساب:", result.user.uid);
+    return result.user;
 
-    } catch (error) {
-      window.ma3daLogin = async (email, password) => {
+  } catch (error) {
+    console.error("خطأ في إنشاء الحساب:", error);
+    alert("تعذر إنشاء الحساب: " + error.message);
+    return null;
+  }
+};
+
+window.ma3daLogin = async (email, password) => {
   try {
 
     await setPersistence(
@@ -882,6 +888,10 @@ window.ma3daCollection = collection;
   }
 };
 </script>
+
+<script src="./script.js"></script>
+</body>
+</html>
 
 <script src="./script.js"></script>
 </body>
