@@ -807,27 +807,31 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("تم تفعيل حفظ تسجيل الدخول");
-  })
-  .catch(error => {
-    console.error("خطأ في حفظ تسجيل الدخول:", error);
-  });
-  window.ma3daGetCurrentUser = () => {
+
+const authReady = setPersistence(
+  auth,
+  browserLocalPersistence
+)
+.then(() => {
+  console.log("تم تفعيل حفظ تسجيل الدخول");
+})
+.catch(error => {
+  console.error("خطأ في حفظ تسجيل الدخول:", error);
+});
+
+window.ma3daGetCurrentUser = async () => {
+  await authReady;
+
   return new Promise(resolve => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      unsubscribe();
-      resolve(user);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      user => {
+        unsubscribe();
+        resolve(user);
+      }
+    );
   });
 };
-
-  window.ma3daAuth = auth;
-  window.ma3daDB = db;
-  window.ma3daDoc = doc;
-  window.ma3daSetDoc = setDoc;
-  window.ma3daGetDoc = getDoc;
 
   window.ma3daCreateAccount = async (email, password) => {
     try {
