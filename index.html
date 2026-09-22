@@ -802,6 +802,11 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+  window.ma3daAuthReady = new Promise(resolve => {
+  onAuthStateChanged(auth, user => {
+    resolve(user);
+  });
+});
 
   window.ma3daAuth = auth;
   window.ma3daDB = db;
