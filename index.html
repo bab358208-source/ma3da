@@ -1210,9 +1210,42 @@
 
 <!-- شاشة استعادة كلمة المرور -->
 <div id="forgotPasswordScreen" class="screen">
-  ...
+
+  <div class="login-container">
+
+    <h2>استعادة كلمة المرور</h2>
+
+    <p>
+      أدخل بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.
+    </p>
+
+    <input
+      type="email"
+      id="resetEmail"
+      placeholder="البريد الإلكتروني"
+      autocomplete="email"
+    >
+
+    <button
+      id="sendResetPasswordBtn"
+      class="primary-btn"
+      type="button"
+    >
+      إرسال رابط الاستعادة
+    </button>
+
+    <button
+      id="backFromForgotPasswordBtn"
+      class="back-btn"
+      type="button"
+    >
+      العودة لتسجيل الدخول
+    </button>
+
+  </div>
+
 </div>
 
-</body>
+
 </body>
 </html>
