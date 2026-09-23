@@ -81,19 +81,19 @@
       </button>
 
       <button
-        id="forgotPasswordBtn"
-        class="back-btn"
-        type="button"
-      >
-        نسيت كلمة المرور؟
-      </button>
-
-      <button
         id="createAccountBtn"
         class="main-btn"
         type="button"
       >
         إنشاء حساب جديد
+      </button>
+
+      <button
+        id="forgotPasswordBtn"
+        class="back-btn"
+        type="button"
+      >
+        نسيت كلمة المرور؟
       </button>
 
       <button
@@ -839,10 +839,11 @@
     onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence,
     sendEmailVerification,
     sendPasswordResetEmail,
-    setPersistence,
-    browserLocalPersistence
+    signOut
   } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -880,13 +881,8 @@
 
   });
 
-  /*
-    هذا الوعد يضمن أن Firebase Authentication
-    أصبح جاهزًا قبل تشغيل وظائف script.js.
-  */
-
-  window.ma3daFirebaseReady =
-    authReady.then(() => {
+  window.ma3daFirebaseReady = authReady
+    .then(() => {
 
       return new Promise(resolve => {
 
@@ -899,9 +895,7 @@
 
               console.log(
                 "Firebase Auth جاهز:",
-                user
-                  ? user.uid
-                  : "لا يوجد مستخدم"
+                user ? user.uid : "لا يوجد مستخدم"
               );
 
               resolve(user);
@@ -933,10 +927,17 @@
 
   window.ma3daCollection = collection;
 
+  /*
+    إنشاء حساب جديد
+    وإرسال رسالة التحقق بالبريد
+  */
+
   window.ma3daCreateAccount = async (
     email,
     password
   ) => {
+
+    let createdUser = null;
 
     try {
 
@@ -949,20 +950,50 @@
           password
         );
 
-      /*
-        إرسال رابط التحقق من البريد
-      */
+      createdUser = result.user;
 
-      await sendEmailVerification(
-        result.user
+      try {
+
+        await sendEmailVerification(
+          createdUser
+        );
+
+        console.log(
+          "تم إرسال رسالة التحقق إلى:",
+          email
+        );
+
+      } catch (verificationError) {
+
+        console.error(
+          "خطأ Firebase في إرسال التحقق:",
+          verificationError
+        );
+
+        alert(
+          "فشل إرسال رسالة التحقق.\n\n" +
+          "رمز الخطأ: " +
+          (verificationError.code || "غير معروف") +
+          "\n\n" +
+          "رسالة الخطأ:\n" +
+          verificationError.message
+        );
+
+        await signOut(auth);
+
+        return null;
+
+      }
+
+      await signOut(auth);
+
+      alert(
+        "تم إنشاء الحساب بنجاح.\n\n" +
+        "تم إرسال رسالة تحقق إلى بريدك الإلكتروني.\n" +
+        "افتح الرسالة واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
       );
 
-      console.log(
-        "تم إنشاء الحساب وإرسال رابط التحقق:",
-        result.user.uid
-      );
-
-      return result.user;
+      return null;
 
     } catch (error) {
 
@@ -971,8 +1002,29 @@
         error
       );
 
+      if(createdUser){
+
+        try{
+
+          await signOut(auth);
+
+        }catch(signOutError){
+
+          console.error(
+            "خطأ في تسجيل الخروج:",
+            signOutError
+          );
+
+        }
+
+      }
+
       alert(
-        "تعذر إنشاء الحساب: " +
+        "تعذر إنشاء الحساب.\n\n" +
+        "رمز الخطأ: " +
+        (error.code || "غير معروف") +
+        "\n\n" +
+        "رسالة الخطأ:\n" +
         error.message
       );
 
@@ -981,6 +1033,11 @@
     }
 
   };
+
+  /*
+    تسجيل الدخول
+    ويشترط توثيق البريد الإلكتروني
+  */
 
   window.ma3daLogin = async (
     email,
@@ -998,26 +1055,57 @@
           password
         );
 
-      /*
-        التأكد من أن البريد تم التحقق منه
-      */
+      console.log(
+        "تم تسجيل الدخول:",
+        result.user.uid
+      );
 
       if(!result.user.emailVerified){
 
+        try{
+
+          await sendEmailVerification(
+            result.user
+          );
+
+          console.log(
+            "تمت إعادة محاولة إرسال رسالة التحقق."
+          );
+
+        }catch(verificationError){
+
+          console.error(
+            "خطأ Firebase في إعادة إرسال التحقق:",
+            verificationError
+          );
+
+          await signOut(auth);
+
+          alert(
+            "البريد الإلكتروني غير موثق.\n\n" +
+            "لكن فشل إرسال رسالة التحقق.\n\n" +
+            "رمز الخطأ: " +
+            (verificationError.code || "غير معروف") +
+            "\n\n" +
+            "رسالة الخطأ:\n" +
+            verificationError.message
+          );
+
+          return null;
+
+        }
+
+        await signOut(auth);
+
         alert(
           "البريد الإلكتروني غير موثق بعد.\n\n" +
-          "افتح رسالة التحقق التي أرسلناها إلى بريدك الإلكتروني، " +
-          "ثم اضغط رابط التحقق، وبعدها حاول تسجيل الدخول مرة أخرى."
+          "تمت محاولة إرسال رسالة تحقق جديدة إلى بريدك الإلكتروني.\n" +
+          "افتح الرسالة واضغط على رابط التحقق ثم سجّل الدخول مرة أخرى."
         );
 
         return null;
 
       }
-
-      console.log(
-        "تم تسجيل الدخول:",
-        result.user.uid
-      );
 
       return result.user;
 
@@ -1029,7 +1117,11 @@
       );
 
       alert(
-        "تعذر تسجيل الدخول: " +
+        "تعذر تسجيل الدخول.\n\n" +
+        "رمز الخطأ: " +
+        (error.code || "غير معروف") +
+        "\n\n" +
+        "رسالة الخطأ:\n" +
         error.message
       );
 
@@ -1043,7 +1135,7 @@
     إعادة تعيين كلمة المرور
   */
 
-  window.ma3daForgotPassword = async (
+  window.ma3daSendPasswordResetEmail = async (
     email
   ) => {
 
@@ -1070,7 +1162,16 @@
         error
       );
 
-      throw error;
+      alert(
+        "تعذر إرسال رابط إعادة تعيين كلمة المرور.\n\n" +
+        "رمز الخطأ: " +
+        (error.code || "غير معروف") +
+        "\n\n" +
+        "رسالة الخطأ:\n" +
+        error.message
+      );
+
+      return false;
 
     }
 
