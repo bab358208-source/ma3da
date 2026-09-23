@@ -778,15 +778,176 @@ function getEmailData(){
 
     error:
       document.getElementById(
- /* نسيان كلمة المرور */
+        "emailError"
+      )
 
-if (forgotPasswordBtn) {
+  };
 
-  forgotPasswordBtn.addEventListener("click", () => {
+}
 
-    showScreen("forgotPasswordScreen");
+/* نسيان كلمة المرور */
 
-  });
+if(forgotPasswordBtn){
+
+  forgotPasswordBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "forgotPasswordScreen"
+      );
+
+    }
+  );
+
+}
+
+/* إرسال رابط استعادة كلمة المرور */
+
+const sendResetPasswordBtn =
+  document.getElementById(
+    "sendResetPasswordBtn"
+  );
+
+if(sendResetPasswordBtn){
+
+  sendResetPasswordBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const resetEmail =
+        document.getElementById(
+          "resetEmail"
+        );
+
+      const email =
+        resetEmail
+          ?.value
+          .trim();
+
+      if(!email){
+
+        alert(
+          "أدخل بريدك الإلكتروني أولاً"
+        );
+
+        if(resetEmail)
+          resetEmail.focus();
+
+        return;
+
+      }
+
+      if(
+        typeof window.ma3daSendPasswordResetEmail !==
+        "function"
+      ){
+
+        alert(
+          "Firebase لم يجهز بعد، أعد تحميل الصفحة"
+        );
+
+        return;
+
+      }
+
+      sendResetPasswordBtn.disabled =
+        true;
+
+      sendResetPasswordBtn.textContent =
+        "جاري الإرسال...";
+
+      try{
+
+        const result =
+          await window.ma3daSendPasswordResetEmail(
+            email
+          );
+
+        if(result === true){
+
+          alert(
+            "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧"
+          );
+
+        }
+
+      }catch(errorObject){
+
+        console.error(
+          "خطأ في استعادة كلمة المرور:",
+          errorObject
+        );
+
+        if(
+          errorObject?.code ===
+          "auth/user-not-found"
+        ){
+
+          alert(
+            "لا يوجد حساب بهذا البريد الإلكتروني"
+          );
+
+        }else if(
+          errorObject?.code ===
+          "auth/invalid-email"
+        ){
+
+          alert(
+            "البريد الإلكتروني غير صحيح"
+          );
+
+        }else{
+
+          alert(
+            errorObject?.message ||
+            "تعذر إرسال رابط إعادة تعيين كلمة المرور"
+          );
+
+        }
+
+      }finally{
+
+        sendResetPasswordBtn.disabled =
+          false;
+
+        sendResetPasswordBtn.textContent =
+          "إرسال رابط الاستعادة";
+
+      }
+
+    }
+  );
+
+}
+
+/* العودة من صفحة استعادة كلمة المرور */
+
+const backFromForgotPasswordBtn =
+  document.getElementById(
+    "backFromForgotPasswordBtn"
+  );
+
+if(backFromForgotPasswordBtn){
+
+  backFromForgotPasswordBtn.addEventListener(
+    "click",
+    ()=>{
+
+      const resetEmail =
+        document.getElementById(
+          "resetEmail"
+        );
+
+      if(resetEmail)
+        resetEmail.value = "";
+
+      showScreen(
+        "phoneScreen"
+      );
+
+    }
+  );
 
 }
 /* فتح صفحة صاحب المعدة حسب وجود معدة */
