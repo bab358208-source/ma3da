@@ -778,121 +778,17 @@ function getEmailData(){
 
     error:
       document.getElementById(
-        "emailError"
-      )
+ /* نسيان كلمة المرور */
 
-  };
+if (forgotPasswordBtn) {
 
-}
+  forgotPasswordBtn.addEventListener("click", () => {
 
-/* نسيان كلمة المرور */
+    showScreen("forgotPasswordScreen");
 
-if(forgotPasswordBtn){
-
-  forgotPasswordBtn.addEventListener(
-    "click",
-    async()=>{
-
-      const emailInput =
-        document.getElementById(
-          "emailInput"
-        );
-
-      const error =
-        document.getElementById(
-          "emailError"
-        );
-
-      const email =
-        emailInput
-          ?.value
-          .trim();
-
-      if(!email){
-
-        if(error)
-          error.textContent =
-            "أدخل بريدك الإلكتروني أولاً";
-
-        if(emailInput)
-          emailInput.focus();
-
-        return;
-
-      }
-
-      if(
-        typeof window.ma3daForgotPassword !==
-        "function"
-      ){
-
-        if(error)
-          error.textContent =
-            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
-
-        return;
-
-      }
-
-      if(error)
-        error.textContent =
-          "جاري إرسال رابط استعادة كلمة المرور...";
-
-      try{
-
-        await window.ma3daForgotPassword(
-          email
-        );
-
-        if(error)
-          error.textContent =
-            "";
-
-        alert(
-          "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧"
-        );
-
-      }catch(errorObject){
-
-        console.error(
-          "خطأ في نسيت كلمة المرور:",
-          errorObject
-        );
-
-        if(
-          errorObject?.code ===
-          "auth/user-not-found"
-        ){
-
-          if(error)
-            error.textContent =
-              "لا يوجد حساب بهذا البريد الإلكتروني";
-
-        }else if(
-          errorObject?.code ===
-          "auth/invalid-email"
-        ){
-
-          if(error)
-            error.textContent =
-              "البريد الإلكتروني غير صحيح";
-
-        }else{
-
-          if(error)
-            error.textContent =
-              errorObject?.message ||
-              "تعذر إرسال رابط إعادة تعيين كلمة المرور";
-
-        }
-
-      }
-
-    }
-  );
+  });
 
 }
-
 /* فتح صفحة صاحب المعدة حسب وجود معدة */
 
 async function openOperatorAfterLogin(){
