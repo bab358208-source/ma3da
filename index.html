@@ -35,228 +35,197 @@
 
     </div>
   </section>
-<!-- تسجيل الدخول -->
-<section id="phoneScreen" class="screen">
 
-  <div class="hero">
-    <div class="hero-icon">📧</div>
+  <!-- تسجيل الدخول -->
+  <section id="phoneScreen" class="screen">
 
-    <h1>تسجيل الدخول</h1>
+    <div class="hero">
+      <div class="hero-icon">📧</div>
 
-    <p id="phoneRoleText">
-      تسجيل الدخول للمتابعة
-    </p>
-  </div>
+      <h1>تسجيل الدخول</h1>
 
-  <div class="card">
+      <p id="phoneRoleText">
+        تسجيل الدخول للمتابعة
+      </p>
+    </div>
 
-    <label>📧 البريد الإلكتروني</label>
+    <div class="card">
 
-    <input
-      id="emailInput"
-      type="email"
-      inputmode="email"
-      autocomplete="email"
-      placeholder="example@email.com"
-    >
+      <label>📧 البريد الإلكتروني</label>
 
-    <label>🔐 كلمة المرور</label>
+      <input
+        id="emailInput"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        placeholder="example@email.com"
+      >
 
-    <input
-      id="passwordInput"
-      type="password"
-      autocomplete="current-password"
-      placeholder="كلمة المرور"
-    >
+      <label>🔐 كلمة المرور</label>
 
-    <p id="emailError" class="phone-error"></p>
+      <input
+        id="passwordInput"
+        type="password"
+        autocomplete="current-password"
+        placeholder="كلمة المرور"
+      >
 
-    <button
-      id="sendCodeBtn"
-      class="main-btn"
-      type="button"
-    >
-      تسجيل الدخول
-    </button>
+      <p id="emailError" class="phone-error"></p>
 
-    <button
-      id="createAccountBtn"
-      class="main-btn"
-      type="button"
-    >
-      إنشاء حساب جديد
-    </button>
+      <button
+        id="sendCodeBtn"
+        class="main-btn"
+        type="button"
+      >
+        تسجيل الدخول
+      </button>
 
-    <button
-      id="backRoleBtn"
-      type="button"
-      class="back-btn"
-    >
+      <button
+        id="createAccountBtn"
+        class="main-btn"
+        type="button"
+      >
+        إنشاء حساب جديد
+      </button>
+
+      <button
+        id="backRoleBtn"
+        type="button"
+        class="back-btn"
+      >
+        ← الرجوع
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- رمز التحقق للجوال - محفوظ للمرحلة القادمة -->
+  <section id="otpScreen" class="screen">
+
+    <div class="hero">
+      <div class="hero-icon">🔐</div>
+
+      <h1>رمز التحقق</h1>
+
+      <p id="otpText">
+        أدخل رمز التحقق
+      </p>
+    </div>
+
+    <div class="card">
+
+      <label>🔢 رمز التحقق</label>
+
+      <input
+        id="otpInput"
+        type="tel"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="123456"
+      >
+
+      <p id="otpError" class="phone-error"></p>
+
+      <button
+        id="verifyCodeBtn"
+        class="main-btn"
+        type="button"
+      >
+        تأكيد
+      </button>
+
+      <button
+        id="backPhoneBtn"
+        type="button"
+        class="back-btn"
+      >
+        ← تغيير رقم الجوال
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- إضافة معدة -->
+  <section id="addEquipmentScreen" class="screen">
+
+    <div class="hero">
+      <div class="hero-icon">🚜</div>
+
+      <h1>أضف معدتك</h1>
+
+      <p>أدخل بيانات المعدة لتبدأ استقبال الطلبات</p>
+    </div>
+
+    <div class="card">
+
+      <label>🚜 نوع المعدة</label>
+
+      <select id="equipmentType">
+        <option value="">اختر نوع المعدة</option>
+        <option>بوكلين</option>
+        <option>شيول</option>
+        <option>قلاب</option>
+        <option>كرين</option>
+        <option>حفار</option>
+        <option>بلدوزر</option>
+      </select>
+
+      <label>🏷️ الماركة / الموديل</label>
+
+      <input
+        id="equipmentModel"
+        type="text"
+        placeholder="مثال: كوماتسو PC200"
+      >
+
+      <label>📷 صورة المعدة</label>
+
+      <input
+        id="equipmentImage"
+        type="file"
+        accept="image/*"
+      >
+
+      <label>📅 سنة الصنع</label>
+
+      <input
+        id="equipmentYear"
+        type="number"
+        placeholder="2020"
+      >
+
+      <label>📍 المدينة</label>
+
+      <input
+        id="equipmentCity"
+        type="text"
+        placeholder="مثال: جدة"
+      >
+
+      <label>🟢 حالة المعدة</label>
+
+      <select id="equipmentAvailability">
+        <option value="available">متاحة الآن</option>
+        <option value="unavailable">غير متاحة</option>
+      </select>
+
+      <button id="saveEquipmentBtn" type="button" class="main-btn">
+        حفظ المعدة
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- طلب معدة -->
+  <section id="requestScreen" class="screen">
+
+    <button id="backFromRequestBtn" class="back-btn" type="button">
       ← الرجوع
     </button>
 
-  </div>
-
-</section>
-
-
-<!-- رمز التحقق للجوال - محفوظ للمرحلة القادمة -->
-<section id="otpScreen" class="screen">
-
-  <div class="hero">
-    <div class="hero-icon">🔐</div>
-
-    <h1>رمز التحقق</h1>
-
-    <p id="otpText">
-      أدخل رمز التحقق
-    </p>
-  </div>
-
-  <div class="card">
-
-    <label>🔢 رمز التحقق</label>
-
-    <input
-      id="otpInput"
-      type="tel"
-      inputmode="numeric"
-      maxlength="6"
-      placeholder="123456"
-    >
-
-    <p id="otpError" class="phone-error"></p>
-
-    <button
-      id="verifyCodeBtn"
-      class="main-btn"
-      type="button"
-    >
-      تأكيد
-    </button>
-
-    <button
-      id="backPhoneBtn"
-      type="button"
-      class="back-btn"
-    >
-      ← تغيير رقم الجوال
-    </button>
-
-  </div>
-
-</section>
-
-
-<!-- رمز التحقق -->
-<section id="otpScreen" class="screen">
-
-  <div class="hero">
-    <div class="hero-icon">🔐</div>
-
-    <h1>رمز التحقق</h1>
-
-    <p id="otpText">
-      أدخل رمز التحقق
-    </p>
-  </div>
-
-  <div class="card">
-
-    <label>🔢 رمز التحقق</label>
-
-    <input
-      id="otpInput"
-      type="tel"
-      inputmode="numeric"
-      maxlength="4"
-      placeholder="1234"
-    >
-
-    <p id="otpError" class="phone-error"></p>
-
-    <button id="verifyCodeBtn" class="main-btn">
-      تأكيد
-    </button>
-
-    <button id="backPhoneBtn" type="button" class="back-btn">
-      ← تغيير رقم الجوال
-    </button>
-
-  </div>
-
-</section>
-<!-- إضافة معدة -->
-<section id="addEquipmentScreen" class="screen">
-
-  <div class="hero">
-    <div class="hero-icon">🚜</div>
-
-    <h1>أضف معدتك</h1>
-
-    <p>أدخل بيانات المعدة لتبدأ استقبال الطلبات</p>
-  </div>
-
-  <div class="card">
-
-    <label>🚜 نوع المعدة</label>
-
-    <select id="equipmentType">
-      <option value="">اختر نوع المعدة</option>
-      <option>بوكلين</option>
-      <option>شيول</option>
-      <option>قلاب</option>
-      <option>كرين</option>
-      <option>حفار</option>
-      <option>بلدوزر</option>
-    </select>
-
-    <label>🏷️ الماركة / الموديل</label>
-    <input
-      id="equipmentModel"
-      type="text"
-      placeholder="مثال: كوماتسو PC200"
-    >
-<label>📷 صورة المعدة</label>
-
-<input
-  id="equipmentImage"
-  type="file"
-  accept="image/*"
->
-    <label>📅 سنة الصنع</label>
-    <input
-      id="equipmentYear"
-      type="number"
-      placeholder="2020"
-    >
-
-    <label>📍 المدينة</label>
-    <input
-      id="equipmentCity"
-      type="text"
-      placeholder="مثال: جدة"
-    >
-
-    <label>🟢 حالة المعدة</label>
-
-    <select id="equipmentAvailability">
-      <option value="available">متاحة الآن</option>
-      <option value="unavailable">غير متاحة</option>
-    </select>
-
-    <button id="saveEquipmentBtn" type="button" class="main-btn">
-      حفظ المعدة
-    </button>
-
-  </div>
-
-</section>
-  <!-- طلب معدة -->
-  <section id="requestScreen" class="screen">
-    <button id="backFromRequestBtn" class="back-btn" type="button">
-  ← الرجوع
-</button>
     <div class="hero">
       <div class="hero-icon">🚜</div>
       <h1>اطلب معدتك الآن</h1>
@@ -266,9 +235,15 @@
     <div class="card">
 
       <label>📍 موقع العمل</label>
-      <input id="locationInput" type="text" placeholder="اكتب موقع العمل">
+
+      <input
+        id="locationInput"
+        type="text"
+        placeholder="اكتب موقع العمل"
+      >
 
       <label>🚜 نوع المعدة</label>
+
       <select id="equipmentSelect">
         <option value="">اختر المعدة</option>
         <option value="بوكلين">بوكلين</option>
@@ -280,6 +255,7 @@
       </select>
 
       <label>⏱️ مدة العمل</label>
+
       <select id="durationSelect">
         <option value="">اختر المدة</option>
         <option value="ساعة واحدة">ساعة واحدة</option>
@@ -289,132 +265,157 @@
       </select>
 
       <label>👷 المشغل</label>
+
       <select id="operatorSelect">
         <option value="مع مشغل">مع مشغل</option>
         <option value="بدون مشغل">بدون مشغل</option>
       </select>
 
       <label>📝 ملاحظات</label>
-      <textarea id="notesInput" placeholder="أي ملاحظات إضافية"></textarea>
 
-      <button id="requestBtn" class="main-btn">
+      <textarea
+        id="notesInput"
+        placeholder="أي ملاحظات إضافية"
+      ></textarea>
+
+      <button id="requestBtn" class="main-btn" type="button">
         اطلب الآن
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- البحث -->
   <section id="searchingScreen" class="screen">
-    <div class="center-screen">
-      <div class="loader">🚜</div>
-      <h2>جاري البحث عن معدة قريبة...</h2>
-      <p>نبحث عن مشغل متاح بالقرب منك</p>
-    </div>
-  </section>
 
+    <div class="center-screen">
+
+      <div class="loader">🚜</div>
+
+      <h2>جاري البحث عن معدة قريبة...</h2>
+
+      <p>نبحث عن مشغل متاح بالقرب منك</p>
+
+    </div>
+
+  </section>
 
   <!-- تم العثور -->
   <section id="matchedScreen" class="screen">
+
     <div class="card">
 
       <div class="success-icon">✓</div>
 
       <h2>تم العثور على مشغل</h2>
 
- <div class="driver-card">
-  <div class="driver-avatar">ف</div>
+      <div class="driver-card">
 
-  <div>
-    <strong>فهد القحطاني</strong>
-    <span>مشغل معدات ⭐ 4.8</span>
-  </div>
-</div>
-
-  <div class="info-row">
-  <span>المعدة</span>
-  <strong id="matchedEquipment">بوكلين - CAT 320</strong>
-</div>
-
-      <div class="info-row">
-        <span>الموقع</span>
-        <strong id="matchedLocation">موقع العميل</strong>
-      </div>
-
-      <button id="trackingBtn" class="main-btn">
-  تتبع المعدة
-</button>
-
-<button id="callBtn" class="main-btn">
-  📞 اتصال
-</button>
-
-<button id="chatBtn" class="main-btn">
-  💬 محادثة
-</button>
-
-    </div>
-  </section>
-<!-- المحادثة -->
-<!-- المحادثة -->
-<section id="chatScreen" class="screen">
-
-  <div class="chat-page">
-
-    <div class="chat-header">
-
- <button
-  id="backFromChatBtn"
-  class="chat-back"
-  onclick="showScreen('matchedScreen')"
->
-  ←
-</button>
-
-      <div class="chat-driver-info">
-
-        <div class="chat-avatar">
-          ف
-        </div>
+        <div class="driver-avatar">ف</div>
 
         <div>
           <strong>فهد القحطاني</strong>
-          <span>🟢 متصل الآن</span>
+          <span>مشغل معدات ⭐ 4.8</span>
         </div>
 
       </div>
 
-    </div>
+      <div class="info-row">
 
-    <div id="chatMessages" class="chat-messages">
+        <span>المعدة</span>
 
-      <div class="message received">
-        السلام عليكم، أنا فهد مشغل المعدة.
+        <strong id="matchedEquipment">
+          بوكلين - CAT 320
+        </strong>
+
       </div>
 
-    </div>
+      <div class="info-row">
 
-    <div class="chat-input-row">
+        <span>الموقع</span>
 
-      <input
-        id="chatInput"
-        type="text"
-        placeholder="اكتب رسالتك..."
-      >
+        <strong id="matchedLocation">
+          موقع العميل
+        </strong>
 
-      <button id="sendChatBtn" class="main-btn">
-        إرسال
+      </div>
+
+      <button id="trackingBtn" class="main-btn">
+        تتبع المعدة
+      </button>
+
+      <button id="callBtn" class="main-btn">
+        📞 اتصال
+      </button>
+
+      <button id="chatBtn" class="main-btn">
+        💬 محادثة
       </button>
 
     </div>
 
-  </div>
+  </section>
 
-</section>
+  <!-- المحادثة -->
+  <section id="chatScreen" class="screen">
+
+    <div class="chat-page">
+
+      <div class="chat-header">
+
+        <button
+          id="backFromChatBtn"
+          class="chat-back"
+          type="button"
+        >
+          ←
+        </button>
+
+        <div class="chat-driver-info">
+
+          <div class="chat-avatar">
+            ف
+          </div>
+
+          <div>
+            <strong>فهد القحطاني</strong>
+            <span>🟢 متصل الآن</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div id="chatMessages" class="chat-messages">
+
+        <div class="message received">
+          السلام عليكم، أنا فهد مشغل المعدة.
+        </div>
+
+      </div>
+
+      <div class="chat-input-row">
+
+        <input
+          id="chatInput"
+          type="text"
+          placeholder="اكتب رسالتك..."
+        >
+
+        <button id="sendChatBtn" class="main-btn">
+          إرسال
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
 
   <!-- التتبع -->
   <section id="trackingScreen" class="screen">
+
     <div class="card">
 
       <h2>تتبع المعدة</h2>
@@ -433,8 +434,15 @@
       </div>
 
       <div class="tracking-info">
-        <strong id="distanceText">2.4 كم</strong>
-        <span id="etaText">8 دقائق</span>
+
+        <strong id="distanceText">
+          2.4 كم
+        </strong>
+
+        <span id="etaText">
+          8 دقائق
+        </span>
+
       </div>
 
       <p id="trackingStatus">
@@ -442,11 +450,12 @@
       </p>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- وصلت -->
   <section id="arrivedScreen" class="screen">
+
     <div class="card center">
 
       <div class="success-icon">✓</div>
@@ -462,11 +471,12 @@
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- العمل -->
   <section id="workingScreen" class="screen">
+
     <div class="card center">
 
       <div class="work-icon">🚜</div>
@@ -484,19 +494,22 @@
       <p id="workingLocation">
         موقع العميل
       </p>
-<button id="callCustomerBtn" class="main-btn">
-  📞 اتصال
-</button>
+
+      <button id="callCustomerBtn" class="main-btn">
+        📞 اتصال
+      </button>
+
       <button id="endWorkBtn" class="main-btn">
         إنهاء العمل
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- انتهاء -->
   <section id="completedScreen" class="screen">
+
     <div class="card center">
 
       <div class="success-icon">✓</div>
@@ -518,33 +531,39 @@
       </button>
 
     </div>
+
   </section>
-<section id="operatorCompletedScreen" class="screen">
-  <div class="card center">
 
-    <div class="success-icon">✓</div>
+  <!-- انتهاء المشغل -->
+  <section id="operatorCompletedScreen" class="screen">
 
-    <h2>تم إنهاء العمل</h2>
+    <div class="card center">
 
-    <p>
-      تم تسجيل انتهاء العمل بنجاح.
-    </p>
+      <div class="success-icon">✓</div>
 
-    <div class="price-box">
+      <h2>تم إنهاء العمل</h2>
 
-      <span>المبلغ المستحق لك</span>
+      <p>
+        تم تسجيل انتهاء العمل بنجاح.
+      </p>
 
-      <strong id="operatorFinalPrice">
-        1,000 ريال
-      </strong>
+      <div class="price-box">
+
+        <span>المبلغ المستحق لك</span>
+
+        <strong id="operatorFinalPrice">
+          1,000 ريال
+        </strong>
+
+      </div>
 
     </div>
 
-  </div>
-</section>
+  </section>
 
   <!-- الدفع -->
   <section id="paymentScreen" class="screen">
+
     <div class="card">
 
       <h2>اختر طريقة الدفع</h2>
@@ -573,11 +592,12 @@
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- التقييم -->
   <section id="ratingScreen" class="screen">
+
     <div class="card center">
 
       <h2>قيّم تجربتك</h2>
@@ -601,11 +621,12 @@
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- شكراً -->
   <section id="thankYouScreen" class="screen">
+
     <div class="card center">
 
       <div class="success-icon">✓</div>
@@ -621,8 +642,8 @@
       </button>
 
     </div>
-  </section>
 
+  </section>
 
   <!-- وضع المشغل -->
   <section id="operatorScreen" class="screen">
@@ -640,7 +661,6 @@
 
       </div>
 
-
       <div class="operator-request-card">
 
         <div class="request-title">
@@ -648,46 +668,58 @@
           <span>🚜</span>
 
           <div>
+
             <h2 id="operatorEquipment">
               بوكلين
             </h2>
 
             <p>مع مشغل</p>
+
           </div>
 
         </div>
-
 
         <div class="operator-info">
 
           <div class="operator-info-row">
+
             <span>📍 موقع العمل</span>
+
             <strong id="operatorLocation">
               موقع العميل
             </strong>
+
           </div>
 
           <div class="operator-info-row">
+
             <span>📏 المسافة</span>
+
             <strong>2.4 كم</strong>
+
           </div>
 
           <div class="operator-info-row">
+
             <span>⏱️ مدة العمل</span>
+
             <strong id="operatorDuration">
               4 ساعات
             </strong>
+
           </div>
 
           <div class="operator-info-row">
+
             <span>💰 السعر التقديري</span>
+
             <strong id="operatorPrice">
               1,000 ريال
             </strong>
+
           </div>
 
         </div>
-
 
         <div class="operator-notes">
 
@@ -699,7 +731,6 @@
 
         </div>
 
-
         <div class="operator-buttons">
 
           <button id="rejectRequestBtn" class="reject-btn">
@@ -709,92 +740,100 @@
           <button id="acceptRequestBtn" class="accept-btn">
             قبول الطلب
           </button>
-          
 
         </div>
 
       </div>
 
-<div class="my-equipment-card">
+      <div class="my-equipment-card">
 
-  <h3>🚜 معدتي</h3>
-  <img
-  id="myEquipmentImage"
-  alt="صورة المعدة"
-  style="width:100%; max-height:220px; object-fit:cover; border-radius:12px; margin:12px 0;"
->
+        <h3>🚜 معدتي</h3>
 
-  <div class="equipment-details">
+        <img
+          id="myEquipmentImage"
+          alt="صورة المعدة"
+          style="width:100%; max-height:220px; object-fit:cover; border-radius:12px; margin:12px 0;"
+        >
 
-    <p>
-      <span>نوع المعدة</span>
-      <strong id="myEquipmentType">-</strong>
-    </p>
+        <div class="equipment-details">
 
-    <p>
-      <span>الموديل</span>
-      <strong id="myEquipmentModel">-</strong>
-    </p>
+          <p>
+            <span>نوع المعدة</span>
+            <strong id="myEquipmentType">-</strong>
+          </p>
 
-    <p>
-      <span>سنة الصنع</span>
-      <strong id="myEquipmentYear">-</strong>
-    </p>
+          <p>
+            <span>الموديل</span>
+            <strong id="myEquipmentModel">-</strong>
+          </p>
 
-    <p>
-      <span>المدينة</span>
-      <strong id="myEquipmentCity">-</strong>
-    </p>
+          <p>
+            <span>سنة الصنع</span>
+            <strong id="myEquipmentYear">-</strong>
+          </p>
 
-    <p>
-      <span>الحالة</span>
-      <strong id="myEquipmentAvailability">-</strong>
-    </p>
+          <p>
+            <span>المدينة</span>
+            <strong id="myEquipmentCity">-</strong>
+          </p>
 
-  </div>
+          <p>
+            <span>الحالة</span>
+            <strong id="myEquipmentAvailability">-</strong>
+          </p>
 
-</div>
-   <div class="operator-status">
+        </div>
 
-  <span>🟢</span>
+      </div>
 
-  <div>
-    <strong>أنت متصل</strong>
-    <small>
-      ستصلك الطلبات القريبة منك
-    </small>
-  </div>
+      <div class="operator-status">
 
-</div>
+        <span>🟢</span>
 
-<button id="logoutBtn" class="back-btn" type="button">
-  🚪 تسجيل الخروج
-</button>
+        <div>
+          <strong>أنت متصل</strong>
+
+          <small>
+            ستصلك الطلبات القريبة منك
+          </small>
+
+        </div>
+
+      </div>
+
+      <button id="logoutBtn" class="back-btn" type="button">
+        🚪 تسجيل الخروج
+      </button>
 
     </div>
 
   </section>
 
 </main>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  addDoc,
-  collection
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-  
+
   import {
-  getAuth,
-  onAuthStateChanged,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  setPersistence,
-  browserLocalPersistence
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    addDoc,
+    collection
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAhs0aanoWd1VvpkP-BVhH38cZkp19Y0m8",
@@ -806,90 +845,193 @@ import {
   };
 
   const app = initializeApp(firebaseConfig);
+
   const db = getFirestore(app);
-const auth = getAuth(app);
 
-const authReady = setPersistence(
-  auth,
-  browserLocalPersistence
-)
-.then(() => {
-  console.log("تم تفعيل حفظ تسجيل الدخول");
-})
-.catch(error => {
-  console.error("خطأ في حفظ تسجيل الدخول:", error);
-});
+  const auth = getAuth(app);
 
-window.ma3daGetCurrentUser = async () => {
-  await authReady;
+  const authReady = setPersistence(
+    auth,
+    browserLocalPersistence
+  )
+  .then(() => {
 
-  return new Promise(resolve => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      user => {
-        unsubscribe();
-        resolve(user);
-      }
+    console.log(
+      "تم تفعيل حفظ تسجيل الدخول"
     );
+
+  })
+  .catch(error => {
+
+    console.error(
+      "خطأ في حفظ تسجيل الدخول:",
+      error
+    );
+
   });
-};
 
-window.ma3daAuth = auth;
-window.ma3daDB = db;
-window.ma3daDoc = doc;
-window.ma3daSetDoc = setDoc;
-window.ma3daGetDoc = getDoc;
-window.ma3daAddDoc = addDoc;
-window.ma3daCollection = collection;
+  /*
+    هذا الوعد يضمن أن Firebase Authentication
+    أصبح جاهزًا قبل تشغيل وظائف script.js.
+  */
 
-window.ma3daCreateAccount = async (email, password) => {
-  try {
-    const result = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
+  window.ma3daFirebaseReady = authReady
+    .then(() => {
+
+      return new Promise(resolve => {
+
+        const unsubscribe =
+          onAuthStateChanged(
+            auth,
+            user => {
+
+              unsubscribe();
+
+              console.log(
+                "Firebase Auth جاهز:",
+                user ? user.uid : "لا يوجد مستخدم"
+              );
+
+              resolve(user);
+
+            }
+          );
+
+      });
+
+    });
+
+  window.ma3daGetCurrentUser = async () => {
+
+    return await window.ma3daFirebaseReady;
+
+  };
+
+  window.ma3daAuth = auth;
+
+  window.ma3daDB = db;
+
+  window.ma3daDoc = doc;
+
+  window.ma3daSetDoc = setDoc;
+
+  window.ma3daGetDoc = getDoc;
+
+  window.ma3daAddDoc = addDoc;
+
+  window.ma3daCollection = collection;
+
+  window.ma3daCreateAccount = async (
+    email,
+    password
+  ) => {
+
+    try {
+
+      await authReady;
+
+      const result =
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      console.log(
+        "تم إنشاء الحساب:",
+        result.user.uid
+      );
+
+      return result.user;
+
+    } catch (error) {
+
+      console.error(
+        "خطأ في إنشاء الحساب:",
+        error
+      );
+
+      alert(
+        "تعذر إنشاء الحساب: " +
+        error.message
+      );
+
+      return null;
+
+    }
+
+  };
+
+  window.ma3daLogin = async (
+    email,
+    password
+  ) => {
+
+    try {
+
+      await authReady;
+
+      const result =
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      console.log(
+        "تم تسجيل الدخول:",
+        result.user.uid
+      );
+
+      return result.user;
+
+    } catch (error) {
+
+      console.error(
+        "خطأ في تسجيل الدخول:",
+        error
+      );
+
+      alert(
+        "تعذر تسجيل الدخول: " +
+        error.message
+      );
+
+      return null;
+
+    }
+
+  };
+
+  /*
+    تشغيل script.js بعد تجهيز Firebase بالكامل.
+  */
+
+  const script =
+    document.createElement("script");
+
+  script.src = "./script.js";
+
+  script.onload = () => {
+
+    console.log(
+      "script.js تم تحميله بعد تجهيز Firebase"
     );
 
-    console.log("تم إنشاء الحساب:", result.user.uid);
-    return result.user;
+  };
 
-  } catch (error) {
-    console.error("خطأ في إنشاء الحساب:", error);
-    alert("تعذر إنشاء الحساب: " + error.message);
-    return null;
-  }
-};
+  script.onerror = error => {
 
-window.ma3daLogin = async (email, password) => {
-  try {
-
-    await setPersistence(
-      auth,
-      browserLocalPersistence
+    console.error(
+      "تعذر تحميل script.js:",
+      error
     );
 
-    const result = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+  };
 
-    console.log("تم تسجيل الدخول:", result.user.uid);
+  document.body.appendChild(script);
 
-    return result.user;
-
-  } catch (error) {
-
-    console.error("خطأ في تسجيل الدخول:", error);
-
-    alert("تعذر تسجيل الدخول: " + error.message);
-
-    return null;
-  }
-};
 </script>
 
-
-<script src="./script.js"></script>
 </body>
 </html>
