@@ -75,7 +75,6 @@ async function saveOrder(){
 
   /*
     ننتظر Firebase بشكل صريح.
-    هذا يمنع محاولة الحفظ قبل جاهزية Authentication.
   */
 
   try{
@@ -156,11 +155,6 @@ async function saveOrder(){
 
   }
 
-  /*
-    نحفظ نسخة محلية أيضًا،
-    لكن نجاح الطلب يعتمد على Firebase.
-  */
-
   try{
 
     const requestsCollection =
@@ -233,7 +227,7 @@ async function saveOrder(){
     }
 
     /*
-      لا نحفظ currentOrder إلا بعد نجاح Firebase.
+      نحفظ الطلب محليًا فقط بعد نجاح Firebase.
     */
 
     localStorage.setItem(
@@ -759,6 +753,11 @@ const createAccountBtn =
     "createAccountBtn"
   );
 
+const forgotPasswordBtn =
+  document.getElementById(
+    "forgotPasswordBtn"
+  );
+
 function getEmailData(){
 
   return {
@@ -783,6 +782,114 @@ function getEmailData(){
       )
 
   };
+
+}
+
+/* نسيان كلمة المرور */
+
+if(forgotPasswordBtn){
+
+  forgotPasswordBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const emailInput =
+        document.getElementById(
+          "emailInput"
+        );
+
+      const error =
+        document.getElementById(
+          "emailError"
+        );
+
+      const email =
+        emailInput
+          ?.value
+          .trim();
+
+      if(!email){
+
+        if(error)
+          error.textContent =
+            "أدخل بريدك الإلكتروني أولاً";
+
+        if(emailInput)
+          emailInput.focus();
+
+        return;
+
+      }
+
+      if(
+        typeof window.ma3daForgotPassword !==
+        "function"
+      ){
+
+        if(error)
+          error.textContent =
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+
+        return;
+
+      }
+
+      if(error)
+        error.textContent =
+          "جاري إرسال رابط استعادة كلمة المرور...";
+
+      try{
+
+        await window.ma3daForgotPassword(
+          email
+        );
+
+        if(error)
+          error.textContent =
+            "";
+
+        alert(
+          "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧"
+        );
+
+      }catch(errorObject){
+
+        console.error(
+          "خطأ في نسيت كلمة المرور:",
+          errorObject
+        );
+
+        if(
+          errorObject?.code ===
+          "auth/user-not-found"
+        ){
+
+          if(error)
+            error.textContent =
+              "لا يوجد حساب بهذا البريد الإلكتروني";
+
+        }else if(
+          errorObject?.code ===
+          "auth/invalid-email"
+        ){
+
+          if(error)
+            error.textContent =
+              "البريد الإلكتروني غير صحيح";
+
+        }else{
+
+          if(error)
+            error.textContent =
+              errorObject?.message ||
+              "تعذر إرسال رابط إعادة تعيين كلمة المرور";
+
+        }
+
+      }
+
+    }
+  );
 
 }
 
@@ -1041,34 +1148,50 @@ if(createAccountBtn){
         user.uid
       );
 
+      /*
+        تم إرسال رابط التحقق من Firebase
+      */
+
       alert(
-        "تم إنشاء الحساب بنجاح ✅"
+        "تم إنشاء الحساب بنجاح ✅\n\n" +
+        "تم إرسال رابط التحقق إلى بريدك الإلكتروني 📧\n\n" +
+        "افتح البريد واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
       );
 
-      localStorage.setItem(
-        "selectedRole",
-        selectedRole
-      );
+      /*
+        نخرج المستخدم من شاشة الحساب الجديد
+        حتى يقوم بتأكيد البريد ثم تسجيل الدخول.
+      */
 
-      if(
-        selectedRole ===
-        "customer"
-      ){
+      if(window.ma3daAuth){
 
-        showScreen(
-          "requestScreen"
-        );
+        try{
+
+          const {
+            signOut
+          } =
+            await import(
+              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+            );
+
+          await signOut(
+            window.ma3daAuth
+          );
+
+        }catch(signOutError){
+
+          console.error(
+            "تعذر تسجيل الخروج بعد إنشاء الحساب:",
+            signOutError
+          );
+
+        }
 
       }
 
-      if(
-        selectedRole ===
-        "operator"
-      ){
-
-        await openOperatorAfterLogin();
-
-      }
+      showScreen(
+        "phoneScreen"
+      );
 
     }
   );
@@ -2542,6 +2665,60 @@ if(backFromRequestBtn){
       user ? user.uid : "لا يوجد مستخدم",
       savedRole || "لا يوجد دور"
     );
+
+    /*
+      إذا كان المستخدم موجودًا لكن بريده غير موثق،
+      لا نعيد فتح الجلسة.
+    */
+
+    if(
+      user &&
+      !user.emailVerified
+    ){
+
+      console.log(
+        "المستخدم موجود لكن البريد غير موثق."
+      );
+
+      if(window.ma3daAuth){
+
+        try{
+
+          const {
+            signOut
+          } =
+            await import(
+              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+            );
+
+          await signOut(
+            window.ma3daAuth
+          );
+
+        }catch(signOutError){
+
+          console.error(
+            "تعذر تسجيل الخروج من المستخدم غير الموثق:",
+            signOutError
+          );
+
+        }
+
+      }
+
+      localStorage.removeItem(
+        "selectedRole"
+      );
+
+      selectedRole = "";
+
+      showScreen(
+        "roleScreen"
+      );
+
+      return;
+
+    }
 
     if(!user){
 
