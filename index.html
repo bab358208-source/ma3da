@@ -81,6 +81,14 @@
       </button>
 
       <button
+        id="forgotPasswordBtn"
+        class="back-btn"
+        type="button"
+      >
+        نسيت كلمة المرور؟
+      </button>
+
+      <button
         id="createAccountBtn"
         class="main-btn"
         type="button"
@@ -831,6 +839,8 @@
     onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    sendEmailVerification,
+    sendPasswordResetEmail,
     setPersistence,
     browserLocalPersistence
   } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -875,8 +885,8 @@
     أصبح جاهزًا قبل تشغيل وظائف script.js.
   */
 
-  window.ma3daFirebaseReady = authReady
-    .then(() => {
+  window.ma3daFirebaseReady =
+    authReady.then(() => {
 
       return new Promise(resolve => {
 
@@ -889,7 +899,9 @@
 
               console.log(
                 "Firebase Auth جاهز:",
-                user ? user.uid : "لا يوجد مستخدم"
+                user
+                  ? user.uid
+                  : "لا يوجد مستخدم"
               );
 
               resolve(user);
@@ -937,8 +949,16 @@
           password
         );
 
+      /*
+        إرسال رابط التحقق من البريد
+      */
+
+      await sendEmailVerification(
+        result.user
+      );
+
       console.log(
-        "تم إنشاء الحساب:",
+        "تم إنشاء الحساب وإرسال رابط التحقق:",
         result.user.uid
       );
 
@@ -978,6 +998,22 @@
           password
         );
 
+      /*
+        التأكد من أن البريد تم التحقق منه
+      */
+
+      if(!result.user.emailVerified){
+
+        alert(
+          "البريد الإلكتروني غير موثق بعد.\n\n" +
+          "افتح رسالة التحقق التي أرسلناها إلى بريدك الإلكتروني، " +
+          "ثم اضغط رابط التحقق، وبعدها حاول تسجيل الدخول مرة أخرى."
+        );
+
+        return null;
+
+      }
+
       console.log(
         "تم تسجيل الدخول:",
         result.user.uid
@@ -998,6 +1034,43 @@
       );
 
       return null;
+
+    }
+
+  };
+
+  /*
+    إعادة تعيين كلمة المرور
+  */
+
+  window.ma3daForgotPassword = async (
+    email
+  ) => {
+
+    try {
+
+      await authReady;
+
+      await sendPasswordResetEmail(
+        auth,
+        email
+      );
+
+      console.log(
+        "تم إرسال رابط إعادة تعيين كلمة المرور إلى:",
+        email
+      );
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "خطأ في إعادة تعيين كلمة المرور:",
+        error
+      );
+
+      throw error;
 
     }
 
