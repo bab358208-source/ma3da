@@ -999,19 +999,15 @@ async function openOperatorAfterLogin(){
 
     if(snapshot.exists()){
 
-      await displayMyEquipment();
+  await displayMyEquipment();
 
-      showScreen(
-        "operatorScreen"
-      );
+  await loadLatestCustomerRequest();
 
-    }else{
+  showScreen(
+    "operatorScreen"
+  );
 
-      showScreen(
-        "addEquipmentScreen"
-      );
-
-    }
+}else{
 
   }catch(error){
 
