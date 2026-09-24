@@ -1616,6 +1616,8 @@ if(acceptRequestBtn){
 }
 /* REJECT */
 
+/* REJECT */
+
 const rejectRequestBtn =
   document.getElementById(
     "rejectRequestBtn"
@@ -1625,27 +1627,71 @@ if(rejectRequestBtn){
 
   rejectRequestBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
-      localStorage.removeItem(
-        "acceptedOrder"
-      );
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
 
-      localStorage.removeItem(
-        "orderAccepted"
-      );
+      if(!requestId){
 
-      setOrderState(
-        "rejected"
-      );
+        alert(
+          "لم يتم العثور على رقم طلب العميل"
+        );
 
-      alert(
-        "تم رفض الطلب"
-      );
+        return;
 
-      showScreen(
-        "roleScreen"
-      );
+      }
+
+      try{
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "rejected"
+          }
+        );
+
+        localStorage.removeItem(
+          "acceptedOrder"
+        );
+
+        localStorage.removeItem(
+          "orderAccepted"
+        );
+
+        setOrderState(
+          "rejected"
+        );
+
+        alert(
+          "تم رفض الطلب"
+        );
+
+        showScreen(
+          "roleScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر رفض الطلب في Firebase:",
+          error
+        );
+
+        alert(
+          "تعذر رفض الطلب في Firebase"
+        );
+
+      }
 
     }
   );
