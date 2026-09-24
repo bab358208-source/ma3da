@@ -1420,16 +1420,11 @@ async function loadLatestCustomerRequest(){
 }
 /* ACCEPT REQUEST */
 
-const acceptRequestBtn =
-  document.getElementById(
-    "acceptRequestBtn"
-  );
-
 if(acceptRequestBtn){
 
   acceptRequestBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
       if(!loadOrder()){
 
@@ -1441,47 +1436,92 @@ if(acceptRequestBtn){
 
       }
 
-      localStorage.setItem(
-        "acceptedOrder",
-        JSON.stringify({
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
 
-          ...order,
+      if(!requestId){
 
-          operatorName:
-            "فهد القحطاني",
+        alert(
+          "لم يتم العثور على رقم طلب العميل"
+        );
 
-          operatorRating:
-            "4.8"
+        return;
 
-        })
-      );
+      }
 
-      localStorage.setItem(
-        "orderAccepted",
-        "true"
-      );
+      try{
 
-      setOrderState(
-        "accepted"
-      );
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
 
-      updateMatchedScreen();
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "accepted",
+            operatorName: "فهد القحطاني",
+            operatorRating: "4.8"
+          }
+        );
 
-      updateWorkingScreen();
+        localStorage.setItem(
+          "acceptedOrder",
+          JSON.stringify({
 
-      alert(
-        "تم قبول الطلب بنجاح 🚜"
-      );
+            ...order,
 
-      showScreen(
-        "matchedScreen"
-      );
+            operatorName:
+              "فهد القحطاني",
+
+            operatorRating:
+              "4.8"
+
+          })
+        );
+
+        localStorage.setItem(
+          "orderAccepted",
+          "true"
+        );
+
+        setOrderState(
+          "accepted"
+        );
+
+        updateMatchedScreen();
+
+        updateWorkingScreen();
+
+        alert(
+          "تم قبول الطلب بنجاح 🚜"
+        );
+
+        showScreen(
+          "matchedScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر تحديث حالة الطلب في Firebase:",
+          error
+        );
+
+        alert(
+          "تعذر قبول الطلب في Firebase"
+        );
+
+      }
 
     }
   );
 
 }
-
 /* REJECT */
 
 const rejectRequestBtn =
