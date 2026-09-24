@@ -615,7 +615,7 @@ function startAcceptanceWatcher(){
 
   acceptanceWatcher =
     setInterval(
-      ()=>{
+      async()=>{
 
         if(
           selectedRole !==
@@ -636,14 +636,100 @@ function startAcceptanceWatcher(){
         )
           return;
 
+        const requestId =
+          localStorage.getItem(
+            "currentRequestId"
+          );
+
         if(
-          getOrderState() ===
-          "accepted"
-        ){
+          !requestId ||
+          !window.ma3daDB ||
+          !window.ma3daDoc ||
+          !window.ma3daGetDoc
+        )
+          return;
 
-          stopAcceptanceWatcher();
+        try{
 
-          if(loadOrder()){
+          const requestRef =
+            window.ma3daDoc(
+              window.ma3daDB,
+              "requests",
+              requestId
+            );
+
+          const snapshot =
+            await window.ma3daGetDoc(
+              requestRef
+            );
+
+          if(!snapshot.exists())
+            return;
+
+          const data =
+            snapshot.data();
+
+          if(
+            data.status ===
+            "accepted"
+          ){
+
+            stopAcceptanceWatcher();
+
+            order = {
+
+              location:
+                data.location || "",
+
+              equipment:
+                data.equipment || "",
+
+              duration:
+                data.duration || "",
+
+              operator:
+                data.operator || "",
+
+              notes:
+                data.notes || "",
+
+              price:
+                Number(
+                  data.price || 0
+                )
+
+            };
+
+            localStorage.setItem(
+              "currentOrder",
+              JSON.stringify(order)
+            );
+
+            localStorage.setItem(
+              "acceptedOrder",
+              JSON.stringify({
+
+                ...order,
+
+                operatorName:
+                  data.operatorName ||
+                  "فهد القحطاني",
+
+                operatorRating:
+                  data.operatorRating ||
+                  "4.8"
+
+              })
+            );
+
+            localStorage.setItem(
+              "orderAccepted",
+              "true"
+            );
+
+            setOrderState(
+              "accepted"
+            );
 
             updateMatchedScreen();
 
@@ -655,14 +741,20 @@ function startAcceptanceWatcher(){
 
           }
 
+        }catch(error){
+
+          console.error(
+            "تعذر متابعة حالة الطلب:",
+            error
+          );
+
         }
 
       },
-      500
+      1000
     );
 
 }
-
 /* ROLE */
 
 const customerRoleBtn =
