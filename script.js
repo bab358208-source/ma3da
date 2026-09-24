@@ -999,15 +999,21 @@ async function openOperatorAfterLogin(){
 
     if(snapshot.exists()){
 
-  await displayMyEquipment();
+      await displayMyEquipment();
 
-  await loadLatestCustomerRequest();
+      await loadLatestCustomerRequest();
 
-  showScreen(
-    "operatorScreen"
-  );
+      showScreen(
+        "operatorScreen"
+      );
 
-}else{
+    }else{
+
+      showScreen(
+        "addEquipmentScreen"
+      );
+
+    }
 
   }catch(error){
 
@@ -1023,7 +1029,6 @@ async function openOperatorAfterLogin(){
   }
 
 }
-
 if(emailLoginBtn){
 
   emailLoginBtn.addEventListener(
