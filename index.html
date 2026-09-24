@@ -826,14 +826,14 @@
   } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
   import {
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc,
-    addDoc,
-    collection
-  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  collection
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
   import {
     getAuth,
     onAuthStateChanged,
@@ -921,9 +921,11 @@
 
   window.ma3daSetDoc = setDoc;
 
-  window.ma3daGetDoc = getDoc;
+ window.ma3daGetDoc = getDoc;
 
-  window.ma3daAddDoc = addDoc;
+window.ma3daGetDocs = getDocs;
+
+window.ma3daAddDoc = addDoc;
 
   window.ma3daCollection = collection;
 
