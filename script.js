@@ -1268,7 +1268,155 @@ async function openOperatorScreen(){
   );
 
 }
+/* LOAD CUSTOMER REQUEST FOR OPERATOR */
 
+async function loadLatestCustomerRequest(){
+
+  try{
+
+    if(!window.ma3daDB){
+
+      console.error(
+        "Firebase غير متصل"
+      );
+
+      return false;
+
+    }
+
+    if(!window.ma3daGetDocs){
+
+      console.error(
+        "ma3daGetDocs غير موجود"
+      );
+
+      return false;
+
+    }
+
+    const requestsRef =
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      );
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        requestsRef
+      );
+
+    if(snapshot.empty){
+
+      console.log(
+        "لا توجد طلبات عملاء"
+      );
+
+      return false;
+
+    }
+
+    let latestRequest = null;
+
+    snapshot.forEach(
+      docSnapshot => {
+
+        const data =
+          docSnapshot.data();
+
+        if(
+          data.status ===
+          "searching"
+        ){
+
+          if(
+            !latestRequest ||
+            Number(data.createdAt || 0) >
+            Number(
+              latestRequest.createdAt || 0
+            )
+          ){
+
+            latestRequest = {
+
+              id:
+                docSnapshot.id,
+
+              ...data
+
+            };
+
+          }
+
+        }
+
+      }
+    );
+
+    if(!latestRequest){
+
+      console.log(
+        "لا يوجد طلب searching حالي"
+      );
+
+      return false;
+
+    }
+
+    order = {
+
+      location:
+        latestRequest.location || "",
+
+      equipment:
+        latestRequest.equipment || "",
+
+      duration:
+        latestRequest.duration || "",
+
+      operator:
+        latestRequest.operator || "",
+
+      notes:
+        latestRequest.notes || "",
+
+      price:
+        Number(
+          latestRequest.price || 0
+        )
+
+    };
+
+    localStorage.setItem(
+      "currentOrder",
+      JSON.stringify(order)
+    );
+
+    localStorage.setItem(
+      "currentRequestId",
+      latestRequest.id
+    );
+
+    updateOperatorScreen();
+
+    console.log(
+      "تم تحميل طلب العميل من Firebase:",
+      latestRequest
+    );
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      "تعذر تحميل طلب العميل:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
 /* ACCEPT REQUEST */
 
 const acceptRequestBtn =
