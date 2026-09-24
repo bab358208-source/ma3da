@@ -741,6 +741,35 @@ function startAcceptanceWatcher(){
 
           }
 
+          if(
+            data.status ===
+            "rejected"
+          ){
+
+            stopAcceptanceWatcher();
+
+            localStorage.removeItem(
+              "acceptedOrder"
+            );
+
+            localStorage.removeItem(
+              "orderAccepted"
+            );
+
+            setOrderState(
+              "rejected"
+            );
+
+            alert(
+              "تم رفض طلبك من صاحب المعدة"
+            );
+
+            showScreen(
+              "roleScreen"
+            );
+
+          }
+
         }catch(error){
 
           console.error(
