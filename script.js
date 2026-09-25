@@ -1579,11 +1579,34 @@ if(acceptRequestBtn){
       try{
 
         const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
+  window.ma3daDoc(
+    window.ma3daDB,
+    "requests",
+    requestId
+  );
+
+const requestSnap =
+  await window.ma3daGetDoc(
+    requestRef
+  );
+
+const requestData =
+  requestSnap.data();
+
+const customerLocation =
+  requestData?.location || "موقع العميل";
+
+const acceptedCustomerLocation =
+  document.getElementById(
+    "acceptedCustomerLocation"
+  );
+
+if(acceptedCustomerLocation){
+
+  acceptedCustomerLocation.textContent =
+    customerLocation;
+
+}
 
         await window.ma3daUpdateDoc(
           requestRef,
