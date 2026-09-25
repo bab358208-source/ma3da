@@ -2685,16 +2685,9 @@ function startTracking(){
       status.textContent =
         "وصلت المعدة إلى موقعك";
 
-      setTimeout(
-        ()=>{
-
-          showScreen(
-            "arrivedScreen"
-          );
-
-        },
-        1500
-      );
+      console.log(
+  "اكتمل التتبع - بانتظار وصول صاحب المعدة"
+);
 
       return;
 
