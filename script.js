@@ -1539,6 +1539,10 @@ async function loadLatestCustomerRequest(){
   }
 
 }
+const acceptRequestBtn =
+  document.getElementById(
+    "acceptRequestBtn"
+  );
 /* ACCEPT REQUEST */
 
 if(acceptRequestBtn){
