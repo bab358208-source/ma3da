@@ -1623,7 +1623,7 @@ if(acceptRequestBtn){
         );
 
         showScreen(
-  "matchedScreen"
+  "operatorAcceptedScreen"
 );
 
       }catch(error){
