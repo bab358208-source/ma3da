@@ -1552,6 +1552,85 @@ if(arrivedAtCustomerBtn){
 
   arrivedAtCustomerBtn.addEventListener(
     "click",
+    async()=>{
+
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
+
+      if(!requestId){
+
+        alert(
+          "لم يتم العثور على رقم الطلب"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "arrived"
+          }
+        );
+
+        const customerLocation =
+          document.getElementById(
+            "acceptedCustomerLocation"
+          );
+
+        const arrivedLocation =
+          document.getElementById(
+            "arrivedCustomerLocation"
+          );
+
+        if(
+          customerLocation &&
+          arrivedLocation
+        ){
+
+          arrivedLocation.textContent =
+            customerLocation.textContent;
+
+        }
+
+        showScreen(
+          "operatorArrivedScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر تسجيل الوصول:",
+          error
+        );
+
+        alert(
+          "تعذر تسجيل الوصول في Firebase"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+if(arrivedAtCustomerBtn){
+
+  arrivedAtCustomerBtn.addEventListener(
+    "click",
     ()=>{
 
       const customerLocation =
