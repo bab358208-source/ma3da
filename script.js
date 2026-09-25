@@ -852,7 +852,26 @@ function startAcceptanceWatcher(){
             updateTimer();
 
           }
+/* COMPLETED */
 
+if(
+  data.status ===
+  "completed"
+){
+
+  clearInterval(
+    timerInterval
+  );
+
+  setOrderState(
+    "completed"
+  );
+
+  showScreen(
+    "completedScreen"
+  );
+
+}
           /* REJECTED */
 
           if(
