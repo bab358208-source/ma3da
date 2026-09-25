@@ -2902,12 +2902,38 @@ if(endWorkBtn){
 
   endWorkBtn.addEventListener(
     "click",
-    ()=>{
-if(
-  selectedRole !==
-  "operator"
-)
-  return;
+    async ()=>{
+
+      if(
+        selectedRole !==
+        "operator"
+      )
+        return;
+
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
+
+      if(requestId){
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "completed",
+            completedAt: Date.now()
+          }
+        );
+
+      }
+
       clearInterval(
         timerInterval
       );
@@ -2924,36 +2950,23 @@ if(
         priceElement.textContent =
           `${finalPrice} ريال`;
 
-      if(
-        selectedRole ===
-        "operator"
-      ){
+      localStorage.setItem(
+        "workEnded",
+        "true"
+      );
 
-        localStorage.setItem(
-          "workEnded",
-          "true"
-        );
+      localStorage.setItem(
+        "finalPrice",
+        finalPrice
+      );
 
-        localStorage.setItem(
-          "finalPrice",
-          finalPrice
-        );
+      setOrderState(
+        "completed"
+      );
 
-        setOrderState(
-          "completed"
-        );
-
-        showScreen(
-          "operatorCompletedScreen"
-        );
-
-      }else{
-
-        showScreen(
-          "completedScreen"
-        );
-
-      }
+      showScreen(
+        "operatorCompletedScreen"
+      );
 
     }
   );
