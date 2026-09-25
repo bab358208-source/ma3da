@@ -1609,7 +1609,70 @@ const arrivedAtCustomerBtn =
   document.getElementById(
     "arrivedAtCustomerBtn"
   );
+const startWorkBtn =
+  document.getElementById(
+    "startWorkBtn"
+  );
 
+if(startWorkBtn){
+
+  startWorkBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
+
+      if(!requestId){
+
+        alert(
+          "لم يتم العثور على رقم الطلب"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "working",
+            workStartedAt: Date.now()
+          }
+        );
+
+        showScreen(
+          "workingScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر بدء العمل:",
+          error
+        );
+
+        alert(
+          "تعذر بدء العمل في Firebase"
+        );
+
+      }
+
+    }
+  );
+
+}
 if(arrivedAtCustomerBtn){
 
   arrivedAtCustomerBtn.addEventListener(
