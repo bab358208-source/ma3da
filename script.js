@@ -2745,7 +2745,10 @@ document.addEventListener(
     showScreen(
       "workingScreen"
     );
-
+document.getElementById(
+  "endWorkBtn"
+).style.display =
+  "block";
     workStartTime =
       Date.now();
 
