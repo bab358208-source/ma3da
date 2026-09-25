@@ -3045,9 +3045,11 @@ const paymentBtn =
 
 if(paymentBtn){
 
-  paymentBtn.addEventListener(
-    "click",
-    ()=>{
+ paymentBtn.addEventListener(
+  "click",
+  ()=>{
+    
+    stopAcceptanceWatcher();
 
       showScreen(
         "paymentScreen"
