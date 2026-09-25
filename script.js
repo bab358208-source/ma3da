@@ -775,7 +775,29 @@ if(
     "currentOrder",
     JSON.stringify(order)
   );
+const arrivedEquipment =
+  document.getElementById(
+    "arrivedCustomerEquipment"
+  );
 
+const arrivedLocation =
+  document.getElementById(
+    "arrivedCustomerLocation"
+  );
+
+if(arrivedEquipment){
+
+  arrivedEquipment.textContent =
+    data.equipment || "المعدة";
+
+}
+
+if(arrivedLocation){
+
+  arrivedLocation.textContent =
+    data.location || "موقعك";
+
+}
   showScreen(
     "arrivedCustomerScreen"
   );
