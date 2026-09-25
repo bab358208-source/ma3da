@@ -1625,6 +1625,17 @@ if(acceptRequestBtn){
         alert(
           "تم قبول الطلب بنجاح 🚜"
         );
+        const acceptedCustomerLocation =
+  document.getElementById(
+    "acceptedCustomerLocation"
+  );
+
+if(acceptedCustomerLocation){
+
+  acceptedCustomerLocation.textContent =
+    order.location || "موقع العميل";
+
+}
 
         showScreen(
   "operatorAcceptedScreen"
@@ -1647,7 +1658,7 @@ if(acceptRequestBtn){
   );
 
 }
-/* REJECT */
+
 
 /* REJECT */
 
