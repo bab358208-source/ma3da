@@ -2672,84 +2672,104 @@ if(startWorkBtn){
 
   startWorkBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
-      showScreen(
-        "workingScreen"
+      console.log(
+        "تم الضغط على زر بدء العمل"
       );
 
-      if(
-        selectedRole !==
-        "customer"
-      )
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
+
+      if(!requestId){
+
+        alert(
+          "لم يتم العثور على رقم الطلب"
+        );
+
         return;
 
-      workStartTime =
-        Date.now();
+      }
 
-      clearInterval(
-        timerInterval
-      );
+      if(
+        !window.ma3daDB ||
+        !window.ma3daDoc ||
+        !window.ma3daUpdateDoc
+      ){
 
-      updateTimer();
-
-      timerInterval =
-        setInterval(
-          updateTimer,
-          1000
+        alert(
+          "Firebase غير جاهز"
         );
 
-      const check =
-        setInterval(
-          ()=>{
+        return;
 
-            if(
-              localStorage.getItem(
-                "workEnded"
-              ) === "true"
-            ){
+      }
 
-              clearInterval(
-                check
-              );
+      try{
 
-              clearInterval(
-                timerInterval
-              );
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
 
-              const price =
-                localStorage.getItem(
-                  "finalPrice"
-                );
-
-              if(price){
-
-                const finalPrice =
-                  document.getElementById(
-                    "finalPrice"
-                  );
-
-                if(finalPrice)
-                  finalPrice.textContent =
-                    `${price} ريال`;
-
-              }
-
-              showScreen(
-                "completedScreen"
-              );
-
-            }
-
-          },
-          1000
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "working",
+            workStartedAt: Date.now()
+          }
         );
+
+        console.log(
+          "تم تحديث حالة الطلب إلى working"
+        );
+
+        setOrderState(
+          "working"
+        );
+
+        workStartTime =
+          Date.now();
+
+        clearInterval(
+          timerInterval
+        );
+
+        updateWorkingScreen();
+
+        showScreen(
+          "workingScreen"
+        );
+
+        timerInterval =
+          setInterval(
+            updateTimer,
+            1000
+          );
+
+        updateTimer();
+
+      }catch(error){
+
+        console.error(
+          "تعذر بدء العمل:",
+          error
+        );
+
+        alert(
+          "تعذر بدء العمل في Firebase"
+        );
+
+      }
 
     }
   );
 
 }
-
 function updateTimer(){
 
   if(!workStartTime)
