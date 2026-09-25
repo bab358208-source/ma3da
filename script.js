@@ -740,7 +740,47 @@ function startAcceptanceWatcher(){
             );
 
           }
+if(
+  data.status ===
+  "arrived"
+){
 
+  stopAcceptanceWatcher();
+
+  order = {
+
+    location:
+      data.location || "",
+
+    equipment:
+      data.equipment || "",
+
+    duration:
+      data.duration || "",
+
+    operator:
+      data.operator || "",
+
+    notes:
+      data.notes || "",
+
+    price:
+      Number(
+        data.price || 0
+      )
+
+  };
+
+  localStorage.setItem(
+    "currentOrder",
+    JSON.stringify(order)
+  );
+
+  showScreen(
+    "arrivedCustomerScreen"
+  );
+
+}
           if(
             data.status ===
             "rejected"
