@@ -1543,7 +1543,45 @@ const acceptRequestBtn =
   document.getElementById(
     "acceptRequestBtn"
   );
+const arrivedAtCustomerBtn =
+  document.getElementById(
+    "arrivedAtCustomerBtn"
+  );
 
+if(arrivedAtCustomerBtn){
+
+  arrivedAtCustomerBtn.addEventListener(
+    "click",
+    ()=>{
+
+      const customerLocation =
+        document.getElementById(
+          "acceptedCustomerLocation"
+        );
+
+      const arrivedLocation =
+        document.getElementById(
+          "arrivedCustomerLocation"
+        );
+
+      if(
+        customerLocation &&
+        arrivedLocation
+      ){
+
+        arrivedLocation.textContent =
+          customerLocation.textContent;
+
+      }
+
+      showScreen(
+        "operatorArrivedScreen"
+      );
+
+    }
+  );
+
+}
 /* ACCEPT REQUEST */
 
 if(acceptRequestBtn){
