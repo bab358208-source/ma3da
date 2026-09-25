@@ -2900,7 +2900,11 @@ if(endWorkBtn){
   endWorkBtn.addEventListener(
     "click",
     ()=>{
-
+if(
+  selectedRole !==
+  "operator"
+)
+  return;
       clearInterval(
         timerInterval
       );
