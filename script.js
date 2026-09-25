@@ -2661,115 +2661,106 @@ function startTracking(){
 
 }
 
-/* START WORK */
 
-const startWorkBtn =
-  document.getElementById(
-    "startWorkBtn"
-  );
+  /* START WORK */
 
-if(startWorkBtn){
+document.addEventListener(
+  "click",
+  async event => {
 
-  startWorkBtn.addEventListener(
-    "click",
-    async()=>{
-
-      console.log(
-        "تم الضغط على زر بدء العمل"
+    const button =
+      event.target.closest(
+        "#startWorkBtn"
       );
 
-      const requestId =
-        localStorage.getItem(
-          "currentRequestId"
-        );
+    if(!button)
+      return;
 
-      if(!requestId){
+    console.log(
+      "تم الضغط على زر بدء العمل"
+    );
 
-        alert(
-          "لم يتم العثور على رقم الطلب"
-        );
+    const requestId =
+      localStorage.getItem(
+        "currentRequestId"
+      );
 
-        return;
+    if(!requestId){
 
-      }
+      alert(
+        "لم يتم العثور على رقم الطلب"
+      );
 
-      if(
-        !window.ma3daDB ||
-        !window.ma3daDoc ||
-        !window.ma3daUpdateDoc
-      ){
-
-        alert(
-          "Firebase غير جاهز"
-        );
-
-        return;
-
-      }
-
-      try{
-
-        const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
-
-        await window.ma3daUpdateDoc(
-          requestRef,
-          {
-            status: "working",
-            workStartedAt: Date.now()
-          }
-        );
-
-        console.log(
-          "تم تحديث حالة الطلب إلى working"
-        );
-
-        setOrderState(
-          "working"
-        );
-
-        workStartTime =
-          Date.now();
-
-        clearInterval(
-          timerInterval
-        );
-
-        updateWorkingScreen();
-
-        showScreen(
-          "workingScreen"
-        );
-
-        timerInterval =
-          setInterval(
-            updateTimer,
-            1000
-          );
-
-        updateTimer();
-
-      }catch(error){
-
-        console.error(
-          "تعذر بدء العمل:",
-          error
-        );
-
-        alert(
-          "تعذر بدء العمل في Firebase"
-        );
-
-      }
+      return;
 
     }
-  );
 
-}
+    /* ننتقل للشاشة مباشرة */
+
+    showScreen(
+      "workingScreen"
+    );
+
+    workStartTime =
+      Date.now();
+
+    clearInterval(
+      timerInterval
+    );
+
+    updateWorkingScreen();
+
+    updateTimer();
+
+    timerInterval =
+      setInterval(
+        updateTimer,
+        1000
+      );
+
+    /* تحديث Firebase */
+
+    try{
+
+      const requestRef =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "requests",
+          requestId
+        );
+
+      await window.ma3daUpdateDoc(
+        requestRef,
+        {
+          status: "working",
+          workStartedAt:
+            workStartTime
+        }
+      );
+
+      setOrderState(
+        "working"
+      );
+
+      console.log(
+        "تم تحديث الطلب إلى working"
+      );
+
+    }catch(error){
+
+      console.error(
+        "تعذر تحديث حالة العمل في Firebase:",
+        error
+      );
+
+      alert(
+        "تم بدء العمل، لكن تعذر تحديث Firebase"
+      );
+
+    }
+
+  }
+);
 function updateTimer(){
 
   if(!workStartTime)
