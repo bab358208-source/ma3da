@@ -853,7 +853,6 @@ function startAcceptanceWatcher(){
 
           }
 /* COMPLETED */
-
 if(
   data.status ===
   "completed"
@@ -862,6 +861,13 @@ if(
   clearInterval(
     timerInterval
   );
+
+  if(
+    document
+      .getElementById("paymentScreen")
+      ?.classList.contains("active")
+  )
+    return;
 
   setOrderState(
     "completed"
