@@ -623,19 +623,6 @@ function startAcceptanceWatcher(){
         )
           return;
 
-        const searching =
-          document.getElementById(
-            "searchingScreen"
-          );
-
-        if(
-          !searching ||
-          !searching.classList.contains(
-            "active"
-          )
-        )
-          return;
-
         const requestId =
           localStorage.getItem(
             "currentRequestId"
@@ -669,12 +656,12 @@ function startAcceptanceWatcher(){
           const data =
             snapshot.data();
 
+          /* ACCEPTED */
+
           if(
             data.status ===
             "accepted"
           ){
-
-            stopAcceptanceWatcher();
 
             order = {
 
@@ -735,74 +722,139 @@ function startAcceptanceWatcher(){
 
             updateWorkingScreen();
 
+            if(
+              document.getElementById(
+                "searchingScreen"
+              )?.classList.contains(
+                "active"
+              )
+            ){
+
+              showScreen(
+                "matchedScreen"
+              );
+
+            }
+
+          }
+
+          /* ARRIVED */
+
+          if(
+            data.status ===
+            "arrived"
+          ){
+
+            order = {
+
+              location:
+                data.location || "",
+
+              equipment:
+                data.equipment || "",
+
+              duration:
+                data.duration || "",
+
+              operator:
+                data.operator || "",
+
+              notes:
+                data.notes || "",
+
+              price:
+                Number(
+                  data.price || 0
+                )
+
+            };
+
+            localStorage.setItem(
+              "currentOrder",
+              JSON.stringify(order)
+            );
+
+            const arrivedEquipment =
+              document.getElementById(
+                "arrivedCustomerEquipment"
+              );
+
+            const arrivedLocation =
+              document.getElementById(
+                "arrivedCustomerLocation"
+              );
+
+            if(arrivedEquipment){
+
+              arrivedEquipment.textContent =
+                data.equipment ||
+                "المعدة";
+
+            }
+
+            if(arrivedLocation){
+
+              arrivedLocation.textContent =
+                data.location ||
+                "موقعك";
+
+            }
+
             showScreen(
-              "matchedScreen"
+              "arrivedCustomerScreen"
             );
 
           }
-if(
-  data.status ===
-  "arrived"
-){
 
-  stopAcceptanceWatcher();
+          /* WORKING */
 
-  order = {
+          if(
+            data.status ===
+            "working"
+          ){
 
-    location:
-      data.location || "",
+            console.log(
+              "العمل بدأ عند صاحب المعدة"
+            );
 
-    equipment:
-      data.equipment || "",
+            setOrderState(
+              "working"
+            );
 
-    duration:
-      data.duration || "",
+            if(data.workStartedAt){
 
-    operator:
-      data.operator || "",
+              workStartTime =
+                data.workStartedAt;
 
-    notes:
-      data.notes || "",
+            }else if(!workStartTime){
 
-    price:
-      Number(
-        data.price || 0
-      )
+              workStartTime =
+                Date.now();
 
-  };
+            }
 
-  localStorage.setItem(
-    "currentOrder",
-    JSON.stringify(order)
-  );
-const arrivedEquipment =
-  document.getElementById(
-    "arrivedCustomerEquipment"
-  );
+            updateWorkingScreen();
 
-const arrivedLocation =
-  document.getElementById(
-    "arrivedCustomerLocation"
-  );
+            showScreen(
+              "workingScreen"
+            );
 
-if(arrivedEquipment){
+            clearInterval(
+              timerInterval
+            );
 
-  arrivedEquipment.textContent =
-    data.equipment || "المعدة";
+            timerInterval =
+              setInterval(
+                updateTimer,
+                1000
+              );
 
-}
+            updateTimer();
 
-if(arrivedLocation){
+          }
 
-  arrivedLocation.textContent =
-    data.location || "موقعك";
+          /* REJECTED */
 
-}
-  showScreen(
-    "arrivedCustomerScreen"
-  );
-
-}
           if(
             data.status ===
             "rejected"
