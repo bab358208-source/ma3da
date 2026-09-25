@@ -1543,6 +1543,7 @@ const acceptRequestBtn =
   document.getElementById(
     "acceptRequestBtn"
   );
+
 /* ACCEPT REQUEST */
 
 if(acceptRequestBtn){
@@ -1579,34 +1580,35 @@ if(acceptRequestBtn){
       try{
 
         const requestRef =
-  window.ma3daDoc(
-    window.ma3daDB,
-    "requests",
-    requestId
-  );
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
 
-const requestSnap =
-  await window.ma3daGetDoc(
-    requestRef
-  );
+        const requestSnap =
+          await window.ma3daGetDoc(
+            requestRef
+          );
 
-const requestData =
-  requestSnap.data();
+        const requestData =
+          requestSnap.data();
 
-const customerLocation =
-  requestData?.location || "موقع العميل";
+        const customerLocation =
+          requestData?.location ||
+          "موقع العميل";
 
-const acceptedCustomerLocation =
-  document.getElementById(
-    "acceptedCustomerLocation"
-  );
+        const acceptedCustomerLocation =
+          document.getElementById(
+            "acceptedCustomerLocation"
+          );
 
-if(acceptedCustomerLocation){
+        if(acceptedCustomerLocation){
 
-  acceptedCustomerLocation.textContent =
-    customerLocation;
+          acceptedCustomerLocation.textContent =
+            customerLocation;
 
-}
+        }
 
         await window.ma3daUpdateDoc(
           requestRef,
@@ -1648,21 +1650,10 @@ if(acceptedCustomerLocation){
         alert(
           "تم قبول الطلب بنجاح 🚜"
         );
-        const acceptedCustomerLocation =
-  document.getElementById(
-    "acceptedCustomerLocation"
-  );
-
-if(acceptedCustomerLocation){
-
-  acceptedCustomerLocation.textContent =
-    order.location || "موقع العميل";
-
-}
 
         showScreen(
-  "operatorAcceptedScreen"
-);
+          "operatorAcceptedScreen"
+        );
 
       }catch(error){
 
@@ -1681,7 +1672,6 @@ if(acceptedCustomerLocation){
   );
 
 }
-
 
 /* REJECT */
 
