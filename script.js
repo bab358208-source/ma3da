@@ -3445,20 +3445,15 @@ if(backFromRequestBtn){
 
     if(!user){
 
-      selectedRole = "";
+  selectedRole = "";
 
-      localStorage.removeItem(
-        "selectedRole"
-      );
+  localStorage.removeItem(
+    "selectedRole"
+  );
 
-      showScreen(
-        "roleScreen"
-      );
+  return;
 
-      return;
-
-    }
-
+}
     if(!savedRole){
 
       showScreen(
