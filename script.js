@@ -2,7 +2,7 @@ console.log("MA3DA SCRIPT LOADED");
 
 const screens =
   document.querySelectorAll(".screen");
- 
+  
 function showScreen(id){
 
   screens.forEach(
