@@ -3534,6 +3534,7 @@ const skipIntroBtn =
     "skipIntroBtn"
   );
 
+
 if(skipIntroBtn){
 
   skipIntroBtn.addEventListener(
@@ -3541,8 +3542,8 @@ if(skipIntroBtn){
     ()=>{
 
       showScreen(
-  "howMa3daScreen"
-);
+        "roleScreen"
+      );
 
     }
   );
