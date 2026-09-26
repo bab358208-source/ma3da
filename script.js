@@ -3507,3 +3507,84 @@ if(backFromRequestBtn){
   }
 
 })();
+/* INTRO */
+
+const introNextBtn =
+  document.getElementById(
+    "introNextBtn"
+  );
+
+if(introNextBtn){
+
+  introNextBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "whyMa3daScreen"
+      );
+
+    }
+  );
+
+}
+
+const skipIntroBtn =
+  document.getElementById(
+    "skipIntroBtn"
+  );
+
+if(skipIntroBtn){
+
+  skipIntroBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
+
+const whyMa3daNextBtn =
+  document.getElementById(
+    "whyMa3daNextBtn"
+  );
+
+if(whyMa3daNextBtn){
+
+  whyMa3daNextBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
+
+const whyMa3daSkipBtn =
+  document.getElementById(
+    "whyMa3daSkipBtn"
+  );
+
+if(whyMa3daSkipBtn){
+
+  whyMa3daSkipBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
