@@ -3588,3 +3588,42 @@ if(whyMa3daSkipBtn){
   );
 
 }
+const howMa3daNextBtn =
+  document.getElementById(
+    "howMa3daNextBtn"
+  );
+
+if(howMa3daNextBtn){
+
+  howMa3daNextBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
+
+const howMa3daSkipBtn =
+  document.getElementById(
+    "howMa3daSkipBtn"
+  );
+
+if(howMa3daSkipBtn){
+
+  howMa3daSkipBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
