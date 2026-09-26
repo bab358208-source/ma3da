@@ -3627,3 +3627,22 @@ if(howMa3daSkipBtn){
   );
 
 }
+const howMa3daBackBtn =
+  document.getElementById(
+    "howMa3daBackBtn"
+  );
+
+if(howMa3daBackBtn){
+
+  howMa3daBackBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "whyMa3daScreen"
+      );
+
+    }
+  );
+
+}
