@@ -3541,8 +3541,8 @@ if(skipIntroBtn){
     ()=>{
 
       showScreen(
-        "roleScreen"
-      );
+  "howMa3daScreen"
+);
 
     }
   );
