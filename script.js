@@ -1353,18 +1353,18 @@ if(emailLoginBtn){
           selectedRole
         );
 
-        if(
-          selectedRole ===
-          "customer"
-        ){
+   if(
+  selectedRole ===
+  "customer"
+){
 
-          showScreen(
-            "requestScreen"
-          );
+  showScreen(
+    "customerDataScreen"
+  );
 
-          return;
+  return;
 
-        }
+}
 
         if(
           selectedRole ===
