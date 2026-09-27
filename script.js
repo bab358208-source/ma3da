@@ -3508,142 +3508,101 @@ if(backFromRequestBtn){
 
 })();
 /* INTRO */
-
 const introNextBtn =
   document.getElementById(
     "introNextBtn"
   );
-
 if(introNextBtn){
-
   introNextBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "whyMa3daScreen"
       );
-
     }
   );
-
 }
-
 const skipIntroBtn =
   document.getElementById(
     "skipIntroBtn"
   );
-
-
 if(skipIntroBtn){
-
   skipIntroBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "roleScreen"
       );
-
     }
   );
-
 }
-
 const whyMa3daNextBtn =
   document.getElementById(
     "whyMa3daNextBtn"
   );
-
 if(whyMa3daNextBtn){
-
   whyMa3daNextBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
-        "roleScreen"
+        "howMa3daScreen"
       );
-
     }
   );
-
 }
-
 const whyMa3daSkipBtn =
   document.getElementById(
     "whyMa3daSkipBtn"
   );
-
 if(whyMa3daSkipBtn){
-
   whyMa3daSkipBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "roleScreen"
       );
-
     }
   );
-
 }
 const howMa3daNextBtn =
   document.getElementById(
     "howMa3daNextBtn"
   );
-
 if(howMa3daNextBtn){
-
   howMa3daNextBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "roleScreen"
       );
-
     }
   );
-
 }
-
 const howMa3daSkipBtn =
   document.getElementById(
     "howMa3daSkipBtn"
   );
-
 if(howMa3daSkipBtn){
-
   howMa3daSkipBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
-        "howMa3daScreen"
+        "roleScreen"
       );
-
     }
   );
-
 }
 const howMa3daBackBtn =
   document.getElementById(
     "howMa3daBackBtn"
   );
-
 if(howMa3daBackBtn){
-
   howMa3daBackBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
-    "whyMa3daScreen"
+        "whyMa3daScreen"
       );
-
     }
   );
-
 }
