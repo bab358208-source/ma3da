@@ -3621,7 +3621,7 @@ if(howMa3daSkipBtn){
     ()=>{
 
       showScreen(
-        "roleScreen"
+        "howMa3daScreen"
       );
 
     }
@@ -3640,7 +3640,7 @@ if(howMa3daBackBtn){
     ()=>{
 
       showScreen(
-        "whyMa3daScreen"
+    "whyMa3daScreen"
       );
 
     }
