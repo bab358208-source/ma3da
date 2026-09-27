@@ -3669,8 +3669,8 @@ if(saveCustomerDataBtn){
         );
 
         showScreen(
-          "requestScreen"
-        );
+  "customerHomeScreen"
+);
 
       }catch(error){
 
