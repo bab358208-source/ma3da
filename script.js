@@ -3160,6 +3160,7 @@ if(ratingBtn){
 
 }
 
+
 /* NEW REQUEST */
 
 const newRequestBtn =
@@ -3173,24 +3174,9 @@ if(newRequestBtn){
     "click",
     ()=>{
 
-      stopAcceptanceWatcher();
-
-      [
-        "currentOrder",
-        "orderState",
-        "acceptedOrder",
-        "orderAccepted",
-        "workEnded",
-        "finalPrice",
-        "currentRequestId"
-      ].forEach(
-        key =>
-          localStorage.removeItem(
-            key
-          )
+      showScreen(
+        "requestScreen"
       );
-
-      location.reload();
 
     }
   );
