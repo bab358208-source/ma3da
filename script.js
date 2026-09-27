@@ -3615,11 +3615,89 @@ if(saveCustomerDataBtn){
 
   saveCustomerDataBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
-      showScreen(
-        "requestScreen"
-      );
+      const name =
+        document.getElementById(
+          "customerNameInput"
+        ).value.trim();
+
+      const phone =
+        document.getElementById(
+          "customerPhoneInput"
+        ).value.trim();
+
+      const city =
+        document.getElementById(
+          "customerCityInput"
+        ).value.trim();
+
+      if(!name || !phone || !city){
+
+        alert(
+          "أكمل جميع البيانات أولًا"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const user =
+          window.ma3daGetCurrentUser
+            ? await window.ma3daGetCurrentUser()
+            : window.ma3daAuth?.currentUser;
+
+        if(!user){
+
+          alert(
+            "يجب تسجيل الدخول أولًا"
+          );
+
+          return;
+
+        }
+
+        const customerRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "customers",
+            user.uid
+          );
+
+        await window.ma3daSetDoc(
+          customerRef,
+          {
+            name: name,
+            phone: phone,
+            city: city,
+            email: user.email,
+            customerId: user.uid,
+            updatedAt: Date.now()
+          }
+        );
+
+        console.log(
+          "تم حفظ بيانات العميل"
+        );
+
+        showScreen(
+          "requestScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "خطأ في حفظ بيانات العميل:",
+          error
+        );
+
+        alert(
+          "تعذر حفظ بيانات العميل"
+        );
+
+      }
 
     }
   );
