@@ -239,7 +239,60 @@
     </div>
 
   </section>
+<!-- بيانات العميل -->
+<section id="customerDataScreen" class="screen">
 
+  <div class="hero">
+    <div class="hero-icon">👤</div>
+
+    <h1>أكمل بياناتك</h1>
+
+    <p>
+      أدخل بياناتك لإكمال حسابك في مِعدة
+    </p>
+  </div>
+
+  <div class="card">
+
+    <label>👤 الاسم</label>
+
+    <input
+      id="customerNameInput"
+      type="text"
+      placeholder="اكتب اسمك"
+      autocomplete="name"
+    >
+
+    <label>📱 رقم الجوال</label>
+
+    <input
+      id="customerPhoneInput"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+      autocomplete="tel"
+    >
+
+    <label>📍 المدينة</label>
+
+    <input
+      id="customerCityInput"
+      type="text"
+      placeholder="مثال: جدة"
+      autocomplete="address-level2"
+    >
+
+    <button
+      id="saveCustomerDataBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ ومتابعة
+    </button>
+
+  </div>
+
+</section>
   <!-- رمز التحقق للجوال - محفوظ للمرحلة القادمة -->
   <section id="otpScreen" class="screen">
 
