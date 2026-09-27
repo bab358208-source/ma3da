@@ -3452,21 +3452,18 @@ if(backFromRequestBtn){
 
     selectedRole =
       savedRole;
+if(
+  savedRole ===
+  "customer"
+){
 
-    /* CUSTOMER */
+  showScreen(
+    "customerHomeScreen"
+  );
 
-    if(
-      savedRole ===
-      "customer"
-    ){
+  return;
 
-      showScreen(
-        "requestScreen"
-      );
-
-      return;
-
-    }
+}
 
     /* OPERATOR */
 
