@@ -3606,3 +3606,22 @@ if(howMa3daBackBtn){
     }
   );
 }
+const saveCustomerDataBtn =
+  document.getElementById(
+    "saveCustomerDataBtn"
+  );
+
+if(saveCustomerDataBtn){
+
+  saveCustomerDataBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "requestScreen"
+      );
+
+    }
+  );
+
+}
