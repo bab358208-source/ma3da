@@ -3693,9 +3693,10 @@ if(saveCustomerDataBtn){
           error
         );
 
-        alert(
-          "تعذر حفظ بيانات العميل"
-        );
+       alert(
+  "خطأ Firebase: " +
+  error.message
+);
 
       }
 
