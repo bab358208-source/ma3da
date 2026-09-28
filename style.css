@@ -1009,3 +1009,62 @@ textarea {
   font-weight: 800;
   cursor: pointer;
 }
+/* ================================
+   الوضع الداكن
+   ================================ */
+
+html[data-theme="dark"] body {
+  background: #121212;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] .card {
+  background: #1e1e1e;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-color: #444;
+}
+
+html[data-theme="dark"] .home-request-card {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] .home-menu-item {
+  background: #1e1e1e;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] .home-menu-icon {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] .hero p {
+  color: #aaa;
+}
+
+html[data-theme="dark"] .driver-card,
+html[data-theme="dark"] .operator-header,
+html[data-theme="dark"] .operator-request-card,
+html[data-theme="dark"] .operator-status {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] .operator-notes {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] .price-box {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] .payment-option {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-color: #444;
+}
