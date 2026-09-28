@@ -3374,7 +3374,10 @@ if(backFromRequestBtn){
       user ? user.uid : "لا يوجد مستخدم",
       savedRole || "لا يوجد دور"
     );
-
+console.log(
+  "emailVerified:",
+  user ? user.emailVerified : "لا يوجد مستخدم"
+);
     /*
       إذا كان المستخدم موجودًا لكن بريده غير موثق،
       لا نعيد فتح الجلسة.
