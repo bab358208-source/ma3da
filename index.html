@@ -609,6 +609,248 @@
   </div>
 
 </section>
+  <!-- ================================
+     الطلبات الحالية
+     ================================ -->
+
+<section
+  id="currentOrdersScreen"
+  class="screen"
+>
+
+  <button
+    id="backFromCurrentOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+    <h1>
+      الطلبات الحالية
+    </h1>
+
+    <p>
+      تابع حالة طلباتك الحالية
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <div id="currentOrdersList">
+
+      <p>
+        جاري تحميل الطلبات...
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================================
+     الطلبات السابقة
+     ================================ -->
+
+<section
+  id="previousOrdersScreen"
+  class="screen"
+>
+
+  <button
+    id="backFromPreviousOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🕘
+    </div>
+
+    <h1>
+      الطلبات السابقة
+    </h1>
+
+    <p>
+      عرض سجل طلباتك السابقة
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <div id="previousOrdersList">
+
+      <p>
+        جاري تحميل الطلبات...
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ================================
+     الإعدادات
+     ================================ -->
+
+<section
+  id="customerSettingsScreen"
+  class="screen"
+>
+
+  <button
+    id="backFromCustomerSettingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⚙️
+    </div>
+
+    <h1>
+      الإعدادات
+    </h1>
+
+    <p>
+      إدارة بيانات حسابك
+    </p>
+
+  </div>
+
+
+  <!-- بيانات الحساب -->
+
+  <div class="card">
+
+    <h2>
+      بيانات الحساب
+    </h2>
+
+    <div class="settings-item">
+
+      <label>
+        الاسم
+      </label>
+
+      <input
+        id="customerNameSettingsInput"
+        type="text"
+        placeholder="اسمك"
+      >
+
+    </div>
+
+
+    <div class="settings-item">
+
+      <label>
+        البريد الإلكتروني
+      </label>
+
+      <input
+        id="customerEmailSettingsInput"
+        type="email"
+        placeholder="البريد الإلكتروني"
+        readonly
+      >
+
+    </div>
+
+
+    <button
+      id="saveCustomerSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ التعديلات
+    </button>
+
+  </div>
+
+
+  <!-- الأمان -->
+
+  <div class="card">
+
+    <h2>
+      الأمان
+    </h2>
+
+    <button
+      id="changePasswordBtn"
+      class="home-menu-item"
+      type="button"
+    >
+
+      <div class="home-menu-icon">
+        🔐
+      </div>
+
+      <div class="home-menu-text">
+
+        <strong>
+          تغيير كلمة المرور
+        </strong>
+
+        <span>
+          إرسال رابط لتغيير كلمة المرور
+        </span>
+
+      </div>
+
+      <span class="home-arrow">
+        ←
+      </span>
+
+    </button>
+
+  </div>
+
+
+  <!-- معلومات الحساب -->
+
+  <div class="card">
+
+    <h2>
+      معلومات الحساب
+    </h2>
+
+    <div class="settings-info">
+
+      <span>
+        حالة الحساب
+      </span>
+
+      <strong id="customerAccountStatus">
+        نشط
+      </strong>
+
+    </div>
+
+  </div>
+
+</section>
   <!-- طلب معدة -->
   <section id="requestScreen" class="screen">
 
