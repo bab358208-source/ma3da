@@ -3547,12 +3547,14 @@ if(whyMa3daSkipBtn){
     }
   );
 }
-const howMa3daNextBtn =
+const startMa3daBtn =
   document.getElementById(
-    "howMa3daNextBtn"
+    "startMa3daBtn"
   );
-if(howMa3daNextBtn){
-  howMa3daNextBtn.addEventListener(
+
+if(startMa3daBtn){
+
+  startMa3daBtn.addEventListener(
     "click",
     ()=>{
       showScreen(
@@ -3560,6 +3562,7 @@ if(howMa3daNextBtn){
       );
     }
   );
+
 }
 const howMa3daSkipBtn =
   document.getElementById(
