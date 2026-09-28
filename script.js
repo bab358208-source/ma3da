@@ -4820,3 +4820,377 @@ if(backFromEditEmailBtn){
   );
 
 }
+/* ================================
+   إعدادات الحساب
+   كلمة السر + اللغة + المظهر
+   ================================ */
+
+
+/* ================================
+   تغيير كلمة المرور
+   ================================ */
+
+const changePasswordBtn =
+  document.getElementById(
+    "changePasswordBtn"
+  );
+
+if(changePasswordBtn){
+
+  changePasswordBtn.addEventListener(
+    "click",
+    async()=>{
+
+      showScreen(
+        "changePasswordScreen"
+      );
+
+      const emailElement =
+        document.getElementById(
+          "passwordResetEmail"
+        );
+
+      const user =
+        window.ma3daGetCurrentUser
+          ? await window.ma3daGetCurrentUser()
+          : window.ma3daAuth?.currentUser;
+
+      if(emailElement){
+
+        emailElement.textContent =
+          user?.email ||
+          "غير متوفر";
+
+      }
+
+    }
+  );
+
+}
+
+
+const backFromChangePasswordBtn =
+  document.getElementById(
+    "backFromChangePasswordBtn"
+  );
+
+if(backFromChangePasswordBtn){
+
+  backFromChangePasswordBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const sendPasswordResetBtn =
+  document.getElementById(
+    "sendPasswordResetBtn"
+  );
+
+if(sendPasswordResetBtn){
+
+  sendPasswordResetBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const user =
+        window.ma3daGetCurrentUser
+          ? await window.ma3daGetCurrentUser()
+          : window.ma3daAuth?.currentUser;
+
+      if(!user || !user.email){
+
+        alert(
+          "لا يوجد بريد إلكتروني مرتبط بالحساب"
+        );
+
+        return;
+
+      }
+
+      if(
+        typeof window.ma3daSendPasswordResetEmail !==
+        "function"
+      ){
+
+        alert(
+          "Firebase لم يجهز بعد، أعد تحميل الصفحة"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        await window.ma3daSendPasswordResetEmail(
+          user.email
+        );
+
+        alert(
+          "تم إرسال رابط تغيير كلمة المرور إلى بريدك الإلكتروني 📧"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر إرسال رابط تغيير كلمة المرور:",
+          error
+        );
+
+        alert(
+          error?.message ||
+          "تعذر إرسال رابط تغيير كلمة المرور"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ================================
+   اللغة
+   ================================ */
+
+const languageSettingsBtn =
+  document.getElementById(
+    "languageSettingsBtn"
+  );
+
+if(languageSettingsBtn){
+
+  languageSettingsBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "languageSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backFromLanguageSettingsBtn =
+  document.getElementById(
+    "backFromLanguageSettingsBtn"
+  );
+
+if(backFromLanguageSettingsBtn){
+
+  backFromLanguageSettingsBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const arabicLanguageBtn =
+  document.getElementById(
+    "arabicLanguageBtn"
+  );
+
+if(arabicLanguageBtn){
+
+  arabicLanguageBtn.addEventListener(
+    "click",
+    ()=>{
+
+      document.documentElement.lang =
+        "ar";
+
+      document.documentElement.dir =
+        "rtl";
+
+      localStorage.setItem(
+        "ma3daLanguage",
+        "ar"
+      );
+
+      alert(
+        "تم اختيار اللغة العربية 🇸🇦"
+      );
+
+    }
+  );
+
+}
+
+
+const englishLanguageBtn =
+  document.getElementById(
+    "englishLanguageBtn"
+  );
+
+if(englishLanguageBtn){
+
+  englishLanguageBtn.addEventListener(
+    "click",
+    ()=>{
+
+      alert(
+        "اللغة الإنجليزية ستكون متاحة قريبًا 🌐"
+      );
+
+    }
+  );
+
+}
+
+
+/* ================================
+   المظهر
+   ================================ */
+
+const appearanceSettingsBtn =
+  document.getElementById(
+    "appearanceSettingsBtn"
+  );
+
+if(appearanceSettingsBtn){
+
+  appearanceSettingsBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "appearanceSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backFromAppearanceSettingsBtn =
+  document.getElementById(
+    "backFromAppearanceSettingsBtn"
+  );
+
+if(backFromAppearanceSettingsBtn){
+
+  backFromAppearanceSettingsBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const systemAppearanceBtn =
+  document.getElementById(
+    "systemAppearanceBtn"
+  );
+
+if(systemAppearanceBtn){
+
+  systemAppearanceBtn.addEventListener(
+    "click",
+    ()=>{
+
+      document.documentElement.removeAttribute(
+        "data-theme"
+      );
+
+      localStorage.setItem(
+        "ma3daTheme",
+        "system"
+      );
+
+      alert(
+        "تم اختيار المظهر التلقائي 📱"
+      );
+
+    }
+  );
+
+}
+
+
+const lightAppearanceBtn =
+  document.getElementById(
+    "lightAppearanceBtn"
+  );
+
+if(lightAppearanceBtn){
+
+  lightAppearanceBtn.addEventListener(
+    "click",
+    ()=>{
+
+      document.documentElement.setAttribute(
+        "data-theme",
+        "light"
+      );
+
+      localStorage.setItem(
+        "ma3daTheme",
+        "light"
+      );
+
+      alert(
+        "تم اختيار المظهر الفاتح ☀️"
+      );
+
+    }
+  );
+
+}
+
+
+const darkAppearanceBtn =
+  document.getElementById(
+    "darkAppearanceBtn"
+  );
+
+if(darkAppearanceBtn){
+
+  darkAppearanceBtn.addEventListener(
+    "click",
+    ()=>{
+
+      document.documentElement.setAttribute(
+        "data-theme",
+        "dark"
+      );
+
+      localStorage.setItem(
+        "ma3daTheme",
+        "dark"
+      );
+
+      alert(
+        "تم اختيار المظهر الداكن 🌙"
+      );
+
+    }
+  );
+
+}
