@@ -3586,51 +3586,51 @@ const howMa3daBackBtn =
 const introScreens = [
   document.getElementById("introScreen"),
   document.getElementById("whyMa3daScreen"),
-  document.getElementById("howMa3daScreen")
+  document.getElementById("howMa3daScreen"),
+  document.getElementById("howWorksScreen")
 ];
 
 let swipeStartX = 0;
 let swipeStartY = 0;
-let swipeStarted = false;
 
 introScreens.forEach(screen => {
 
   if(!screen) return;
 
-  screen.style.touchAction = "pan-y";
-
   screen.addEventListener(
-    "pointerdown",
+    "touchstart",
     event => {
 
-      swipeStartX = event.clientX;
-      swipeStartY = event.clientY;
-      swipeStarted = true;
+      const touch =
+        event.changedTouches[0];
 
-    }
+      swipeStartX =
+        touch.clientX;
+
+      swipeStartY =
+        touch.clientY;
+
+    },
+    { passive: true }
   );
 
   screen.addEventListener(
-    "pointerup",
+    "touchend",
     event => {
 
-      if(!swipeStarted) return;
-
-      swipeStarted = false;
-
-      const endX = event.clientX;
-      const endY = event.clientY;
+      const touch =
+        event.changedTouches[0];
 
       const diffX =
-        endX - swipeStartX;
+        touch.clientX - swipeStartX;
 
       const diffY =
-        endY - swipeStartY;
+        touch.clientY - swipeStartY;
 
-      /* تجاهل الحركة إذا كانت عمودية */
+      /* تجاهل السحب العمودي */
 
       if(
-        Math.abs(diffX) < 50 ||
+        Math.abs(diffX) < 60 ||
         Math.abs(diffX) <= Math.abs(diffY)
       ){
         return;
@@ -3643,68 +3643,57 @@ introScreens.forEach(screen => {
 
       if(!activeScreen) return;
 
-      /* السحب لليسار = التالي */
+      const ids = [
+        "introScreen",
+        "whyMa3daScreen",
+        "howMa3daScreen",
+        "howWorksScreen"
+      ];
+
+      const currentIndex =
+        ids.indexOf(
+          activeScreen.id
+        );
+
+      if(currentIndex === -1) return;
+
+
+      /* من اليمين إلى اليسار = التالي */
 
       if(diffX < 0){
 
         if(
-          activeScreen.id ===
-          "introScreen"
+          currentIndex <
+          ids.length - 1
         ){
 
           showScreen(
-            "whyMa3daScreen"
-          );
-
-        }else if(
-          activeScreen.id ===
-          "whyMa3daScreen"
-        ){
-
-          showScreen(
-            "howMa3daScreen"
-          );
-
-        }else if(
-          activeScreen.id ===
-          "howMa3daScreen"
-        ){
-
-          showScreen(
-            "roleScreen"
+            ids[currentIndex + 1]
           );
 
         }
 
       }
 
-      /* السحب لليمين = السابق */
+
+      /* من اليسار إلى اليمين = رجوع */
 
       if(diffX > 0){
 
         if(
-          activeScreen.id ===
-          "whyMa3daScreen"
+          currentIndex > 0
         ){
 
           showScreen(
-            "introScreen"
-          );
-
-        }else if(
-          activeScreen.id ===
-          "howMa3daScreen"
-        ){
-
-          showScreen(
-            "whyMa3daScreen"
+            ids[currentIndex - 1]
           );
 
         }
 
       }
 
-    }
+    },
+    { passive: true }
   );
 
 });
