@@ -3429,12 +3429,16 @@ if(backFromRequestBtn){
 
     }
 
-    if(!user){
+if(!user){
 
   selectedRole = "";
 
   localStorage.removeItem(
     "selectedRole"
+  );
+
+  showScreen(
+    "introScreen"
   );
 
   return;
