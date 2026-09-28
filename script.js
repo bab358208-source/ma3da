@@ -3579,150 +3579,135 @@ const howMa3daBackBtn =
   document.getElementById(
     "howMa3daBackBtn"
   );
-/* السحب بين صفحات المقدمة */
+/* ================================
+   السحب بين صفحات المقدمة
+   ================================ */
 
-let introTouchStartX = 0;
-let introTouchStartY = 0;
+const introScreens = [
+  document.getElementById("introScreen"),
+  document.getElementById("whyMa3daScreen"),
+  document.getElementById("howMa3daScreen")
+];
 
-document.addEventListener(
-  "touchstart",
-  event => {
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeStarted = false;
 
-    const activeScreen =
-      document.querySelector(
-        ".screen.active"
-      );
+introScreens.forEach(screen => {
 
-    if(
-      !activeScreen ||
-      ![
-        "introScreen",
-        "whyMa3daScreen",
-        "howMa3daScreen"
-      ].includes(
-        activeScreen.id
-      )
-    ){
-      return;
+  if(!screen) return;
+
+  screen.style.touchAction = "pan-y";
+
+  screen.addEventListener(
+    "pointerdown",
+    event => {
+
+      swipeStartX = event.clientX;
+      swipeStartY = event.clientY;
+      swipeStarted = true;
+
     }
+  );
 
-    introTouchStartX =
-      event.touches[0].clientX;
+  screen.addEventListener(
+    "pointerup",
+    event => {
 
-    introTouchStartY =
-      event.touches[0].clientY;
+      if(!swipeStarted) return;
 
-  },
-  { passive: true }
-);
+      swipeStarted = false;
 
-document.addEventListener(
-  "touchend",
-  event => {
+      const endX = event.clientX;
+      const endY = event.clientY;
 
-    const activeScreen =
-      document.querySelector(
-        ".screen.active"
-      );
+      const diffX =
+        endX - swipeStartX;
 
-    if(
-      !activeScreen ||
-      ![
-        "introScreen",
-        "whyMa3daScreen",
-        "howMa3daScreen"
-      ].includes(
-        activeScreen.id
-      )
-    ){
-      return;
-    }
+      const diffY =
+        endY - swipeStartY;
 
-    const endX =
-      event.changedTouches[0].clientX;
-
-    const endY =
-      event.changedTouches[0].clientY;
-
-    const diffX =
-      endX - introTouchStartX;
-
-    const diffY =
-      endY - introTouchStartY;
-
-    /* نتأكد أن الحركة أفقية */
-
-    if(
-      Math.abs(diffX) < 50 ||
-      Math.abs(diffX) < Math.abs(diffY)
-    ){
-      return;
-    }
-
-    /* سحب لليسار = الصفحة التالية */
-
-    if(diffX < 0){
+      /* تجاهل الحركة إذا كانت عمودية */
 
       if(
-        activeScreen.id ===
-        "introScreen"
+        Math.abs(diffX) < 50 ||
+        Math.abs(diffX) <= Math.abs(diffY)
       ){
-
-        showScreen(
-          "whyMa3daScreen"
-        );
-
-      }else if(
-        activeScreen.id ===
-        "whyMa3daScreen"
-      ){
-
-        showScreen(
-          "howMa3daScreen"
-        );
-
-      }else if(
-        activeScreen.id ===
-        "howMa3daScreen"
-      ){
-
-        showScreen(
-          "roleScreen"
-        );
-
+        return;
       }
 
-    }
+      const activeScreen =
+        document.querySelector(
+          ".screen.active"
+        );
 
-    /* سحب لليمين = الصفحة السابقة */
+      if(!activeScreen) return;
 
-    if(diffX > 0){
+      /* السحب لليسار = التالي */
 
-      if(
-        activeScreen.id ===
-        "whyMa3daScreen"
-      ){
+      if(diffX < 0){
 
-        showScreen(
+        if(
+          activeScreen.id ===
           "introScreen"
-        );
+        ){
 
-      }else if(
-        activeScreen.id ===
-        "howMa3daScreen"
-      ){
+          showScreen(
+            "whyMa3daScreen"
+          );
 
-        showScreen(
+        }else if(
+          activeScreen.id ===
           "whyMa3daScreen"
-        );
+        ){
+
+          showScreen(
+            "howMa3daScreen"
+          );
+
+        }else if(
+          activeScreen.id ===
+          "howMa3daScreen"
+        ){
+
+          showScreen(
+            "roleScreen"
+          );
+
+        }
+
+      }
+
+      /* السحب لليمين = السابق */
+
+      if(diffX > 0){
+
+        if(
+          activeScreen.id ===
+          "whyMa3daScreen"
+        ){
+
+          showScreen(
+            "introScreen"
+          );
+
+        }else if(
+          activeScreen.id ===
+          "howMa3daScreen"
+        ){
+
+          showScreen(
+            "whyMa3daScreen"
+          );
+
+        }
 
       }
 
     }
+  );
 
-  },
-  { passive: true }
-);
+});
 const saveCustomerDataBtn =
   document.getElementById(
     "saveCustomerDataBtn"
