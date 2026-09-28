@@ -3269,14 +3269,14 @@ if(backPhoneBtn){
 
 /* LOGOUT */
 
-const logoutBtn =
+const customerLogoutBtn =
   document.getElementById(
-    "logoutBtn"
+    "customerLogoutBtn"
   );
 
-if(logoutBtn){
+if(customerLogoutBtn){
 
-  logoutBtn.addEventListener(
+  customerLogoutBtn.addEventListener(
     "click",
     async()=>{
 
@@ -3299,6 +3299,18 @@ if(logoutBtn){
 
         localStorage.removeItem(
           "selectedRole"
+        );
+
+        localStorage.removeItem(
+          "currentOrder"
+        );
+
+        localStorage.removeItem(
+          "currentRequestId"
+        );
+
+        localStorage.removeItem(
+          "orderState"
         );
 
         selectedRole = "";
@@ -3324,7 +3336,6 @@ if(logoutBtn){
   );
 
 }
-
 /* BACK CUSTOMER */
 
 const backFromRequestBtn =
