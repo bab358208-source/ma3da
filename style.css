@@ -715,6 +715,7 @@ textarea {
 #howMa3daScreen #howMa3daBackBtn {
   display: none;
 }
+/
 /* ================================
    MA3DA NEW HOME PAGE
    ================================ */
@@ -722,7 +723,8 @@ textarea {
 #customerHomeScreen {
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 25px 18px 35px;
+  padding: 28px 18px 35px;
+  background: #ffffff;
 }
 
 #customerHomeScreen .home-page {
@@ -731,7 +733,10 @@ textarea {
   margin: 0 auto;
 }
 
-/* Header */
+
+/* ================================
+   HEADER
+   ================================ */
 
 #customerHomeScreen .home-header {
   display: flex;
@@ -742,103 +747,144 @@ textarea {
 
 #customerHomeScreen .home-greeting {
   display: block;
-  font-size: 15px;
-  opacity: 0.6;
-  margin-bottom: 5px;
+  font-size: 16px;
+  font-weight: 700;
+  opacity: .55;
+  margin-bottom: 6px;
 }
 
 #customerHomeScreen .home-header h1 {
   margin: 0;
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 900;
+  letter-spacing: -.5px;
 }
 
 #customerHomeScreen .home-avatar {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f2f2;
-  font-size: 25px;
+  background: #f4f4f4;
+  font-size: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
-/* Main request card */
+
+/* ================================
+   MAIN REQUEST CARD
+   ================================ */
 
 #customerHomeScreen .home-request-card {
-  padding: 22px;
-  border-radius: 24px;
-  background: #f3f3f3;
-  margin-bottom: 30px;
+  position: relative;
+  padding: 24px;
+  border-radius: 26px;
+  background: #f1f1f1;
+  margin-bottom: 32px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,.06);
 }
 
 #customerHomeScreen .home-request-icon {
-  font-size: 38px;
-  margin-bottom: 12px;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: #ffffff;
+  font-size: 30px;
+  margin-bottom: 18px;
 }
 
 #customerHomeScreen .home-request-content h2 {
   margin: 0 0 7px;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 900;
 }
 
 #customerHomeScreen .home-request-content p {
-  margin: 0 0 18px;
+  margin: 0 0 20px;
   font-size: 14px;
-  line-height: 1.7;
-  opacity: 0.65;
+  line-height: 1.8;
+  opacity: .6;
 }
 
 #customerHomeScreen .home-request-btn {
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   border: none;
-  border-radius: 15px;
-  font-size: 17px;
+  border-radius: 17px;
+  background: #222222;
+  color: #ffffff;
+  font-size: 16px;
   font-weight: 800;
   cursor: pointer;
+  transition: transform .15s ease;
 }
 
-/* Sections */
+#customerHomeScreen .home-request-btn:active {
+  transform: scale(.98);
+}
+
+#customerHomeScreen .home-request-btn span {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+
+/* ================================
+   SECTIONS
+   ================================ */
 
 #customerHomeScreen .home-section {
-  margin-bottom: 28px;
+  margin-bottom: 30px;
 }
 
 #customerHomeScreen .home-section > h2 {
-  margin: 0 0 12px;
-  font-size: 17px;
-  font-weight: 800;
+  margin: 0 0 13px;
+  font-size: 18px;
+  font-weight: 900;
 }
 
-/* Menu items */
+
+/* ================================
+   MENU ITEMS
+   ================================ */
 
 #customerHomeScreen .home-menu-item {
   width: 100%;
-  min-height: 72px;
+  min-height: 74px;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 14px;
   padding: 12px 14px;
   margin-bottom: 10px;
-  border: none;
-  border-radius: 17px;
-  background: #f7f7f7;
+  border: 1px solid #eeeeee;
+  border-radius: 18px;
+  background: #ffffff;
   text-align: right;
   cursor: pointer;
   box-sizing: border-box;
+  box-shadow: 0 5px 18px rgba(0,0,0,.035);
+  transition: transform .15s ease;
+}
+
+#customerHomeScreen .home-menu-item:active {
+  transform: scale(.985);
 }
 
 #customerHomeScreen .home-menu-icon {
-  width: 45px;
-  height: 45px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 13px;
-  background: #eeeeee;
+  border-radius: 14px;
+  background: #f3f3f3;
   font-size: 21px;
 }
 
@@ -850,28 +896,130 @@ textarea {
 }
 
 #customerHomeScreen .home-menu-text strong {
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 800;
 }
 
 #customerHomeScreen .home-menu-text span {
   font-size: 12px;
-  opacity: 0.55;
+  opacity: .5;
 }
 
 #customerHomeScreen .home-arrow {
-  font-size: 20px;
-  opacity: 0.45;
+  font-size: 19px;
+  opacity: .35;
 }
 
-/* Logout */
 
-#customerHomeScreen .logout-item {
-  margin-top: 4px;
+/* ================================
+   FEATURES
+   ================================ */
+
+#customerHomeScreen .home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin: 5px 0 28px;
 }
 
-#customerHomeScreen .logout-item .home-menu-text strong {
-  font-weight: 700;
+#customerHomeScreen .home-feature {
+  min-height: 108px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 18px;
+  background: #f7f7f7;
+  box-sizing: border-box;
 }
+
+#customerHomeScreen .home-feature-icon {
+  font-size: 23px;
+  margin-bottom: 7px;
+}
+
+#customerHomeScreen .home-feature strong {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+#customerHomeScreen .home-feature span {
+  font-size: 10px;
+  line-height: 1.5;
+  opacity: .5;
+}
+
+
+/* ================================
+   LOGOUT
+   ================================ */
+
+#customerHomeScreen .home-logout-btn {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 3px;
+  border: 1px solid #eeeeee;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #555555;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#customerHomeScreen .home-logout-btn span {
+  margin-left: 7px;
+}
+
+
+/* ================================
+   DARK MODE - HOME
+   ================================ */
+
+html[data-theme="dark"] #customerHomeScreen {
+  background: #121212;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-avatar {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-card {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-icon {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-btn {
+  background: #f5f5f5;
+  color: #121212;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-item {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-icon {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-feature {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+  color: #f5f5f5;
+}
+
 /* ================================
    MA3DA INTRO SCREENS
    ================================ */
