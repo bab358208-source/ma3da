@@ -3896,3 +3896,839 @@ console.log(
   );
 
 }
+/* ================================
+   CUSTOMER HOME
+   الطلبات الحالية + السابقة + الإعدادات
+   ================================ */
+
+
+/* ================================
+   فتح الطلبات الحالية
+   ================================ */
+
+const currentOrderBtn =
+  document.getElementById(
+    "currentOrderBtn"
+  );
+
+if(currentOrderBtn){
+
+  currentOrderBtn.addEventListener(
+    "click",
+    async()=>{
+
+      showScreen(
+        "currentOrdersScreen"
+      );
+
+      await loadCustomerOrders(
+        "current"
+      );
+
+    }
+  );
+
+}
+
+
+/* ================================
+   فتح الطلبات السابقة
+   ================================ */
+
+const previousOrdersBtn =
+  document.getElementById(
+    "previousOrdersBtn"
+  );
+
+if(previousOrdersBtn){
+
+  previousOrdersBtn.addEventListener(
+    "click",
+    async()=>{
+
+      showScreen(
+        "previousOrdersScreen"
+      );
+
+      await loadCustomerOrders(
+        "previous"
+      );
+
+    }
+  );
+
+}
+
+
+/* ================================
+   الطلبات الحالية
+   ================================ */
+
+async function loadCustomerOrders(type){
+
+  const listId =
+    type === "current"
+      ? "currentOrdersList"
+      : "previousOrdersList";
+
+  const list =
+    document.getElementById(
+      listId
+    );
+
+  if(!list)
+    return;
+
+  list.innerHTML =
+    "<p>جاري تحميل الطلبات...</p>";
+
+  try{
+
+    const user =
+      window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
+
+    if(!user){
+
+      list.innerHTML =
+        "<p>يجب تسجيل الدخول أولاً.</p>";
+
+      return;
+
+    }
+
+    if(
+      !window.ma3daDB ||
+      !window.ma3daCollection ||
+      !window.ma3daGetDocs
+    ){
+
+      list.innerHTML =
+        "<p>Firebase غير جاهز.</p>";
+
+      return;
+
+    }
+
+    const requestsRef =
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      );
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        requestsRef
+      );
+
+    const currentStatuses = [
+      "searching",
+      "accepted",
+      "arrived",
+      "working"
+    ];
+
+    const previousStatuses = [
+      "completed",
+      "rejected"
+    ];
+
+    const wantedStatuses =
+      type === "current"
+        ? currentStatuses
+        : previousStatuses;
+
+    const orders = [];
+
+    snapshot.forEach(
+      docSnapshot => {
+
+        const data =
+          docSnapshot.data();
+
+        if(
+          data.customerId ===
+          user.uid &&
+          wantedStatuses.includes(
+            data.status
+          )
+        ){
+
+          orders.push({
+
+            id:
+              docSnapshot.id,
+
+            ...data
+
+          });
+
+        }
+
+      }
+    );
+
+    orders.sort(
+      (a,b)=>
+        Number(
+          b.createdAt || 0
+        ) -
+        Number(
+          a.createdAt || 0
+        )
+    );
+
+
+    /* لا توجد طلبات */
+
+    if(!orders.length){
+
+      list.innerHTML =
+        type === "current"
+          ? `
+            <div class="empty-state">
+              <div class="hero-icon">📋</div>
+              <h3>لا توجد طلبات حالية</h3>
+              <p>
+                عندما تطلب معدة ستظهر هنا.
+              </p>
+            </div>
+          `
+          : `
+            <div class="empty-state">
+              <div class="hero-icon">🕘</div>
+              <h3>لا توجد طلبات سابقة</h3>
+              <p>
+                ستظهر طلباتك المنتهية هنا.
+              </p>
+            </div>
+          `;
+
+      return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    orders.forEach(
+      customerOrder => {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+        card.className =
+          "customer-order-card";
+
+
+        const statusText =
+          getCustomerOrderStatusText(
+            customerOrder.status
+          );
+
+
+        const statusClass =
+          getCustomerOrderStatusClass(
+            customerOrder.status
+          );
+
+
+        const date =
+          customerOrder.createdAt
+            ? new Date(
+                customerOrder.createdAt
+              ).toLocaleDateString(
+                "ar-SA"
+              )
+            : "غير محدد";
+
+
+        card.innerHTML = `
+
+          <div class="customer-order-header">
+
+            <strong>
+              🚜 ${customerOrder.equipment || "معدة"}
+            </strong>
+
+            <span
+              class="customer-order-status ${statusClass}"
+            >
+              ${statusText}
+            </span>
+
+          </div>
+
+
+          <div class="customer-order-info">
+
+            <div>
+              📍
+              <span>
+                ${customerOrder.location || "غير محدد"}
+              </span>
+            </div>
+
+            <div>
+              ⏱️
+              <span>
+                ${customerOrder.duration || "غير محدد"}
+              </span>
+            </div>
+
+            <div>
+              👷
+              <span>
+                ${customerOrder.operator || "غير محدد"}
+              </span>
+            </div>
+
+            <div>
+              💰
+              <span>
+                ${Number(customerOrder.price || 0)}
+                ريال
+              </span>
+            </div>
+
+            <div>
+              📅
+              <span>
+                ${date}
+              </span>
+            </div>
+
+          </div>
+
+        `;
+
+
+        list.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "تعذر تحميل طلبات العميل:",
+      error
+    );
+
+    list.innerHTML =
+      `
+        <div class="empty-state">
+          <h3>تعذر تحميل الطلبات</h3>
+          <p>
+            حاول مرة أخرى.
+          </p>
+        </div>
+      `;
+
+  }
+
+}
+
+
+/* ================================
+   حالة الطلب
+   ================================ */
+
+function getCustomerOrderStatusText(
+  status
+){
+
+  const statuses = {
+
+    searching:
+      "جاري البحث عن معدة",
+
+    accepted:
+      "تم قبول الطلب",
+
+    arrived:
+      "المعدة وصلت",
+
+    working:
+      "جاري العمل",
+
+    completed:
+      "مكتمل",
+
+    rejected:
+      "مرفوض"
+
+  };
+
+  return (
+    statuses[status] ||
+    status ||
+    "غير معروف"
+  );
+
+}
+
+
+function getCustomerOrderStatusClass(
+  status
+){
+
+  return (
+    `status-${status || "unknown"}`
+  );
+
+}
+
+
+/* ================================
+   الرجوع من الطلبات الحالية
+   ================================ */
+
+const backFromCurrentOrdersBtn =
+  document.getElementById(
+    "backFromCurrentOrdersBtn"
+  );
+
+if(backFromCurrentOrdersBtn){
+
+  backFromCurrentOrdersBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* ================================
+   الرجوع من الطلبات السابقة
+   ================================ */
+
+const backFromPreviousOrdersBtn =
+  document.getElementById(
+    "backFromPreviousOrdersBtn"
+  );
+
+if(backFromPreviousOrdersBtn){
+
+  backFromPreviousOrdersBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* ================================
+   فتح الإعدادات
+   ================================ */
+
+const customerSettingsBtn =
+  document.getElementById(
+    "customerSettingsBtn"
+  );
+
+if(customerSettingsBtn){
+
+  customerSettingsBtn.addEventListener(
+    "click",
+    async()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+      await loadCustomerSettings();
+
+    }
+  );
+
+}
+
+
+/* ================================
+   تحميل بيانات العميل
+   ================================ */
+
+async function loadCustomerSettings(){
+
+  const nameInput =
+    document.getElementById(
+      "customerNameSettingsInput"
+    );
+
+  const emailInput =
+    document.getElementById(
+      "customerEmailSettingsInput"
+    );
+
+  const status =
+    document.getElementById(
+      "customerAccountStatus"
+    );
+
+
+  try{
+
+    const user =
+      window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
+
+    if(!user){
+
+      alert(
+        "يجب تسجيل الدخول أولاً"
+      );
+
+      showScreen(
+        "roleScreen"
+      );
+
+      return;
+
+    }
+
+
+    if(emailInput){
+
+      emailInput.value =
+        user.email || "";
+
+    }
+
+
+    if(
+      !window.ma3daDB ||
+      !window.ma3daDoc ||
+      !window.ma3daGetDoc
+    ){
+
+      return;
+
+    }
+
+
+    const customerRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "customers",
+        user.uid
+      );
+
+
+    const snapshot =
+      await window.ma3daGetDoc(
+        customerRef
+      );
+
+
+    if(snapshot.exists()){
+
+      const data =
+        snapshot.data();
+
+
+      if(nameInput){
+
+        nameInput.value =
+          data.name || "";
+
+      }
+
+      if(status){
+
+        status.textContent =
+          "نشط";
+
+      }
+
+    }else{
+
+      if(nameInput){
+
+        nameInput.value =
+          "";
+
+      }
+
+    }
+
+
+  }catch(error){
+
+    console.error(
+      "تعذر تحميل بيانات العميل:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ================================
+   حفظ تعديل اسم العميل
+   ================================ */
+
+const saveCustomerSettingsBtn =
+  document.getElementById(
+    "saveCustomerSettingsBtn"
+  );
+
+if(saveCustomerSettingsBtn){
+
+  saveCustomerSettingsBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const nameInput =
+        document.getElementById(
+          "customerNameSettingsInput"
+        );
+
+      const name =
+        nameInput
+          ?.value
+          .trim();
+
+
+      if(!name){
+
+        alert(
+          "أدخل الاسم أولاً"
+        );
+
+        if(nameInput)
+          nameInput.focus();
+
+        return;
+
+      }
+
+
+      try{
+
+        const user =
+          window.ma3daGetCurrentUser
+            ? await window.ma3daGetCurrentUser()
+            : window.ma3daAuth?.currentUser;
+
+
+        if(!user){
+
+          alert(
+            "يجب تسجيل الدخول أولاً"
+          );
+
+          return;
+
+        }
+
+
+        const customerRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "customers",
+            user.uid
+          );
+
+
+        const oldSnapshot =
+          await window.ma3daGetDoc(
+            customerRef
+          );
+
+
+        const oldData =
+          oldSnapshot.exists()
+            ? oldSnapshot.data()
+            : {};
+
+
+        await window.ma3daSetDoc(
+          customerRef,
+          {
+
+            name:
+
+              name,
+
+            phone:
+
+              oldData.phone || "",
+
+            city:
+
+              oldData.city || "",
+
+            email:
+
+              user.email || "",
+
+            customerId:
+
+              user.uid,
+
+            updatedAt:
+
+              Date.now()
+
+          }
+        );
+
+
+        alert(
+          "تم حفظ التعديلات بنجاح ✅"
+        );
+
+
+      }catch(error){
+
+        console.error(
+          "تعذر حفظ إعدادات العميل:",
+          error
+        );
+
+        alert(
+          "تعذر حفظ التعديلات في Firebase"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ================================
+   تغيير كلمة المرور
+   ================================ */
+
+const changePasswordBtn =
+  document.getElementById(
+    "changePasswordBtn"
+  );
+
+if(changePasswordBtn){
+
+  changePasswordBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const user =
+        window.ma3daGetCurrentUser
+          ? await window.ma3daGetCurrentUser()
+          : window.ma3daAuth?.currentUser;
+
+
+      if(!user){
+
+        alert(
+          "يجب تسجيل الدخول أولاً"
+        );
+
+        return;
+
+      }
+
+
+      if(!user.email){
+
+        alert(
+          "لا يوجد بريد إلكتروني مرتبط بالحساب"
+        );
+
+        return;
+
+      }
+
+
+      if(
+        typeof window.ma3daSendPasswordResetEmail !==
+        "function"
+      ){
+
+        alert(
+          "Firebase لم يجهز بعد، أعد تحميل الصفحة"
+        );
+
+        return;
+
+      }
+
+
+      try{
+
+        await window.ma3daSendPasswordResetEmail(
+          user.email
+        );
+
+
+        alert(
+          "تم إرسال رابط تغيير كلمة المرور إلى بريدك الإلكتروني 📧"
+        );
+
+
+      }catch(error){
+
+        console.error(
+          "تعذر إرسال رابط تغيير كلمة المرور:",
+          error
+        );
+
+        alert(
+          error?.message ||
+          "تعذر إرسال رابط تغيير كلمة المرور"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ================================
+   الرجوع من الإعدادات
+   ================================ */
+
+const backFromCustomerSettingsBtn =
+  document.getElementById(
+    "backFromCustomerSettingsBtn"
+  );
+
+if(backFromCustomerSettingsBtn){
+
+  backFromCustomerSettingsBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerHomeScreen"
+      );
+
+    }
+  );
+
+}
