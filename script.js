@@ -2012,29 +2012,21 @@ if(rejectRequestBtn){
 }
 
 /* EQUIPMENT */
-
-const saveEquipmentBtn =
-  document.getElementById(
-    "saveEquipmentBtn"
-  );
-
-if(saveEquipmentBtn){
-
-  saveEquipmentBtn.addEventListener(
-    "click",
-    saveEquipment
-  );
-
-}
-
 async function saveEquipment(){
 
-  const type =
+  let type =
     document
       .getElementById(
         "equipmentType"
       )
       ?.value;
+
+  const otherEquipmentType =
+    document
+      .getElementById(
+        "otherEquipmentType"
+      )
+      ?.value.trim();
 
   const model =
     document
@@ -2042,7 +2034,7 @@ async function saveEquipment(){
         "equipmentModel"
       )
       ?.value.trim();
-
+ 
   const year =
     document
       .getElementById(
@@ -2064,12 +2056,52 @@ async function saveEquipment(){
       )
       ?.value;
 
+  const hourlyPrice =
+    document
+      .getElementById(
+        "equipmentHourlyPrice"
+      )
+      ?.value.trim();
+
   const imageInput =
     document.getElementById(
       "equipmentImage"
     );
 
-  if(!type || !model || !year || !city){
+
+  /* ================================
+     التحقق من نوع المعدة
+     ================================ */
+
+  if(type === "أخرى"){
+
+    if(!otherEquipmentType){
+
+      alert(
+        "فضلاً اكتب نوع المعدة"
+      );
+
+      return;
+
+    }
+
+    type =
+      otherEquipmentType;
+
+  }
+
+
+  /* ================================
+     التحقق من البيانات
+     ================================ */
+
+  if(
+    !type ||
+    !model ||
+    !year ||
+    !city ||
+    !hourlyPrice
+  ){
 
     alert(
       "فضلاً أكمل جميع بيانات المعدة"
@@ -2079,10 +2111,12 @@ async function saveEquipment(){
 
   }
 
+
   const user =
     window.ma3daGetCurrentUser
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
+
 
   if(!user){
 
@@ -2094,6 +2128,7 @@ async function saveEquipment(){
 
   }
 
+
   if(!window.ma3daDB){
 
     alert(
@@ -2104,20 +2139,32 @@ async function saveEquipment(){
 
   }
 
+
   const equipment = {
 
     type,
+
     model,
+
     year,
+
     city,
+
     availability,
+
+    hourlyPrice:
+      Number(hourlyPrice),
+
     image:"",
+
     ownerId:
       user.uid,
+
     ownerEmail:
       user.email || ""
 
   };
+
 
   const saveToFirebase =
     async()=>{
@@ -2136,8 +2183,10 @@ async function saveEquipment(){
 
     };
 
+
   const file =
     imageInput?.files[0];
+
 
   if(!file){
 
@@ -2178,13 +2227,16 @@ async function saveEquipment(){
 
   }
 
+
   const reader =
     new FileReader();
+
 
   reader.onload = ()=>{
 
     const image =
       new Image();
+
 
     image.onload =
       async()=>{
@@ -2197,6 +2249,7 @@ async function saveEquipment(){
 
         let height =
           image.height;
+
 
         if(width > maxWidth){
 
@@ -2212,6 +2265,7 @@ async function saveEquipment(){
 
         }
 
+
         const canvas =
           document.createElement(
             "canvas"
@@ -2223,10 +2277,12 @@ async function saveEquipment(){
         canvas.height =
           height;
 
+
         const ctx =
           canvas.getContext(
             "2d"
           );
+
 
         ctx.drawImage(
           image,
@@ -2236,11 +2292,13 @@ async function saveEquipment(){
           height
         );
 
+
         equipment.image =
           canvas.toDataURL(
             "image/jpeg",
             0.75
           );
+
 
         try{
 
@@ -2277,13 +2335,68 @@ async function saveEquipment(){
 
       };
 
+
     image.src =
       reader.result;
 
   };
 
+
   reader.readAsDataURL(
     file
+  );
+
+}
+/* OTHER EQUIPMENT */
+
+const equipmentType =
+  document.getElementById(
+    "equipmentType"
+  );
+
+const otherEquipmentContainer =
+  document.getElementById(
+    "otherEquipmentContainer"
+  );
+
+const otherEquipmentType =
+  document.getElementById(
+    "otherEquipmentType"
+  );
+
+if(
+  equipmentType &&
+  otherEquipmentContainer
+){
+
+  equipmentType.addEventListener(
+    "change",
+    ()=>{
+
+      if(
+        equipmentType.value ===
+        "أخرى"
+      ){
+
+        otherEquipmentContainer.style.display =
+          "block";
+
+        if(otherEquipmentType){
+          otherEquipmentType.focus();
+        }
+
+      }else{
+
+        otherEquipmentContainer.style.display =
+          "none";
+
+        if(otherEquipmentType){
+          otherEquipmentType.value = "";
+        }
+
+      }
+
+    }
   );
 
 }
