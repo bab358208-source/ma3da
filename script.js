@@ -3804,3 +3804,92 @@ if(saveCustomerDataBtn){
   );
 
 }
+/* ================================
+   تحديد موقع العميل
+   ================================ */
+
+const getLocationBtn =
+  document.getElementById(
+    "getLocationBtn"
+  );
+
+if(getLocationBtn){
+
+  getLocationBtn.addEventListener(
+    "click",
+    ()=>{
+
+      if(!navigator.geolocation){
+
+        alert(
+          "جهازك لا يدعم تحديد الموقع."
+        );
+
+        return;
+
+      }
+
+      getLocationBtn.disabled = true;
+
+      getLocationBtn.textContent =
+        "📍 جاري تحديد موقعك...";
+
+      navigator.geolocation.getCurrentPosition(
+
+        position => {
+
+          const latitude =
+            position.coords.latitude;
+
+          const longitude =
+            position.coords.longitude;
+
+          console.log(
+            "موقع العميل:",
+            latitude,
+            longitude
+          );
+
+          document.getElementById(
+            "locationInput"
+          ).value =
+            `${latitude}, ${longitude}`;
+
+          getLocationBtn.disabled = false;
+
+          getLocationBtn.textContent =
+            "✅ تم تحديد موقعك";
+
+        },
+
+        error => {
+
+          console.error(
+            "خطأ تحديد الموقع:",
+            error
+          );
+
+          getLocationBtn.disabled = false;
+
+          getLocationBtn.textContent =
+            "📍 تحديد موقعي بدقة";
+
+          alert(
+            "تعذر تحديد موقعك.\n\n" +
+            "تأكد من السماح للتطبيق باستخدام موقعك."
+          );
+
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+
+      );
+
+    }
+  );
+
+}
