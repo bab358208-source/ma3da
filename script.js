@@ -5060,3 +5060,43 @@ if(darkAppearanceBtn){
   );
 
 }
+/* ================================
+   الدعم الفني
+   ================================ */
+
+const technicalSupportBtn =
+  document.getElementById(
+    "technicalSupportBtn"
+  );
+
+if(technicalSupportBtn){
+
+  technicalSupportBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "technicalSupportScreen"
+      );
+    }
+  );
+
+}
+
+
+const backFromTechnicalSupportBtn =
+  document.getElementById(
+    "backFromTechnicalSupportBtn"
+  );
+
+if(backFromTechnicalSupportBtn){
+
+  backFromTechnicalSupportBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "customerHomeScreen"
+      );
+    }
+  );
+
+}
