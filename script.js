@@ -3579,16 +3579,150 @@ const howMa3daBackBtn =
   document.getElementById(
     "howMa3daBackBtn"
   );
-if(howMa3daBackBtn){
-  howMa3daBackBtn.addEventListener(
-    "click",
-    ()=>{
-      showScreen(
-        "whyMa3daScreen"
+/* السحب بين صفحات المقدمة */
+
+let introTouchStartX = 0;
+let introTouchStartY = 0;
+
+document.addEventListener(
+  "touchstart",
+  event => {
+
+    const activeScreen =
+      document.querySelector(
+        ".screen.active"
       );
+
+    if(
+      !activeScreen ||
+      ![
+        "introScreen",
+        "whyMa3daScreen",
+        "howMa3daScreen"
+      ].includes(
+        activeScreen.id
+      )
+    ){
+      return;
     }
-  );
-}
+
+    introTouchStartX =
+      event.touches[0].clientX;
+
+    introTouchStartY =
+      event.touches[0].clientY;
+
+  },
+  { passive: true }
+);
+
+document.addEventListener(
+  "touchend",
+  event => {
+
+    const activeScreen =
+      document.querySelector(
+        ".screen.active"
+      );
+
+    if(
+      !activeScreen ||
+      ![
+        "introScreen",
+        "whyMa3daScreen",
+        "howMa3daScreen"
+      ].includes(
+        activeScreen.id
+      )
+    ){
+      return;
+    }
+
+    const endX =
+      event.changedTouches[0].clientX;
+
+    const endY =
+      event.changedTouches[0].clientY;
+
+    const diffX =
+      endX - introTouchStartX;
+
+    const diffY =
+      endY - introTouchStartY;
+
+    /* نتأكد أن الحركة أفقية */
+
+    if(
+      Math.abs(diffX) < 50 ||
+      Math.abs(diffX) < Math.abs(diffY)
+    ){
+      return;
+    }
+
+    /* سحب لليسار = الصفحة التالية */
+
+    if(diffX < 0){
+
+      if(
+        activeScreen.id ===
+        "introScreen"
+      ){
+
+        showScreen(
+          "whyMa3daScreen"
+        );
+
+      }else if(
+        activeScreen.id ===
+        "whyMa3daScreen"
+      ){
+
+        showScreen(
+          "howMa3daScreen"
+        );
+
+      }else if(
+        activeScreen.id ===
+        "howMa3daScreen"
+      ){
+
+        showScreen(
+          "roleScreen"
+        );
+
+      }
+
+    }
+
+    /* سحب لليمين = الصفحة السابقة */
+
+    if(diffX > 0){
+
+      if(
+        activeScreen.id ===
+        "whyMa3daScreen"
+      ){
+
+        showScreen(
+          "introScreen"
+        );
+
+      }else if(
+        activeScreen.id ===
+        "howMa3daScreen"
+      ){
+
+        showScreen(
+          "whyMa3daScreen"
+        );
+
+      }
+
+    }
+
+  },
+  { passive: true }
+);
 const saveCustomerDataBtn =
   document.getElementById(
     "saveCustomerDataBtn"
