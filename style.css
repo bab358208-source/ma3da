@@ -885,3 +885,16 @@ textarea {
   display: flex;
   flex-direction: column;
 }
+/* INTRO SCREENS */
+#introScreen,
+#whyMa3daScreen,
+#howMa3daScreen {
+  display: none;
+}
+
+#introScreen.active,
+#whyMa3daScreen.active,
+#howMa3daScreen.active {
+  display: flex;
+  flex-direction: column;
+}
