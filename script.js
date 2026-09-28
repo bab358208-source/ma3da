@@ -4776,3 +4776,47 @@ if(backFromEditPhoneBtn){
   );
 
 }
+/* ================================
+   تعديل البريد الإلكتروني
+   ================================ */
+
+const editEmailBtn =
+  document.getElementById(
+    "editEmailBtn"
+  );
+
+if(editEmailBtn){
+
+  editEmailBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "editEmailScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backFromEditEmailBtn =
+  document.getElementById(
+    "backFromEditEmailBtn"
+  );
+
+if(backFromEditEmailBtn){
+
+  backFromEditEmailBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+    }
+  );
+
+}
