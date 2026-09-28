@@ -366,74 +366,138 @@
   <!-- إضافة معدة -->
   <section id="addEquipmentScreen" class="screen">
 
-    <div class="hero">
-      <div class="hero-icon">🚜</div>
+  <div class="hero">
+    <div class="hero-icon">🚜</div>
 
-      <h1>أضف معدتك</h1>
+    <h1>أضف معدتك</h1>
 
-      <p>أدخل بيانات المعدة لتبدأ استقبال الطلبات</p>
-    </div>
+    <p>أدخل بيانات المعدة لتبدأ استقبال الطلبات</p>
+  </div>
 
-    <div class="card">
+  <div class="card">
 
-      <label>🚜 نوع المعدة</label>
+    <label>🚜 نوع المعدة</label>
 
-      <select id="equipmentType">
-        <option value="">اختر نوع المعدة</option>
-        <option>بوكلين</option>
-        <option>شيول</option>
-        <option>قلاب</option>
-        <option>كرين</option>
-        <option>حفار</option>
-        <option>بلدوزر</option>
-      </select>
+    <select id="equipmentType">
 
-      <label>🏷️ الماركة / الموديل</label>
+      <option value="">
+        اختر نوع المعدة
+      </option>
+
+      <option>بوكلين</option>
+      <option>شيول</option>
+      <option>قلاب</option>
+      <option>كرين</option>
+      <option>حفار</option>
+      <option>بلدوزر</option>
+      <option>جريدر</option>
+      <option>مدحلة</option>
+      <option>رافعة شوكية</option>
+      <option>رافعة تلسكوبية</option>
+      <option>لودر</option>
+      <option>حفار صغير</option>
+      <option>سطحة</option>
+      <option>ناقلة معدات</option>
+      <option>وايت ماء</option>
+      <option>مضخة خرسانة</option>
+      <option>ماكينة فرش أسفلت</option>
+      <option>أخرى</option>
+
+    </select>
+
+
+    <!-- تظهر فقط عند اختيار أخرى -->
+
+    <div id="otherEquipmentContainer" style="display:none;">
+
+      <label>✏️ اذكر نوع المعدة</label>
 
       <input
-        id="equipmentModel"
+        id="otherEquipmentType"
         type="text"
-        placeholder="مثال: كوماتسو PC200"
+        placeholder="اكتب نوع المعدة"
       >
-
-      <label>📷 صورة المعدة</label>
-
-      <input
-        id="equipmentImage"
-        type="file"
-        accept="image/*"
-      >
-
-      <label>📅 سنة الصنع</label>
-
-      <input
-        id="equipmentYear"
-        type="number"
-        placeholder="2020"
-      >
-
-      <label>📍 المدينة</label>
-
-      <input
-        id="equipmentCity"
-        type="text"
-        placeholder="مثال: جدة"
-      >
-
-      <label>🟢 حالة المعدة</label>
-
-      <select id="equipmentAvailability">
-        <option value="available">متاحة الآن</option>
-        <option value="unavailable">غير متاحة</option>
-      </select>
-
-      <button id="saveEquipmentBtn" type="button" class="main-btn">
-        حفظ المعدة
-      </button>
 
     </div>
 
-  </section>
+
+    <label>🏷️ الماركة / الموديل</label>
+
+    <input
+      id="equipmentModel"
+      type="text"
+      placeholder="مثال: كوماتسو PC200"
+    >
+
+
+    <label>📷 صورة المعدة</label>
+
+    <input
+      id="equipmentImage"
+      type="file"
+      accept="image/*"
+    >
+
+
+    <label>📅 سنة الصنع</label>
+
+    <input
+      id="equipmentYear"
+      type="number"
+      placeholder="2020"
+    >
+
+
+    <label>📍 المدينة</label>
+
+    <input
+      id="equipmentCity"
+      type="text"
+      placeholder="مثال: جدة"
+    >
+
+
+    <label>🟢 حالة المعدة</label>
+
+    <select id="equipmentAvailability">
+
+      <option value="available">
+        متاحة الآن
+      </option>
+
+      <option value="unavailable">
+        غير متاحة
+      </option>
+
+    </select>
+
+
+    <label>💰 سعر الإيجار بالساعة</label>
+
+    <input
+      id="equipmentHourlyPrice"
+      type="number"
+      inputmode="numeric"
+      min="0"
+      placeholder="مثال: 250"
+    >
+
+    <small>
+      السعر بالريال السعودي لكل ساعة
+    </small>
+
+
+    <button
+      id="saveEquipmentBtn"
+      type="button"
+      class="main-btn"
+    >
+      حفظ المعدة
+    </button>
+
+  </div>
+
+</section>
 <!-- الصفحة الرئيسية الجديدة للعميل -->
 <section id="customerHomeScreen" class="screen">
 
