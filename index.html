@@ -733,69 +733,79 @@
     </h1>
 
     <p>
-      إدارة بيانات حسابك
+      إدارة حسابك وتفضيلات التطبيق
     </p>
 
   </div>
 
 
-  <!-- بيانات الحساب -->
+  <!-- ================================
+       الحساب
+       ================================ -->
 
   <div class="card">
 
     <h2>
-      بيانات الحساب
+      الحساب
     </h2>
 
-    <div class="settings-item">
+    <button
+      id="editPhoneBtn"
+      class="home-menu-item"
+      type="button"
+    >
 
-      <label>
-        الاسم
-      </label>
+      <div class="home-menu-icon">
+        📱
+      </div>
 
-      <input
-        id="customerNameSettingsInput"
-        type="text"
-        placeholder="اسمك"
-      >
+      <div class="home-menu-text">
 
-    </div>
+        <strong>
+          رقم الجوال
+        </strong>
 
+        <span>
+          تعديل رقم الجوال
+        </span>
 
-    <div class="settings-item">
+      </div>
 
-      <label>
-        البريد الإلكتروني
-      </label>
+      <span class="home-arrow">
+        ←
+      </span>
 
-      <input
-        id="customerEmailSettingsInput"
-        type="email"
-        placeholder="البريد الإلكتروني"
-        readonly
-      >
-
-    </div>
+    </button>
 
 
     <button
-      id="saveCustomerSettingsBtn"
-      class="main-btn"
+      id="editEmailBtn"
+      class="home-menu-item"
       type="button"
     >
-      حفظ التعديلات
+
+      <div class="home-menu-icon">
+        📧
+      </div>
+
+      <div class="home-menu-text">
+
+        <strong>
+          البريد الإلكتروني
+        </strong>
+
+        <span>
+          تعديل البريد الإلكتروني
+        </span>
+
+      </div>
+
+      <span class="home-arrow">
+        ←
+      </span>
+
     </button>
 
-  </div>
-
-
-  <!-- الأمان -->
-
-  <div class="card">
-
-    <h2>
-      الأمان
-    </h2>
 
     <button
       id="changePasswordBtn"
@@ -810,11 +820,11 @@
       <div class="home-menu-text">
 
         <strong>
-          تغيير كلمة المرور
+          كلمة المرور
         </strong>
 
         <span>
-          إرسال رابط لتغيير كلمة المرور
+          تغيير كلمة المرور
         </span>
 
       </div>
@@ -828,7 +838,79 @@
   </div>
 
 
-  <!-- معلومات الحساب -->
+  <!-- ================================
+       التطبيق
+       ================================ -->
+
+  <div class="card">
+
+    <h2>
+      التطبيق
+    </h2>
+
+    <button
+      id="languageSettingsBtn"
+      class="home-menu-item"
+      type="button"
+    >
+
+      <div class="home-menu-icon">
+        🌐
+      </div>
+
+      <div class="home-menu-text">
+
+        <strong>
+          اللغة
+        </strong>
+
+        <span>
+          العربية
+        </span>
+
+      </div>
+
+      <span class="home-arrow">
+        ←
+      </span>
+
+    </button>
+
+
+    <button
+      id="appearanceSettingsBtn"
+      class="home-menu-item"
+      type="button"
+    >
+
+      <div class="home-menu-icon">
+        🎨
+      </div>
+
+      <div class="home-menu-text">
+
+        <strong>
+          المظهر
+        </strong>
+
+        <span>
+          تلقائي
+        </span>
+
+      </div>
+
+      <span class="home-arrow">
+        ←
+      </span>
+
+    </button>
+
+  </div>
+
+
+  <!-- ================================
+       معلومات الحساب
+       ================================ -->
 
   <div class="card">
 
