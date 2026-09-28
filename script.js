@@ -2012,6 +2012,19 @@ if(rejectRequestBtn){
 }
 
 /* EQUIPMENT */
+const saveEquipmentBtn =
+  document.getElementById(
+    "saveEquipmentBtn"
+  );
+
+if(saveEquipmentBtn){
+
+  saveEquipmentBtn.addEventListener(
+    "click",
+    saveEquipment
+  );
+
+}
 async function saveEquipment(){
 
   let type =
