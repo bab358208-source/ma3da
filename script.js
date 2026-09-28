@@ -4732,3 +4732,47 @@ if(backFromCustomerSettingsBtn){
   );
 
 }
+/* ================================
+   تعديل رقم الجوال
+   ================================ */
+
+const editPhoneBtn =
+  document.getElementById(
+    "editPhoneBtn"
+  );
+
+if(editPhoneBtn){
+
+  editPhoneBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "editPhoneScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backFromEditPhoneBtn =
+  document.getElementById(
+    "backFromEditPhoneBtn"
+  );
+
+if(backFromEditPhoneBtn){
+
+  backFromEditPhoneBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "customerSettingsScreen"
+      );
+
+    }
+  );
+
+}
