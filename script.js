@@ -3868,7 +3868,10 @@ if(getLocationBtn){
             "خطأ تحديد الموقع:",
             error
           );
-
+console.log(
+  "كود خطأ الموقع:",
+  error.code
+);
           getLocationBtn.disabled = false;
 
           getLocationBtn.textContent =
