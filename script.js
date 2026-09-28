@@ -3446,14 +3446,13 @@ if(!user){
 }
     if(!savedRole){
 
-      showScreen(
-        "roleScreen"
-      );
+  showScreen(
+    "introScreen"
+  );
 
-      return;
+  return;
 
-    }
-
+}
     selectedRole =
       savedRole;
 if(
