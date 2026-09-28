@@ -872,29 +872,140 @@ textarea {
 #customerHomeScreen .logout-item .home-menu-text strong {
   font-weight: 700;
 }
-/* INTRO SCREENS */
+/* ================================
+   MA3DA INTRO SCREENS
+   ================================ */
+
 #introScreen,
 #whyMa3daScreen,
-#howMa3daScreen {
+#howMa3daScreen,
+#howWorksScreen {
+  min-height: 100vh;
   display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 20px 25px;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 #introScreen.active,
 #whyMa3daScreen.active,
-#howMa3daScreen.active {
+#howMa3daScreen.active,
+#howWorksScreen.active {
   display: flex;
-  flex-direction: column;
-}
-/* INTRO SCREENS */
-#introScreen,
-#whyMa3daScreen,
-#howMa3daScreen {
-  display: none;
 }
 
-#introScreen.active,
-#whyMa3daScreen.active,
-#howMa3daScreen.active {
+#introScreen .hero,
+#whyMa3daScreen .hero,
+#howMa3daScreen .hero,
+#howWorksScreen .hero {
+  flex: 1;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#introScreen .hero-icon,
+#whyMa3daScreen .hero-icon,
+#howMa3daScreen .hero-icon,
+#howWorksScreen .hero-icon {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 58px;
+  margin-bottom: 25px;
+  border-radius: 30px;
+  background: #f3f3f3;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+}
+
+#introScreen h1,
+#whyMa3daScreen h1,
+#howMa3daScreen h1,
+#howWorksScreen h1 {
+  margin: 0 0 15px;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+#introScreen .hero p,
+#whyMa3daScreen .hero p,
+#howMa3daScreen .hero p,
+#howWorksScreen .hero p {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.8;
+  font-weight: 700;
+}
+
+#introScreen .intro-description,
+#whyMa3daScreen .intro-description,
+#howMa3daScreen .intro-description,
+#howWorksScreen .intro-description {
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.8;
+  opacity: .65;
+}
+
+#introScreen .card,
+#whyMa3daScreen .card,
+#howMa3daScreen .card,
+#howWorksScreen .card {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 20px 5px 5px;
+  background: transparent;
+  box-shadow: none;
+}
+
+#introScreen .intro-progress,
+#whyMa3daScreen .intro-progress,
+#howMa3daScreen .intro-progress,
+#howWorksScreen .intro-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+#introScreen .intro-progress span,
+#whyMa3daScreen .intro-progress span,
+#howMa3daScreen .intro-progress span,
+#howWorksScreen .intro-progress span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d0d0d0;
+}
+
+#introScreen .intro-progress span.active,
+#whyMa3daScreen .intro-progress span.active,
+#howMa3daScreen .intro-progress span.active,
+#howWorksScreen .intro-progress span.active {
+  width: 24px;
+  border-radius: 10px;
+  background: #222;
+}
+
+#introScreen .main-btn,
+#whyMa3daScreen .main-btn,
+#howMa3daScreen .main-btn,
+#howWorksScreen .main-btn {
+  width: 100%;
+  min-height: 56px;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
 }
