@@ -2742,8 +2742,9 @@ if(backFromChatBtn){
   );
 
 }
-
-/* TRACKING */
+/* =========================================================
+   TRACKING
+========================================================= */
 
 function startTracking(){
 
@@ -2849,8 +2850,8 @@ function startTracking(){
         "وصلت المعدة إلى موقعك";
 
       console.log(
-  "اكتمل التتبع - بانتظار وصول صاحب المعدة"
-);
+        "اكتمل التتبع - بانتظار وصول صاحب المعدة"
+      );
 
       return;
 
@@ -2870,119 +2871,28 @@ function startTracking(){
 }
 
 
-  /* START WORK */
+/* =========================================================
+   CUSTOMER WORKING TIMER
+   مهم:
+   لا يوجد هنا زر بدء عمل للعميل.
+   العميل ينتقل إلى workingScreen فقط عندما
+   تتغير حالة الطلب في Firebase إلى working.
+========================================================= */
 
-document.addEventListener(
-  "click",
-  async event => {
-
-    const button =
-      event.target.closest(
-        "#startWorkBtn"
-      );
-
-    if(!button)
-      return;
-
-    console.log(
-      "تم الضغط على زر بدء العمل"
-    );
-
-    const requestId =
-      localStorage.getItem(
-        "currentRequestId"
-      );
-
-    if(!requestId){
-
-      alert(
-        "لم يتم العثور على رقم الطلب"
-      );
-
-      return;
-
-    }
-
-    /* ننتقل للشاشة مباشرة */
-
-    showScreen(
-      "workingScreen"
-    );
-document.getElementById(
-  "endWorkBtn"
-).style.display =
-  "block";
-    workStartTime =
-      Date.now();
-
-    clearInterval(
-      timerInterval
-    );
-
-    updateWorkingScreen();
-
-    updateTimer();
-
-    timerInterval =
-      setInterval(
-        updateTimer,
-        1000
-      );
-
-    /* تحديث Firebase */
-
-    try{
-
-      const requestRef =
-        window.ma3daDoc(
-          window.ma3daDB,
-          "requests",
-          requestId
-        );
-
-      await window.ma3daUpdateDoc(
-        requestRef,
-        {
-          status: "working",
-          workStartedAt:
-            workStartTime
-        }
-      );
-
-      setOrderState(
-        "working"
-      );
-
-      console.log(
-        "تم تحديث الطلب إلى working"
-      );
-
-    }catch(error){
-
-      console.error(
-        "تعذر تحديث حالة العمل في Firebase:",
-        error
-      );
-
-      alert(
-        "تم بدء العمل، لكن تعذر تحديث Firebase"
-      );
-
-    }
-
-  }
-);
 function updateTimer(){
 
   if(!workStartTime)
     return;
 
   const elapsed =
-    Math.floor(
-      (
-        Date.now() -
-        workStartTime
-      ) / 1000
+    Math.max(
+      0,
+      Math.floor(
+        (
+          Date.now() -
+          workStartTime
+        ) / 1000
+      )
     );
 
   const hours =
@@ -3014,26 +2924,47 @@ function updateTimer(){
 
 }
 
-/* CALL */
 
-const callCustomerBtn =
-  document.getElementById(
-    "callCustomerBtn"
+function startCustomerWorkTimer(
+  startTime
+){
+
+  clearInterval(
+    timerInterval
   );
 
-if(callCustomerBtn){
+  workStartTime =
+    Number(
+      startTime ||
+      Date.now()
+    );
 
-  callCustomerBtn.addEventListener(
-    "click",
-    ()=>{
+  updateTimer();
 
-      window.location.href =
-        "tel:0550000000";
-
-    }
-  );
+  timerInterval =
+    setInterval(
+      updateTimer,
+      1000
+    );
 
 }
+
+
+function stopCustomerWorkTimer(){
+
+  clearInterval(
+    timerInterval
+  );
+
+  timerInterval =
+    null;
+
+}
+
+
+/* =========================================================
+   CUSTOMER CALL
+========================================================= */
 
 const callBtn =
   document.getElementById(
@@ -3044,41 +2975,24 @@ if(callBtn){
 
   callBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
-      window.location.href =
-        "tel:0550000000";
+      try{
 
-    }
-  );
+        const requestId =
+          localStorage.getItem(
+            "currentRequestId"
+          );
 
-}
+        if(!requestId){
 
-/* END WORK */
+          alert(
+            "لا يوجد طلب حالي."
+          );
 
-const endWorkBtn =
-  document.getElementById(
-    "endWorkBtn"
-  );
+          return;
 
-if(endWorkBtn){
-
-  endWorkBtn.addEventListener(
-    "click",
-    async ()=>{
-
-      if(
-        selectedRole !==
-        "operator"
-      )
-        return;
-
-      const requestId =
-        localStorage.getItem(
-          "currentRequestId"
-        );
-
-      if(requestId){
+        }
 
         const requestRef =
           window.ma3daDoc(
@@ -3087,56 +3001,85 @@ if(endWorkBtn){
             requestId
           );
 
-        await window.ma3daUpdateDoc(
-          requestRef,
-          {
-            status: "completed",
-            completedAt: Date.now()
-          }
+        const snapshot =
+          await window.ma3daGetDoc(
+            requestRef
+          );
+
+        if(!snapshot.exists()){
+
+          alert(
+            "تعذر العثور على الطلب."
+          );
+
+          return;
+
+        }
+
+        const data =
+          snapshot.data();
+
+        const phone =
+          data.operatorPhone ||
+          "";
+
+        if(!phone){
+
+          alert(
+            "رقم صاحب المعدة غير متوفر حاليًا."
+          );
+
+          return;
+
+        }
+
+        window.location.href =
+          `tel:${phone}`;
+
+      }catch(error){
+
+        console.error(
+          "تعذر الاتصال بصاحب المعدة:",
+          error
+        );
+
+        alert(
+          "تعذر الاتصال حاليًا."
         );
 
       }
-
-      clearInterval(
-        timerInterval
-      );
-
-      const finalPrice =
-        order.price || 1000;
-
-      const priceElement =
-        document.getElementById(
-          "finalPrice"
-        );
-
-      if(priceElement)
-        priceElement.textContent =
-          `${finalPrice} ريال`;
-
-      localStorage.setItem(
-        "workEnded",
-        "true"
-      );
-
-      localStorage.setItem(
-        "finalPrice",
-        finalPrice
-      );
-
-      setOrderState(
-        "completed"
-      );
-
-      showScreen(
-        "operatorCompletedScreen"
-      );
 
     }
   );
 
 }
 
-/* PAYMENT */
+
+/* =========================================================
+   CUSTOMER END WORK
+   لا يوجد زر للعميل.
+   فقط حماية إضافية إذا كان الزر موجودًا في HTML القديم.
+========================================================= */
+
+const customerStartWorkButton =
+  document.getElementById(
+    "startWorkBtn"
+  );
+
+if(customerStartWorkButton){
+
+  customerStartWorkButton.style.display =
+    "none";
+
+  customerStartWorkButton.disabled =
+    true;
+
+}
+
+
+/* =========================================================
+   PAYMENT
+========================================================= */
 
 document
   .querySelectorAll(
@@ -3182,6 +3125,7 @@ document
     }
   );
 
+
 const paymentBtn =
   document.getElementById(
     "paymentBtn"
@@ -3189,11 +3133,18 @@ const paymentBtn =
 
 if(paymentBtn){
 
- paymentBtn.addEventListener(
-  "click",
-  ()=>{
-    
-    stopAcceptanceWatcher();
+  paymentBtn.addEventListener(
+    "click",
+    ()=>{
+
+      if(
+        typeof stopAcceptanceWatcher ===
+        "function"
+      ){
+
+        stopAcceptanceWatcher();
+
+      }
 
       showScreen(
         "paymentScreen"
@@ -3203,6 +3154,7 @@ if(paymentBtn){
   );
 
 }
+
 
 const confirmPaymentBtn =
   document.getElementById(
@@ -3227,7 +3179,10 @@ if(confirmPaymentBtn){
 
 }
 
-/* RATING */
+
+/* =========================================================
+   RATING
+========================================================= */
 
 document
   .querySelectorAll(
@@ -3278,6 +3233,7 @@ document
     }
   );
 
+
 const ratingBtn =
   document.getElementById(
     "ratingBtn"
@@ -3287,11 +3243,65 @@ if(ratingBtn){
 
   ratingBtn.addEventListener(
     "click",
-    ()=>{
+    async()=>{
 
-      showScreen(
-        "thankYouScreen"
-      );
+      if(!selectedRating){
+
+        alert(
+          "اختر التقييم أولًا."
+        );
+
+        return;
+
+      }
+
+      const requestId =
+        localStorage.getItem(
+          "currentRequestId"
+        );
+
+      try{
+
+        if(requestId){
+
+          const requestRef =
+            window.ma3daDoc(
+              window.ma3daDB,
+              "requests",
+              requestId
+            );
+
+          await window.ma3daUpdateDoc(
+            requestRef,
+            {
+
+              rating:
+                selectedRating,
+
+              ratedAt:
+                Date.now()
+
+            }
+          );
+
+        }
+
+        showScreen(
+          "thankYouScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر حفظ التقييم:",
+          error
+        );
+
+        alert(
+          "تعذر حفظ التقييم، حاول مرة أخرى."
+        );
+
+      }
 
     }
   );
@@ -3299,29 +3309,42 @@ if(ratingBtn){
 }
 
 
-/* NEW REQUEST */
+/* =========================================================
+   NEW REQUEST
+========================================================= */
 
-const newRequestBtn =
-  document.getElementById(
-    "newRequestBtn"
+const newRequestButtons =
+  document.querySelectorAll(
+    "#newRequestBtn, #thankYouNewRequestBtn"
   );
 
-if(newRequestBtn){
+newRequestButtons.forEach(
+  button=>{
 
-  newRequestBtn.addEventListener(
-    "click",
-    ()=>{
+    button.addEventListener(
+      "click",
+      ()=>{
 
-      showScreen(
-        "requestScreen"
-      );
+        selectedPayment =
+          "";
 
-    }
-  );
+        selectedRating =
+          0;
 
-}
+        showScreen(
+          "requestScreen"
+        );
 
-/* BACK ROLE */
+      }
+    );
+
+  }
+);
+
+
+/* =========================================================
+   BACK ROLE
+========================================================= */
 
 const backRoleBtn =
   document.getElementById(
@@ -3367,7 +3390,10 @@ if(backRoleBtn){
 
 }
 
-/* BACK FROM OTP */
+
+/* =========================================================
+   BACK FROM OTP
+========================================================= */
 
 const backPhoneBtn =
   document.getElementById(
@@ -3405,7 +3431,101 @@ if(backPhoneBtn){
 
 }
 
-/* LOGOUT */
+
+/* =========================================================
+   LOGOUT HELPER
+========================================================= */
+
+async function ma3daLogout(){
+
+  try{
+
+    if(
+      typeof stopAcceptanceWatcher ===
+      "function"
+    ){
+
+      stopAcceptanceWatcher();
+
+    }
+
+    clearInterval(
+      timerInterval
+    );
+
+    clearInterval(
+      operatorTimerInterval
+    );
+
+    if(window.ma3daAuth){
+
+      await window.ma3daAuth.signOut();
+
+    }
+
+    localStorage.removeItem(
+      "selectedRole"
+    );
+
+    localStorage.removeItem(
+      "currentOrder"
+    );
+
+    localStorage.removeItem(
+      "currentRequestId"
+    );
+
+    localStorage.removeItem(
+      "orderState"
+    );
+
+    localStorage.removeItem(
+      "acceptedOrder"
+    );
+
+    localStorage.removeItem(
+      "workEnded"
+    );
+
+    localStorage.removeItem(
+      "finalPrice"
+    );
+
+    selectedRole =
+      "";
+
+    workStartTime =
+      null;
+
+    selectedPayment =
+      "";
+
+    selectedRating =
+      0;
+
+    showScreen(
+      "roleScreen"
+    );
+
+  }catch(error){
+
+    console.error(
+      "خطأ في تسجيل الخروج:",
+      error
+    );
+
+    alert(
+      "تعذر تسجيل الخروج."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CUSTOMER LOGOUT
+========================================================= */
 
 const customerLogoutBtn =
   document.getElementById(
@@ -3416,113 +3536,30 @@ if(customerLogoutBtn){
 
   customerLogoutBtn.addEventListener(
     "click",
-    async()=>{
-
-      try{
-
-        if(window.ma3daAuth){
-
-          const {
-            signOut
-          } =
-            await import(
-              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-            );
-
-          await signOut(
-            window.ma3daAuth
-          );
-
-        }
-
-        localStorage.removeItem(
-          "selectedRole"
-        );
-
-        localStorage.removeItem(
-          "currentOrder"
-        );
-
-        localStorage.removeItem(
-          "currentRequestId"
-        );
-
-        localStorage.removeItem(
-          "orderState"
-        );
-
-        selectedRole = "";
-
-        showScreen(
-          "roleScreen"
-        );
-
-      }catch(error){
-
-        console.error(
-          "خطأ في تسجيل الخروج:",
-          error
-        );
-
-        alert(
-          "تعذر تسجيل الخروج"
-        );
-
-      }
-
-    }
+    ma3daLogout
   );
 
 }
+
+
 const logoutBtn =
   document.getElementById(
     "logoutBtn"
   );
+
 if(logoutBtn){
+
   logoutBtn.addEventListener(
     "click",
-    async()=>{
-      try{
-        if(window.ma3daAuth){
-          const {
-            signOut
-          } =
-            await import(
-              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-            );
-          await signOut(
-            window.ma3daAuth
-          );
-        }
-        localStorage.removeItem(
-          "selectedRole"
-        );
-        localStorage.removeItem(
-          "currentOrder"
-        );
-        localStorage.removeItem(
-          "currentRequestId"
-        );
-        localStorage.removeItem(
-          "orderState"
-        );
-        selectedRole = "";
-        showScreen(
-          "roleScreen"
-        );
-      }catch(error){
-        console.error(
-          "خطأ في تسجيل الخروج:",
-          error
-        );
-        alert(
-          "تعذر تسجيل الخروج"
-        );
-      }
-    }
+    ma3daLogout
   );
+
 }
-/* BACK CUSTOMER */
+
+
+/* =========================================================
+   BACK CUSTOMER REQUEST
+========================================================= */
 
 const backFromRequestBtn =
   document.getElementById(
@@ -3535,14 +3572,8 @@ if(backFromRequestBtn){
     "click",
     ()=>{
 
-      localStorage.removeItem(
-        "selectedRole"
-      );
-
-      selectedRole = "";
-
       showScreen(
-        "roleScreen"
+        "customerHomeScreen"
       );
 
     }
@@ -3550,7 +3581,10 @@ if(backFromRequestBtn){
 
 }
 
-/* RESTORE SESSION */
+
+/* =========================================================
+   RESTORE SESSION
+========================================================= */
 
 (async()=>{
 
@@ -3571,14 +3605,12 @@ if(backFromRequestBtn){
       user ? user.uid : "لا يوجد مستخدم",
       savedRole || "لا يوجد دور"
     );
-console.log(
-  "emailVerified:",
-  user ? user.emailVerified : "لا يوجد مستخدم"
-);
-    /*
-      إذا كان المستخدم موجودًا لكن بريده غير موثق،
-      لا نعيد فتح الجلسة.
-    */
+
+    console.log(
+      "emailVerified:",
+      user ? user.emailVerified : "لا يوجد مستخدم"
+    );
+
 
     if(
       user &&
@@ -3589,29 +3621,20 @@ console.log(
         "المستخدم موجود لكن البريد غير موثق."
       );
 
-      if(window.ma3daAuth){
+      try{
 
-        try{
+        if(window.ma3daAuth){
 
-          const {
-            signOut
-          } =
-            await import(
-              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-            );
-
-          await signOut(
-            window.ma3daAuth
-          );
-
-        }catch(signOutError){
-
-          console.error(
-            "تعذر تسجيل الخروج من المستخدم غير الموثق:",
-            signOutError
-          );
+          await window.ma3daAuth.signOut();
 
         }
+
+      }catch(signOutError){
+
+        console.error(
+          "تعذر تسجيل الخروج من المستخدم غير الموثق:",
+          signOutError
+        );
 
       }
 
@@ -3619,7 +3642,8 @@ console.log(
         "selectedRole"
       );
 
-      selectedRole = "";
+      selectedRole =
+        "";
 
       showScreen(
         "roleScreen"
@@ -3629,53 +3653,71 @@ console.log(
 
     }
 
-if(!user){
 
-  selectedRole = "";
+    if(!user){
 
-  localStorage.removeItem(
-    "selectedRole"
-  );
+      selectedRole =
+        "";
 
-  showScreen(
-    "introScreen"
-  );
+      localStorage.removeItem(
+        "selectedRole"
+      );
 
-  return;
+      showScreen(
+        "introScreen"
+      );
 
-}
+      return;
+
+    }
+
+
     if(!savedRole){
 
-  showScreen(
-    "introScreen"
-  );
+      showScreen(
+        "introScreen"
+      );
 
-  return;
+      return;
 
-}
+    }
+
+
     selectedRole =
       savedRole;
-if(
-  savedRole ===
-  "customer"
-){
 
-  showScreen(
-    "customerHomeScreen"
-  );
 
-  return;
+    if(
+      savedRole ===
+      "customer"
+    ){
 
-}
+      showScreen(
+        "customerHomeScreen"
+      );
 
-    /* OPERATOR */
+      return;
+
+    }
+
 
     if(
       savedRole ===
       "operator"
     ){
 
-      await openOperatorAfterLogin();
+      if(
+        typeof openOperatorAfterLogin ===
+        "function"
+      ){
+
+        await openOperatorAfterLogin();
+
+      }else{
+
+        await openOperatorDashboard();
+
+      }
 
     }
 
@@ -3693,12 +3735,19 @@ if(
   }
 
 })();
-/* INTRO */
+
+
+/* =========================================================
+   INTRO
+========================================================= */
+
 const introNextBtn =
   document.getElementById(
     "introNextBtn"
   );
+
 if(introNextBtn){
+
   introNextBtn.addEventListener(
     "click",
     ()=>{
@@ -3707,12 +3756,17 @@ if(introNextBtn){
       );
     }
   );
+
 }
+
+
 const skipIntroBtn =
   document.getElementById(
     "skipIntroBtn"
   );
+
 if(skipIntroBtn){
+
   skipIntroBtn.addEventListener(
     "click",
     ()=>{
@@ -3721,12 +3775,17 @@ if(skipIntroBtn){
       );
     }
   );
+
 }
+
+
 const whyMa3daNextBtn =
   document.getElementById(
     "whyMa3daNextBtn"
   );
+
 if(whyMa3daNextBtn){
+
   whyMa3daNextBtn.addEventListener(
     "click",
     ()=>{
@@ -3735,12 +3794,17 @@ if(whyMa3daNextBtn){
       );
     }
   );
+
 }
+
+
 const whyMa3daSkipBtn =
   document.getElementById(
     "whyMa3daSkipBtn"
   );
+
 if(whyMa3daSkipBtn){
+
   whyMa3daSkipBtn.addEventListener(
     "click",
     ()=>{
@@ -3749,7 +3813,10 @@ if(whyMa3daSkipBtn){
       );
     }
   );
+
 }
+
+
 const startMa3daBtn =
   document.getElementById(
     "startMa3daBtn"
@@ -3767,11 +3834,15 @@ if(startMa3daBtn){
   );
 
 }
+
+
 const howMa3daSkipBtn =
   document.getElementById(
     "howMa3daSkipBtn"
   );
+
 if(howMa3daSkipBtn){
+
   howMa3daSkipBtn.addEventListener(
     "click",
     ()=>{
@@ -3780,129 +3851,182 @@ if(howMa3daSkipBtn){
       );
     }
   );
+
 }
+
+
 const howMa3daBackBtn =
   document.getElementById(
     "howMa3daBackBtn"
   );
-/* ================================
-   السحب بين صفحات المقدمة
-   ================================ */
+
+if(howMa3daBackBtn){
+
+  howMa3daBackBtn.addEventListener(
+    "click",
+    ()=>{
+      showScreen(
+        "whyMa3daScreen"
+      );
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SWIPE INTRO
+========================================================= */
 
 const introScreens = [
-  document.getElementById("introScreen"),
-  document.getElementById("whyMa3daScreen"),
-  document.getElementById("howMa3daScreen"),
-  document.getElementById("howWorksScreen")
+  document.getElementById(
+    "introScreen"
+  ),
+  document.getElementById(
+    "whyMa3daScreen"
+  ),
+  document.getElementById(
+    "howMa3daScreen"
+  ),
+  document.getElementById(
+    "howWorksScreen"
+  )
 ];
+
 
 let swipeStartX = 0;
 let swipeStartY = 0;
 
-introScreens.forEach(screen => {
 
-  if(!screen) return;
+introScreens.forEach(
+  screen=>{
 
-  screen.addEventListener(
-    "touchstart",
-    event => {
+    if(!screen)
+      return;
 
-      const touch =
-        event.changedTouches[0];
 
-      swipeStartX =
-        touch.clientX;
+    screen.addEventListener(
+      "touchstart",
+      event=>{
 
-      swipeStartY =
-        touch.clientY;
+        const touch =
+          event.changedTouches[0];
 
-    },
-    { passive: true }
-  );
+        swipeStartX =
+          touch.clientX;
 
-  screen.addEventListener(
-    "touchend",
-    event => {
+        swipeStartY =
+          touch.clientY;
 
-      const touch =
-        event.changedTouches[0];
-
-      const diffX =
-        touch.clientX - swipeStartX;
-
-      const diffY =
-        touch.clientY - swipeStartY;
-
-      /* تجاهل السحب العمودي */
-
-      if(
-        Math.abs(diffX) < 60 ||
-        Math.abs(diffX) <= Math.abs(diffY)
-      ){
-        return;
+      },
+      {
+        passive:true
       }
-
-      const activeScreen =
-        document.querySelector(
-          ".screen.active"
-        );
-
-      if(!activeScreen) return;
-
-      const ids = [
-        "introScreen",
-        "whyMa3daScreen",
-        "howMa3daScreen",
-        "howWorksScreen"
-      ];
-
-      const currentIndex =
-        ids.indexOf(
-          activeScreen.id
-        );
-
-      if(currentIndex === -1) return;
+    );
 
 
-      /* من اليمين إلى اليسار = التالي */
+    screen.addEventListener(
+      "touchend",
+      event=>{
 
-      if(diffX < 0){
+        const touch =
+          event.changedTouches[0];
+
+        const diffX =
+          touch.clientX -
+          swipeStartX;
+
+        const diffY =
+          touch.clientY -
+          swipeStartY;
+
 
         if(
-          currentIndex <
-          ids.length - 1
+          Math.abs(diffX) < 60 ||
+          Math.abs(diffX) <= Math.abs(diffY)
         ){
 
-          showScreen(
-            ids[currentIndex + 1]
-          );
+          return;
 
         }
 
-      }
 
-
-      /* من اليسار إلى اليمين = رجوع */
-
-      if(diffX > 0){
-
-        if(
-          currentIndex > 0
-        ){
-
-          showScreen(
-            ids[currentIndex - 1]
+        const activeScreen =
+          document.querySelector(
+            ".screen.active"
           );
+
+
+        if(!activeScreen)
+          return;
+
+
+        const ids = [
+          "introScreen",
+          "whyMa3daScreen",
+          "howMa3daScreen",
+          "howWorksScreen"
+        ];
+
+
+        const currentIndex =
+          ids.indexOf(
+            activeScreen.id
+          );
+
+
+        if(currentIndex === -1)
+          return;
+
+
+        if(diffX < 0){
+
+          if(
+            currentIndex <
+            ids.length - 1
+          ){
+
+            showScreen(
+              ids[
+                currentIndex + 1
+              ]
+            );
+
+          }
 
         }
 
+
+        if(diffX > 0){
+
+          if(
+            currentIndex > 0
+          ){
+
+            showScreen(
+              ids[
+                currentIndex - 1
+              ]
+            );
+
+          }
+
+        }
+
+      },
+      {
+        passive:true
       }
+    );
 
-    },
-    { passive: true }
-  );
+  }
+);
 
-});
+
+/* =========================================================
+   CUSTOMER DATA
+========================================================= */
+
 const saveCustomerDataBtn =
   document.getElementById(
     "saveCustomerDataBtn"
@@ -3917,19 +4041,24 @@ if(saveCustomerDataBtn){
       const name =
         document.getElementById(
           "customerNameInput"
-        ).value.trim();
+        )?.value.trim();
 
       const phone =
         document.getElementById(
           "customerPhoneInput"
-        ).value.trim();
+        )?.value.trim();
 
       const city =
         document.getElementById(
           "customerCityInput"
-        ).value.trim();
+        )?.value.trim();
 
-      if(!name || !phone || !city){
+
+      if(
+        !name ||
+        !phone ||
+        !city
+      ){
 
         alert(
           "أكمل جميع البيانات أولًا"
@@ -3939,12 +4068,14 @@ if(saveCustomerDataBtn){
 
       }
 
+
       try{
 
         const user =
           window.ma3daGetCurrentUser
             ? await window.ma3daGetCurrentUser()
             : window.ma3daAuth?.currentUser;
+
 
         if(!user){
 
@@ -3956,6 +4087,7 @@ if(saveCustomerDataBtn){
 
         }
 
+
         const customerRef =
           window.ma3daDoc(
             window.ma3daDB,
@@ -3963,25 +4095,42 @@ if(saveCustomerDataBtn){
             user.uid
           );
 
+
         await window.ma3daSetDoc(
           customerRef,
           {
-            name: name,
-            phone: phone,
-            city: city,
-            email: user.email,
-            customerId: user.uid,
-            updatedAt: Date.now()
+
+            name,
+
+            phone,
+
+            city,
+
+            email:
+              user.email || "",
+
+            customerId:
+              user.uid,
+
+            updatedAt:
+              Date.now()
+
+          },
+          {
+            merge:true
           }
         );
+
 
         console.log(
           "تم حفظ بيانات العميل"
         );
 
+
         showScreen(
-  "customerHomeScreen"
-);
+          "customerHomeScreen"
+        );
+
 
       }catch(error){
 
@@ -3990,10 +4139,10 @@ if(saveCustomerDataBtn){
           error
         );
 
-       alert(
-  "خطأ Firebase: " +
-  error.message
-);
+        alert(
+          "خطأ Firebase: " +
+          error.message
+        );
 
       }
 
@@ -4001,9 +4150,11 @@ if(saveCustomerDataBtn){
   );
 
 }
-/* ================================
-   تحديد موقع العميل
-   ================================ */
+
+
+/* =========================================================
+   CUSTOMER LOCATION
+========================================================= */
 
 const getLocationBtn =
   document.getElementById(
@@ -4026,14 +4177,17 @@ if(getLocationBtn){
 
       }
 
-      getLocationBtn.disabled = true;
+
+      getLocationBtn.disabled =
+        true;
 
       getLocationBtn.textContent =
         "📍 جاري تحديد موقعك...";
 
+
       navigator.geolocation.getCurrentPosition(
 
-        position => {
+        position=>{
 
           const latitude =
             position.coords.latitude;
@@ -4041,38 +4195,51 @@ if(getLocationBtn){
           const longitude =
             position.coords.longitude;
 
+
           console.log(
             "موقع العميل:",
             latitude,
             longitude
           );
 
-          document.getElementById(
-            "locationInput"
-          ).value =
-            `${latitude}, ${longitude}`;
 
-          getLocationBtn.disabled = false;
+          const input =
+            document.getElementById(
+              "locationInput"
+            );
+
+
+          if(input){
+
+            input.value =
+              `${latitude}, ${longitude}`;
+
+          }
+
+
+          getLocationBtn.disabled =
+            false;
 
           getLocationBtn.textContent =
             "✅ تم تحديد موقعك";
 
         },
 
-        error => {
+
+        error=>{
 
           console.error(
             "خطأ تحديد الموقع:",
             error
           );
-console.log(
-  "كود خطأ الموقع:",
-  error.code
-);
-          getLocationBtn.disabled = false;
+
+
+          getLocationBtn.disabled =
+            false;
 
           getLocationBtn.textContent =
             "📍 تحديد موقعي بدقة";
+
 
           alert(
             "تعذر تحديد موقعك.\n\n" +
@@ -4081,10 +4248,15 @@ console.log(
 
         },
 
+
         {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
+
+          enableHighAccuracy:true,
+
+          timeout:15000,
+
+          maximumAge:0
+
         }
 
       );
@@ -4093,15 +4265,11 @@ console.log(
   );
 
 }
-/* ================================
+
+
+/* =========================================================
    CUSTOMER HOME
-   الطلبات الحالية + السابقة + الإعدادات
-   ================================ */
-
-
-/* ================================
-   فتح الطلبات الحالية
-   ================================ */
+========================================================= */
 
 const currentOrderBtn =
   document.getElementById(
@@ -4128,10 +4296,6 @@ if(currentOrderBtn){
 }
 
 
-/* ================================
-   فتح الطلبات السابقة
-   ================================ */
-
 const previousOrdersBtn =
   document.getElementById(
     "previousOrdersBtn"
@@ -4157,27 +4321,29 @@ if(previousOrdersBtn){
 }
 
 
-/* ================================
-   الطلبات الحالية
-   ================================ */
-
-async function loadCustomerOrders(type){
+async function loadCustomerOrders(
+  type
+){
 
   const listId =
     type === "current"
       ? "currentOrdersList"
       : "previousOrdersList";
 
+
   const list =
     document.getElementById(
       listId
     );
 
+
   if(!list)
     return;
 
+
   list.innerHTML =
     "<p>جاري تحميل الطلبات...</p>";
+
 
   try{
 
@@ -4185,6 +4351,7 @@ async function loadCustomerOrders(type){
       window.ma3daGetCurrentUser
         ? await window.ma3daGetCurrentUser()
         : window.ma3daAuth?.currentUser;
+
 
     if(!user){
 
@@ -4195,29 +4362,15 @@ async function loadCustomerOrders(type){
 
     }
 
-    if(
-      !window.ma3daDB ||
-      !window.ma3daCollection ||
-      !window.ma3daGetDocs
-    ){
-
-      list.innerHTML =
-        "<p>Firebase غير جاهز.</p>";
-
-      return;
-
-    }
-
-    const requestsRef =
-      window.ma3daCollection(
-        window.ma3daDB,
-        "requests"
-      );
 
     const snapshot =
       await window.ma3daGetDocs(
-        requestsRef
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
       );
+
 
     const currentStatuses = [
       "searching",
@@ -4226,27 +4379,31 @@ async function loadCustomerOrders(type){
       "working"
     ];
 
+
     const previousStatuses = [
       "completed",
       "rejected"
     ];
+
 
     const wantedStatuses =
       type === "current"
         ? currentStatuses
         : previousStatuses;
 
+
     const orders = [];
 
+
     snapshot.forEach(
-      docSnapshot => {
+      docSnapshot=>{
 
         const data =
           docSnapshot.data();
 
+
         if(
-          data.customerId ===
-          user.uid &&
+          data.customerId === user.uid &&
           wantedStatuses.includes(
             data.status
           )
@@ -4266,6 +4423,7 @@ async function loadCustomerOrders(type){
       }
     );
 
+
     orders.sort(
       (a,b)=>
         Number(
@@ -4276,8 +4434,6 @@ async function loadCustomerOrders(type){
         )
     );
 
-
-    /* لا توجد طلبات */
 
     if(!orders.length){
 
@@ -4307,16 +4463,18 @@ async function loadCustomerOrders(type){
     }
 
 
-    list.innerHTML = "";
+    list.innerHTML =
+      "";
 
 
     orders.forEach(
-      customerOrder => {
+      customerOrder=>{
 
         const card =
           document.createElement(
             "div"
           );
+
 
         card.className =
           "customer-order-card";
@@ -4380,7 +4538,7 @@ async function loadCustomerOrders(type){
             <div>
               👷
               <span>
-                ${customerOrder.operator || "غير محدد"}
+                ${customerOrder.operator || "مع مشغل"}
               </span>
             </div>
 
@@ -4419,24 +4577,20 @@ async function loadCustomerOrders(type){
       error
     );
 
-    list.innerHTML =
-      `
-        <div class="empty-state">
-          <h3>تعذر تحميل الطلبات</h3>
-          <p>
-            حاول مرة أخرى.
-          </p>
-        </div>
-      `;
+
+    list.innerHTML = `
+      <div class="empty-state">
+        <h3>تعذر تحميل الطلبات</h3>
+        <p>
+          حاول مرة أخرى.
+        </p>
+      </div>
+    `;
 
   }
 
 }
 
-
-/* ================================
-   حالة الطلب
-   ================================ */
 
 function getCustomerOrderStatusText(
   status
@@ -4464,6 +4618,7 @@ function getCustomerOrderStatusText(
 
   };
 
+
   return (
     statuses[status] ||
     status ||
@@ -4484,9 +4639,9 @@ function getCustomerOrderStatusClass(
 }
 
 
-/* ================================
-   الرجوع من الطلبات الحالية
-   ================================ */
+/* =========================================================
+   CUSTOMER ORDER BACK
+========================================================= */
 
 const backFromCurrentOrdersBtn =
   document.getElementById(
@@ -4498,20 +4653,14 @@ if(backFromCurrentOrdersBtn){
   backFromCurrentOrdersBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerHomeScreen"
       );
-
     }
   );
 
 }
 
-
-/* ================================
-   الرجوع من الطلبات السابقة
-   ================================ */
 
 const backFromPreviousOrdersBtn =
   document.getElementById(
@@ -4523,20 +4672,18 @@ if(backFromPreviousOrdersBtn){
   backFromPreviousOrdersBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerHomeScreen"
       );
-
     }
   );
 
 }
 
 
-/* ================================
-   فتح الإعدادات
-   ================================ */
+/* =========================================================
+   CUSTOMER SETTINGS
+========================================================= */
 
 const customerSettingsBtn =
   document.getElementById(
@@ -4560,10 +4707,6 @@ if(customerSettingsBtn){
 
 }
 
-
-/* ================================
-   تحميل بيانات العميل
-   ================================ */
 
 async function loadCustomerSettings(){
 
@@ -4590,11 +4733,8 @@ async function loadCustomerSettings(){
         ? await window.ma3daGetCurrentUser()
         : window.ma3daAuth?.currentUser;
 
-    if(!user){
 
-      alert(
-        "يجب تسجيل الدخول أولاً"
-      );
+    if(!user){
 
       showScreen(
         "roleScreen"
@@ -4605,23 +4745,9 @@ async function loadCustomerSettings(){
     }
 
 
-    if(emailInput){
-
+    if(emailInput)
       emailInput.value =
         user.email || "";
-
-    }
-
-
-    if(
-      !window.ma3daDB ||
-      !window.ma3daDoc ||
-      !window.ma3daGetDoc
-    ){
-
-      return;
-
-    }
 
 
     const customerRef =
@@ -4644,28 +4770,14 @@ async function loadCustomerSettings(){
         snapshot.data();
 
 
-      if(nameInput){
-
+      if(nameInput)
         nameInput.value =
           data.name || "";
 
-      }
 
-      if(status){
-
+      if(status)
         status.textContent =
           "نشط";
-
-      }
-
-    }else{
-
-      if(nameInput){
-
-        nameInput.value =
-          "";
-
-      }
 
     }
 
@@ -4681,10 +4793,6 @@ async function loadCustomerSettings(){
 
 }
 
-
-/* ================================
-   حفظ تعديل اسم العميل
-   ================================ */
 
 const saveCustomerSettingsBtn =
   document.getElementById(
@@ -4702,20 +4810,16 @@ if(saveCustomerSettingsBtn){
           "customerNameSettingsInput"
         );
 
+
       const name =
-        nameInput
-          ?.value
-          .trim();
+        nameInput?.value.trim();
 
 
       if(!name){
 
         alert(
-          "أدخل الاسم أولاً"
+          "أدخل الاسم أولًا."
         );
-
-        if(nameInput)
-          nameInput.focus();
 
         return;
 
@@ -4733,7 +4837,7 @@ if(saveCustomerSettingsBtn){
         if(!user){
 
           alert(
-            "يجب تسجيل الدخول أولاً"
+            "يجب تسجيل الدخول أولًا."
           );
 
           return;
@@ -4741,7 +4845,7 @@ if(saveCustomerSettingsBtn){
         }
 
 
-        const customerRef =
+        const ref =
           window.ma3daDoc(
             window.ma3daDB,
             "customers",
@@ -4749,46 +4853,24 @@ if(saveCustomerSettingsBtn){
           );
 
 
-        const oldSnapshot =
-          await window.ma3daGetDoc(
-            customerRef
-          );
-
-
-        const oldData =
-          oldSnapshot.exists()
-            ? oldSnapshot.data()
-            : {};
-
-
         await window.ma3daSetDoc(
-          customerRef,
+          ref,
           {
 
-            name:
-
-              name,
-
-            phone:
-
-              oldData.phone || "",
-
-            city:
-
-              oldData.city || "",
+            name,
 
             email:
-
               user.email || "",
 
             customerId:
-
               user.uid,
 
             updatedAt:
-
               Date.now()
 
+          },
+          {
+            merge:true
           }
         );
 
@@ -4806,7 +4888,7 @@ if(saveCustomerSettingsBtn){
         );
 
         alert(
-          "تعذر حفظ التعديلات في Firebase"
+          "تعذر حفظ التعديلات."
         );
 
       }
@@ -4816,10 +4898,6 @@ if(saveCustomerSettingsBtn){
 
 }
 
-
-/* ================================
-   تغيير كلمة المرور
-   ================================ */
 
 const changePasswordBtn =
   document.getElementById(
@@ -4838,35 +4916,13 @@ if(changePasswordBtn){
           : window.ma3daAuth?.currentUser;
 
 
-      if(!user){
-
-        alert(
-          "يجب تسجيل الدخول أولاً"
-        );
-
-        return;
-
-      }
-
-
-      if(!user.email){
-
-        alert(
-          "لا يوجد بريد إلكتروني مرتبط بالحساب"
-        );
-
-        return;
-
-      }
-
-
       if(
-        typeof window.ma3daSendPasswordResetEmail !==
-        "function"
+        !user ||
+        !user.email
       ){
 
         alert(
-          "Firebase لم يجهز بعد، أعد تحميل الصفحة"
+          "لا يوجد بريد إلكتروني مرتبط بالحساب."
         );
 
         return;
@@ -4889,13 +4945,12 @@ if(changePasswordBtn){
       }catch(error){
 
         console.error(
-          "تعذر إرسال رابط تغيير كلمة المرور:",
           error
         );
 
         alert(
-          error?.message ||
-          "تعذر إرسال رابط تغيير كلمة المرور"
+          error.message ||
+          "تعذر إرسال رابط تغيير كلمة المرور."
         );
 
       }
@@ -4905,10 +4960,6 @@ if(changePasswordBtn){
 
 }
 
-
-/* ================================
-   الرجوع من الإعدادات
-   ================================ */
 
 const backFromCustomerSettingsBtn =
   document.getElementById(
@@ -4920,18 +4971,18 @@ if(backFromCustomerSettingsBtn){
   backFromCustomerSettingsBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerHomeScreen"
       );
-
     }
   );
 
 }
-/* ================================
-   تعديل رقم الجوال
-   ================================ */
+
+
+/* =========================================================
+   EDIT PHONE / EMAIL
+========================================================= */
 
 const editPhoneBtn =
   document.getElementById(
@@ -4943,11 +4994,9 @@ if(editPhoneBtn){
   editPhoneBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "editPhoneScreen"
       );
-
     }
   );
 
@@ -4964,18 +5013,14 @@ if(backFromEditPhoneBtn){
   backFromEditPhoneBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerSettingsScreen"
       );
-
     }
   );
 
 }
-/* ================================
-   تعديل البريد الإلكتروني
-   ================================ */
+
 
 const editEmailBtn =
   document.getElementById(
@@ -4987,11 +5032,9 @@ if(editEmailBtn){
   editEmailBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "editEmailScreen"
       );
-
     }
   );
 
@@ -5008,23 +5051,18 @@ if(backFromEditEmailBtn){
   backFromEditEmailBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerSettingsScreen"
       );
-
     }
   );
 
 }
-/* ================================
-   إعدادات
-    اللغة + المظهر
-   ================================ */
 
-/* ================================
-   اللغة
-   ================================ */
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
 
 const languageSettingsBtn =
   document.getElementById(
@@ -5036,11 +5074,9 @@ if(languageSettingsBtn){
   languageSettingsBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "languageSettingsScreen"
       );
-
     }
   );
 
@@ -5057,11 +5093,9 @@ if(backFromLanguageSettingsBtn){
   backFromLanguageSettingsBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerSettingsScreen"
       );
-
     }
   );
 
@@ -5110,20 +5144,18 @@ if(englishLanguageBtn){
   englishLanguageBtn.addEventListener(
     "click",
     ()=>{
-
       alert(
         "اللغة الإنجليزية ستكون متاحة قريبًا 🌐"
       );
-
     }
   );
 
 }
 
 
-/* ================================
-   المظهر
-   ================================ */
+/* =========================================================
+   APPEARANCE
+========================================================= */
 
 const appearanceSettingsBtn =
   document.getElementById(
@@ -5135,11 +5167,9 @@ if(appearanceSettingsBtn){
   appearanceSettingsBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "appearanceSettingsScreen"
       );
-
     }
   );
 
@@ -5156,11 +5186,9 @@ if(backFromAppearanceSettingsBtn){
   backFromAppearanceSettingsBtn.addEventListener(
     "click",
     ()=>{
-
       showScreen(
         "customerSettingsScreen"
       );
-
     }
   );
 
@@ -5257,9 +5285,11 @@ if(darkAppearanceBtn){
   );
 
 }
-/* ================================
-   الدعم الفني
-   ================================ */
+
+
+/* =========================================================
+   TECHNICAL SUPPORT
+========================================================= */
 
 const technicalSupportBtn =
   document.getElementById(
@@ -5297,6 +5327,12 @@ if(backFromTechnicalSupportBtn){
   );
 
 }
+
+
+/* =========================================================
+   OPERATOR DATA
+========================================================= */
+
 async function loadOperatorData(){
 
   const user =
@@ -5304,9 +5340,10 @@ async function loadOperatorData(){
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
 
-  if(!user){
+
+  if(!user)
     return false;
-  }
+
 
   try{
 
@@ -5317,42 +5354,65 @@ async function loadOperatorData(){
         user.uid
       );
 
+
     const snapshot =
-      await window.ma3daGetDoc(ref);
+      await window.ma3daGetDoc(
+        ref
+      );
+
 
     const emailInput =
       document.getElementById(
         "operatorEmailInput"
       );
 
-    if(emailInput){
+
+    if(emailInput)
       emailInput.value =
         user.email || "";
-    }
 
-    if(!snapshot.exists()){
+
+    if(!snapshot.exists())
       return false;
-    }
+
 
     const data =
       snapshot.data();
 
-    document.getElementById(
-      "operatorNameInput"
-    ).value =
-      data.name || "";
 
-    document.getElementById(
-      "operatorPhoneInput"
-    ).value =
-      data.phone || "";
+    const nameInput =
+      document.getElementById(
+        "operatorNameInput"
+      );
 
-    document.getElementById(
-      "operatorCityInput"
-    ).value =
-      data.city || "";
+    const phoneInput =
+      document.getElementById(
+        "operatorPhoneInput"
+      );
+
+    const cityInput =
+      document.getElementById(
+        "operatorCityInput"
+      );
+
+
+    if(nameInput)
+      nameInput.value =
+        data.name || "";
+
+
+    if(phoneInput)
+      phoneInput.value =
+        data.phone || "";
+
+
+    if(cityInput)
+      cityInput.value =
+        data.city || "";
+
 
     return true;
+
 
   }catch(error){
 
@@ -5382,19 +5442,24 @@ if(saveOperatorDataBtn){
       const name =
         document.getElementById(
           "operatorNameInput"
-        ).value.trim();
+        )?.value.trim();
 
       const phone =
         document.getElementById(
           "operatorPhoneInput"
-        ).value.trim();
+        )?.value.trim();
 
       const city =
         document.getElementById(
           "operatorCityInput"
-        ).value.trim();
+        )?.value.trim();
 
-      if(!name || !phone || !city){
+
+      if(
+        !name ||
+        !phone ||
+        !city
+      ){
 
         alert(
           "أكمل جميع البيانات أولًا"
@@ -5404,12 +5469,12 @@ if(saveOperatorDataBtn){
 
       }
 
+
       try{
 
         const user =
-          window.ma3daGetCurrentUser
-            ? await window.ma3daGetCurrentUser()
-            : window.ma3daAuth?.currentUser;
+          await getOperatorCurrentUser();
+
 
         if(!user){
 
@@ -5421,31 +5486,44 @@ if(saveOperatorDataBtn){
 
         }
 
-        const operatorRef =
+
+        await window.ma3daSetDoc(
           window.ma3daDoc(
             window.ma3daDB,
             "operators",
             user.uid
-          );
-
-        await window.ma3daSetDoc(
-          operatorRef,
+          ),
           {
-            name:name,
-            phone:phone,
-            city:city,
-            email:user.email || "",
-            operatorId:user.uid,
-            updatedAt:Date.now()
+
+            name,
+
+            phone,
+
+            city,
+
+            email:
+              user.email || "",
+
+            operatorId:
+              user.uid,
+
+            updatedAt:
+              Date.now()
+
           },
-          { merge:true }
+          {
+            merge:true
+          }
         );
 
-        await loadOperatorHome();
+
+        await loadOperatorDashboard();
+
 
         showScreen(
           "operatorHomeScreen"
         );
+
 
       }catch(error){
 
@@ -5467,232 +5545,52 @@ if(saveOperatorDataBtn){
 }
 
 
+/* =========================================================
+   OPERATOR HOME
+========================================================= */
+
 async function loadOperatorHome(){
 
-  const user =
-    window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
+  await loadOperatorDashboard();
 
-  if(!user){
-    return;
-  }
+}
+
+
+/* =========================================================
+   OPERATOR HELPERS
+========================================================= */
+
+let operatorOrderWatcher =
+  null;
+
+let operatorTimerInterval =
+  null;
+
+
+async function getOperatorCurrentUser(){
 
   try{
 
-    const operatorRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "operators",
-        user.uid
-      );
+    if(window.ma3daFirebaseReady)
+      await window.ma3daFirebaseReady;
 
-    const operatorSnapshot =
-      await window.ma3daGetDoc(
-        operatorRef
-      );
 
-    if(operatorSnapshot.exists()){
+    if(!window.ma3daGetCurrentUser)
+      return null;
 
-      const operatorData =
-        operatorSnapshot.data();
 
-      const name =
-        document.getElementById(
-          "operatorHomeName"
-        );
-
-      if(name){
-        name.textContent =
-          operatorData.name ||
-          "صاحب المعدة";
-      }
-
-    }
-
-    const equipmentRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "equipment",
-        user.uid
-      );
-
-    const equipmentSnapshot =
-      await window.ma3daGetDoc(
-        equipmentRef
-      );
-
-    if(equipmentSnapshot.exists()){
-
-      const equipment =
-        equipmentSnapshot.data();
-
-      document.getElementById(
-        "operatorHomeEquipmentType"
-      ).textContent =
-        equipment.type || "-";
-
-      document.getElementById(
-        "operatorHomeEquipmentModel"
-      ).textContent =
-        equipment.model || "-";
-
-      document.getElementById(
-        "operatorHomeEquipmentCity"
-      ).textContent =
-        equipment.city || "-";
-
-      document.getElementById(
-        "operatorHomeEquipmentYear"
-      ).textContent =
-        equipment.year || "-";
-
-      document.getElementById(
-        "operatorHomeEquipmentPrice"
-      ).textContent =
-        equipment.hourlyPrice
-          ? equipment.hourlyPrice + " ريال"
-          : "-";
-
-      const image =
-        document.getElementById(
-          "operatorHomeEquipmentImage"
-        );
-
-      if(image){
-
-        if(equipment.image){
-
-          image.src =
-            equipment.image;
-
-          image.style.display =
-            "block";
-
-        }else{
-
-          image.style.display =
-            "none";
-
-        }
-
-      }
-
-    }
+    return await window.ma3daGetCurrentUser();
 
   }catch(error){
 
     console.error(
-      "خطأ في تحميل الصفحة الرئيسية لصاحب المعدة:",
+      "تعذر الحصول على مستخدم صاحب المعدة:",
       error
     );
 
+    return null;
+
   }
-
-}
-
-
-const operatorNewRequestsBtn =
-  document.getElementById(
-    "operatorNewRequestsBtn"
-  );
-
-if(operatorNewRequestsBtn){
-
-  operatorNewRequestsBtn.addEventListener(
-    "click",
-    async()=>{
-
-      await loadLatestCustomerRequest();
-
-      showScreen(
-        "operatorScreen"
-      );
-
-    }
-  );
-
-}
-
-
-const operatorCurrentOrderBtn =
-  document.getElementById(
-    "operatorCurrentOrderBtn"
-  );
-
-if(operatorCurrentOrderBtn){
-
-  operatorCurrentOrderBtn.addEventListener(
-    "click",
-    ()=>{
-
-      showScreen(
-        "operatorAcceptedScreen"
-      );
-
-    }
-  );
-
-}
-
-
-const operatorHomeLogoutBtn =
-  document.getElementById(
-    "operatorHomeLogoutBtn"
-  );
-
-if(operatorHomeLogoutBtn){
-
-  operatorHomeLogoutBtn.addEventListener(
-    "click",
-    async()=>{
-
-      try{
-
-        await window.ma3daAuth.signOut();
-
-      }catch(error){
-
-        console.error(
-          "خطأ في تسجيل الخروج:",
-          error
-        );
-
-      }
-
-      selectedRole = "";
-
-      showScreen(
-        "roleScreen"
-      );
-
-    }
-  );
-
-}
-/* =========================================================
-   MA3DA — OPERATOR DASHBOARD
-========================================================= */
-
-let operatorOrderWatcher = null;
-let operatorTimerInterval = null;
-
-
-/* ---------------------------------------------------------
-   أدوات صاحب المعدة
---------------------------------------------------------- */
-
-async function getOperatorCurrentUser(){
-
-  if(!window.ma3daFirebaseReady)
-    return null;
-
-  await window.ma3daFirebaseReady;
-
-  if(!window.ma3daGetCurrentUser)
-    return null;
-
-  return await window.ma3daGetCurrentUser();
 
 }
 
@@ -5702,39 +5600,37 @@ async function getOperatorEquipment(){
   const user =
     await getOperatorCurrentUser();
 
+
   if(!user)
     return null;
 
-  if(
-    !window.ma3daDB ||
-    !window.ma3daDoc ||
-    !window.ma3daGetDoc
-  )
-    return null;
 
-  const equipmentRef =
+  const ref =
     window.ma3daDoc(
       window.ma3daDB,
       "equipment",
       user.uid
     );
 
+
   const snap =
     await window.ma3daGetDoc(
-      equipmentRef
+      ref
     );
+
 
   if(!snap.exists())
     return null;
+
 
   return snap.data();
 
 }
 
 
-/* ---------------------------------------------------------
-   فتح لوحة صاحب المعدة
---------------------------------------------------------- */
+/* =========================================================
+   OPEN OPERATOR DASHBOARD
+========================================================= */
 
 async function openOperatorDashboard(){
 
@@ -5743,8 +5639,10 @@ async function openOperatorDashboard(){
     const user =
       await getOperatorCurrentUser();
 
+
     if(!user)
       return;
+
 
     const operatorRef =
       window.ma3daDoc(
@@ -5753,10 +5651,12 @@ async function openOperatorDashboard(){
         user.uid
       );
 
+
     const operatorSnap =
       await window.ma3daGetDoc(
         operatorRef
       );
+
 
     if(!operatorSnap.exists()){
 
@@ -5769,11 +5669,28 @@ async function openOperatorDashboard(){
     }
 
 
+    const equipment =
+      await getOperatorEquipment();
+
+
+    if(!equipment){
+
+      showScreen(
+        "addEquipmentScreen"
+      );
+
+      return;
+
+    }
+
+
     await loadOperatorDashboard();
+
 
     showScreen(
       "operatorHomeScreen"
     );
+
 
   }catch(error){
 
@@ -5782,25 +5699,28 @@ async function openOperatorDashboard(){
       error
     );
 
+    showScreen(
+      "roleScreen"
+    );
+
   }
 
 }
 
 
-/* ---------------------------------------------------------
-   تحميل الصفحة الرئيسية
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR DASHBOARD
+========================================================= */
 
 async function loadOperatorDashboard(){
 
   const user =
     await getOperatorCurrentUser();
 
+
   if(!user)
     return;
 
-
-  /* بيانات صاحب المعدة */
 
   const operatorRef =
     window.ma3daDoc(
@@ -5809,121 +5729,105 @@ async function loadOperatorDashboard(){
       user.uid
     );
 
+
   const operatorSnap =
     await window.ma3daGetDoc(
       operatorRef
     );
+
 
   if(operatorSnap.exists()){
 
     const data =
       operatorSnap.data();
 
-    const name =
-      data.name ||
-      "صاحب المعدة";
 
     const nameElement =
       document.getElementById(
         "operatorHomeName"
       );
 
+
     if(nameElement)
-      nameElement.textContent = name;
+      nameElement.textContent =
+        data.name ||
+        "صاحب المعدة";
 
   }
 
 
-  /* بيانات المعدة */
-
   const equipment =
     await getOperatorEquipment();
+
 
   if(!equipment)
     return;
 
 
-  const type =
-    equipment.type || "-";
+  const fields = {
 
-  const model =
-    equipment.model || "-";
+    operatorHomeEquipmentType:
+      equipment.type || "-",
 
-  const city =
-    equipment.city || "-";
+    operatorHomeEquipmentModel:
+      equipment.model || "-",
 
-  const year =
-    equipment.year || "-";
+    operatorHomeEquipmentCity:
+      equipment.city || "-",
 
-  const price =
-    Number(equipment.hourlyPrice || 0);
+    operatorHomeEquipmentYear:
+      equipment.year || "-",
+
+    operatorHomeEquipmentPrice:
+      equipment.hourlyPrice
+        ? `${Number(
+            equipment.hourlyPrice
+          ).toLocaleString("ar-SA")} ريال/ساعة`
+        : "-"
+
+  };
 
 
-  const typeElement =
-    document.getElementById(
-      "operatorHomeEquipmentType"
+  Object.entries(fields)
+    .forEach(
+      ([id,value])=>{
+
+        const element =
+          document.getElementById(
+            id
+          );
+
+        if(element)
+          element.textContent =
+            value;
+
+      }
     );
 
-  const modelElement =
-    document.getElementById(
-      "operatorHomeEquipmentModel"
-    );
 
-  const cityElement =
-    document.getElementById(
-      "operatorHomeEquipmentCity"
-    );
-
-  const yearElement =
-    document.getElementById(
-      "operatorHomeEquipmentYear"
-    );
-
-  const priceElement =
-    document.getElementById(
-      "operatorHomeEquipmentPrice"
-    );
-
-  const imageElement =
+  const image =
     document.getElementById(
       "operatorHomeEquipmentImage"
     );
 
 
-  if(typeElement)
-    typeElement.textContent = type;
-
-  if(modelElement)
-    modelElement.textContent = model;
-
-  if(cityElement)
-    cityElement.textContent = city;
-
-  if(yearElement)
-    yearElement.textContent = year;
-
-  if(priceElement)
-    priceElement.textContent =
-      price.toLocaleString("ar-SA");
-
-
-  if(imageElement){
+  if(image){
 
     if(equipment.image){
 
-      imageElement.src =
+      image.src =
         equipment.image;
 
-      imageElement.style.display =
+      image.style.display =
         "block";
 
     }else{
 
-      imageElement.removeAttribute(
+      image.removeAttribute(
         "src"
       );
 
-      imageElement.style.display =
+      image.style.display =
         "none";
 
     }
@@ -5933,9 +5837,9 @@ async function loadOperatorDashboard(){
 }
 
 
-/* ---------------------------------------------------------
-   الطلبات الجديدة
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR NEW REQUESTS
+========================================================= */
 
 async function loadOperatorNewRequests(){
 
@@ -5943,6 +5847,7 @@ async function loadOperatorNewRequests(){
     document.getElementById(
       "operatorNewRequestsList"
     );
+
 
   if(!list)
     return;
@@ -5957,18 +5862,9 @@ async function loadOperatorNewRequests(){
 
   try{
 
-    if(
-      !window.ma3daDB ||
-      !window.ma3daGetDocs ||
-      !window.ma3daCollection
-    )
-      throw new Error(
-        "Firebase غير جاهز"
-      );
-
-
     const equipment =
       await getOperatorEquipment();
+
 
     if(!equipment){
 
@@ -5995,34 +5891,41 @@ async function loadOperatorNewRequests(){
     const requests = [];
 
 
-    snapshot.forEach(docSnap => {
+    snapshot.forEach(
+      docSnap=>{
 
-      const data =
-        docSnap.data();
+        const data =
+          docSnap.data();
 
 
-      if(
-        data.status === "searching" &&
-        data.equipment === equipment.type
-      ){
+        if(
+          data.status === "searching" &&
+          data.equipment === equipment.type
+        ){
 
-        requests.push({
+          requests.push({
 
-          id: docSnap.id,
+            id:
+              docSnap.id,
 
-          ...data
+            ...data
 
-        });
+          });
+
+        }
 
       }
-
-    });
+    );
 
 
     requests.sort(
-      (a,b) =>
-        Number(b.createdAt || 0) -
-        Number(a.createdAt || 0)
+      (a,b)=>
+        Number(
+          b.createdAt || 0
+        ) -
+        Number(
+          a.createdAt || 0
+        )
     );
 
 
@@ -6040,8 +5943,7 @@ async function loadOperatorNewRequests(){
           </h3>
 
           <p>
-            سنعرض هنا طلبات العملاء
-            المناسبة لمعدتك.
+            سنعرض هنا الطلبات المناسبة لمعدتك.
           </p>
 
         </div>
@@ -6052,127 +5954,135 @@ async function loadOperatorNewRequests(){
     }
 
 
-    list.innerHTML = "";
+    list.innerHTML =
+      "";
 
 
-    requests.forEach(request => {
+    requests.forEach(
+      request=>{
 
-      const card =
-        document.createElement(
-          "div"
-        );
-
-      card.className =
-        "card operator-new-request-card";
+        const card =
+          document.createElement(
+            "div"
+          );
 
 
-      const price =
-        Number(request.price || 0);
+        card.className =
+          "card operator-new-request-card";
 
 
-      card.innerHTML = `
+        const price =
+          Number(
+            request.price || 0
+          );
 
-        <div class="request-title">
 
-          <span>🚜</span>
+        card.innerHTML = `
 
-          <div>
+          <div class="request-title">
 
-            <h2>
-              ${request.equipment || "-"}
-            </h2>
+            <span>🚜</span>
+
+            <div>
+
+              <h2>
+                ${request.equipment || "-"}
+              </h2>
+
+              <p>
+                مع مشغل
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="operator-info">
+
+            <div class="operator-info-row">
+
+              <span>
+                📍 موقع العمل
+              </span>
+
+              <strong>
+                ${request.location || "-"}
+              </strong>
+
+            </div>
+
+
+            <div class="operator-info-row">
+
+              <span>
+                ⏱️ مدة العمل
+              </span>
+
+              <strong>
+                ${request.duration || "-"}
+              </strong>
+
+            </div>
+
+
+            <div class="operator-info-row">
+
+              <span>
+                💰 السعر
+              </span>
+
+              <strong>
+                ${price.toLocaleString("ar-SA")} ريال
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="operator-notes">
+
+            <span>
+              📝 ملاحظات العميل
+            </span>
 
             <p>
-              مع مشغل
+              ${request.notes || "لا توجد ملاحظات"}
             </p>
 
           </div>
 
-        </div>
 
+          <div class="operator-buttons">
 
-        <div class="operator-info">
+            <button
+              class="reject-btn"
+              type="button"
+              data-reject-request="${request.id}"
+            >
+              رفض الطلب
+            </button>
 
-          <div class="operator-info-row">
-
-            <span>
-              📍 موقع العمل
-            </span>
-
-            <strong>
-              ${request.location || "-"}
-            </strong>
-
-          </div>
-
-
-          <div class="operator-info-row">
-
-            <span>
-              ⏱️ مدة العمل
-            </span>
-
-            <strong>
-              ${request.duration || "-"}
-            </strong>
+            <button
+              class="accept-btn"
+              type="button"
+              data-accept-request="${request.id}"
+            >
+              قبول الطلب
+            </button>
 
           </div>
 
-
-          <div class="operator-info-row">
-
-            <span>
-              💰 السعر
-            </span>
-
-            <strong>
-              ${price.toLocaleString("ar-SA")} ريال
-            </strong>
-
-          </div>
-
-        </div>
+        `;
 
 
-        <div class="operator-notes">
+        list.appendChild(
+          card
+        );
 
-          <span>
-            📝 ملاحظات العميل
-          </span>
-
-          <p>
-            ${request.notes || "لا توجد ملاحظات"}
-          </p>
-
-        </div>
-
-
-        <div class="operator-buttons">
-
-          <button
-            class="reject-btn"
-            type="button"
-            data-reject-request="${request.id}"
-          >
-            رفض الطلب
-          </button>
-
-          <button
-            class="accept-btn"
-            type="button"
-            data-accept-request="${request.id}"
-          >
-            قبول الطلب
-          </button>
-
-        </div>
-
-      `;
-
-
-      list.appendChild(card);
-
-    });
+      }
+    );
 
 
   }catch(error){
@@ -6181,6 +6091,7 @@ async function loadOperatorNewRequests(){
       "خطأ في تحميل الطلبات الجديدة:",
       error
     );
+
 
     list.innerHTML = `
       <div class="card center">
@@ -6195,9 +6106,9 @@ async function loadOperatorNewRequests(){
 }
 
 
-/* ---------------------------------------------------------
-   قبول طلب
---------------------------------------------------------- */
+/* =========================================================
+   ACCEPT
+========================================================= */
 
 async function acceptOperatorRequest(
   requestId
@@ -6207,6 +6118,7 @@ async function acceptOperatorRequest(
 
     const user =
       await getOperatorCurrentUser();
+
 
     if(!user)
       return;
@@ -6300,19 +6212,16 @@ async function acceptOperatorRequest(
           "",
 
         operatorRating:
-          operatorData.rating ||
-          "5.0",
+          Number(
+            operatorData.rating || 5
+          ),
 
         operatorEquipment:
-          equipment
-            ? equipment.model || ""
-            : "",
+          equipment?.model ||
+          "",
 
         acceptedAt:
-          Date.now(),
-
-        acceptedCustomerLocation:
-          request.location || ""
+          Date.now()
 
       }
     );
@@ -6327,11 +6236,6 @@ async function acceptOperatorRequest(
     localStorage.setItem(
       "orderState",
       "accepted"
-    );
-
-
-    alert(
-      "تم قبول الطلب بنجاح 🚜"
     );
 
 
@@ -6359,9 +6263,9 @@ async function acceptOperatorRequest(
 }
 
 
-/* ---------------------------------------------------------
-   رفض طلب
---------------------------------------------------------- */
+/* =========================================================
+   REJECT
+========================================================= */
 
 async function rejectOperatorRequest(
   requestId
@@ -6413,9 +6317,9 @@ async function rejectOperatorRequest(
 }
 
 
-/* ---------------------------------------------------------
-   الطلب الحالي
---------------------------------------------------------- */
+/* =========================================================
+   CURRENT ORDER
+========================================================= */
 
 async function loadOperatorCurrentOrder(){
 
@@ -6484,9 +6388,9 @@ async function loadOperatorCurrentOrder(){
 }
 
 
-/* ---------------------------------------------------------
-   تحديث واجهة الطلب الحالي
---------------------------------------------------------- */
+/* =========================================================
+   CURRENT ORDER UI
+========================================================= */
 
 function updateOperatorCurrentUI(
   data
@@ -6587,17 +6491,22 @@ function updateOperatorCurrentUI(
     equipment.textContent =
       data.equipment || "-";
 
+
   if(location)
     location.textContent =
       data.location || "-";
+
 
   if(duration)
     duration.textContent =
       data.duration || "-";
 
+
   if(price)
     price.textContent =
-      `${Number(data.price || 0).toLocaleString("ar-SA")} ريال`;
+      `${Number(
+        data.price || 0
+      ).toLocaleString("ar-SA")} ريال`;
 
 
   if(arrivedBtn)
@@ -6617,7 +6526,10 @@ function updateOperatorCurrentUI(
       "none";
 
 
-  if(data.status === "accepted"){
+  if(
+    data.status ===
+    "accepted"
+  ){
 
     if(statusIcon)
       statusIcon.textContent =
@@ -6634,7 +6546,10 @@ function updateOperatorCurrentUI(
   }
 
 
-  else if(data.status === "arrived"){
+  else if(
+    data.status ===
+    "arrived"
+  ){
 
     if(statusIcon)
       statusIcon.textContent =
@@ -6651,7 +6566,10 @@ function updateOperatorCurrentUI(
   }
 
 
-  else if(data.status === "working"){
+  else if(
+    data.status ===
+    "working"
+  ){
 
     if(statusIcon)
       statusIcon.textContent =
@@ -6677,7 +6595,10 @@ function updateOperatorCurrentUI(
   }
 
 
-  else if(data.status === "completed"){
+  else if(
+    data.status ===
+    "completed"
+  ){
 
     if(statusIcon)
       statusIcon.textContent =
@@ -6692,9 +6613,9 @@ function updateOperatorCurrentUI(
 }
 
 
-/* ---------------------------------------------------------
-   زر وصلت
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR ARRIVED
+========================================================= */
 
 async function operatorMarkArrived(){
 
@@ -6702,6 +6623,7 @@ async function operatorMarkArrived(){
     localStorage.getItem(
       "currentRequestId"
     );
+
 
   if(!requestId){
 
@@ -6738,11 +6660,13 @@ async function operatorMarkArrived(){
     );
 
 
-    await loadOperatorCurrentOrder();
-
-    alert(
-      "تم تسجيل وصولك للعميل 🚜"
+    localStorage.setItem(
+      "orderState",
+      "arrived"
     );
+
+
+    await loadOperatorCurrentOrder();
 
 
   }catch(error){
@@ -6761,23 +6685,42 @@ async function operatorMarkArrived(){
 }
 
 
-/* ---------------------------------------------------------
-   بدء العمل
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR START WORK
+   الوحيد المسموح له ببدء العمل
+========================================================= */
 
 async function operatorStartWork(){
+
+  if(
+    selectedRole !==
+    "operator"
+  ){
+
+    console.warn(
+      "محاولة بدء العمل من غير صاحب المعدة."
+    );
+
+    return;
+
+  }
+
 
   const requestId =
     localStorage.getItem(
       "currentRequestId"
     );
 
-  if(!requestId)
+
+  if(!requestId){
+
+    alert(
+      "لا يوجد طلب حالي."
+    );
+
     return;
 
-
-  const startTime =
-    Date.now();
+  }
 
 
   try{
@@ -6788,6 +6731,45 @@ async function operatorStartWork(){
         "requests",
         requestId
       );
+
+
+    const requestSnap =
+      await window.ma3daGetDoc(
+        requestRef
+      );
+
+
+    if(!requestSnap.exists()){
+
+      alert(
+        "الطلب غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    const request =
+      requestSnap.data();
+
+
+    if(
+      request.status !==
+      "arrived"
+    ){
+
+      alert(
+        "لا يمكن بدء العمل قبل تسجيل الوصول."
+      );
+
+      return;
+
+    }
+
+
+    const startTime =
+      Date.now();
 
 
     await window.ma3daUpdateDoc(
@@ -6834,9 +6816,9 @@ async function operatorStartWork(){
 }
 
 
-/* ---------------------------------------------------------
-   مؤقت صاحب المعدة
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR TIMER
+========================================================= */
 
 function startOperatorTimer(
   startTime
@@ -6863,7 +6845,10 @@ function startOperatorTimer(
       Math.max(
         0,
         Date.now() -
-        Number(startTime || Date.now())
+        Number(
+          startTime ||
+          Date.now()
+        )
       );
 
 
@@ -6878,10 +6863,12 @@ function startOperatorTimer(
         totalSeconds / 3600
       );
 
+
     const minutes =
       Math.floor(
         (totalSeconds % 3600) / 60
       );
+
 
     const seconds =
       totalSeconds % 60;
@@ -6907,16 +6894,24 @@ function startOperatorTimer(
 }
 
 
-/* ---------------------------------------------------------
-   إنهاء العمل
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR FINISH WORK
+========================================================= */
 
 async function operatorFinishWork(){
+
+  if(
+    selectedRole !==
+    "operator"
+  )
+    return;
+
 
   const requestId =
     localStorage.getItem(
       "currentRequestId"
     );
+
 
   if(!requestId)
     return;
@@ -6932,6 +6927,45 @@ async function operatorFinishWork(){
       );
 
 
+    const snapshot =
+      await window.ma3daGetDoc(
+        requestRef
+      );
+
+
+    if(!snapshot.exists()){
+
+      alert(
+        "الطلب غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    const request =
+      snapshot.data();
+
+
+    if(
+      request.status !==
+      "working"
+    ){
+
+      alert(
+        "لا يمكن إنهاء العمل الآن."
+      );
+
+      return;
+
+    }
+
+
+    const completedAt =
+      Date.now();
+
+
     await window.ma3daUpdateDoc(
       requestRef,
       {
@@ -6939,8 +6973,7 @@ async function operatorFinishWork(){
         status:
           "completed",
 
-        completedAt:
-          Date.now()
+        completedAt
 
       }
     );
@@ -6957,12 +6990,48 @@ async function operatorFinishWork(){
     );
 
 
-    await loadOperatorCurrentOrder();
+    const finalPrice =
+      Number(
+        request.price || 0
+      );
 
 
-    alert(
-      "تم إنهاء العمل بنجاح ✅"
+    localStorage.setItem(
+      "finalPrice",
+      String(
+        finalPrice
+      )
     );
+
+
+    const priceElement =
+      document.getElementById(
+        "finalPrice"
+      );
+
+
+    if(priceElement)
+      priceElement.textContent =
+        `${finalPrice.toLocaleString("ar-SA")} ريال`;
+
+
+    if(
+      document.getElementById(
+        "operatorCompletedScreen"
+      )
+    ){
+
+      showScreen(
+        "operatorCompletedScreen"
+      );
+
+    }else{
+
+      showScreen(
+        "operatorCurrentOrderScreen"
+      );
+
+    }
 
 
   }catch(error){
@@ -6981,9 +7050,9 @@ async function operatorFinishWork(){
 }
 
 
-/* ---------------------------------------------------------
-   الطلبات السابقة
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR PREVIOUS ORDERS
+========================================================= */
 
 async function loadOperatorPreviousOrders(){
 
@@ -6991,6 +7060,7 @@ async function loadOperatorPreviousOrders(){
     document.getElementById(
       "operatorPreviousOrdersList"
     );
+
 
   if(!list)
     return;
@@ -7008,6 +7078,7 @@ async function loadOperatorPreviousOrders(){
     const user =
       await getOperatorCurrentUser();
 
+
     if(!user)
       return;
 
@@ -7024,37 +7095,48 @@ async function loadOperatorPreviousOrders(){
     const requests = [];
 
 
-    snapshot.forEach(docSnap => {
+    snapshot.forEach(
+      docSnap=>{
 
-      const data =
-        docSnap.data();
+        const data =
+          docSnap.data();
 
 
-      if(
-        data.operatorId === user.uid &&
-        (
-          data.status === "completed" ||
-          data.status === "rejected"
-        )
-      ){
+        if(
+          data.operatorId === user.uid &&
+          (
+            data.status === "completed" ||
+            data.status === "rejected"
+          )
+        ){
 
-        requests.push({
+          requests.push({
 
-          id: docSnap.id,
+            id:
+              docSnap.id,
 
-          ...data
+            ...data
 
-        });
+          });
+
+        }
 
       }
-
-    });
+    );
 
 
     requests.sort(
-      (a,b) =>
-        Number(b.completedAt || b.createdAt || 0) -
-        Number(a.completedAt || a.createdAt || 0)
+      (a,b)=>
+        Number(
+          b.completedAt ||
+          b.createdAt ||
+          0
+        ) -
+        Number(
+          a.completedAt ||
+          a.createdAt ||
+          0
+        )
     );
 
 
@@ -7073,87 +7155,96 @@ async function loadOperatorPreviousOrders(){
     }
 
 
-    list.innerHTML = "";
+    list.innerHTML =
+      "";
 
 
-    requests.forEach(request => {
+    requests.forEach(
+      request=>{
 
-      const card =
-        document.createElement(
-          "div"
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "card";
+
+
+        const status =
+          request.status ===
+          "completed"
+            ? "مكتمل ✅"
+            : "مرفوض ❌";
+
+
+        card.innerHTML = `
+
+          <h3>
+            ${request.equipment || "-"}
+          </h3>
+
+          <div class="info-row">
+
+            <span>
+              الموقع
+            </span>
+
+            <strong>
+              ${request.location || "-"}
+            </strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>
+              المدة
+            </span>
+
+            <strong>
+              ${request.duration || "-"}
+            </strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>
+              المبلغ
+            </span>
+
+            <strong>
+              ${Number(
+                request.price || 0
+              ).toLocaleString("ar-SA")}
+              ريال
+            </strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>
+              الحالة
+            </span>
+
+            <strong>
+              ${status}
+            </strong>
+
+          </div>
+
+        `;
+
+
+        list.appendChild(
+          card
         );
 
-      card.className =
-        "card";
-
-
-      const status =
-        request.status === "completed"
-          ? "مكتمل ✅"
-          : "مرفوض ❌";
-
-
-      card.innerHTML = `
-
-        <h3>
-          ${request.equipment || "-"}
-        </h3>
-
-        <div class="info-row">
-
-          <span>
-            الموقع
-          </span>
-
-          <strong>
-            ${request.location || "-"}
-          </strong>
-
-        </div>
-
-        <div class="info-row">
-
-          <span>
-            المدة
-          </span>
-
-          <strong>
-            ${request.duration || "-"}
-          </strong>
-
-        </div>
-
-        <div class="info-row">
-
-          <span>
-            المبلغ
-          </span>
-
-          <strong>
-            ${Number(request.price || 0).toLocaleString("ar-SA")}
-            ريال
-          </strong>
-
-        </div>
-
-        <div class="info-row">
-
-          <span>
-            الحالة
-          </span>
-
-          <strong>
-            ${status}
-          </strong>
-
-        </div>
-
-      `;
-
-
-      list.appendChild(card);
-
-    });
+      }
+    );
 
 
   }catch(error){
@@ -7168,14 +7259,15 @@ async function loadOperatorPreviousOrders(){
 }
 
 
-/* ---------------------------------------------------------
-   الدخل
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR INCOME
+========================================================= */
 
 async function loadOperatorIncome(){
 
   const user =
     await getOperatorCurrentUser();
+
 
   if(!user)
     return;
@@ -7190,50 +7282,63 @@ async function loadOperatorIncome(){
     );
 
 
-  let totalIncome = 0;
-  let completedCount = 0;
-  let totalHours = 0;
+  let totalIncome =
+    0;
+
+  let completedCount =
+    0;
+
+  let totalHours =
+    0;
 
 
-  const completedRequests = [];
+  const completedRequests =
+    [];
 
 
-  snapshot.forEach(docSnap => {
+  snapshot.forEach(
+    docSnap=>{
 
-    const data =
-      docSnap.data();
-
-
-    if(
-      data.operatorId === user.uid &&
-      data.status === "completed"
-    ){
-
-      const price =
-        Number(data.price || 0);
+      const data =
+        docSnap.data();
 
 
-      totalIncome += price;
+      if(
+        data.operatorId === user.uid &&
+        data.status === "completed"
+      ){
 
-      completedCount++;
-
-
-      const hours =
-        durationHours[
-          data.duration
-        ] || 0;
-
-
-      totalHours += hours;
+        const price =
+          Number(
+            data.price || 0
+          );
 
 
-      completedRequests.push(
-        data
-      );
+        totalIncome +=
+          price;
+
+
+        completedCount++;
+
+
+        const hours =
+          durationHours[
+            data.duration
+          ] || 0;
+
+
+        totalHours +=
+          hours;
+
+
+        completedRequests.push(
+          data
+        );
+
+      }
 
     }
-
-  });
+  );
 
 
   const incomeElement =
@@ -7256,9 +7361,11 @@ async function loadOperatorIncome(){
     incomeElement.textContent =
       `${totalIncome.toLocaleString("ar-SA")} ريال`;
 
+
   if(countElement)
     countElement.textContent =
       completedCount;
+
 
   if(hoursElement)
     hoursElement.textContent =
@@ -7275,75 +7382,89 @@ async function loadOperatorIncome(){
     return;
 
 
-  list.innerHTML = "";
+  list.innerHTML =
+    "";
 
 
   completedRequests
     .sort(
-      (a,b) =>
-        Number(b.completedAt || 0) -
-        Number(a.completedAt || 0)
+      (a,b)=>
+        Number(
+          b.completedAt || 0
+        ) -
+        Number(
+          a.completedAt || 0
+        )
     )
-    .forEach(request => {
+    .forEach(
+      request=>{
 
-      const card =
-        document.createElement(
-          "div"
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "card";
+
+
+        card.innerHTML = `
+
+          <h3>
+            ${request.equipment || "-"}
+          </h3>
+
+          <div class="info-row">
+
+            <span>
+              المبلغ
+            </span>
+
+            <strong>
+              ${Number(
+                request.price || 0
+              ).toLocaleString("ar-SA")}
+              ريال
+            </strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>
+              المدة
+            </span>
+
+            <strong>
+              ${request.duration || "-"}
+            </strong>
+
+          </div>
+
+        `;
+
+
+        list.appendChild(
+          card
         );
 
-      card.className =
-        "card";
-
-
-      card.innerHTML = `
-
-        <h3>
-          ${request.equipment || "-"}
-        </h3>
-
-        <div class="info-row">
-
-          <span>
-            المبلغ
-          </span>
-
-          <strong>
-            ${Number(request.price || 0).toLocaleString("ar-SA")}
-            ريال
-          </strong>
-
-        </div>
-
-        <div class="info-row">
-
-          <span>
-            المدة
-          </span>
-
-          <strong>
-            ${request.duration || "-"}
-          </strong>
-
-        </div>
-
-      `;
-
-
-      list.appendChild(card);
-
-    });
+      }
+    );
 
 }
 
 
-/* ---------------------------------------------------------
-   التقييمات
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR RATINGS
+   التقييمات موجودة داخل requests
+========================================================= */
 
 async function loadOperatorRatings(){
 
   const user =
     await getOperatorCurrentUser();
+
 
   if(!user)
     return;
@@ -7353,51 +7474,69 @@ async function loadOperatorRatings(){
     await window.ma3daGetDocs(
       window.ma3daCollection(
         window.ma3daDB,
-        "ratings"
+        "requests"
       )
     );
 
 
-  let total = 0;
-  let count = 0;
+  let total =
+    0;
+
+  let count =
+    0;
 
 
-  const ratings = [];
+  const ratings =
+    [];
 
 
-  snapshot.forEach(docSnap => {
+  snapshot.forEach(
+    docSnap=>{
 
-    const data =
-      docSnap.data();
-
-
-    if(
-      data.operatorId === user.uid
-    ){
-
-      const rating =
-        Number(data.rating || 0);
+      const data =
+        docSnap.data();
 
 
-      if(rating > 0){
+      if(
+        data.operatorId === user.uid &&
+        data.status === "completed"
+      ){
 
-        total += rating;
-        count++;
+        const rating =
+          Number(
+            data.rating || 0
+          );
 
-        ratings.push(
-          data
-        );
+
+        if(
+          rating >= 1 &&
+          rating <= 5
+        ){
+
+          total +=
+            rating;
+
+          count++;
+
+
+          ratings.push(
+            data
+          );
+
+        }
 
       }
 
     }
-
-  });
+  );
 
 
   const average =
     count
-      ? (total / count).toFixed(1)
+      ? (
+          total /
+          count
+        ).toFixed(1)
       : "0.0";
 
 
@@ -7405,6 +7544,7 @@ async function loadOperatorRatings(){
     document.getElementById(
       "operatorAverageRating"
     );
+
 
   const countElement =
     document.getElementById(
@@ -7415,6 +7555,7 @@ async function loadOperatorRatings(){
   if(averageElement)
     averageElement.textContent =
       average;
+
 
   if(countElement)
     countElement.textContent =
@@ -7431,132 +7572,147 @@ async function loadOperatorRatings(){
     return;
 
 
-  list.innerHTML = "";
+  list.innerHTML =
+    "";
 
 
-  ratings.forEach(rating => {
+  if(!ratings.length){
 
-    const card =
-      document.createElement(
-        "div"
-      );
-
-    card.className =
-      "card";
-
-
-    card.innerHTML = `
-
-      <div class="info-row">
-
-        <span>
-          تقييم العميل
-        </span>
-
-        <strong>
-          ${"⭐".repeat(
-            Math.min(
-              5,
-              Number(rating.rating || 0)
-            )
-          )}
-        </strong>
-
+    list.innerHTML = `
+      <div class="card center">
+        <p>
+          لا توجد تقييمات حتى الآن.
+        </p>
       </div>
-
-      ${
-        rating.comment
-          ? `
-            <p>
-              ${rating.comment}
-            </p>
-          `
-          : ""
-      }
-
     `;
 
+    return;
 
-    list.appendChild(card);
+  }
 
-  });
+
+  ratings
+    .sort(
+      (a,b)=>
+        Number(
+          b.ratedAt || 0
+        ) -
+        Number(
+          a.ratedAt || 0
+        )
+    )
+    .forEach(
+      rating=>{
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "card";
+
+
+        const value =
+          Number(
+            rating.rating || 0
+          );
+
+
+        card.innerHTML = `
+
+          <div class="info-row">
+
+            <span>
+              تقييم العميل
+            </span>
+
+            <strong>
+              ${"⭐".repeat(
+                Math.min(
+                  5,
+                  value
+                )
+              )}
+            </strong>
+
+          </div>
+
+        `;
+
+
+        list.appendChild(
+          card
+        );
+
+      }
+    );
 
 }
 
 
-/* ---------------------------------------------------------
-   تعديل المعدة
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR EQUIPMENT EDITOR
+========================================================= */
 
 async function loadOperatorEquipmentEditor(){
 
   const equipment =
     await getOperatorEquipment();
 
+
   if(!equipment)
     return;
 
 
-  const type =
-    document.getElementById(
-      "operatorEquipmentTypeEdit"
+  const fields = {
+
+    operatorEquipmentTypeEdit:
+      equipment.type || "",
+
+    operatorEquipmentModelEdit:
+      equipment.model || "",
+
+    operatorEquipmentYearEdit:
+      equipment.year || "",
+
+    operatorEquipmentCityEdit:
+      equipment.city || "",
+
+    operatorEquipmentPriceEdit:
+      equipment.hourlyPrice || "",
+
+    operatorEquipmentAvailabilityEdit:
+      equipment.availability ||
+      "available"
+
+  };
+
+
+  Object.entries(fields)
+    .forEach(
+      ([id,value])=>{
+
+        const element =
+          document.getElementById(
+            id
+          );
+
+
+        if(element)
+          element.value =
+            value;
+
+      }
     );
 
-  const model =
-    document.getElementById(
-      "operatorEquipmentModelEdit"
-    );
-
-  const year =
-    document.getElementById(
-      "operatorEquipmentYearEdit"
-    );
-
-  const city =
-    document.getElementById(
-      "operatorEquipmentCityEdit"
-    );
-
-  const price =
-    document.getElementById(
-      "operatorEquipmentPriceEdit"
-    );
-
-  const availability =
-    document.getElementById(
-      "operatorEquipmentAvailabilityEdit"
-    );
 
   const image =
     document.getElementById(
       "operatorEquipmentImagePreview"
     );
 
-
-  if(type)
-    type.value =
-      equipment.type || "";
-
-  if(model)
-    model.value =
-      equipment.model || "";
-
-  if(year)
-    year.value =
-      equipment.year || "";
-
-  if(city)
-    city.value =
-      equipment.city || "";
-
-  if(price)
-    price.value =
-      equipment.hourlyPrice || "";
-
-  if(availability)
-    availability.value =
-      equipment.availability ||
-      "available";
 
   if(image){
 
@@ -7584,236 +7740,269 @@ async function loadOperatorEquipmentEditor(){
 }
 
 
-/* ---------------------------------------------------------
-   حفظ تعديل المعدة
---------------------------------------------------------- */
+/* =========================================================
+   SAVE EQUIPMENT
+========================================================= */
 
 async function saveOperatorEquipmentChanges(){
 
-  const user =
-    await getOperatorCurrentUser();
+  try{
 
-  if(!user)
-    return;
+    const user =
+      await getOperatorCurrentUser();
 
 
-  const type =
-    document.getElementById(
-      "operatorEquipmentTypeEdit"
-    ).value.trim();
+    if(!user)
+      return;
 
-  const model =
-    document.getElementById(
-      "operatorEquipmentModelEdit"
-    ).value.trim();
 
-  const year =
-    document.getElementById(
-      "operatorEquipmentYearEdit"
-    ).value.trim();
-
-  const city =
-    document.getElementById(
-      "operatorEquipmentCityEdit"
-    ).value.trim();
-
-  const price =
-    Number(
+    const type =
       document.getElementById(
-        "operatorEquipmentPriceEdit"
-      ).value
-    );
-
-  const availability =
-    document.getElementById(
-      "operatorEquipmentAvailabilityEdit"
-    ).value;
+        "operatorEquipmentTypeEdit"
+      )?.value.trim();
 
 
-  if(
-    !type ||
-    !model ||
-    !year ||
-    !city ||
-    !price
-  ){
-
-    alert(
-      "أكمل بيانات المعدة."
-    );
-
-    return;
-
-  }
+    const model =
+      document.getElementById(
+        "operatorEquipmentModelEdit"
+      )?.value.trim();
 
 
-  const equipmentRef =
-    window.ma3daDoc(
-      window.ma3daDB,
-      "equipment",
-      user.uid
-    );
+    const year =
+      document.getElementById(
+        "operatorEquipmentYearEdit"
+      )?.value.trim();
 
 
-  const currentSnap =
-    await window.ma3daGetDoc(
-      equipmentRef
-    );
+    const city =
+      document.getElementById(
+        "operatorEquipmentCityEdit"
+      )?.value.trim();
 
 
-  const current =
-    currentSnap.exists()
-      ? currentSnap.data()
-      : {};
-
-
-  const imageInput =
-    document.getElementById(
-      "operatorEquipmentImageEdit"
-    );
-
-
-  let image =
-    current.image || "";
-
-
-  if(
-    imageInput &&
-    imageInput.files &&
-    imageInput.files[0]
-  ){
-
-    image =
-      await resizeOperatorImage(
-        imageInput.files[0]
+    const price =
+      Number(
+        document.getElementById(
+          "operatorEquipmentPriceEdit"
+        )?.value || 0
       );
 
-  }
+
+    const availability =
+      document.getElementById(
+        "operatorEquipmentAvailabilityEdit"
+      )?.value ||
+      "available";
 
 
-  await window.ma3daSetDoc(
-    equipmentRef,
-    {
+    if(
+      !type ||
+      !model ||
+      !year ||
+      !city ||
+      price <= 0
+    ){
 
-      ...current,
+      alert(
+        "أكمل بيانات المعدة."
+      );
 
-      type,
-
-      model,
-
-      year,
-
-      city,
-
-      hourlyPrice:
-        price,
-
-      availability,
-
-      image,
-
-      ownerId:
-        user.uid,
-
-      ownerEmail:
-        user.email || ""
+      return;
 
     }
-  );
 
 
-  alert(
-    "تم حفظ بيانات المعدة بنجاح 🚜"
-  );
+    const equipmentRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
 
 
-  await loadOperatorDashboard();
+    const currentSnap =
+      await window.ma3daGetDoc(
+        equipmentRef
+      );
 
 
-  showScreen(
-    "operatorHomeScreen"
-  );
+    const current =
+      currentSnap.exists()
+        ? currentSnap.data()
+        : {};
+
+
+    const imageInput =
+      document.getElementById(
+        "operatorEquipmentImageEdit"
+      );
+
+
+    let image =
+      current.image ||
+      "";
+
+
+    if(
+      imageInput &&
+      imageInput.files &&
+      imageInput.files[0]
+    ){
+
+      image =
+        await resizeOperatorImage(
+          imageInput.files[0]
+        );
+
+    }
+
+
+    await window.ma3daSetDoc(
+      equipmentRef,
+      {
+
+        ...current,
+
+        type,
+
+        model,
+
+        year,
+
+        city,
+
+        hourlyPrice:
+          price,
+
+        availability,
+
+        image,
+
+        ownerId:
+          user.uid,
+
+        ownerEmail:
+          user.email || ""
+
+      }
+    );
+
+
+    await loadOperatorDashboard();
+
+
+    showScreen(
+      "operatorHomeScreen"
+    );
+
+
+    alert(
+      "تم حفظ بيانات المعدة بنجاح 🚜"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في حفظ المعدة:",
+      error
+    );
+
+    alert(
+      "تعذر حفظ بيانات المعدة."
+    );
+
+  }
 
 }
 
-
-/* ---------------------------------------------------------
-   ضغط الصورة
---------------------------------------------------------- */
 
 function resizeOperatorImage(
   file
 ){
 
   return new Promise(
-    resolve => {
+    (resolve,reject)=>{
 
       const reader =
         new FileReader();
 
 
-      reader.onload = event => {
+      reader.onload =
+        event=>{
 
-        const img =
-          new Image();
-
-
-        img.onload = () => {
-
-          const maxWidth =
-            1000;
+          const img =
+            new Image();
 
 
-          const scale =
-            Math.min(
-              1,
-              maxWidth /
-              img.width
-            );
+          img.onload =
+            ()=>{
+
+              const maxWidth =
+                1000;
 
 
-          const canvas =
-            document.createElement(
-              "canvas"
-            );
+              const scale =
+                Math.min(
+                  1,
+                  maxWidth /
+                  img.width
+                );
 
 
-          canvas.width =
-            img.width * scale;
-
-          canvas.height =
-            img.height * scale;
-
-
-          const ctx =
-            canvas.getContext(
-              "2d"
-            );
+              const canvas =
+                document.createElement(
+                  "canvas"
+                );
 
 
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
+              canvas.width =
+                img.width *
+                scale;
 
 
-          resolve(
-            canvas.toDataURL(
-              "image/jpeg",
-              .75
-            )
-          );
+              canvas.height =
+                img.height *
+                scale;
+
+
+              const ctx =
+                canvas.getContext(
+                  "2d"
+                );
+
+
+              ctx.drawImage(
+                img,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+              );
+
+
+              resolve(
+                canvas.toDataURL(
+                  "image/jpeg",
+                  .75
+                )
+              );
+
+            };
+
+
+          img.onerror =
+            reject;
+
+
+          img.src =
+            event.target.result;
 
         };
 
 
-        img.src =
-          event.target.result;
-
-      };
+      reader.onerror =
+        reject;
 
 
       reader.readAsDataURL(
@@ -7826,14 +8015,15 @@ function resizeOperatorImage(
 }
 
 
-/* ---------------------------------------------------------
-   إعدادات صاحب المعدة
---------------------------------------------------------- */
+/* =========================================================
+   OPERATOR SETTINGS
+========================================================= */
 
 async function loadOperatorSettings(){
 
   const user =
     await getOperatorCurrentUser();
+
 
   if(!user)
     return;
@@ -7884,13 +8074,16 @@ async function loadOperatorSettings(){
     name.value =
       data.name || "";
 
+
   if(phone)
     phone.value =
       data.phone || "";
 
+
   if(city)
     city.value =
       data.city || "";
+
 
   if(email)
     email.textContent =
@@ -7899,14 +8092,11 @@ async function loadOperatorSettings(){
 }
 
 
-/* ---------------------------------------------------------
-   حفظ الإعدادات
---------------------------------------------------------- */
-
 async function saveOperatorSettings(){
 
   const user =
     await getOperatorCurrentUser();
+
 
   if(!user)
     return;
@@ -7915,20 +8105,26 @@ async function saveOperatorSettings(){
   const name =
     document.getElementById(
       "operatorSettingsName"
-    ).value.trim();
+    )?.value.trim();
+
 
   const phone =
     document.getElementById(
       "operatorSettingsPhone"
-    ).value.trim();
+    )?.value.trim();
+
 
   const city =
     document.getElementById(
       "operatorSettingsCity"
-    ).value.trim();
+    )?.value.trim();
 
 
-  if(!name || !phone || !city){
+  if(
+    !name ||
+    !phone ||
+    !city
+  ){
 
     alert(
       "أكمل بيانات الحساب."
@@ -7939,61 +8135,75 @@ async function saveOperatorSettings(){
   }
 
 
-  await window.ma3daSetDoc(
-    window.ma3daDoc(
-      window.ma3daDB,
-      "operators",
-      user.uid
-    ),
-    {
+  try{
 
-      name,
+    await window.ma3daSetDoc(
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      ),
+      {
 
-      phone,
+        name,
 
-      city,
+        phone,
 
-      email:
-        user.email || "",
+        city,
 
-      operatorId:
-        user.uid,
+        email:
+          user.email || "",
 
-      updatedAt:
-        Date.now()
+        operatorId:
+          user.uid,
 
-    },
-    {
-      merge: true
-    }
-  );
+        updatedAt:
+          Date.now()
 
-
-  alert(
-    "تم حفظ بيانات الحساب."
-  );
+      },
+      {
+        merge:true
+      }
+    );
 
 
-  await loadOperatorDashboard();
+    await loadOperatorDashboard();
+
+
+    alert(
+      "تم حفظ بيانات الحساب."
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "تعذر حفظ بيانات صاحب المعدة:",
+      error
+    );
+
+    alert(
+      "تعذر حفظ بيانات الحساب."
+    );
+
+  }
 
 }
 
 
 /* =========================================================
-   EVENTS
+   OPERATOR EVENTS
 ========================================================= */
-
-
-/* الطلبات الجديدة */
 
 document.addEventListener(
   "click",
-  async event => {
+  async event=>{
 
     const acceptBtn =
       event.target.closest(
         "[data-accept-request]"
       );
+
 
     if(acceptBtn){
 
@@ -8011,6 +8221,7 @@ document.addEventListener(
         "[data-reject-request]"
       );
 
+
     if(rejectBtn){
 
       await rejectOperatorRequest(
@@ -8023,7 +8234,9 @@ document.addEventListener(
 );
 
 
-/* الرئيسية */
+/* =========================================================
+   OPERATOR DASHBOARD BUTTONS
+========================================================= */
 
 const operatorNewRequestsBtn =
   document.getElementById(
@@ -8034,7 +8247,7 @@ if(operatorNewRequestsBtn){
 
   operatorNewRequestsBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorNewRequests();
 
@@ -8057,7 +8270,7 @@ if(operatorCurrentOrderBtn){
 
   operatorCurrentOrderBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorCurrentOrder();
 
@@ -8080,7 +8293,7 @@ if(operatorPreviousOrdersBtn){
 
   operatorPreviousOrdersBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorPreviousOrders();
 
@@ -8094,7 +8307,9 @@ if(operatorPreviousOrdersBtn){
 }
 
 
-/* معدتي */
+/* =========================================================
+   EQUIPMENT BUTTON
+========================================================= */
 
 const operatorEditEquipmentBtn =
   document.getElementById(
@@ -8105,13 +8320,28 @@ if(operatorEditEquipmentBtn){
 
   operatorEditEquipmentBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorEquipmentEditor();
 
-      showScreen(
-        "operatorEquipmentScreen"
-      );
+
+      if(
+        document.getElementById(
+          "operatorEquipmentScreen"
+        )
+      ){
+
+        showScreen(
+          "operatorEquipmentScreen"
+        );
+
+      }else{
+
+        showScreen(
+          "addEquipmentScreen"
+        );
+
+      }
 
     }
   );
@@ -8134,7 +8364,9 @@ if(saveOperatorEquipmentBtn){
 }
 
 
-/* الدخل */
+/* =========================================================
+   INCOME
+========================================================= */
 
 const operatorIncomeBtn =
   document.getElementById(
@@ -8145,7 +8377,7 @@ if(operatorIncomeBtn){
 
   operatorIncomeBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorIncome();
 
@@ -8159,7 +8391,9 @@ if(operatorIncomeBtn){
 }
 
 
-/* التقييمات */
+/* =========================================================
+   RATINGS
+========================================================= */
 
 const operatorRatingsBtn =
   document.getElementById(
@@ -8170,7 +8404,7 @@ if(operatorRatingsBtn){
 
   operatorRatingsBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorRatings();
 
@@ -8184,7 +8418,9 @@ if(operatorRatingsBtn){
 }
 
 
-/* الإعدادات */
+/* =========================================================
+   SETTINGS
+========================================================= */
 
 const operatorSettingsBtn =
   document.getElementById(
@@ -8195,7 +8431,7 @@ if(operatorSettingsBtn){
 
   operatorSettingsBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorSettings();
 
@@ -8224,7 +8460,9 @@ if(saveOperatorSettingsBtn){
 }
 
 
-/* تغيير كلمة المرور */
+/* =========================================================
+   OPERATOR PASSWORD
+========================================================= */
 
 const operatorChangePasswordBtn =
   document.getElementById(
@@ -8235,23 +8473,46 @@ if(operatorChangePasswordBtn){
 
   operatorChangePasswordBtn.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
-      const user =
-        await getOperatorCurrentUser();
+      try{
 
-      if(
-        user &&
-        user.email &&
-        window.ma3daSendPasswordResetEmail
-      ){
+        const user =
+          await getOperatorCurrentUser();
+
+
+        if(
+          !user ||
+          !user.email
+        ){
+
+          alert(
+            "لا يوجد بريد إلكتروني مرتبط بالحساب."
+          );
+
+          return;
+
+        }
+
 
         await window.ma3daSendPasswordResetEmail(
           user.email
         );
 
+
         alert(
           "تم إرسال رابط تغيير كلمة المرور إلى بريدك الإلكتروني."
+        );
+
+
+      }catch(error){
+
+        console.error(
+          error
+        );
+
+        alert(
+          "تعذر إرسال رابط تغيير كلمة المرور."
         );
 
       }
@@ -8262,7 +8523,9 @@ if(operatorChangePasswordBtn){
 }
 
 
-/* الدعم */
+/* =========================================================
+   OPERATOR SUPPORT
+========================================================= */
 
 const operatorSupportBtn =
   document.getElementById(
@@ -8273,19 +8536,20 @@ if(operatorSupportBtn){
 
   operatorSupportBtn.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorSupportScreen"
       );
-
     }
   );
 
 }
 
 
-/* الدعم واتساب */
+/*
+  لا يوجد رقم واتساب وهمي هنا.
+  إلى أن يتم وضع رقم الدعم الحقيقي.
+*/
 
 const operatorSupportWhatsAppBtn =
   document.getElementById(
@@ -8296,11 +8560,10 @@ if(operatorSupportWhatsAppBtn){
 
   operatorSupportWhatsAppBtn.addEventListener(
     "click",
-    () => {
+    ()=>{
 
-      window.open(
-        "https://wa.me/966500000000",
-        "_blank"
+      alert(
+        "سيتم ربط الدعم الفني قريبًا."
       );
 
     }
@@ -8309,7 +8572,9 @@ if(operatorSupportWhatsAppBtn){
 }
 
 
-/* وصلت */
+/* =========================================================
+   OPERATOR ARRIVED / WORK
+========================================================= */
 
 const operatorArrivedBtn =
   document.getElementById(
@@ -8326,8 +8591,6 @@ if(operatorArrivedBtn){
 }
 
 
-/* بدء العمل */
-
 const operatorStartWorkBtn =
   document.getElementById(
     "operatorStartWorkBtn"
@@ -8342,8 +8605,6 @@ if(operatorStartWorkBtn){
 
 }
 
-
-/* إنهاء العمل */
 
 const operatorEndWorkBtn =
   document.getElementById(
@@ -8360,7 +8621,9 @@ if(operatorEndWorkBtn){
 }
 
 
-/* الاتصال */
+/* =========================================================
+   OPERATOR CALL CUSTOMER
+========================================================= */
 
 const operatorCallCustomerBtn =
   document.getElementById(
@@ -8371,10 +8634,88 @@ if(operatorCallCustomerBtn){
 
   operatorCallCustomerBtn.addEventListener(
     "click",
-    () => {
+    async()=>{
 
-      window.location.href =
-        "tel:0550000000";
+      try{
+
+        const requestId =
+          localStorage.getItem(
+            "currentRequestId"
+          );
+
+
+        if(!requestId){
+
+          alert(
+            "لا يوجد طلب حالي."
+          );
+
+          return;
+
+        }
+
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+
+        const snapshot =
+          await window.ma3daGetDoc(
+            requestRef
+          );
+
+
+        if(!snapshot.exists()){
+
+          alert(
+            "تعذر العثور على الطلب."
+          );
+
+          return;
+
+        }
+
+
+        const data =
+          snapshot.data();
+
+
+        const phone =
+          data.customerPhone ||
+          "";
+
+
+        if(!phone){
+
+          alert(
+            "رقم العميل غير متوفر حاليًا."
+          );
+
+          return;
+
+        }
+
+
+        window.location.href =
+          `tel:${phone}`;
+
+
+      }catch(error){
+
+        console.error(
+          "تعذر الاتصال بالعميل:",
+          error
+        );
+
+        alert(
+          "تعذر الاتصال حاليًا."
+        );
+
+      }
 
     }
   );
@@ -8382,7 +8723,9 @@ if(operatorCallCustomerBtn){
 }
 
 
-/* المحادثة */
+/* =========================================================
+   OPERATOR CHAT
+========================================================= */
 
 const operatorChatCustomerBtn =
   document.getElementById(
@@ -8393,12 +8736,10 @@ if(operatorChatCustomerBtn){
 
   operatorChatCustomerBtn.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "chatScreen"
       );
-
     }
   );
 
@@ -8418,12 +8759,10 @@ if(backOperatorNewRequests){
 
   backOperatorNewRequests.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8439,16 +8778,10 @@ if(backOperatorCurrent){
 
   backOperatorCurrent.addEventListener(
     "click",
-    () => {
-
-      clearInterval(
-        operatorTimerInterval
-      );
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8464,12 +8797,10 @@ if(backOperatorPrevious){
 
   backOperatorPrevious.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8485,7 +8816,7 @@ if(backOperatorEquipment){
 
   backOperatorEquipment.addEventListener(
     "click",
-    async () => {
+    async()=>{
 
       await loadOperatorDashboard();
 
@@ -8508,12 +8839,10 @@ if(backOperatorIncome){
 
   backOperatorIncome.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8529,12 +8858,10 @@ if(backOperatorRatings){
 
   backOperatorRatings.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8550,12 +8877,10 @@ if(backOperatorSettings){
 
   backOperatorSettings.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8571,12 +8896,10 @@ if(backOperatorSupport){
 
   backOperatorSupport.addEventListener(
     "click",
-    () => {
-
+    ()=>{
       showScreen(
         "operatorHomeScreen"
       );
-
     }
   );
 
@@ -8584,7 +8907,7 @@ if(backOperatorSupport){
 
 
 /* =========================================================
-   تسجيل خروج صاحب المعدة
+   OPERATOR LOGOUT
 ========================================================= */
 
 const operatorHomeLogoutBtn =
@@ -8596,60 +8919,7 @@ if(operatorHomeLogoutBtn){
 
   operatorHomeLogoutBtn.addEventListener(
     "click",
-    async () => {
-
-      try{
-
-        clearInterval(
-          operatorTimerInterval
-        );
-
-
-        if(window.ma3daAuth){
-
-          await window.ma3daAuth.signOut();
-
-        }
-
-
-        localStorage.removeItem(
-          "selectedRole"
-        );
-
-        localStorage.removeItem(
-          "currentOrder"
-        );
-
-        localStorage.removeItem(
-          "currentRequestId"
-        );
-
-        localStorage.removeItem(
-          "orderState"
-        );
-
-        localStorage.removeItem(
-          "acceptedOrder"
-        );
-
-
-        selectedRole = "";
-
-
-        showScreen(
-          "roleScreen"
-        );
-
-      }catch(error){
-
-        console.error(
-          "خطأ في تسجيل الخروج:",
-          error
-        );
-
-      }
-
-    }
+    ma3daLogout
   );
 
 }
