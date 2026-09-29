@@ -5670,3 +5670,2986 @@ if(operatorHomeLogoutBtn){
   );
 
 }
+/* =========================================================
+   MA3DA — OPERATOR DASHBOARD
+========================================================= */
+
+let operatorOrderWatcher = null;
+let operatorTimerInterval = null;
+
+
+/* ---------------------------------------------------------
+   أدوات صاحب المعدة
+--------------------------------------------------------- */
+
+async function getOperatorCurrentUser(){
+
+  if(!window.ma3daFirebaseReady)
+    return null;
+
+  await window.ma3daFirebaseReady;
+
+  if(!window.ma3daGetCurrentUser)
+    return null;
+
+  return await window.ma3daGetCurrentUser();
+
+}
+
+
+async function getOperatorEquipment(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return null;
+
+  if(
+    !window.ma3daDB ||
+    !window.ma3daDoc ||
+    !window.ma3daGetDoc
+  )
+    return null;
+
+  const equipmentRef =
+    window.ma3daDoc(
+      window.ma3daDB,
+      "equipment",
+      user.uid
+    );
+
+  const snap =
+    await window.ma3daGetDoc(
+      equipmentRef
+    );
+
+  if(!snap.exists())
+    return null;
+
+  return snap.data();
+
+}
+
+
+/* ---------------------------------------------------------
+   فتح لوحة صاحب المعدة
+--------------------------------------------------------- */
+
+async function openOperatorDashboard(){
+
+  try{
+
+    const user =
+      await getOperatorCurrentUser();
+
+    if(!user)
+      return;
+
+    const operatorRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      );
+
+    const operatorSnap =
+      await window.ma3daGetDoc(
+        operatorRef
+      );
+
+    if(!operatorSnap.exists()){
+
+      showScreen(
+        "operatorDataScreen"
+      );
+
+      return;
+
+    }
+
+
+    await loadOperatorDashboard();
+
+    showScreen(
+      "operatorHomeScreen"
+    );
+
+  }catch(error){
+
+    console.error(
+      "خطأ في فتح لوحة صاحب المعدة:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   تحميل الصفحة الرئيسية
+--------------------------------------------------------- */
+
+async function loadOperatorDashboard(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  /* بيانات صاحب المعدة */
+
+  const operatorRef =
+    window.ma3daDoc(
+      window.ma3daDB,
+      "operators",
+      user.uid
+    );
+
+  const operatorSnap =
+    await window.ma3daGetDoc(
+      operatorRef
+    );
+
+  if(operatorSnap.exists()){
+
+    const data =
+      operatorSnap.data();
+
+    const name =
+      data.name ||
+      "صاحب المعدة";
+
+    const nameElement =
+      document.getElementById(
+        "operatorHomeName"
+      );
+
+    if(nameElement)
+      nameElement.textContent = name;
+
+  }
+
+
+  /* بيانات المعدة */
+
+  const equipment =
+    await getOperatorEquipment();
+
+  if(!equipment)
+    return;
+
+
+  const type =
+    equipment.type || "-";
+
+  const model =
+    equipment.model || "-";
+
+  const city =
+    equipment.city || "-";
+
+  const year =
+    equipment.year || "-";
+
+  const price =
+    Number(equipment.hourlyPrice || 0);
+
+
+  const typeElement =
+    document.getElementById(
+      "operatorHomeEquipmentType"
+    );
+
+  const modelElement =
+    document.getElementById(
+      "operatorHomeEquipmentModel"
+    );
+
+  const cityElement =
+    document.getElementById(
+      "operatorHomeEquipmentCity"
+    );
+
+  const yearElement =
+    document.getElementById(
+      "operatorHomeEquipmentYear"
+    );
+
+  const priceElement =
+    document.getElementById(
+      "operatorHomeEquipmentPrice"
+    );
+
+  const imageElement =
+    document.getElementById(
+      "operatorHomeEquipmentImage"
+    );
+
+
+  if(typeElement)
+    typeElement.textContent = type;
+
+  if(modelElement)
+    modelElement.textContent = model;
+
+  if(cityElement)
+    cityElement.textContent = city;
+
+  if(yearElement)
+    yearElement.textContent = year;
+
+  if(priceElement)
+    priceElement.textContent =
+      price.toLocaleString("ar-SA");
+
+
+  if(imageElement){
+
+    if(equipment.image){
+
+      imageElement.src =
+        equipment.image;
+
+      imageElement.style.display =
+        "block";
+
+    }else{
+
+      imageElement.removeAttribute(
+        "src"
+      );
+
+      imageElement.style.display =
+        "none";
+
+    }
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   الطلبات الجديدة
+--------------------------------------------------------- */
+
+async function loadOperatorNewRequests(){
+
+  const list =
+    document.getElementById(
+      "operatorNewRequestsList"
+    );
+
+  if(!list)
+    return;
+
+
+  list.innerHTML = `
+    <div class="card center">
+      <p>جاري تحميل الطلبات...</p>
+    </div>
+  `;
+
+
+  try{
+
+    if(
+      !window.ma3daDB ||
+      !window.ma3daGetDocs ||
+      !window.ma3daCollection
+    )
+      throw new Error(
+        "Firebase غير جاهز"
+      );
+
+
+    const equipment =
+      await getOperatorEquipment();
+
+    if(!equipment){
+
+      list.innerHTML = `
+        <div class="card center">
+          <p>لم يتم العثور على بيانات المعدة.</p>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
+      );
+
+
+    const requests = [];
+
+
+    snapshot.forEach(docSnap => {
+
+      const data =
+        docSnap.data();
+
+
+      if(
+        data.status === "searching" &&
+        data.equipment === equipment.type
+      ){
+
+        requests.push({
+
+          id: docSnap.id,
+
+          ...data
+
+        });
+
+      }
+
+    });
+
+
+    requests.sort(
+      (a,b) =>
+        Number(b.createdAt || 0) -
+        Number(a.createdAt || 0)
+    );
+
+
+    if(!requests.length){
+
+      list.innerHTML = `
+        <div class="card center">
+
+          <div class="success-icon">
+            ✓
+          </div>
+
+          <h3>
+            لا توجد طلبات جديدة
+          </h3>
+
+          <p>
+            سنعرض هنا طلبات العملاء
+            المناسبة لمعدتك.
+          </p>
+
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    requests.forEach(request => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "card operator-new-request-card";
+
+
+      const price =
+        Number(request.price || 0);
+
+
+      card.innerHTML = `
+
+        <div class="request-title">
+
+          <span>🚜</span>
+
+          <div>
+
+            <h2>
+              ${request.equipment || "-"}
+            </h2>
+
+            <p>
+              مع مشغل
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="operator-info">
+
+          <div class="operator-info-row">
+
+            <span>
+              📍 موقع العمل
+            </span>
+
+            <strong>
+              ${request.location || "-"}
+            </strong>
+
+          </div>
+
+
+          <div class="operator-info-row">
+
+            <span>
+              ⏱️ مدة العمل
+            </span>
+
+            <strong>
+              ${request.duration || "-"}
+            </strong>
+
+          </div>
+
+
+          <div class="operator-info-row">
+
+            <span>
+              💰 السعر
+            </span>
+
+            <strong>
+              ${price.toLocaleString("ar-SA")} ريال
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="operator-notes">
+
+          <span>
+            📝 ملاحظات العميل
+          </span>
+
+          <p>
+            ${request.notes || "لا توجد ملاحظات"}
+          </p>
+
+        </div>
+
+
+        <div class="operator-buttons">
+
+          <button
+            class="reject-btn"
+            type="button"
+            data-reject-request="${request.id}"
+          >
+            رفض الطلب
+          </button>
+
+          <button
+            class="accept-btn"
+            type="button"
+            data-accept-request="${request.id}"
+          >
+            قبول الطلب
+          </button>
+
+        </div>
+
+      `;
+
+
+      list.appendChild(card);
+
+    });
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في تحميل الطلبات الجديدة:",
+      error
+    );
+
+    list.innerHTML = `
+      <div class="card center">
+        <p>
+          تعذر تحميل الطلبات.
+        </p>
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   قبول طلب
+--------------------------------------------------------- */
+
+async function acceptOperatorRequest(
+  requestId
+){
+
+  try{
+
+    const user =
+      await getOperatorCurrentUser();
+
+    if(!user)
+      return;
+
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    const requestSnap =
+      await window.ma3daGetDoc(
+        requestRef
+      );
+
+
+    if(!requestSnap.exists()){
+
+      alert(
+        "الطلب غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    const request =
+      requestSnap.data();
+
+
+    if(
+      request.status !==
+      "searching"
+    ){
+
+      alert(
+        "هذا الطلب لم يعد متاحًا."
+      );
+
+      await loadOperatorNewRequests();
+
+      return;
+
+    }
+
+
+    const operatorRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      );
+
+
+    const operatorSnap =
+      await window.ma3daGetDoc(
+        operatorRef
+      );
+
+
+    const operatorData =
+      operatorSnap.exists()
+        ? operatorSnap.data()
+        : {};
+
+
+    const equipment =
+      await getOperatorEquipment();
+
+
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+
+        status:
+          "accepted",
+
+        operatorId:
+          user.uid,
+
+        operatorName:
+          operatorData.name ||
+          "صاحب المعدة",
+
+        operatorPhone:
+          operatorData.phone ||
+          "",
+
+        operatorRating:
+          operatorData.rating ||
+          "5.0",
+
+        operatorEquipment:
+          equipment
+            ? equipment.model || ""
+            : "",
+
+        acceptedAt:
+          Date.now(),
+
+        acceptedCustomerLocation:
+          request.location || ""
+
+      }
+    );
+
+
+    localStorage.setItem(
+      "currentRequestId",
+      requestId
+    );
+
+
+    localStorage.setItem(
+      "orderState",
+      "accepted"
+    );
+
+
+    alert(
+      "تم قبول الطلب بنجاح 🚜"
+    );
+
+
+    await loadOperatorCurrentOrder();
+
+
+    showScreen(
+      "operatorCurrentOrderScreen"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في قبول الطلب:",
+      error
+    );
+
+    alert(
+      "تعذر قبول الطلب."
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   رفض طلب
+--------------------------------------------------------- */
+
+async function rejectOperatorRequest(
+  requestId
+){
+
+  try{
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+
+        status:
+          "rejected",
+
+        rejectedBy:
+          "operator",
+
+        rejectedAt:
+          Date.now()
+
+      }
+    );
+
+
+    await loadOperatorNewRequests();
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في رفض الطلب:",
+      error
+    );
+
+    alert(
+      "تعذر رفض الطلب."
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   الطلب الحالي
+--------------------------------------------------------- */
+
+async function loadOperatorCurrentOrder(){
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+
+  if(!requestId){
+
+    updateOperatorCurrentUI(
+      null
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    const snap =
+      await window.ma3daGetDoc(
+        requestRef
+      );
+
+
+    if(!snap.exists()){
+
+      updateOperatorCurrentUI(
+        null
+      );
+
+      return;
+
+    }
+
+
+    const data =
+      snap.data();
+
+
+    updateOperatorCurrentUI(
+      data
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في الطلب الحالي:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   تحديث واجهة الطلب الحالي
+--------------------------------------------------------- */
+
+function updateOperatorCurrentUI(
+  data
+){
+
+  const title =
+    document.getElementById(
+      "operatorCurrentOrderTitle"
+    );
+
+  const equipment =
+    document.getElementById(
+      "operatorCurrentEquipment"
+    );
+
+  const location =
+    document.getElementById(
+      "operatorCurrentLocation"
+    );
+
+  const duration =
+    document.getElementById(
+      "operatorCurrentDuration"
+    );
+
+  const price =
+    document.getElementById(
+      "operatorCurrentPrice"
+    );
+
+  const statusText =
+    document.getElementById(
+      "operatorCurrentStatusText"
+    );
+
+  const statusIcon =
+    document.getElementById(
+      "operatorCurrentStatusIcon"
+    );
+
+  const arrivedBtn =
+    document.getElementById(
+      "operatorArrivedBtn"
+    );
+
+  const startBtn =
+    document.getElementById(
+      "operatorStartWorkBtn"
+    );
+
+  const timerBox =
+    document.getElementById(
+      "operatorWorkTimerBox"
+    );
+
+  const endBtn =
+    document.getElementById(
+      "operatorEndWorkBtn"
+    );
+
+
+  if(!data){
+
+    if(title)
+      title.textContent =
+        "لا يوجد طلب حالي";
+
+    if(statusText)
+      statusText.textContent =
+        "لا يوجد طلب";
+
+    if(statusIcon)
+      statusIcon.textContent =
+        "⚪";
+
+    if(arrivedBtn)
+      arrivedBtn.style.display =
+        "none";
+
+    if(startBtn)
+      startBtn.style.display =
+        "none";
+
+    if(timerBox)
+      timerBox.style.display =
+        "none";
+
+    if(endBtn)
+      endBtn.style.display =
+        "none";
+
+    return;
+
+  }
+
+
+  if(equipment)
+    equipment.textContent =
+      data.equipment || "-";
+
+  if(location)
+    location.textContent =
+      data.location || "-";
+
+  if(duration)
+    duration.textContent =
+      data.duration || "-";
+
+  if(price)
+    price.textContent =
+      `${Number(data.price || 0).toLocaleString("ar-SA")} ريال`;
+
+
+  if(arrivedBtn)
+    arrivedBtn.style.display =
+      "none";
+
+  if(startBtn)
+    startBtn.style.display =
+      "none";
+
+  if(timerBox)
+    timerBox.style.display =
+      "none";
+
+  if(endBtn)
+    endBtn.style.display =
+      "none";
+
+
+  if(data.status === "accepted"){
+
+    if(statusIcon)
+      statusIcon.textContent =
+        "🟡";
+
+    if(statusText)
+      statusText.textContent =
+        "تم قبول الطلب — في الطريق إلى العميل";
+
+    if(arrivedBtn)
+      arrivedBtn.style.display =
+        "block";
+
+  }
+
+
+  else if(data.status === "arrived"){
+
+    if(statusIcon)
+      statusIcon.textContent =
+        "🟢";
+
+    if(statusText)
+      statusText.textContent =
+        "وصلت إلى موقع العميل";
+
+    if(startBtn)
+      startBtn.style.display =
+        "block";
+
+  }
+
+
+  else if(data.status === "working"){
+
+    if(statusIcon)
+      statusIcon.textContent =
+        "🔵";
+
+    if(statusText)
+      statusText.textContent =
+        "العمل جارٍ";
+
+    if(timerBox)
+      timerBox.style.display =
+        "block";
+
+    if(endBtn)
+      endBtn.style.display =
+        "block";
+
+
+    startOperatorTimer(
+      data.workStartedAt
+    );
+
+  }
+
+
+  else if(data.status === "completed"){
+
+    if(statusIcon)
+      statusIcon.textContent =
+        "✅";
+
+    if(statusText)
+      statusText.textContent =
+        "تم إنهاء العمل";
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   زر وصلت
+--------------------------------------------------------- */
+
+async function operatorMarkArrived(){
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+  if(!requestId){
+
+    alert(
+      "لا يوجد طلب حالي."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+
+        status:
+          "arrived",
+
+        arrivedAt:
+          Date.now()
+
+      }
+    );
+
+
+    await loadOperatorCurrentOrder();
+
+    alert(
+      "تم تسجيل وصولك للعميل 🚜"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في تسجيل الوصول:",
+      error
+    );
+
+    alert(
+      "تعذر تسجيل الوصول."
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   بدء العمل
+--------------------------------------------------------- */
+
+async function operatorStartWork(){
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+  if(!requestId)
+    return;
+
+
+  const startTime =
+    Date.now();
+
+
+  try{
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+
+        status:
+          "working",
+
+        workStartedAt:
+          startTime
+
+      }
+    );
+
+
+    localStorage.setItem(
+      "orderState",
+      "working"
+    );
+
+
+    startOperatorTimer(
+      startTime
+    );
+
+
+    await loadOperatorCurrentOrder();
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في بدء العمل:",
+      error
+    );
+
+    alert(
+      "تعذر بدء العمل."
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   مؤقت صاحب المعدة
+--------------------------------------------------------- */
+
+function startOperatorTimer(
+  startTime
+){
+
+  clearInterval(
+    operatorTimerInterval
+  );
+
+
+  const timer =
+    document.getElementById(
+      "operatorTimer"
+    );
+
+
+  if(!timer)
+    return;
+
+
+  function update(){
+
+    const elapsed =
+      Math.max(
+        0,
+        Date.now() -
+        Number(startTime || Date.now())
+      );
+
+
+    const totalSeconds =
+      Math.floor(
+        elapsed / 1000
+      );
+
+
+    const hours =
+      Math.floor(
+        totalSeconds / 3600
+      );
+
+    const minutes =
+      Math.floor(
+        (totalSeconds % 3600) / 60
+      );
+
+    const seconds =
+      totalSeconds % 60;
+
+
+    timer.textContent =
+      `${String(hours).padStart(2,"0")}:` +
+      `${String(minutes).padStart(2,"0")}:` +
+      `${String(seconds).padStart(2,"0")}`;
+
+  }
+
+
+  update();
+
+
+  operatorTimerInterval =
+    setInterval(
+      update,
+      1000
+    );
+
+}
+
+
+/* ---------------------------------------------------------
+   إنهاء العمل
+--------------------------------------------------------- */
+
+async function operatorFinishWork(){
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+  if(!requestId)
+    return;
+
+
+  try{
+
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+
+
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+
+        status:
+          "completed",
+
+        completedAt:
+          Date.now()
+
+      }
+    );
+
+
+    clearInterval(
+      operatorTimerInterval
+    );
+
+
+    localStorage.setItem(
+      "orderState",
+      "completed"
+    );
+
+
+    await loadOperatorCurrentOrder();
+
+
+    alert(
+      "تم إنهاء العمل بنجاح ✅"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في إنهاء العمل:",
+      error
+    );
+
+    alert(
+      "تعذر إنهاء العمل."
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   الطلبات السابقة
+--------------------------------------------------------- */
+
+async function loadOperatorPreviousOrders(){
+
+  const list =
+    document.getElementById(
+      "operatorPreviousOrdersList"
+    );
+
+  if(!list)
+    return;
+
+
+  list.innerHTML = `
+    <div class="card center">
+      <p>جاري تحميل الطلبات...</p>
+    </div>
+  `;
+
+
+  try{
+
+    const user =
+      await getOperatorCurrentUser();
+
+    if(!user)
+      return;
+
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
+      );
+
+
+    const requests = [];
+
+
+    snapshot.forEach(docSnap => {
+
+      const data =
+        docSnap.data();
+
+
+      if(
+        data.operatorId === user.uid &&
+        (
+          data.status === "completed" ||
+          data.status === "rejected"
+        )
+      ){
+
+        requests.push({
+
+          id: docSnap.id,
+
+          ...data
+
+        });
+
+      }
+
+    });
+
+
+    requests.sort(
+      (a,b) =>
+        Number(b.completedAt || b.createdAt || 0) -
+        Number(a.completedAt || a.createdAt || 0)
+    );
+
+
+    if(!requests.length){
+
+      list.innerHTML = `
+        <div class="card center">
+          <p>
+            لا توجد طلبات سابقة حتى الآن.
+          </p>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    requests.forEach(request => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "card";
+
+
+      const status =
+        request.status === "completed"
+          ? "مكتمل ✅"
+          : "مرفوض ❌";
+
+
+      card.innerHTML = `
+
+        <h3>
+          ${request.equipment || "-"}
+        </h3>
+
+        <div class="info-row">
+
+          <span>
+            الموقع
+          </span>
+
+          <strong>
+            ${request.location || "-"}
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>
+            المدة
+          </span>
+
+          <strong>
+            ${request.duration || "-"}
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>
+            المبلغ
+          </span>
+
+          <strong>
+            ${Number(request.price || 0).toLocaleString("ar-SA")}
+            ريال
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>
+            الحالة
+          </span>
+
+          <strong>
+            ${status}
+          </strong>
+
+        </div>
+
+      `;
+
+
+      list.appendChild(card);
+
+    });
+
+
+  }catch(error){
+
+    console.error(
+      "خطأ في الطلبات السابقة:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   الدخل
+--------------------------------------------------------- */
+
+async function loadOperatorIncome(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  const snapshot =
+    await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      )
+    );
+
+
+  let totalIncome = 0;
+  let completedCount = 0;
+  let totalHours = 0;
+
+
+  const completedRequests = [];
+
+
+  snapshot.forEach(docSnap => {
+
+    const data =
+      docSnap.data();
+
+
+    if(
+      data.operatorId === user.uid &&
+      data.status === "completed"
+    ){
+
+      const price =
+        Number(data.price || 0);
+
+
+      totalIncome += price;
+
+      completedCount++;
+
+
+      const hours =
+        durationHours[
+          data.duration
+        ] || 0;
+
+
+      totalHours += hours;
+
+
+      completedRequests.push(
+        data
+      );
+
+    }
+
+  });
+
+
+  const incomeElement =
+    document.getElementById(
+      "operatorTotalIncome"
+    );
+
+  const countElement =
+    document.getElementById(
+      "operatorCompletedCount"
+    );
+
+  const hoursElement =
+    document.getElementById(
+      "operatorTotalHours"
+    );
+
+
+  if(incomeElement)
+    incomeElement.textContent =
+      `${totalIncome.toLocaleString("ar-SA")} ريال`;
+
+  if(countElement)
+    countElement.textContent =
+      completedCount;
+
+  if(hoursElement)
+    hoursElement.textContent =
+      totalHours;
+
+
+  const list =
+    document.getElementById(
+      "operatorIncomeList"
+    );
+
+
+  if(!list)
+    return;
+
+
+  list.innerHTML = "";
+
+
+  completedRequests
+    .sort(
+      (a,b) =>
+        Number(b.completedAt || 0) -
+        Number(a.completedAt || 0)
+    )
+    .forEach(request => {
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "card";
+
+
+      card.innerHTML = `
+
+        <h3>
+          ${request.equipment || "-"}
+        </h3>
+
+        <div class="info-row">
+
+          <span>
+            المبلغ
+          </span>
+
+          <strong>
+            ${Number(request.price || 0).toLocaleString("ar-SA")}
+            ريال
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>
+            المدة
+          </span>
+
+          <strong>
+            ${request.duration || "-"}
+          </strong>
+
+        </div>
+
+      `;
+
+
+      list.appendChild(card);
+
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   التقييمات
+--------------------------------------------------------- */
+
+async function loadOperatorRatings(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  const snapshot =
+    await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "ratings"
+      )
+    );
+
+
+  let total = 0;
+  let count = 0;
+
+
+  const ratings = [];
+
+
+  snapshot.forEach(docSnap => {
+
+    const data =
+      docSnap.data();
+
+
+    if(
+      data.operatorId === user.uid
+    ){
+
+      const rating =
+        Number(data.rating || 0);
+
+
+      if(rating > 0){
+
+        total += rating;
+        count++;
+
+        ratings.push(
+          data
+        );
+
+      }
+
+    }
+
+  });
+
+
+  const average =
+    count
+      ? (total / count).toFixed(1)
+      : "0.0";
+
+
+  const averageElement =
+    document.getElementById(
+      "operatorAverageRating"
+    );
+
+  const countElement =
+    document.getElementById(
+      "operatorRatingCount"
+    );
+
+
+  if(averageElement)
+    averageElement.textContent =
+      average;
+
+  if(countElement)
+    countElement.textContent =
+      `${count} تقييم`;
+
+
+  const list =
+    document.getElementById(
+      "operatorRatingsList"
+    );
+
+
+  if(!list)
+    return;
+
+
+  list.innerHTML = "";
+
+
+  ratings.forEach(rating => {
+
+    const card =
+      document.createElement(
+        "div"
+      );
+
+    card.className =
+      "card";
+
+
+    card.innerHTML = `
+
+      <div class="info-row">
+
+        <span>
+          تقييم العميل
+        </span>
+
+        <strong>
+          ${"⭐".repeat(
+            Math.min(
+              5,
+              Number(rating.rating || 0)
+            )
+          )}
+        </strong>
+
+      </div>
+
+      ${
+        rating.comment
+          ? `
+            <p>
+              ${rating.comment}
+            </p>
+          `
+          : ""
+      }
+
+    `;
+
+
+    list.appendChild(card);
+
+  });
+
+}
+
+
+/* ---------------------------------------------------------
+   تعديل المعدة
+--------------------------------------------------------- */
+
+async function loadOperatorEquipmentEditor(){
+
+  const equipment =
+    await getOperatorEquipment();
+
+  if(!equipment)
+    return;
+
+
+  const type =
+    document.getElementById(
+      "operatorEquipmentTypeEdit"
+    );
+
+  const model =
+    document.getElementById(
+      "operatorEquipmentModelEdit"
+    );
+
+  const year =
+    document.getElementById(
+      "operatorEquipmentYearEdit"
+    );
+
+  const city =
+    document.getElementById(
+      "operatorEquipmentCityEdit"
+    );
+
+  const price =
+    document.getElementById(
+      "operatorEquipmentPriceEdit"
+    );
+
+  const availability =
+    document.getElementById(
+      "operatorEquipmentAvailabilityEdit"
+    );
+
+  const image =
+    document.getElementById(
+      "operatorEquipmentImagePreview"
+    );
+
+
+  if(type)
+    type.value =
+      equipment.type || "";
+
+  if(model)
+    model.value =
+      equipment.model || "";
+
+  if(year)
+    year.value =
+      equipment.year || "";
+
+  if(city)
+    city.value =
+      equipment.city || "";
+
+  if(price)
+    price.value =
+      equipment.hourlyPrice || "";
+
+  if(availability)
+    availability.value =
+      equipment.availability ||
+      "available";
+
+  if(image){
+
+    if(equipment.image){
+
+      image.src =
+        equipment.image;
+
+      image.style.display =
+        "block";
+
+    }else{
+
+      image.removeAttribute(
+        "src"
+      );
+
+      image.style.display =
+        "none";
+
+    }
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   حفظ تعديل المعدة
+--------------------------------------------------------- */
+
+async function saveOperatorEquipmentChanges(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  const type =
+    document.getElementById(
+      "operatorEquipmentTypeEdit"
+    ).value.trim();
+
+  const model =
+    document.getElementById(
+      "operatorEquipmentModelEdit"
+    ).value.trim();
+
+  const year =
+    document.getElementById(
+      "operatorEquipmentYearEdit"
+    ).value.trim();
+
+  const city =
+    document.getElementById(
+      "operatorEquipmentCityEdit"
+    ).value.trim();
+
+  const price =
+    Number(
+      document.getElementById(
+        "operatorEquipmentPriceEdit"
+      ).value
+    );
+
+  const availability =
+    document.getElementById(
+      "operatorEquipmentAvailabilityEdit"
+    ).value;
+
+
+  if(
+    !type ||
+    !model ||
+    !year ||
+    !city ||
+    !price
+  ){
+
+    alert(
+      "أكمل بيانات المعدة."
+    );
+
+    return;
+
+  }
+
+
+  const equipmentRef =
+    window.ma3daDoc(
+      window.ma3daDB,
+      "equipment",
+      user.uid
+    );
+
+
+  const currentSnap =
+    await window.ma3daGetDoc(
+      equipmentRef
+    );
+
+
+  const current =
+    currentSnap.exists()
+      ? currentSnap.data()
+      : {};
+
+
+  const imageInput =
+    document.getElementById(
+      "operatorEquipmentImageEdit"
+    );
+
+
+  let image =
+    current.image || "";
+
+
+  if(
+    imageInput &&
+    imageInput.files &&
+    imageInput.files[0]
+  ){
+
+    image =
+      await resizeOperatorImage(
+        imageInput.files[0]
+      );
+
+  }
+
+
+  await window.ma3daSetDoc(
+    equipmentRef,
+    {
+
+      ...current,
+
+      type,
+
+      model,
+
+      year,
+
+      city,
+
+      hourlyPrice:
+        price,
+
+      availability,
+
+      image,
+
+      ownerId:
+        user.uid,
+
+      ownerEmail:
+        user.email || ""
+
+    }
+  );
+
+
+  alert(
+    "تم حفظ بيانات المعدة بنجاح 🚜"
+  );
+
+
+  await loadOperatorDashboard();
+
+
+  showScreen(
+    "operatorHomeScreen"
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   ضغط الصورة
+--------------------------------------------------------- */
+
+function resizeOperatorImage(
+  file
+){
+
+  return new Promise(
+    resolve => {
+
+      const reader =
+        new FileReader();
+
+
+      reader.onload = event => {
+
+        const img =
+          new Image();
+
+
+        img.onload = () => {
+
+          const maxWidth =
+            1000;
+
+
+          const scale =
+            Math.min(
+              1,
+              maxWidth /
+              img.width
+            );
+
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+
+          canvas.width =
+            img.width * scale;
+
+          canvas.height =
+            img.height * scale;
+
+
+          const ctx =
+            canvas.getContext(
+              "2d"
+            );
+
+
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+
+          resolve(
+            canvas.toDataURL(
+              "image/jpeg",
+              .75
+            )
+          );
+
+        };
+
+
+        img.src =
+          event.target.result;
+
+      };
+
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   إعدادات صاحب المعدة
+--------------------------------------------------------- */
+
+async function loadOperatorSettings(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  const ref =
+    window.ma3daDoc(
+      window.ma3daDB,
+      "operators",
+      user.uid
+    );
+
+
+  const snap =
+    await window.ma3daGetDoc(
+      ref
+    );
+
+
+  const data =
+    snap.exists()
+      ? snap.data()
+      : {};
+
+
+  const name =
+    document.getElementById(
+      "operatorSettingsName"
+    );
+
+  const phone =
+    document.getElementById(
+      "operatorSettingsPhone"
+    );
+
+  const city =
+    document.getElementById(
+      "operatorSettingsCity"
+    );
+
+  const email =
+    document.getElementById(
+      "operatorSettingsEmail"
+    );
+
+
+  if(name)
+    name.value =
+      data.name || "";
+
+  if(phone)
+    phone.value =
+      data.phone || "";
+
+  if(city)
+    city.value =
+      data.city || "";
+
+  if(email)
+    email.textContent =
+      user.email || "-";
+
+}
+
+
+/* ---------------------------------------------------------
+   حفظ الإعدادات
+--------------------------------------------------------- */
+
+async function saveOperatorSettings(){
+
+  const user =
+    await getOperatorCurrentUser();
+
+  if(!user)
+    return;
+
+
+  const name =
+    document.getElementById(
+      "operatorSettingsName"
+    ).value.trim();
+
+  const phone =
+    document.getElementById(
+      "operatorSettingsPhone"
+    ).value.trim();
+
+  const city =
+    document.getElementById(
+      "operatorSettingsCity"
+    ).value.trim();
+
+
+  if(!name || !phone || !city){
+
+    alert(
+      "أكمل بيانات الحساب."
+    );
+
+    return;
+
+  }
+
+
+  await window.ma3daSetDoc(
+    window.ma3daDoc(
+      window.ma3daDB,
+      "operators",
+      user.uid
+    ),
+    {
+
+      name,
+
+      phone,
+
+      city,
+
+      email:
+        user.email || "",
+
+      operatorId:
+        user.uid,
+
+      updatedAt:
+        Date.now()
+
+    },
+    {
+      merge: true
+    }
+  );
+
+
+  alert(
+    "تم حفظ بيانات الحساب."
+  );
+
+
+  await loadOperatorDashboard();
+
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+
+/* الطلبات الجديدة */
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const acceptBtn =
+      event.target.closest(
+        "[data-accept-request]"
+      );
+
+    if(acceptBtn){
+
+      await acceptOperatorRequest(
+        acceptBtn.dataset.acceptRequest
+      );
+
+      return;
+
+    }
+
+
+    const rejectBtn =
+      event.target.closest(
+        "[data-reject-request]"
+      );
+
+    if(rejectBtn){
+
+      await rejectOperatorRequest(
+        rejectBtn.dataset.rejectRequest
+      );
+
+    }
+
+  }
+);
+
+
+/* الرئيسية */
+
+const operatorNewRequestsBtn =
+  document.getElementById(
+    "operatorNewRequestsBtn"
+  );
+
+if(operatorNewRequestsBtn){
+
+  operatorNewRequestsBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorNewRequests();
+
+      showScreen(
+        "operatorNewRequestsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const operatorCurrentOrderBtn =
+  document.getElementById(
+    "operatorCurrentOrderBtn"
+  );
+
+if(operatorCurrentOrderBtn){
+
+  operatorCurrentOrderBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorCurrentOrder();
+
+      showScreen(
+        "operatorCurrentOrderScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const operatorPreviousOrdersBtn =
+  document.getElementById(
+    "operatorPreviousOrdersBtn"
+  );
+
+if(operatorPreviousOrdersBtn){
+
+  operatorPreviousOrdersBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorPreviousOrders();
+
+      showScreen(
+        "operatorPreviousOrdersScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* معدتي */
+
+const operatorEditEquipmentBtn =
+  document.getElementById(
+    "operatorEditEquipmentBtn"
+  );
+
+if(operatorEditEquipmentBtn){
+
+  operatorEditEquipmentBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorEquipmentEditor();
+
+      showScreen(
+        "operatorEquipmentScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const saveOperatorEquipmentBtn =
+  document.getElementById(
+    "saveOperatorEquipmentBtn"
+  );
+
+if(saveOperatorEquipmentBtn){
+
+  saveOperatorEquipmentBtn.addEventListener(
+    "click",
+    saveOperatorEquipmentChanges
+  );
+
+}
+
+
+/* الدخل */
+
+const operatorIncomeBtn =
+  document.getElementById(
+    "operatorIncomeBtn"
+  );
+
+if(operatorIncomeBtn){
+
+  operatorIncomeBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorIncome();
+
+      showScreen(
+        "operatorIncomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* التقييمات */
+
+const operatorRatingsBtn =
+  document.getElementById(
+    "operatorRatingsBtn"
+  );
+
+if(operatorRatingsBtn){
+
+  operatorRatingsBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorRatings();
+
+      showScreen(
+        "operatorRatingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* الإعدادات */
+
+const operatorSettingsBtn =
+  document.getElementById(
+    "operatorSettingsBtn"
+  );
+
+if(operatorSettingsBtn){
+
+  operatorSettingsBtn.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorSettings();
+
+      showScreen(
+        "operatorSettingsScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const saveOperatorSettingsBtn =
+  document.getElementById(
+    "saveOperatorSettingsBtn"
+  );
+
+if(saveOperatorSettingsBtn){
+
+  saveOperatorSettingsBtn.addEventListener(
+    "click",
+    saveOperatorSettings
+  );
+
+}
+
+
+/* تغيير كلمة المرور */
+
+const operatorChangePasswordBtn =
+  document.getElementById(
+    "operatorChangePasswordBtn"
+  );
+
+if(operatorChangePasswordBtn){
+
+  operatorChangePasswordBtn.addEventListener(
+    "click",
+    async () => {
+
+      const user =
+        await getOperatorCurrentUser();
+
+      if(
+        user &&
+        user.email &&
+        window.ma3daSendPasswordResetEmail
+      ){
+
+        await window.ma3daSendPasswordResetEmail(
+          user.email
+        );
+
+        alert(
+          "تم إرسال رابط تغيير كلمة المرور إلى بريدك الإلكتروني."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* الدعم */
+
+const operatorSupportBtn =
+  document.getElementById(
+    "operatorSupportBtn"
+  );
+
+if(operatorSupportBtn){
+
+  operatorSupportBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorSupportScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* الدعم واتساب */
+
+const operatorSupportWhatsAppBtn =
+  document.getElementById(
+    "operatorSupportWhatsAppBtn"
+  );
+
+if(operatorSupportWhatsAppBtn){
+
+  operatorSupportWhatsAppBtn.addEventListener(
+    "click",
+    () => {
+
+      window.open(
+        "https://wa.me/966500000000",
+        "_blank"
+      );
+
+    }
+  );
+
+}
+
+
+/* وصلت */
+
+const operatorArrivedBtn =
+  document.getElementById(
+    "operatorArrivedBtn"
+  );
+
+if(operatorArrivedBtn){
+
+  operatorArrivedBtn.addEventListener(
+    "click",
+    operatorMarkArrived
+  );
+
+}
+
+
+/* بدء العمل */
+
+const operatorStartWorkBtn =
+  document.getElementById(
+    "operatorStartWorkBtn"
+  );
+
+if(operatorStartWorkBtn){
+
+  operatorStartWorkBtn.addEventListener(
+    "click",
+    operatorStartWork
+  );
+
+}
+
+
+/* إنهاء العمل */
+
+const operatorEndWorkBtn =
+  document.getElementById(
+    "operatorEndWorkBtn"
+  );
+
+if(operatorEndWorkBtn){
+
+  operatorEndWorkBtn.addEventListener(
+    "click",
+    operatorFinishWork
+  );
+
+}
+
+
+/* الاتصال */
+
+const operatorCallCustomerBtn =
+  document.getElementById(
+    "operatorCallCustomerBtn"
+  );
+
+if(operatorCallCustomerBtn){
+
+  operatorCallCustomerBtn.addEventListener(
+    "click",
+    () => {
+
+      window.location.href =
+        "tel:0550000000";
+
+    }
+  );
+
+}
+
+
+/* المحادثة */
+
+const operatorChatCustomerBtn =
+  document.getElementById(
+    "operatorChatCustomerBtn"
+  );
+
+if(operatorChatCustomerBtn){
+
+  operatorChatCustomerBtn.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "chatScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   BACK BUTTONS
+========================================================= */
+
+const backOperatorNewRequests =
+  document.getElementById(
+    "backFromOperatorNewRequestsBtn"
+  );
+
+if(backOperatorNewRequests){
+
+  backOperatorNewRequests.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorCurrent =
+  document.getElementById(
+    "backFromOperatorCurrentOrderBtn"
+  );
+
+if(backOperatorCurrent){
+
+  backOperatorCurrent.addEventListener(
+    "click",
+    () => {
+
+      clearInterval(
+        operatorTimerInterval
+      );
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorPrevious =
+  document.getElementById(
+    "backFromOperatorPreviousOrdersBtn"
+  );
+
+if(backOperatorPrevious){
+
+  backOperatorPrevious.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorEquipment =
+  document.getElementById(
+    "backFromOperatorEquipmentBtn"
+  );
+
+if(backOperatorEquipment){
+
+  backOperatorEquipment.addEventListener(
+    "click",
+    async () => {
+
+      await loadOperatorDashboard();
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorIncome =
+  document.getElementById(
+    "backFromOperatorIncomeBtn"
+  );
+
+if(backOperatorIncome){
+
+  backOperatorIncome.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorRatings =
+  document.getElementById(
+    "backFromOperatorRatingsBtn"
+  );
+
+if(backOperatorRatings){
+
+  backOperatorRatings.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorSettings =
+  document.getElementById(
+    "backFromOperatorSettingsBtn"
+  );
+
+if(backOperatorSettings){
+
+  backOperatorSettings.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const backOperatorSupport =
+  document.getElementById(
+    "backFromOperatorSupportBtn"
+  );
+
+if(backOperatorSupport){
+
+  backOperatorSupport.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   تسجيل خروج صاحب المعدة
+========================================================= */
+
+const operatorHomeLogoutBtn =
+  document.getElementById(
+    "operatorHomeLogoutBtn"
+  );
+
+if(operatorHomeLogoutBtn){
+
+  operatorHomeLogoutBtn.addEventListener(
+    "click",
+    async () => {
+
+      try{
+
+        clearInterval(
+          operatorTimerInterval
+        );
+
+
+        if(window.ma3daAuth){
+
+          await window.ma3daAuth.signOut();
+
+        }
+
+
+        localStorage.removeItem(
+          "selectedRole"
+        );
+
+        localStorage.removeItem(
+          "currentOrder"
+        );
+
+        localStorage.removeItem(
+          "currentRequestId"
+        );
+
+        localStorage.removeItem(
+          "orderState"
+        );
+
+        localStorage.removeItem(
+          "acceptedOrder"
+        );
+
+
+        selectedRole = "";
+
+
+        showScreen(
+          "roleScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "خطأ في تسجيل الخروج:",
+          error
+        );
+
+      }
+
+    }
+  );
+
+}
