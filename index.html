@@ -498,6 +498,167 @@
   </div>
 
 </section>
+  <!-- ================================
+     توثيق صاحب المعدة
+     ================================ -->
+
+<section id="operatorVerificationScreen" class="screen">
+
+  <button
+    id="backFromVerificationBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🔐
+    </div>
+
+    <h1>
+      توثيق حسابك
+    </h1>
+
+    <p>
+      أكمل توثيق حسابك لتتمكن من استقبال الطلبات
+    </p>
+
+  </div>
+
+  <div class="card">
+
+    <div class="verification-status">
+
+      <span class="verification-status-icon">
+        🟡
+      </span>
+
+      <div>
+        <strong>
+          حالة التوثيق
+        </strong>
+
+        <p id="verificationStatusText">
+          لم يتم تقديم طلب التوثيق
+        </p>
+      </div>
+
+    </div>
+
+    <h2>
+      بيانات صاحب المعدة
+    </h2>
+
+    <label>
+      👤 الاسم الكامل
+    </label>
+
+    <input
+      id="verificationNameInput"
+      type="text"
+      placeholder="اكتب اسمك الكامل"
+      autocomplete="name"
+    >
+
+    <label>
+      📱 رقم الجوال
+    </label>
+
+    <input
+      id="verificationPhoneInput"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+      autocomplete="tel"
+    >
+
+    <label>
+      📍 المدينة
+    </label>
+
+    <input
+      id="verificationCityInput"
+      type="text"
+      placeholder="مثال: جدة"
+      autocomplete="address-level2"
+    >
+
+    <hr>
+
+    <h2>
+      المستندات المطلوبة
+    </h2>
+
+    <label>
+      🪪 صورة الهوية
+    </label>
+
+    <input
+      id="identityDocumentInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <label>
+      📄 مستند ملكية المعدة
+    </label>
+
+    <input
+      id="equipmentOwnershipDocumentInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <hr>
+
+    <h2>
+      صور المعدة
+    </h2>
+
+    <label>
+      📷 صورة المعدة من الأمام
+    </label>
+
+    <input
+      id="equipmentFrontImageInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <label>
+      📷 صورة المعدة من الجانب
+    </label>
+
+    <input
+      id="equipmentSideImageInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <label>
+      📷 صورة إضافية للمعدة
+    </label>
+
+    <input
+      id="equipmentAdditionalImageInput"
+      type="file"
+      accept="image/*"
+    >
+
+    <button
+      id="submitVerificationBtn"
+      class="main-btn"
+      type="button"
+    >
+      إرسال طلب التوثيق
+    </button>
+
+  </div>
+
+</section>
 <!-- الصفحة الرئيسية الجديدة للعميل -->
 <section id="customerHomeScreen" class="screen">
   <div class="home-page">
