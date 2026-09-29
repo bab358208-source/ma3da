@@ -5285,3 +5285,376 @@ if(backFromTechnicalSupportBtn){
   );
 
 }
+async function loadOperatorData(){
+
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+  if(!user){
+    return false;
+  }
+
+  try{
+
+    const ref =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      );
+
+    const snapshot =
+      await window.ma3daGetDoc(ref);
+
+    const emailInput =
+      document.getElementById(
+        "operatorEmailInput"
+      );
+
+    if(emailInput){
+      emailInput.value =
+        user.email || "";
+    }
+
+    if(!snapshot.exists()){
+      return false;
+    }
+
+    const data =
+      snapshot.data();
+
+    document.getElementById(
+      "operatorNameInput"
+    ).value =
+      data.name || "";
+
+    document.getElementById(
+      "operatorPhoneInput"
+    ).value =
+      data.phone || "";
+
+    document.getElementById(
+      "operatorCityInput"
+    ).value =
+      data.city || "";
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      "خطأ في تحميل بيانات صاحب المعدة:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+
+const saveOperatorDataBtn =
+  document.getElementById(
+    "saveOperatorDataBtn"
+  );
+
+if(saveOperatorDataBtn){
+
+  saveOperatorDataBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const name =
+        document.getElementById(
+          "operatorNameInput"
+        ).value.trim();
+
+      const phone =
+        document.getElementById(
+          "operatorPhoneInput"
+        ).value.trim();
+
+      const city =
+        document.getElementById(
+          "operatorCityInput"
+        ).value.trim();
+
+      if(!name || !phone || !city){
+
+        alert(
+          "أكمل جميع البيانات أولًا"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const user =
+          window.ma3daGetCurrentUser
+            ? await window.ma3daGetCurrentUser()
+            : window.ma3daAuth?.currentUser;
+
+        if(!user){
+
+          alert(
+            "يجب تسجيل الدخول أولًا"
+          );
+
+          return;
+
+        }
+
+        const operatorRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "operators",
+            user.uid
+          );
+
+        await window.ma3daSetDoc(
+          operatorRef,
+          {
+            name:name,
+            phone:phone,
+            city:city,
+            email:user.email || "",
+            operatorId:user.uid,
+            updatedAt:Date.now()
+          },
+          { merge:true }
+        );
+
+        await loadOperatorHome();
+
+        showScreen(
+          "operatorHomeScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "خطأ في حفظ بيانات صاحب المعدة:",
+          error
+        );
+
+        alert(
+          "تعذر حفظ البيانات:\n" +
+          error.message
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+async function loadOperatorHome(){
+
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+  if(!user){
+    return;
+  }
+
+  try{
+
+    const operatorRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      );
+
+    const operatorSnapshot =
+      await window.ma3daGetDoc(
+        operatorRef
+      );
+
+    if(operatorSnapshot.exists()){
+
+      const operatorData =
+        operatorSnapshot.data();
+
+      const name =
+        document.getElementById(
+          "operatorHomeName"
+        );
+
+      if(name){
+        name.textContent =
+          operatorData.name ||
+          "صاحب المعدة";
+      }
+
+    }
+
+    const equipmentRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+
+    const equipmentSnapshot =
+      await window.ma3daGetDoc(
+        equipmentRef
+      );
+
+    if(equipmentSnapshot.exists()){
+
+      const equipment =
+        equipmentSnapshot.data();
+
+      document.getElementById(
+        "operatorHomeEquipmentType"
+      ).textContent =
+        equipment.type || "-";
+
+      document.getElementById(
+        "operatorHomeEquipmentModel"
+      ).textContent =
+        equipment.model || "-";
+
+      document.getElementById(
+        "operatorHomeEquipmentCity"
+      ).textContent =
+        equipment.city || "-";
+
+      document.getElementById(
+        "operatorHomeEquipmentYear"
+      ).textContent =
+        equipment.year || "-";
+
+      document.getElementById(
+        "operatorHomeEquipmentPrice"
+      ).textContent =
+        equipment.hourlyPrice
+          ? equipment.hourlyPrice + " ريال"
+          : "-";
+
+      const image =
+        document.getElementById(
+          "operatorHomeEquipmentImage"
+        );
+
+      if(image){
+
+        if(equipment.image){
+
+          image.src =
+            equipment.image;
+
+          image.style.display =
+            "block";
+
+        }else{
+
+          image.style.display =
+            "none";
+
+        }
+
+      }
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "خطأ في تحميل الصفحة الرئيسية لصاحب المعدة:",
+      error
+    );
+
+  }
+
+}
+
+
+const operatorNewRequestsBtn =
+  document.getElementById(
+    "operatorNewRequestsBtn"
+  );
+
+if(operatorNewRequestsBtn){
+
+  operatorNewRequestsBtn.addEventListener(
+    "click",
+    async()=>{
+
+      await loadLatestCustomerRequest();
+
+      showScreen(
+        "operatorScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const operatorCurrentOrderBtn =
+  document.getElementById(
+    "operatorCurrentOrderBtn"
+  );
+
+if(operatorCurrentOrderBtn){
+
+  operatorCurrentOrderBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "operatorAcceptedScreen"
+      );
+
+    }
+  );
+
+}
+
+
+const operatorHomeLogoutBtn =
+  document.getElementById(
+    "operatorHomeLogoutBtn"
+  );
+
+if(operatorHomeLogoutBtn){
+
+  operatorHomeLogoutBtn.addEventListener(
+    "click",
+    async()=>{
+
+      try{
+
+        await window.ma3daAuth.signOut();
+
+      }catch(error){
+
+        console.error(
+          "خطأ في تسجيل الخروج:",
+          error
+        );
+
+      }
+
+      selectedRole = "";
+
+      showScreen(
+        "roleScreen"
+      );
+
+    }
+  );
+
+}
