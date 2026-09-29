@@ -917,83 +917,80 @@
 
 
 <!-- الصفحة الرئيسية لصاحب المعدة -->
+<!-- =====================================================
+     لوحة صاحب المعدة
+===================================================== -->
 
 <section id="operatorHomeScreen" class="screen">
 
-  <div class="home-page">
+  <div class="operator-dashboard">
 
-    <div class="home-header">
+    <!-- الرأس -->
+    <div class="operator-dashboard-header">
 
-      <div class="home-header-text">
-
-        <span
-          id="operatorHomeName"
-          class="home-greeting"
-        >
-          صاحب المعدة
+      <div>
+        <span class="operator-greeting">
+          أهلاً بك
         </span>
 
-        <h1>
-          الصفحة الرئيسية
+        <h1 id="operatorHomeName">
+          صاحب المعدة
         </h1>
-
       </div>
 
-      <div class="home-avatar">
+      <div class="operator-dashboard-avatar">
         🚜
       </div>
 
     </div>
 
 
-    <div class="operator-home-status">
+    <!-- حالة الاتصال -->
+    <div class="operator-online-card">
 
-      <span>🟢</span>
+      <div class="operator-online-icon">
+        🟢
+      </div>
 
       <div>
+        <strong>أنت متصل</strong>
 
-        <strong>
-          أنت متصل
-        </strong>
-
-        <small>
-          ستصلك الطلبات القريبة منك
-        </small>
-
+        <span>
+          ستصلك طلبات العملاء القريبة منك
+        </span>
       </div>
 
     </div>
 
 
-    <div class="home-section">
+    <!-- الطلبات -->
+    <div class="operator-dashboard-section">
 
-      <h2>
-        الطلبات
-      </h2>
+      <h2>الطلبات</h2>
 
       <button
         id="operatorNewRequestsBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           📋
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
           <strong>
             الطلبات الجديدة
           </strong>
 
           <span>
-            عرض طلبات العملاء القريبة منك
+            طلبات العملاء التي تنتظر قبولك
           </span>
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1002,15 +999,15 @@
 
       <button
         id="operatorCurrentOrderBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           🚜
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
           <strong>
             الطلب الحالي
@@ -1022,7 +1019,7 @@
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1031,27 +1028,27 @@
 
       <button
         id="operatorPreviousOrdersBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           🕘
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
           <strong>
             الطلبات السابقة
           </strong>
 
           <span>
-            عرض سجل أعمالك السابقة
+            سجل أعمالك السابقة
           </span>
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1060,45 +1057,65 @@
     </div>
 
 
-    <div class="home-section">
+    <!-- معدتي -->
+    <div class="operator-dashboard-section">
 
-      <h2>
-        معدتي
-      </h2>
+      <div class="operator-section-title-row">
 
-      <div class="operator-home-equipment">
+        <h2>معدتي</h2>
 
-        <img
-          id="operatorHomeEquipmentImage"
-          alt="صورة المعدة"
+        <button
+          id="operatorEditEquipmentBtn"
+          class="operator-small-btn"
+          type="button"
         >
+          تعديل
+        </button>
 
-        <div class="equipment-details">
+      </div>
 
-          <p>
+
+      <div class="operator-equipment-dashboard-card">
+
+        <div class="operator-equipment-image-wrap">
+
+          <img
+            id="operatorHomeEquipmentImage"
+            alt="صورة المعدة"
+          >
+
+        </div>
+
+
+        <div class="operator-equipment-data">
+
+          <div>
             <span>نوع المعدة</span>
             <strong id="operatorHomeEquipmentType">-</strong>
-          </p>
+          </div>
 
-          <p>
+          <div>
             <span>الموديل</span>
             <strong id="operatorHomeEquipmentModel">-</strong>
-          </p>
+          </div>
 
-          <p>
+          <div>
             <span>المدينة</span>
             <strong id="operatorHomeEquipmentCity">-</strong>
-          </p>
+          </div>
 
-          <p>
+          <div>
             <span>سنة الصنع</span>
             <strong id="operatorHomeEquipmentYear">-</strong>
-          </p>
+          </div>
 
-          <p>
+          <div>
             <span>السعر بالساعة</span>
-            <strong id="operatorHomeEquipmentPrice">-</strong>
-          </p>
+            <strong>
+              <span id="operatorHomeEquipmentPrice">-</span>
+              ريال
+            </strong>
+          </div>
 
         </div>
 
@@ -1107,27 +1124,25 @@
     </div>
 
 
-    <div class="home-section">
+    <!-- الحساب -->
+    <div class="operator-dashboard-section">
 
-      <h2>
-        حسابي
-      </h2>
+      <h2>حسابي</h2>
+
 
       <button
         id="operatorIncomeBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           💰
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
-          <strong>
-            الدخل
-          </strong>
+          <strong>الدخل</strong>
 
           <span>
             متابعة دخلك من الأعمال
@@ -1135,7 +1150,7 @@
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1144,27 +1159,25 @@
 
       <button
         id="operatorRatingsBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           ⭐
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
-          <strong>
-            التقييمات
-          </strong>
+          <strong>التقييمات</strong>
 
           <span>
-            تقييمات العملاء
+            تقييمات العملاء لك
           </span>
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1173,27 +1186,25 @@
 
       <button
         id="operatorSettingsBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           ⚙️
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
-          <strong>
-            الإعدادات
-          </strong>
+          <strong>الإعدادات</strong>
 
           <span>
-            إدارة حسابك
+            إدارة بيانات حسابك
           </span>
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1202,27 +1213,24 @@
     </div>
 
 
-    <div class="home-section">
+    <!-- الدعم -->
+    <div class="operator-dashboard-section">
 
-      <h2>
-        المساعدة
-      </h2>
+      <h2>المساعدة</h2>
 
       <button
         id="operatorSupportBtn"
-        class="home-menu-item"
+        class="operator-menu-card"
         type="button"
       >
 
-        <div class="home-menu-icon">
+        <div class="operator-menu-icon">
           🛟
         </div>
 
-        <div class="home-menu-text">
+        <div class="operator-menu-content">
 
-          <strong>
-            الدعم الفني
-          </strong>
+          <strong>الدعم الفني</strong>
 
           <span>
             نحن هنا لمساعدتك
@@ -1230,7 +1238,7 @@
 
         </div>
 
-        <span class="home-arrow">
+        <span class="operator-menu-arrow">
           ←
         </span>
 
@@ -1239,15 +1247,519 @@
     </div>
 
 
+    <!-- تسجيل الخروج -->
     <button
       id="operatorHomeLogoutBtn"
-      class="home-logout-btn"
+      class="operator-logout-btn"
       type="button"
     >
-      <span>
-        🚪
+      🚪 تسجيل الخروج
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     الطلبات الجديدة
+===================================================== -->
+
+<section id="operatorNewRequestsScreen" class="screen">
+
+  <button
+    id="backFromOperatorNewRequestsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+    <h1>الطلبات الجديدة</h1>
+
+    <p>
+      طلبات العملاء التي تنتظر قبولك
+    </p>
+
+  </div>
+
+  <div id="operatorNewRequestsList">
+
+    <div class="card center">
+      <p>جاري تحميل الطلبات...</p>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     الطلب الحالي
+===================================================== -->
+
+<section id="operatorCurrentOrderScreen" class="screen">
+
+  <button
+    id="backFromOperatorCurrentOrderBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="card">
+
+    <div class="success-icon">
+      🚜
+    </div>
+
+    <h2 id="operatorCurrentOrderTitle">
+      الطلب الحالي
+    </h2>
+
+    <div class="info-row">
+
+      <span>المعدة</span>
+
+      <strong id="operatorCurrentEquipment">
+        -
+      </strong>
+
+    </div>
+
+    <div class="info-row">
+
+      <span>موقع العميل</span>
+
+      <strong id="operatorCurrentLocation">
+        -
+      </strong>
+
+    </div>
+
+    <div class="info-row">
+
+      <span>مدة العمل</span>
+
+      <strong id="operatorCurrentDuration">
+        -
+      </strong>
+
+    </div>
+
+    <div class="info-row">
+
+      <span>السعر</span>
+
+      <strong id="operatorCurrentPrice">
+        -
+      </strong>
+
+    </div>
+
+    <div class="operator-current-status">
+
+      <span id="operatorCurrentStatusIcon">
+        🟡
       </span>
-      تسجيل الخروج
+
+      <strong id="operatorCurrentStatusText">
+        جاري تحميل الحالة...
+      </strong>
+
+    </div>
+
+
+    <button
+      id="operatorCallCustomerBtn"
+      class="main-btn"
+      type="button"
+    >
+      📞 الاتصال بالعميل
+    </button>
+
+
+    <button
+      id="operatorChatCustomerBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 محادثة مع العميل
+    </button>
+
+
+    <button
+      id="operatorArrivedBtn"
+      class="main-btn"
+      type="button"
+      style="display:none;"
+    >
+      🚜 وصلت إلى موقع العميل
+    </button>
+
+
+    <button
+      id="operatorStartWorkBtn"
+      class="main-btn"
+      type="button"
+      style="display:none;"
+    >
+      ▶️ بدء العمل
+    </button>
+
+
+    <div
+      id="operatorWorkTimerBox"
+      style="display:none;"
+    >
+
+      <div class="work-icon">
+        🚜
+      </div>
+
+      <div
+        id="operatorTimer"
+        class="timer"
+      >
+        00:00:00
+      </div>
+
+    </div>
+
+
+    <button
+      id="operatorEndWorkBtn"
+      class="main-btn"
+      type="button"
+      style="display:none;"
+    >
+      إنهاء العمل
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     الطلبات السابقة لصاحب المعدة
+===================================================== -->
+
+<section id="operatorPreviousOrdersScreen" class="screen">
+
+  <button
+    id="backFromOperatorPreviousOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🕘
+    </div>
+
+    <h1>الطلبات السابقة</h1>
+
+    <p>
+      سجل الأعمال التي أنجزتها
+    </p>
+
+  </div>
+
+  <div id="operatorPreviousOrdersList">
+
+    <div class="card center">
+      <p>جاري تحميل الطلبات...</p>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     الدخل
+===================================================== -->
+
+<section id="operatorIncomeScreen" class="screen">
+
+  <button
+    id="backFromOperatorIncomeBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      💰
+    </div>
+
+    <h1>الدخل</h1>
+
+    <p>
+      ملخص دخلك من أعمالك في مِعدة
+    </p>
+
+  </div>
+
+
+  <div class="operator-stats-grid">
+
+    <div class="operator-stat-card">
+
+      <span>💰</span>
+
+      <strong id="operatorTotalIncome">
+        0 ريال
+      </strong>
+
+      <small>
+        إجمالي الدخل
+      </small>
+
+    </div>
+
+
+    <div class="operator-stat-card">
+
+      <span>🚜</span>
+
+      <strong id="operatorCompletedCount">
+        0
+      </strong>
+
+      <small>
+        أعمال مكتملة
+      </small>
+
+    </div>
+
+
+    <div class="operator-stat-card">
+
+      <span>⏱️</span>
+
+      <strong id="operatorTotalHours">
+        0
+      </strong>
+
+      <small>
+        إجمالي الساعات
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <div id="operatorIncomeList"></div>
+
+</section>
+
+
+<!-- =====================================================
+     التقييمات
+===================================================== -->
+
+<section id="operatorRatingsScreen" class="screen">
+
+  <button
+    id="backFromOperatorRatingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⭐
+    </div>
+
+    <h1>التقييمات</h1>
+
+    <p>
+      تقييمات العملاء لأعمالك
+    </p>
+
+  </div>
+
+
+  <div class="card center">
+
+    <div class="operator-rating-number">
+      <strong id="operatorAverageRating">
+        0.0
+      </strong>
+
+      <div>
+        ⭐⭐⭐⭐⭐
+      </div>
+
+      <small id="operatorRatingCount">
+        0 تقييم
+      </small>
+
+    </div>
+
+  </div>
+
+
+  <div id="operatorRatingsList"></div>
+
+</section>
+
+
+<!-- =====================================================
+     إعدادات صاحب المعدة
+===================================================== -->
+
+<section id="operatorSettingsScreen" class="screen">
+
+  <button
+    id="backFromOperatorSettingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⚙️
+    </div>
+
+    <h1>الإعدادات</h1>
+
+    <p>
+      إدارة بيانات حسابك
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <label>👤 الاسم</label>
+
+    <input
+      id="operatorSettingsName"
+      type="text"
+    >
+
+
+    <label>📱 رقم الجوال</label>
+
+    <input
+      id="operatorSettingsPhone"
+      type="tel"
+    >
+
+
+    <label>📍 المدينة</label>
+
+    <input
+      id="operatorSettingsCity"
+      type="text"
+    >
+
+
+    <div class="settings-info">
+
+      <span>
+        البريد الإلكتروني
+      </span>
+
+      <strong id="operatorSettingsEmail">
+        -
+      </strong>
+
+    </div>
+
+
+    <button
+      id="saveOperatorSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ التعديلات
+    </button>
+
+
+    <button
+      id="operatorChangePasswordBtn"
+      class="main-btn"
+      type="button"
+    >
+      🔐 تغيير كلمة المرور
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     دعم صاحب المعدة
+===================================================== -->
+
+<section id="operatorSupportScreen" class="screen">
+
+  <button
+    id="backFromOperatorSupportBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🛟
+    </div>
+
+    <h1>الدعم الفني</h1>
+
+    <p>
+      نحن هنا لمساعدتك
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <h2>
+      كيف يمكننا مساعدتك؟
+    </h2>
+
+    <p>
+      إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة،
+      تواصل معنا وسنساعدك.
+    </p>
+
+    <button
+      id="operatorSupportWhatsAppBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 التواصل مع الدعم
     </button>
 
   </div>
@@ -2714,14 +3226,6 @@
     <p>
       المعدة وصلت إلى موقعك
     </p>
-
-    <button
-      id="startWorkCustomerBtn"
-      class="main-btn"
-      type="button"
-    >
-      ▶️ بدء العمل
-    </button>
 
   </div>
 
