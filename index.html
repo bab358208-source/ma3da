@@ -5075,15 +5075,18 @@
 
 
   import {
-    getFirestore,
-    doc,
-    setDoc,
-    getDoc,
-    getDocs,
-    addDoc,
-    updateDoc,
-    collection
-  }
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  collection,
+  onSnapshot,
+  query,
+  orderBy
+}
   from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
@@ -5259,7 +5262,14 @@
   window.ma3daCollection =
     collection;
 
+window.ma3daOnSnapshot =
+  onSnapshot;
 
+window.ma3daQuery =
+  query;
+
+window.ma3daOrderBy =
+  orderBy;
 
   /*
     إنشاء حساب جديد
