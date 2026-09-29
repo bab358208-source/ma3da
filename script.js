@@ -2642,7 +2642,7 @@ if(chatBtn){
 
 }
 
-function sendChatMessage(){
+async function sendChatMessage(){
 
   const input =
     document.getElementById(
@@ -2663,83 +2663,84 @@ function sendChatMessage(){
   if(!text)
     return;
 
-  const message =
-    document.createElement(
-      "div"
-    );
+  try{
 
-  message.className =
-    "message sent";
+    if(window.ma3daFirebaseReady){
 
-  message.textContent =
-    text;
-
-  messages.appendChild(
-    message
-  );
-
-  input.value = "";
-
-  messages.scrollTop =
-    messages.scrollHeight;
-
-}
-
-const sendChatBtn =
-  document.getElementById(
-    "sendChatBtn"
-  );
-
-if(sendChatBtn){
-
-  sendChatBtn.addEventListener(
-    "click",
-    sendChatMessage
-  );
-
-}
-
-const chatInput =
-  document.getElementById(
-    "chatInput"
-  );
-
-if(chatInput){
-
-  chatInput.addEventListener(
-    "keydown",
-    e=>{
-
-      if(e.key === "Enter"){
-
-        e.preventDefault();
-
-        sendChatMessage();
-
-      }
+      await window.ma3daFirebaseReady;
 
     }
-  );
 
-}
+    const user =
+      window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
 
-const backFromChatBtn =
-  document.getElementById(
-    "backFromChatBtn"
-  );
+    if(!user){
 
-if(backFromChatBtn){
-
-  backFromChatBtn.addEventListener(
-    "click",
-    ()=>{
-
-      showScreen(
-        "matchedScreen"
+      alert(
+        "يجب تسجيل الدخول لإرسال الرسائل"
       );
 
+      return;
+
     }
-  );
+
+    const requestId =
+      localStorage.getItem(
+        "currentRequestId"
+      );
+
+    if(!requestId){
+
+      alert(
+        "لا يوجد طلب مرتبط بالمحادثة"
+      );
+
+      return;
+
+    }
+
+    const messagesCollection =
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests",
+        requestId,
+        "messages"
+      );
+
+    await window.ma3daAddDoc(
+      messagesCollection,
+      {
+
+        text: text,
+
+        senderId:
+          user.uid,
+
+        senderRole:
+          selectedRole || "",
+
+        createdAt:
+          Date.now()
+
+      }
+    );
+
+    input.value = "";
+
+  }catch(error){
+
+    console.error(
+      "تعذر إرسال الرسالة:",
+      error
+    );
+
+    alert(
+      "تعذر إرسال الرسالة"
+    );
+
+  }
 
 }
 /* =========================================================
