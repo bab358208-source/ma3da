@@ -2743,6 +2743,115 @@ async function sendChatMessage(){
   }
 
 }
+let chatMessagesUnsubscribe = null;
+
+function startChatListener(){
+
+  if(chatMessagesUnsubscribe){
+
+    chatMessagesUnsubscribe();
+
+    chatMessagesUnsubscribe = null;
+
+  }
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+  if(!requestId)
+    return;
+
+  if(
+    !window.ma3daDB ||
+    !window.ma3daCollection ||
+    !window.ma3daOnSnapshot ||
+    !window.ma3daQuery ||
+    !window.ma3daOrderBy
+  ){
+
+    console.error(
+      "أدوات الشات في Firebase غير جاهزة"
+    );
+
+    return;
+
+  }
+
+  const messagesCollection =
+    window.ma3daCollection(
+      window.ma3daDB,
+      "requests",
+      requestId,
+      "messages"
+    );
+
+  const messagesQuery =
+    window.ma3daQuery(
+      messagesCollection,
+      window.ma3daOrderBy(
+        "createdAt",
+        "asc"
+      )
+    );
+
+  chatMessagesUnsubscribe =
+    window.ma3daOnSnapshot(
+      messagesQuery,
+      snapshot => {
+
+        const messages =
+          document.getElementById(
+            "chatMessages"
+          );
+
+        if(!messages)
+          return;
+
+        messages.innerHTML = "";
+
+        snapshot.forEach(
+          doc => {
+
+            const data =
+              doc.data();
+
+            const message =
+              document.createElement(
+                "div"
+              );
+
+            message.className =
+              data.senderRole === selectedRole
+                ? "message sent"
+                : "message received";
+
+            message.textContent =
+              data.text || "";
+
+            messages.appendChild(
+              message
+            );
+
+          }
+        );
+
+        messages.scrollTop =
+          messages.scrollHeight;
+
+      },
+      error => {
+
+        console.error(
+          "تعذر استقبال رسائل الشات:",
+          error
+        );
+
+      }
+    );
+
+}
 /* =========================================================
    TRACKING
 ========================================================= */
