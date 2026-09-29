@@ -130,8 +130,13 @@ textarea {
 }
 
 @keyframes bounce {
-  from { transform: translateY(0); }
-  to { transform: translateY(-12px); }
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-12px);
+  }
 }
 
 .success-icon {
@@ -188,8 +193,20 @@ textarea {
   height: 330px;
   margin: 20px 0;
   background:
-    linear-gradient(35deg, transparent 45%, #ddd 46%, #ddd 50%, transparent 51%),
-    linear-gradient(-30deg, transparent 45%, #ddd 46%, #ddd 50%, transparent 51%),
+    linear-gradient(
+      35deg,
+      transparent 45%,
+      #ddd 46%,
+      #ddd 50%,
+      transparent 51%
+    ),
+    linear-gradient(
+      -30deg,
+      transparent 45%,
+      #ddd 46%,
+      #ddd 50%,
+      transparent 51%
+    ),
     #f2f2f2;
   border-radius: 18px;
   overflow: hidden;
@@ -479,25 +496,10 @@ textarea {
   color: #777;
 }
 
-@media (max-width: 600px) {
 
-  .hero h1 {
-    font-size: 27px;
-  }
-
-  .card {
-    padding: 20px;
-  }
-
-  .operator-request-card {
-    padding: 18px;
-  }
-
-  .operator-buttons button {
-    padding: 15px 8px;
-  }
-}
-/* صفحة المحادثة كاملة */
+/* ===============================
+   CHAT SCREEN
+================================ */
 
 #chatScreen {
   padding: 0 !important;
@@ -609,397 +611,11 @@ textarea {
   margin: 0;
   padding: 10px 16px;
 }
-/* ================================
-   MA3DA NEW INTRO SCREEN
-   ================================ */
 
-#howMa3daScreen {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 40px 20px 25px;
-  box-sizing: border-box;
-  text-align: center;
-}
 
-#howMa3daScreen .hero {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-#howMa3daScreen .hero-icon {
-  width: 110px;
-  height: 110px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 58px;
-  margin-bottom: 25px;
-  border-radius: 30px;
-  background: #f3f3f3;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-}
-
-#howMa3daScreen h1 {
-  margin: 0 0 15px;
-  font-size: 32px;
-  font-weight: 800;
-}
-
-#howMa3daScreen .hero p {
-  margin: 0;
-  font-size: 21px;
-  line-height: 1.8;
-  font-weight: 700;
-}
-
-#howMa3daScreen .intro-description {
-  margin-top: 18px;
-  font-size: 16px;
-  line-height: 1.8;
-  opacity: 0.65;
-}
-
-#howMa3daScreen .card {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 20px 5px 5px;
-  background: transparent;
-  box-shadow: none;
-}
-
-#howMa3daScreen .intro-progress {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 22px;
-}
-
-#howMa3daScreen .intro-progress span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #d0d0d0;
-}
-
-#howMa3daScreen .intro-progress span.active {
-  width: 24px;
-  border-radius: 10px;
-  background: #222;
-}
-
-#howMa3daScreen .main-btn {
-  width: 100%;
-  min-height: 56px;
-  border: none;
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-#howMa3daScreen #howMa3daSkipBtn,
-#howMa3daScreen #howMa3daBackBtn {
-  margin-top: 12px;
-  border: none;
-  background: transparent;
-  font-size: 15px;
-  cursor: pointer;
-  opacity: 0.65;
-}
-
-#howMa3daScreen #howMa3daBackBtn {
-  display: none;
-}
-/
-/* ================================
-   MA3DA NEW HOME PAGE
-   ================================ */
-#customerHomeScreen {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 28px 18px 35px;
-  background: #ffffff;
-}
-#customerHomeScreen .home-page {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-}
-/* ================================
-   HEADER
-   ================================ */
-#customerHomeScreen .home-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-}
-#customerHomeScreen .home-header-text {
-  flex: 1;
-}
-#customerHomeScreen .home-greeting {
-  display: block;
-  font-size: 16px;
-  font-weight: 700;
-  opacity: .55;
-  margin-bottom: 6px;
-}
-#customerHomeScreen .home-header h1 {
-  margin: 0;
-  font-size: 30px;
-  font-weight: 900;
-  letter-spacing: -.5px;
-}
-#customerHomeScreen .home-avatar {
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f4f4f4;
-  font-size: 24px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
-}
-/* ================================
-   MAIN REQUEST CARD
-   ================================ */
-#customerHomeScreen .home-request-card {
-  position: relative;
-  padding: 26px;
-  border-radius: 28px;
-  background: #111111;
-  color: #ffffff;
-  margin-bottom: 32px;
-  overflow: hidden;
-  box-shadow: 0 16px 35px rgba(0,0,0,.14);
-}
-/* لمسة خلفية بسيطة */
-#customerHomeScreen .home-request-card::after {
-  content: "🚜";
-  position: absolute;
-  left: -10px;
-  bottom: -18px;
-  font-size: 105px;
-  opacity: .07;
-  transform: rotate(-8deg);
-}
-/* الأيقونة */
-#customerHomeScreen .home-request-icon {
-  width: 62px;
-  height: 62px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 19px;
-  background: #ffffff;
-  color: #111111;
-  font-size: 31px;
-  margin-bottom: 20px;
-  position: relative;
-  z-index: 1;
-}
-/* النص */
-#customerHomeScreen .home-request-content {
-  position: relative;
-  z-index: 1;
-}
-#customerHomeScreen .home-request-content h2 {
-  margin: 0 0 8px;
-  font-size: 26px;
-  font-weight: 900;
-  letter-spacing: -.5px;
-}
-#customerHomeScreen .home-request-content p {
-  margin: 0 0 22px;
-  max-width: 310px;
-  font-size: 14px;
-  line-height: 1.8;
-  color: rgba(255,255,255,.68);
-}
-/* زر الطلب */
-#customerHomeScreen .home-request-btn {
-  width: 100%;
-  min-height: 58px;
-  border: none;
-  border-radius: 17px;
-  background: #ffffff;
-  color: #111111;
-  font-size: 16px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: transform .15s ease;
-  position: relative;
-  z-index: 1;
-}
-#customerHomeScreen .home-request-btn:active {
-  transform: scale(.98);
-}
-#customerHomeScreen .home-request-btn span {
-  margin-right: 8px;
-  font-size: 18px;
-}
-/* ================================
-   SECTIONS
-   ================================ */
-#customerHomeScreen .home-section {
-  margin-bottom: 30px;
-}
-#customerHomeScreen .home-section > h2 {
-  margin: 0 0 13px;
-  font-size: 18px;
-  font-weight: 900;
-}
-/* ================================
-   MENU ITEMS
-   ================================ */
-#customerHomeScreen .home-menu-item {
-  width: 100%;
-  min-height: 74px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  border: 1px solid #eeeeee;
-  border-radius: 18px;
-  background: #ffffff;
-  color: inherit;
-  text-align: right;
-  cursor: pointer;
-  box-sizing: border-box;
-  box-shadow: 0 5px 18px rgba(0,0,0,.035);
-  transition: transform .15s ease;
-}
-#customerHomeScreen .home-menu-item:active {
-  transform: scale(.985);
-}
-#customerHomeScreen .home-menu-icon {
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: #f3f3f3;
-  font-size: 21px;
-}
-#customerHomeScreen .home-menu-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-#customerHomeScreen .home-menu-text strong {
-  font-size: 15px;
-  font-weight: 800;
-}
-#customerHomeScreen .home-menu-text span {
-  font-size: 12px;
-  opacity: .5;
-}
-#customerHomeScreen .home-arrow {
-  font-size: 19px;
-  opacity: .35;
-}
-/* ================================
-   FEATURES
-   ================================ */
-#customerHomeScreen .home-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-  margin: 5px 0 28px;
-}
-#customerHomeScreen .home-feature {
-  min-height: 108px;
-  padding: 12px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border-radius: 18px;
-  background: #f7f7f7;
-  box-sizing: border-box;
-}
-#customerHomeScreen .home-feature-icon {
-  font-size: 23px;
-  margin-bottom: 7px;
-}
-#customerHomeScreen .home-feature strong {
-  font-size: 12px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-#customerHomeScreen .home-feature span {
-  font-size: 10px;
-  line-height: 1.5;
-  opacity: .5;
-}
-/* ================================
-   LOGOUT
-   ================================ */
-#customerHomeScreen .home-logout-btn {
-  width: 100%;
-  min-height: 52px;
-  margin-top: 3px;
-  border: 1px solid #eeeeee;
-  border-radius: 16px;
-  background: #ffffff;
-  color: #555555;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-}
-#customerHomeScreen .home-logout-btn span {
-  margin-left: 7px;
-}
-/* ================================
-   DARK MODE - HOME
-   ================================ */
-html[data-theme="dark"] #customerHomeScreen {
-  background: #121212;
-}
-html[data-theme="dark"] #customerHomeScreen .home-avatar {
-  background: #1e1e1e;
-}
-html[data-theme="dark"] #customerHomeScreen .home-request-card {
-  background: #1e1e1e;
-}
-html[data-theme="dark"] #customerHomeScreen .home-request-icon {
-  background: #2a2a2a;
-}
-html[data-theme="dark"] #customerHomeScreen .home-request-btn {
-  background: #f5f5f5;
-  color: #121212;
-}
-html[data-theme="dark"] #customerHomeScreen .home-menu-item {
-  background: #1e1e1e;
-  border-color: #2a2a2a;
-  color: #f5f5f5;
-}
-html[data-theme="dark"] #customerHomeScreen .home-menu-icon {
-  background: #2a2a2a;
-}
-html[data-theme="dark"] #customerHomeScreen .home-feature {
-  background: #1e1e1e;
-}
-html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
-  background: #1e1e1e;
-  border-color: #2a2a2a;
-  color: #f5f5f5;
-}
 /* ================================
    MA3DA INTRO SCREENS
-   ================================ */
+================================ */
 
 #introScreen,
 #whyMa3daScreen,
@@ -1134,9 +750,489 @@ html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
   font-weight: 800;
   cursor: pointer;
 }
+
+#howMa3daScreen {
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 20px 25px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#howMa3daScreen.active {
+  display: flex;
+}
+
+#howMa3daScreen .hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#howMa3daScreen .hero-icon {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 58px;
+  margin-bottom: 25px;
+  border-radius: 30px;
+  background: #f3f3f3;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+#howMa3daScreen h1 {
+  margin: 0 0 15px;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+#howMa3daScreen .hero p {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.8;
+  font-weight: 700;
+}
+
+#howMa3daScreen .intro-description {
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.8;
+  opacity: 0.65;
+}
+
+#howMa3daScreen .card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 5px 5px;
+  background: transparent;
+  box-shadow: none;
+}
+
+#howMa3daScreen .intro-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+#howMa3daScreen .intro-progress span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d0d0d0;
+}
+
+#howMa3daScreen .intro-progress span.active {
+  width: 24px;
+  border-radius: 10px;
+  background: #222;
+}
+
+#howMa3daScreen .main-btn {
+  width: 100%;
+  min-height: 56px;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#howMa3daScreen #howMa3daSkipBtn,
+#howMa3daScreen #howMa3daBackBtn {
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+#howMa3daScreen #howMa3daBackBtn {
+  display: none;
+}
+
+
+/* =========================================================
+   MA3DA — CUSTOMER HOME PAGE
+========================================================= */
+
+#customerHomeScreen {
+  min-height: 100vh;
+  padding: 28px 18px 38px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+#customerHomeScreen .home-page {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+
 /* ================================
-   الوضع الداكن
-   ================================ */
+   HEADER
+================================ */
+
+#customerHomeScreen .home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 28px;
+}
+
+#customerHomeScreen .home-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+#customerHomeScreen .home-greeting {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #777777;
+}
+
+#customerHomeScreen .home-header h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -.6px;
+}
+
+#customerHomeScreen .home-avatar {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: #f3f3f3;
+  font-size: 24px;
+  box-shadow: 0 7px 20px rgba(0,0,0,.06);
+}
+
+
+/* ================================
+   MAIN REQUEST CARD
+================================ */
+
+#customerHomeScreen .home-request-card {
+  position: relative;
+  padding: 26px;
+  margin-bottom: 34px;
+  border-radius: 28px;
+  background: #111111;
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 16px 35px rgba(0,0,0,.14);
+}
+
+#customerHomeScreen .home-request-card::after {
+  content: "🚜";
+  position: absolute;
+  left: -12px;
+  bottom: -25px;
+  font-size: 110px;
+  opacity: .06;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+#customerHomeScreen .home-request-icon {
+  position: relative;
+  z-index: 1;
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-radius: 19px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 31px;
+}
+
+#customerHomeScreen .home-request-content {
+  position: relative;
+  z-index: 1;
+}
+
+#customerHomeScreen .home-request-content h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 900;
+  letter-spacing: -.5px;
+}
+
+#customerHomeScreen .home-request-content p {
+  max-width: 330px;
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255,255,255,.68);
+}
+
+#customerHomeScreen .home-request-btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 58px;
+  border: none;
+  border-radius: 17px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform .15s ease,
+    opacity .15s ease;
+}
+
+#customerHomeScreen .home-request-btn:active {
+  transform: scale(.98);
+}
+
+#customerHomeScreen .home-request-btn span {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+
+/* ================================
+   SECTIONS
+================================ */
+
+#customerHomeScreen .home-section {
+  margin-bottom: 30px;
+}
+
+#customerHomeScreen .home-section > h2 {
+  margin: 0 0 13px;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 900;
+}
+
+
+/* ================================
+   MENU ITEMS
+================================ */
+
+#customerHomeScreen .home-menu-item {
+  width: 100%;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 15px;
+  margin-bottom: 10px;
+  border: 1px solid #eeeeee;
+  border-radius: 20px;
+  background: #ffffff;
+  color: inherit;
+  text-align: right;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: 0 7px 20px rgba(0,0,0,.045);
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+#customerHomeScreen .home-menu-item:active {
+  transform: scale(.985);
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+
+#customerHomeScreen .home-menu-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px;
+  background: #f3f3f3;
+  font-size: 21px;
+}
+
+#customerHomeScreen .home-menu-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#customerHomeScreen .home-menu-text strong {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+#customerHomeScreen .home-menu-text span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #888888;
+}
+
+#customerHomeScreen .home-arrow {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: #999999;
+  opacity: .4;
+}
+
+
+/* ================================
+   FEATURES
+================================ */
+
+#customerHomeScreen .home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin: 5px 0 30px;
+}
+
+#customerHomeScreen .home-feature {
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 6px;
+  text-align: center;
+  border-radius: 19px;
+  background: #f6f6f6;
+  box-sizing: border-box;
+}
+
+#customerHomeScreen .home-feature-icon {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+#customerHomeScreen .home-feature strong {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 900;
+}
+
+#customerHomeScreen .home-feature span {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #888888;
+}
+
+
+/* ================================
+   LOGOUT
+================================ */
+
+#customerHomeScreen .home-logout-btn {
+  width: 100%;
+  min-height: 53px;
+  margin-top: 3px;
+  border: 1px solid #eeeeee;
+  border-radius: 17px;
+  background: #ffffff;
+  color: #555555;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+#customerHomeScreen .home-logout-btn:active {
+  transform: scale(.985);
+}
+
+#customerHomeScreen .home-logout-btn span {
+  margin-left: 7px;
+}
+
+
+/* ================================
+   DARK MODE — CUSTOMER HOME
+================================ */
+
+html[data-theme="dark"] #customerHomeScreen {
+  background: #121212;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-greeting {
+  color: #999999;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-avatar {
+  background: #1e1e1e;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-card {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-icon {
+  background: #2a2a2a;
+  color: #ffffff;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-btn {
+  background: #f5f5f5;
+  color: #121212;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-item {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+  color: #f5f5f5;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-icon {
+  background: #2a2a2a;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-text span {
+  color: #999999;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-feature {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-feature span {
+  color: #999999;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
+  background: #1e1e1e;
+  border-color: #2a2a2a;
+  color: #f5f5f5;
+}
+
+
+/* ================================
+   GENERAL DARK MODE
+================================ */
 
 html[data-theme="dark"] body {
   background: #121212;
@@ -1154,19 +1250,6 @@ html[data-theme="dark"] textarea {
   background: #1e1e1e;
   color: #f5f5f5;
   border-color: #444;
-}
-
-html[data-theme="dark"] .home-request-card {
-  background: #1e1e1e;
-}
-
-html[data-theme="dark"] .home-menu-item {
-  background: #1e1e1e;
-  color: #f5f5f5;
-}
-
-html[data-theme="dark"] .home-menu-icon {
-  background: #2a2a2a;
 }
 
 html[data-theme="dark"] .hero p {
@@ -1193,77 +1276,110 @@ html[data-theme="dark"] .payment-option {
   color: #f5f5f5;
   border-color: #444;
 }
-/* ================================
-   مميزات مِعدة
-   ================================ */
-
-#customerHomeScreen .home-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 10px 0 25px;
-}
-
-#customerHomeScreen .home-feature {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 105px;
-  padding: 12px 6px;
-  border-radius: 17px;
-  background: #f7f7f7;
-  box-sizing: border-box;
-}
-
-#customerHomeScreen .home-feature-icon {
-  font-size: 24px;
-  margin-bottom: 7px;
-}
-
-#customerHomeScreen .home-feature strong {
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-#customerHomeScreen .home-feature span {
-  font-size: 10px;
-  opacity: .55;
-  line-height: 1.5;
-}
 
 
 /* ================================
-   تسجيل الخروج
-   ================================ */
+   MOBILE
+================================ */
 
-#customerHomeScreen .home-logout-btn {
-  width: 100%;
-  min-height: 52px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 15px;
-  background: #f7f7f7;
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
-}
+@media (max-width: 600px) {
 
-#customerHomeScreen .home-logout-btn span {
-  margin-left: 7px;
+  .hero h1 {
+    font-size: 27px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .operator-request-card {
+    padding: 18px;
+  }
+
+  .operator-buttons button {
+    padding: 15px 8px;
+  }
+
+  #customerHomeScreen {
+    padding:
+      25px
+      16px
+      35px;
+  }
+
+  #customerHomeScreen .home-header {
+    margin-bottom: 24px;
+  }
+
+  #customerHomeScreen .home-header h1 {
+    font-size: 28px;
+  }
+
+  #customerHomeScreen .home-avatar {
+    width: 51px;
+    height: 51px;
+    border-radius: 17px;
+  }
+
+  #customerHomeScreen .home-request-card {
+    padding: 23px;
+    border-radius: 25px;
+  }
+
+  #customerHomeScreen .home-request-content h2 {
+    font-size: 24px;
+  }
+
+  #customerHomeScreen .home-request-btn {
+    min-height: 56px;
+  }
+
+  #customerHomeScreen .home-menu-item {
+    min-height: 72px;
+  }
+
+  #customerHomeScreen .home-features {
+    gap: 7px;
+  }
+
+  #customerHomeScreen .home-feature {
+    min-height: 105px;
+  }
 }
 
 
 /* ================================
-   الوضع الداكن - الصفحة الرئيسية
-   ================================ */
+   VERY SMALL PHONES
+================================ */
 
-html[data-theme="dark"] #customerHomeScreen .home-feature {
-  background: #1e1e1e;
-}
+@media (max-width: 380px) {
 
-html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
-  background: #1e1e1e;
-  color: #f5f5f5;
+  #customerHomeScreen {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  #customerHomeScreen .home-header h1 {
+    font-size: 25px;
+  }
+
+  #customerHomeScreen .home-request-card {
+    padding: 20px;
+  }
+
+  #customerHomeScreen .home-request-content h2 {
+    font-size: 22px;
+  }
+
+  #customerHomeScreen .home-feature {
+    min-height: 100px;
+  }
+
+  #customerHomeScreen .home-feature strong {
+    font-size: 11px;
+  }
+
+  #customerHomeScreen .home-feature span {
+    font-size: 9px;
+  }
 }
