@@ -2623,7 +2623,7 @@ if(chatBtn){
       showScreen(
         "chatScreen"
       );
-
+startChatListener();
       setTimeout(
         ()=>{
 
