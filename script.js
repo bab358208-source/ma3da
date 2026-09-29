@@ -1210,7 +1210,9 @@ if(backFromForgotPasswordBtn){
   );
 
 }
-/* فتح صفحة صاحب المعدة حسب وجود 
+ 
+/* فتح صفحة صاحب المعدة حسب وجود */
+
 async function openOperatorAfterLogin(){
 
   const user =
