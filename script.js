@@ -1210,8 +1210,7 @@ if(backFromForgotPasswordBtn){
   );
 
 }
-/* فتح صفحة صاحب المعدة حسب وجود معدة */
-
+/* فتح صفحة صاحب المعدة حسب وجود 
 async function openOperatorAfterLogin(){
 
   const user =
@@ -1253,18 +1252,29 @@ async function openOperatorAfterLogin(){
       );
 
     const snapshot =
-      await window.ma3daGetDoc(
-        ref
-      );
+      await window.ma3daGetDoc(ref);
 
     if(snapshot.exists()){
 
       await displayMyEquipment();
 
-      await loadLatestCustomerRequest();
+      const hasOperatorData =
+        await loadOperatorData();
+
+      if(!hasOperatorData){
+
+        showScreen(
+          "operatorDataScreen"
+        );
+
+        return;
+
+      }
+
+      await loadOperatorHome();
 
       showScreen(
-        "operatorScreen"
+        "operatorHomeScreen"
       );
 
     }else{
