@@ -1783,6 +1783,8 @@ html[data-theme="dark"] .operator-logout-btn {
 .support-screen{
   padding:18px 14px 32px;
   min-height:100vh;
+  justify-content:flex-start !important;
+  align-items:flex-start !important;
 }
 
 .support-wrap{
