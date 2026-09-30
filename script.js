@@ -3047,7 +3047,7 @@ document
       button.addEventListener(
         "click",
         ()=>{
- 
+
           selectedRating =
             Number(
               button.dataset.rating
