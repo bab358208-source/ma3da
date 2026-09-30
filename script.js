@@ -7879,4 +7879,1227 @@ if(operatorHomeLogoutBtn){
   );
  
 }
+/* =========================================================
+   SUPPORT STAFF PORTAL
+   لا تظهر البوابة إلا عبر ?staff=1، ولا يسمح بالدخول إلا
+   لحساب موجود في supportStaff/{uid} أو لديه custom claim مناسب.
+========================================================= */
 
+const SUPPORT_STAFF_MODE =
+  new URLSearchParams(window.location.search).get("staff") === "1";
+
+let supportEmployee = null;
+
+function openSupportScreen(id){
+  showScreen(id);
+}
+
+async function getSupportEmployee(){
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+  if(!user) return null;
+
+  try{
+    if(typeof user.getIdTokenResult === "function"){
+      const token = await user.getIdTokenResult();
+      const role = token?.claims?.role;
+
+      if(role === "support" || role === "admin"){
+        return { user, role };
+      }
+    }
+  }catch(error){
+    console.warn(
+      "تعذر قراءة صلاحية الموظف من Firebase:",
+      error
+    );
+  }
+
+  try{
+    if(
+      window.ma3daDB &&
+      window.ma3daDoc &&
+      window.ma3daGetDoc
+    ){
+
+      const ref =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "supportStaff",
+          user.uid
+        );
+
+      const snapshot =
+        await window.ma3daGetDoc(ref);
+
+      if(snapshot.exists()){
+
+        const data =
+          snapshot.data() || {};
+
+        const role =
+          data.role || "support";
+
+        if(
+          (role === "support" || role === "admin") &&
+          data.active !== false
+        ){
+          return {
+            user,
+            role,
+            data
+          };
+        }
+      }
+    }
+  }catch(error){
+
+    console.error(
+      "تعذر التحقق من حساب موظف الدعم:",
+      error
+    );
+
+  }
+
+  return null;
+}
+
+async function requireSupportEmployee(){
+
+  const employee =
+    await getSupportEmployee();
+
+  if(!employee){
+
+    supportEmployee = null;
+
+    localStorage.removeItem(
+      "supportEmployee"
+    );
+
+    openSupportScreen(
+      "supportLoginScreen"
+    );
+
+    return null;
+  }
+
+  supportEmployee =
+    employee;
+
+  localStorage.setItem(
+    "supportEmployee",
+    JSON.stringify({
+      uid:
+        employee.user.uid,
+
+      email:
+        employee.user.email || "",
+
+      role:
+        employee.role
+    })
+  );
+
+  return employee;
+}
+
+async function supportLogin(){
+
+  const email =
+    document
+      .getElementById(
+        "supportEmailInput"
+      )
+      ?.value
+      .trim();
+
+  const password =
+    document
+      .getElementById(
+        "supportPasswordInput"
+      )
+      ?.value;
+
+  const error =
+    document.getElementById(
+      "supportLoginError"
+    );
+
+  if(error)
+    error.textContent = "";
+
+  if(!email){
+
+    if(error)
+      error.textContent =
+        "اكتب بريد الموظف.";
+
+    return;
+  }
+
+  if(!password){
+
+    if(error)
+      error.textContent =
+        "اكتب كلمة المرور.";
+
+    return;
+  }
+
+  if(
+    typeof window.ma3daLogin !==
+    "function"
+  ){
+
+    if(error)
+      error.textContent =
+        "خدمة تسجيل الدخول غير جاهزة.";
+
+    return;
+  }
+
+  const button =
+    document.getElementById(
+      "supportLoginBtn"
+    );
+
+  if(button){
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "جاري التحقق...";
+
+  }
+
+  try{
+
+    await window.ma3daLogin(
+      email,
+      password
+    );
+
+    const employee =
+      await getSupportEmployee();
+
+    if(!employee){
+
+      try{
+
+        if(window.ma3daLogout)
+          await window.ma3daLogout();
+
+      }catch(logoutError){
+
+        console.error(
+          logoutError
+        );
+
+      }
+
+      if(error)
+        error.textContent =
+          "هذا الحساب ليس حساب موظف دعم مصرحًا له.";
+
+      return;
+    }
+
+    supportEmployee =
+      employee;
+
+    localStorage.setItem(
+      "supportEmployee",
+      JSON.stringify({
+        uid:
+          employee.user.uid,
+
+        email:
+          employee.user.email ||
+          email,
+
+        role:
+          employee.role
+      })
+    );
+
+    await openSupportDashboard();
+
+  }catch(errorObject){
+
+    console.error(
+      "خطأ دخول موظف الدعم:",
+      errorObject
+    );
+
+    if(error)
+      error.textContent =
+        errorObject?.message ||
+        "تعذر تسجيل الدخول.";
+
+  }finally{
+
+    if(button){
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "دخول الموظف";
+
+    }
+
+  }
+}
+
+async function supportResetPassword(){
+
+  const email =
+    document
+      .getElementById(
+        "supportResetEmailInput"
+      )
+      ?.value
+      .trim();
+
+  const message =
+    document.getElementById(
+      "supportResetMessage"
+    );
+
+  const button =
+    document.getElementById(
+      "supportResetBtn"
+    );
+
+  if(message)
+    message.textContent = "";
+
+  if(!email){
+
+    if(message)
+      message.textContent =
+        "اكتب بريد الموظف.";
+
+    return;
+  }
+
+  if(
+    typeof window.ma3daSendPasswordResetEmail !==
+    "function"
+  ){
+
+    if(message)
+      message.textContent =
+        "خدمة الاستعادة غير جاهزة.";
+
+    return;
+  }
+
+  if(button){
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "جاري الإرسال...";
+
+  }
+
+  try{
+
+    await window.ma3daSendPasswordResetEmail(
+      email
+    );
+
+    if(message){
+
+      message.style.color =
+        "#15803d";
+
+      message.textContent =
+        "تم إرسال رابط الاستعادة إلى البريد الإلكتروني.";
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "خطأ استعادة كلمة مرور الموظف:",
+      error
+    );
+
+    if(message){
+
+      message.style.color =
+        "#b91c1c";
+
+      message.textContent =
+        error?.message ||
+        "تعذر إرسال رابط الاستعادة.";
+
+    }
+
+  }finally{
+
+    if(button){
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "إرسال رابط الاستعادة";
+
+    }
+
+  }
+}
+
+function supportSetSection(name){
+
+  document
+    .querySelectorAll(
+      "[data-support-section]"
+    )
+    .forEach(button=>{
+
+      button.classList.toggle(
+        "active",
+        button.dataset.supportSection ===
+        name
+      );
+
+    });
+
+  document
+    .querySelectorAll(
+      ".support-section"
+    )
+    .forEach(section=>{
+
+      section.classList.remove(
+        "active"
+      );
+
+    });
+
+  const section =
+    document.getElementById(
+      `supportSection${
+        name.charAt(0).toUpperCase()
+      }${name.slice(1)}`
+    );
+
+  if(section)
+    section.classList.add(
+      "active"
+    );
+}
+
+function supportSetList(
+  id,
+  html
+){
+
+  const list =
+    document.getElementById(
+      id
+    );
+
+  if(list)
+    list.innerHTML =
+      html;
+}
+
+function supportRow(
+  title,
+  value
+){
+
+  return `
+    <div class="support-row">
+      <span>${title}</span>
+      <strong>${value ?? "-"}</strong>
+    </div>
+  `;
+}
+
+async function supportGetCollection(
+  name
+){
+
+  if(
+    !window.ma3daDB ||
+    !window.ma3daCollection ||
+    !window.ma3daGetDocs
+  )
+    return [];
+
+  try{
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          name
+        )
+      );
+
+    const rows = [];
+
+    snapshot.forEach(
+      docSnap=>{
+
+        rows.push({
+          id:
+            docSnap.id,
+
+          ...(docSnap.data() || {})
+        });
+
+      }
+    );
+
+    return rows;
+
+  }catch(error){
+
+    console.warn(
+      `تعذر تحميل ${name}:`,
+      error
+    );
+
+    return [];
+  }
+}
+
+async function loadSupportTickets(){
+
+  const rows =
+    await supportGetCollection(
+      "supportTickets"
+    );
+
+  const list =
+    document.getElementById(
+      "supportTicketsList"
+    );
+
+  const stat =
+    document.getElementById(
+      "supportStatTickets"
+    );
+
+  if(stat)
+    stat.textContent =
+      rows.length;
+
+  if(!list)
+    return;
+
+  if(!rows.length){
+
+    list.innerHTML =
+      '<div class="support-empty">لا توجد طلبات دعم مسجلة حاليًا.</div>';
+
+    return;
+  }
+
+  list.innerHTML =
+    rows
+      .slice(0,50)
+      .map(row=>`
+
+        <div class="support-row">
+
+          <div>
+
+            <strong>
+              ${
+                row.subject ||
+                row.title ||
+                "طلب دعم"
+              }
+            </strong>
+
+            <br>
+
+            <small>
+              ${
+                row.customerEmail ||
+                row.email ||
+                row.customerId ||
+                "مستخدم"
+              }
+            </small>
+
+          </div>
+
+          <span>
+            ${
+              row.status ||
+              "مفتوح"
+            }
+          </span>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+async function loadSupportUsers(){
+
+  const users =
+    await supportGetCollection(
+      "users"
+    );
+
+  const customers =
+    users.filter(row=>
+      row.role === "customer" ||
+      row.userType === "customer"
+    );
+
+  const operators =
+    users.filter(row=>
+      row.role === "operator" ||
+      row.userType === "operator"
+    );
+
+  const customerList =
+    document.getElementById(
+      "supportCustomersList"
+    );
+
+  const operatorList =
+    document.getElementById(
+      "supportOperatorsList"
+    );
+
+  const customerStat =
+    document.getElementById(
+      "supportStatCustomers"
+    );
+
+  const operatorStat =
+    document.getElementById(
+      "supportStatOperators"
+    );
+
+  if(customerStat)
+    customerStat.textContent =
+      customers.length;
+
+  if(operatorStat)
+    operatorStat.textContent =
+      operators.length;
+
+  if(customerList){
+
+    customerList.innerHTML =
+      customers.length
+
+        ? customers
+            .slice(0,50)
+            .map(row=>
+              supportRow(
+                row.name ||
+                  "عميل",
+
+                row.email ||
+                  row.phone ||
+                  row.id
+              )
+            )
+            .join("")
+
+        : '<div class="support-empty">لا توجد بيانات عملاء في مجموعة users.</div>';
+
+  }
+
+  if(operatorList){
+
+    operatorList.innerHTML =
+      operators.length
+
+        ? operators
+            .slice(0,50)
+            .map(row=>
+              supportRow(
+                row.name ||
+                  "صاحب معدة / مشغل",
+
+                row.email ||
+                  row.phone ||
+                  row.id
+              )
+            )
+            .join("")
+
+        : '<div class="support-empty">لا توجد بيانات مشغلين في مجموعة users.</div>';
+
+  }
+}
+
+async function loadSupportEquipment(){
+
+  const equipment =
+    await supportGetCollection(
+      "equipment"
+    );
+
+  const list =
+    document.getElementById(
+      "supportOperatorsList"
+    );
+
+  const stat =
+    document.getElementById(
+      "supportStatOperators"
+    );
+
+  if(stat)
+    stat.textContent =
+      equipment.length;
+
+  if(!list)
+    return;
+
+  if(!equipment.length){
+
+    list.innerHTML =
+      '<div class="support-empty">لا توجد معدات مسجلة حاليًا.</div>';
+
+    return;
+  }
+
+  list.innerHTML =
+    equipment
+      .slice(0,50)
+      .map(row=>`
+
+        <div class="support-row">
+
+          <div>
+
+            <strong>
+              ${
+                row.type ||
+                "معدة"
+              }
+
+              ${
+                row.model ||
+                ""
+              }
+            </strong>
+
+            <br>
+
+            <small>
+              ${
+                row.city ||
+                "بدون مدينة"
+              }
+            </small>
+
+          </div>
+
+          <span>
+            ${
+              row.availability ===
+              "available"
+
+                ? "متاحة"
+
+                : "غير متاحة"
+            }
+          </span>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+async function loadSupportOrders(){
+
+  const rows =
+    await supportGetCollection(
+      "requests"
+    );
+
+  const current =
+    rows.filter(row=>
+      [
+        "searching",
+        "accepted",
+        "arrived",
+        "working"
+      ].includes(
+        row.status
+      )
+    );
+
+  const list =
+    document.getElementById(
+      "supportOrdersList"
+    );
+
+  const stat =
+    document.getElementById(
+      "supportStatOrders"
+    );
+
+  if(stat)
+    stat.textContent =
+      current.length;
+
+  if(!list)
+    return;
+
+  if(!current.length){
+
+    list.innerHTML =
+      '<div class="support-empty">لا توجد طلبات حالية.</div>';
+
+    return;
+  }
+
+  list.innerHTML =
+    current
+      .slice(0,50)
+      .map(row=>`
+
+        <div class="support-row">
+
+          <div>
+
+            <strong>
+              ${
+                row.equipment ||
+                "طلب معدة"
+              }
+            </strong>
+
+            <br>
+
+            <small>
+              ${
+                row.location ||
+                "بدون موقع"
+              }
+            </small>
+
+          </div>
+
+          <span>
+            ${
+              row.status ||
+              "-"
+            }
+          </span>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+async function loadSupportChats(){
+
+  const tickets =
+    await supportGetCollection(
+      "supportTickets"
+    );
+
+  const list =
+    document.getElementById(
+      "supportChatsList"
+    );
+
+  if(!list)
+    return;
+
+  if(!tickets.length){
+
+    list.innerHTML =
+      '<div class="support-empty">لا توجد محادثات دعم حاليًا.</div>';
+
+    return;
+  }
+
+  list.innerHTML =
+    tickets
+      .slice(0,50)
+      .map(row=>`
+
+        <div class="support-row">
+
+          <div>
+
+            <strong>
+              ${
+                row.subject ||
+                row.title ||
+                "محادثة دعم"
+              }
+            </strong>
+
+            <br>
+
+            <small>
+              ${
+                row.customerEmail ||
+                row.email ||
+                row.customerId ||
+                "مستخدم"
+              }
+            </small>
+
+          </div>
+
+          <span>
+            ${
+              row.status ||
+              "مفتوح"
+            }
+          </span>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+async function loadSupportReports(){
+
+  const rows =
+    await supportGetCollection(
+      "reports"
+    );
+
+  const list =
+    document.getElementById(
+      "supportReportsList"
+    );
+
+  if(!list)
+    return;
+
+  if(!rows.length){
+
+    list.innerHTML =
+      '<div class="support-empty">لا توجد بلاغات أو مشاكل مسجلة.</div>';
+
+    return;
+  }
+
+  list.innerHTML =
+    rows
+      .slice(0,50)
+      .map(row=>`
+
+        <div class="support-row">
+
+          <div>
+
+            <strong>
+              ${
+                row.title ||
+                row.subject ||
+                "بلاغ"
+              }
+            </strong>
+
+            <br>
+
+            <small>
+              ${
+                row.description ||
+                row.message ||
+                "بدون وصف"
+              }
+            </small>
+
+          </div>
+
+          <span>
+            ${
+              row.status ||
+              "مفتوح"
+            }
+          </span>
+
+        </div>
+
+      `)
+      .join("");
+}
+
+async function openSupportDashboard(){
+
+  const employee =
+    await requireSupportEmployee();
+
+  if(!employee)
+    return;
+
+  const email =
+    employee.user.email ||
+    "";
+
+  [
+    document.getElementById(
+      "supportEmployeeEmail"
+    ),
+
+    document.getElementById(
+      "supportSettingsEmail"
+    )
+
+  ].forEach(element=>{
+
+    if(element)
+      element.textContent =
+        email ||
+        "موظف دعم";
+
+  });
+
+  const role =
+    document.getElementById(
+      "supportSettingsRole"
+    );
+
+  if(role)
+    role.textContent =
+      employee.role === "admin"
+        ? "مدير دعم"
+        : "موظف دعم";
+
+  openSupportScreen(
+    "supportDashboardScreen"
+  );
+
+  await Promise.all([
+
+    loadSupportTickets(),
+
+    loadSupportUsers(),
+
+    loadSupportEquipment(),
+
+    loadSupportOrders(),
+
+    loadSupportChats(),
+
+    loadSupportReports()
+
+  ]);
+}
+
+function initSupportPortal(){
+
+  if(!SUPPORT_STAFF_MODE)
+    return;
+
+  const loginButton =
+    document.getElementById(
+      "supportLoginBtn"
+    );
+
+  const forgotButton =
+    document.getElementById(
+      "supportForgotBtn"
+    );
+
+  const resetButton =
+    document.getElementById(
+      "supportResetBtn"
+    );
+
+  const backButton =
+    document.getElementById(
+      "supportBackBtn"
+    );
+
+  const forgotBackButton =
+    document.getElementById(
+      "supportForgotBackBtn"
+    );
+
+  const logoutButton =
+    document.getElementById(
+      "supportLogoutBtn"
+    );
+
+  const refreshButton =
+    document.getElementById(
+      "supportRefreshBtn"
+    );
+
+
+  if(loginButton)
+    loginButton.addEventListener(
+      "click",
+      supportLogin
+    );
+
+
+  if(forgotButton)
+    forgotButton.addEventListener(
+      "click",
+      ()=>openSupportScreen(
+        "supportForgotScreen"
+      )
+    );
+
+
+  if(resetButton)
+    resetButton.addEventListener(
+      "click",
+      supportResetPassword
+    );
+
+
+  if(backButton)
+    backButton.addEventListener(
+      "click",
+      ()=>{
+        window.location.href =
+          window.location.pathname;
+      }
+    );
+
+
+  if(forgotBackButton)
+    forgotBackButton.addEventListener(
+      "click",
+      ()=>openSupportScreen(
+        "supportLoginScreen"
+      )
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-support-section]"
+    )
+    .forEach(button=>{
+
+      button.addEventListener(
+        "click",
+        async()=>{
+
+          const section =
+            button.dataset
+              .supportSection;
+
+          supportSetSection(
+            section
+          );
+
+          if(section === "tickets")
+            await loadSupportTickets();
+
+          if(section === "customers")
+            await loadSupportUsers();
+
+          if(section === "operators")
+            await loadSupportEquipment();
+
+          if(section === "orders")
+            await loadSupportOrders();
+
+          if(section === "chats")
+            await loadSupportChats();
+
+          if(section === "reports")
+            await loadSupportReports();
+
+        }
+      );
+
+    });
+
+
+  if(refreshButton)
+    refreshButton.addEventListener(
+      "click",
+      openSupportDashboard
+    );
+
+
+  if(logoutButton)
+    logoutButton.addEventListener(
+      "click",
+      async()=>{
+
+        try{
+
+          if(window.ma3daLogout)
+            await window.ma3daLogout();
+
+        }catch(error){
+
+          console.error(
+            "تعذر تسجيل خروج موظف الدعم:",
+            error
+          );
+
+        }finally{
+
+          supportEmployee =
+            null;
+
+          localStorage.removeItem(
+            "supportEmployee"
+          );
+
+          window.location.href =
+            window.location.pathname;
+
+        }
+
+      }
+    );
+
+
+  (async()=>{
+
+    try{
+
+      const employee =
+        await getSupportEmployee();
+
+      if(employee)
+        await openSupportDashboard();
+
+      else
+        openSupportScreen(
+          "supportLoginScreen"
+        );
+
+    }catch(error){
+
+      console.error(
+        "تعذر تشغيل بوابة الدعم:",
+        error
+      );
+
+      openSupportScreen(
+        "supportLoginScreen"
+      );
+
+    }
+
+  })();
+}
+
+initSupportPortal();
