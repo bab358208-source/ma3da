@@ -8347,7 +8347,7 @@ async function supportLogin(){
     );
 
 
-    await openSupportDashboard();
+    openSupportDashboard();
 
 
   }catch(errorObject){
