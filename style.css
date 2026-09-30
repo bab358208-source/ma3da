@@ -1997,22 +1997,3 @@ html[data-theme="dark"] .operator-logout-btn {
   }
 
 }
-/* إصلاح بوابة موظفي الدعم */
-.support-screen {
-  display: block !important;
-  width: 100%;
-  min-height: 100vh;
-  height: auto;
-  padding: 0 !important;
-  margin: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.support-wrap {
-  width: 100%;
-  max-width: 720px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 24px 18px 35px;
-}
