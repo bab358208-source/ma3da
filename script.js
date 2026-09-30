@@ -4,7 +4,7 @@ const screens =
   document.querySelectorAll(".screen");
  
 function showScreen(id){
- 
+  
   screens.forEach(
     s=>s.classList.remove("active")
   );
