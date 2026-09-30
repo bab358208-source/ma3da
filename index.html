@@ -709,6 +709,7 @@
     </select>
 
 
+
     <div
       id="otherEquipmentContainer"
       style="display:none;"
@@ -728,6 +729,7 @@
     </div>
 
 
+
     <label>
       🏷️ الماركة / الموديل
     </label>
@@ -738,6 +740,7 @@
       type="text"
       placeholder="مثال: كوماتسو PC200"
     >
+
 
 
     <label>
@@ -752,6 +755,7 @@
     >
 
 
+
     <label>
       📅 سنة الصنع
     </label>
@@ -764,6 +768,7 @@
     >
 
 
+
     <label>
       📍 المدينة
     </label>
@@ -774,6 +779,7 @@
       type="text"
       placeholder="مثال: جدة"
     >
+
 
 
     <label>
@@ -792,6 +798,7 @@
       </option>
 
     </select>
+
 
 
     <label>
@@ -813,6 +820,7 @@
     </small>
 
 
+
     <button
       id="saveEquipmentBtn"
       type="button"
@@ -824,7 +832,172 @@
   </div>
 
 </section>
-    <div class="info-row">
+
+
+
+<!-- =====================================================
+     توثيق صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorVerificationScreen"
+  class="screen"
+>
+
+  <button
+    id="backFromVerificationBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🔐
+    </div>
+
+    <h1>
+      توثيق حسابك
+    </h1>
+
+    <p>
+      أكمل توثيق حسابك لتتمكن من استقبال الطلبات
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+
+    <div class="verification-status">
+
+      <span class="verification-status-icon">
+        🟡
+      </span>
+
+      <div>
+
+        <strong>
+          حالة التوثيق
+        </strong>
+
+        <p id="verificationStatusText">
+          لم يتم تقديم طلب التوثيق
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <h2>
+      بيانات صاحب المعدة
+    </h2>
+
+
+    <label>
+      👤 الاسم الكامل
+    </label>
+
+
+    <input
+      id="verificationNameInput"
+      type="text"
+      placeholder="اكتب اسمك الكامل"
+      autocomplete="name"
+    >
+
+
+    <label>
+      📱 رقم الجوال
+    </label>
+
+
+    <input
+      id="verificationPhoneInput"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+      autocomplete="tel"
+    >
+
+
+    <label>
+      📍 المدينة
+    </label>
+
+
+    <input
+      id="verificationCityInput"
+      type="text"
+      placeholder="مثال: جدة"
+      autocomplete="address-level2"
+    >
+
+
+    <hr>
+
+
+    <h2>
+      المستندات المطلوبة
+    </h2>
+
+
+    <label>
+      🪪 صورة الهوية
+    </label>
+
+
+    <input
+      id="identityDocumentInput"
+      type="file"
+      accept="image/*"
+    >
+
+
+    <label>
+      📄 مستند ملكية المعدة
+    </label>
+
+
+    <input
+      id="equipmentOwnershipDocumentInput"
+      type="file"
+      accept="image/*"
+    >
+
+
+    <hr>
+
+
+    <h2>
+      صور المعدة
+    </h2>
+
+
+    <label>
+      📷 صورة المعدة من الأمام
+    </label>
+
+
+    <input
+      id="equipmentFrontImageInput"
+      type="file"
+      accept="image/*"
+    >
+
+
+    <label>
+      📷 صورة المعدة من الجانب
+    </label>
+
+      <div class="info-row">
 
       <span>
         حالة المعدة
@@ -835,6 +1008,7 @@
       </strong>
 
     </div>
+
 
 
     <div class="info-row">
@@ -856,6 +1030,7 @@
     </div>
 
 
+
     <button
       id="editOperatorEquipmentBtn"
       class="main-btn"
@@ -872,7 +1047,629 @@
 
 
 <!-- =====================================================
-     الطلب الجديد - العميل
+     الطلبات الجديدة لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorRequestsScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorRequestsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+
+    <h1>
+      الطلبات الجديدة
+    </h1>
+
+
+    <p>
+      طلبات العملاء التي تنتظر قبولك
+    </p>
+
+  </div>
+
+
+
+  <div
+    id="operatorRequestsList"
+    class="requests-list"
+  >
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        📭
+      </div>
+
+      <h3>
+        لا توجد طلبات جديدة
+      </h3>
+
+      <p>
+        ستظهر هنا طلبات العملاء الجديدة
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الطلب الحالي لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorCurrentOrderScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorCurrentOrderBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🚜
+    </div>
+
+
+    <h1>
+      الطلب الحالي
+    </h1>
+
+
+    <p>
+      متابعة الطلب الذي تعمل عليه
+    </p>
+
+  </div>
+
+
+
+  <div
+    id="operatorCurrentOrderCard"
+    class="card"
+  >
+
+
+    <div class="order-status-badge">
+      طلب حالي
+    </div>
+
+
+    <div class="operator-order-customer">
+
+
+      <div class="operator-customer-avatar">
+        👤
+      </div>
+
+
+      <div>
+
+        <span>
+          العميل
+        </span>
+
+        <strong id="operatorCurrentCustomerName">
+          -
+        </strong>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="info-row">
+
+      <span>
+        📍 موقع العمل
+      </span>
+
+      <strong id="operatorCurrentOrderLocation">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="info-row">
+
+      <span>
+        🚜 نوع المعدة
+      </span>
+
+      <strong id="operatorCurrentOrderEquipment">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="info-row">
+
+      <span>
+        ⏱️ المدة
+      </span>
+
+      <strong id="operatorCurrentOrderDuration">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="info-row">
+
+      <span>
+        💰 السعر
+      </span>
+
+      <strong>
+
+        <span id="operatorCurrentOrderPrice">
+          -
+        </span>
+
+        ريال
+
+      </strong>
+
+    </div>
+
+
+
+    <div
+      id="operatorCurrentOrderNotesRow"
+      class="info-row"
+    >
+
+      <span>
+        📝 ملاحظات
+      </span>
+
+      <strong id="operatorCurrentOrderNotes">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="operator-order-actions">
+
+
+      <button
+        id="operatorCallCustomerBtn"
+        class="main-btn"
+        type="button"
+      >
+        📞 اتصال بالعميل
+      </button>
+
+
+      <button
+        id="operatorChatCustomerBtn"
+        class="main-btn"
+        type="button"
+      >
+        💬 محادثة
+      </button>
+
+
+      <button
+        id="operatorArrivedBtn"
+        class="main-btn"
+        type="button"
+      >
+        📍 وصلت إلى موقع العميل
+      </button>
+
+
+      <button
+        id="operatorStartWorkBtn"
+        class="main-btn"
+        type="button"
+      >
+        ▶️ بدء العمل
+      </button>
+
+
+      <button
+        id="operatorCompleteWorkBtn"
+        class="main-btn"
+        type="button"
+      >
+        ✅ إنهاء العمل
+      </button>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الطلبات السابقة لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorPreviousOrdersScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorPreviousOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🕘
+    </div>
+
+
+    <h1>
+      الطلبات السابقة
+    </h1>
+
+
+    <p>
+      سجل أعمالك السابقة
+    </p>
+
+  </div>
+
+
+
+  <div
+    id="operatorPreviousOrdersList"
+    class="requests-list"
+  >
+
+    <div class="empty-state">
+
+      <div class="empty-icon">
+        🕘
+      </div>
+
+      <h3>
+        لا توجد طلبات سابقة
+      </h3>
+
+      <p>
+        ستظهر هنا الأعمال التي أكملتها
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     دخل صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorIncomeScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorIncomeBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      💰
+    </div>
+
+
+    <h1>
+      الدخل
+    </h1>
+
+
+    <p>
+      متابعة دخلك من الأعمال
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="income-summary">
+
+      <span>
+        إجمالي الدخل
+      </span>
+
+      <strong>
+
+        <span id="operatorTotalIncome">
+          0
+        </span>
+
+        ريال
+
+      </strong>
+
+    </div>
+
+
+    <div class="income-summary">
+
+      <span>
+        عدد الأعمال المكتملة
+      </span>
+
+      <strong id="operatorCompletedOrdersCount">
+        0
+      </strong>
+
+    </div>
+
+
+  </div>
+
+
+
+  <div
+    id="operatorIncomeList"
+    class="requests-list"
+  ></div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     تقييمات صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorRatingsScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorRatingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⭐
+    </div>
+
+
+    <h1>
+      التقييمات
+    </h1>
+
+
+    <p>
+      تقييمات العملاء لك
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="rating-summary">
+
+      <strong id="operatorAverageRating">
+        0.0
+      </strong>
+
+      <div>
+        ⭐⭐⭐⭐⭐
+      </div>
+
+      <span>
+        متوسط التقييم
+      </span>
+
+    </div>
+
+
+  </div>
+
+
+
+  <div
+    id="operatorRatingsList"
+    class="requests-list"
+  ></div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     إعدادات صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorSettingsScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorSettingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⚙️
+    </div>
+
+
+    <h1>
+      الإعدادات
+    </h1>
+
+
+    <p>
+      إدارة بيانات حسابك
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      👤 الاسم
+    </label>
+
+
+    <input
+      id="operatorSettingsNameInput"
+      type="text"
+      placeholder="اسمك"
+    >
+
+
+    <label>
+      📧 البريد الإلكتروني
+    </label>
+
+
+    <input
+      id="operatorSettingsEmailInput"
+      type="email"
+      placeholder="البريد الإلكتروني"
+      disabled
+    >
+
+
+    <label>
+      📱 رقم الجوال
+    </label>
+
+
+    <input
+      id="operatorSettingsPhoneInput"
+      type="tel"
+      placeholder="05xxxxxxxx"
+    >
+
+
+    <label>
+      📍 المدينة
+    </label>
+
+
+    <input
+      id="operatorSettingsCityInput"
+      type="text"
+      placeholder="المدينة"
+    >
+
+
+    <button
+      id="saveOperatorSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ التغييرات
+    </button>
+
+
+    <button
+      id="operatorChangePasswordBtn"
+      class="back-btn"
+      type="button"
+    >
+      🔐 تغيير كلمة المرور
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     صفحة طلب المعدة للعميل
 ===================================================== -->
 
 
@@ -880,6 +1677,7 @@
   id="requestScreen"
   class="screen"
 >
+
 
   <button
     id="backFromRequestBtn"
@@ -896,15 +1694,18 @@
       🚜
     </div>
 
+
     <h1>
       اطلب معدتك
     </h1>
+
 
     <p>
       أدخل تفاصيل المعدة التي تحتاجها
     </p>
 
   </div>
+
 
 
   <div class="card">
@@ -918,7 +1719,7 @@
     <input
       id="locationInput"
       type="text"
-      placeholder="مثال: جدة - حي النخيل"
+      placeholder="أدخل موقع العمل"
     >
 
 
@@ -929,6 +1730,7 @@
     >
       📍 تحديد موقعي الحالي
     </button>
+
 
 
     <label>
@@ -969,6 +1771,7 @@
     </select>
 
 
+
     <label>
       ⏱️ مدة العمل
     </label>
@@ -977,26 +1780,27 @@
     <select id="durationSelect">
 
       <option value="">
-        اختر مدة العمل
+        اختر المدة
       </option>
 
-      <option>
+      <option value="1">
         ساعة واحدة
       </option>
 
-      <option>
+      <option value="4">
         4 ساعات
       </option>
 
-      <option>
+      <option value="8">
         8 ساعات
       </option>
 
-      <option>
+      <option value="10">
         يوم كامل
       </option>
 
     </select>
+
 
 
     <label>
@@ -1006,11 +1810,16 @@
 
     <select id="operatorSelect">
 
-      <option value="مع مشغل">
+      <option value="">
+        اختر
+      </option>
+
+      <option value="withOperator">
         مع مشغل
       </option>
 
     </select>
+
 
 
     <label>
@@ -1020,16 +1829,33 @@
 
     <textarea
       id="notesInput"
-      placeholder="اكتب أي تفاصيل إضافية عن الطلب"
+      rows="4"
+      placeholder="اكتب أي تفاصيل إضافية"
     ></textarea>
 
 
+
     <div
-      id="estimatedPrice"
-      class="price-box"
+      id="pricePreview"
+      class="price-preview"
     >
-      السعر التقديري: —
+
+      <span>
+        السعر المتوقع
+      </span>
+
+      <strong>
+
+        <span id="calculatedPrice">
+          0
+        </span>
+
+        ريال
+
+      </strong>
+
     </div>
+
 
 
     <button
@@ -1040,7 +1866,6 @@
       إرسال الطلب 🚜
     </button>
 
-
   </div>
 
 </section>
@@ -1048,7 +1873,7 @@
 
 
 <!-- =====================================================
-     البحث عن المعدة
+     شاشة البحث
 ===================================================== -->
 
 
@@ -1057,30 +1882,45 @@
   class="screen"
 >
 
-  <div class="hero">
 
-    <div class="hero-icon">
-      🔎
+  <div class="hero searching-hero">
+
+    <div class="searching-animation">
+      🚜
     </div>
+
 
     <h1>
       جاري البحث عن معدة
     </h1>
 
+
     <p>
-      نبحث لك عن صاحب معدة مناسب وقريب منك
+      نبحث لك عن صاحب معدة مناسب بالقرب منك
     </p>
 
   </div>
 
 
-  <div class="card searching-card">
 
-    <div class="loading-spinner"></div>
+  <div class="card">
 
-    <p id="searchingStatusText">
-      جاري البحث...
-    </p>
+
+    <div class="searching-status">
+
+      <div class="loading-dot"></div>
+
+      <span>
+        جاري البحث...
+      </span>
+
+    </div>
+
+
+    <div
+      id="searchingRequestSummary"
+      class="order-summary"
+    ></div>
 
 
     <button
@@ -1098,7 +1938,7 @@
 
 
 <!-- =====================================================
-     تم العثور على المعدة
+     تطابق صاحب المعدة
 ===================================================== -->
 
 
@@ -1107,15 +1947,18 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
-      🚜
+      ✅
     </div>
 
+
     <h1>
-      تم العثور على معدة
+      تم العثور على صاحب معدة
     </h1>
+
 
     <p>
       صاحب المعدة قبل طلبك
@@ -1124,12 +1967,14 @@
   </div>
 
 
+
   <div class="card">
 
 
-    <div class="operator-profile-card">
+    <div class="matched-operator">
 
-      <div class="operator-profile-avatar">
+
+      <div class="matched-avatar">
         👷
       </div>
 
@@ -1140,19 +1985,20 @@
           فهد القحطاني
         </h2>
 
-        <p id="matchedOperatorRating">
-          ⭐ 4.8
-        </p>
+        <div class="matched-rating">
+          ⭐ <span id="matchedOperatorRating">4.8</span>
+        </div>
 
       </div>
 
     </div>
 
 
+
     <div class="info-row">
 
       <span>
-        المعدة
+        🚜 المعدة
       </span>
 
       <strong id="matchedEquipment">
@@ -1162,10 +2008,11 @@
     </div>
 
 
+
     <div class="info-row">
 
       <span>
-        المسافة
+        📍 المسافة
       </span>
 
       <strong id="matchedDistance">
@@ -1175,10 +2022,11 @@
     </div>
 
 
+
     <div class="info-row">
 
       <span>
-        الوصول المتوقع
+        ⏱️ وقت الوصول
       </span>
 
       <strong id="matchedEta">
@@ -1188,7 +2036,9 @@
     </div>
 
 
+
     <div class="matched-actions">
+
 
       <button
         id="callOperatorBtn"
@@ -1200,93 +2050,20 @@
 
 
       <button
-        id="openChatBtn"
+        id="chatOperatorBtn"
         class="main-btn"
         type="button"
       >
         💬 محادثة
       </button>
 
-    </div>
-
-
-    <button
-      id="startTrackingBtn"
-      class="main-btn"
-      type="button"
-    >
-      متابعة وصول المعدة
-    </button>
-
-
-  </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     المحادثة
-===================================================== -->
-
-
-<section
-  id="chatScreen"
-  class="screen"
->
-
-  <button
-    id="backFromChatBtn"
-    class="back-btn"
-    type="button"
-  >
-    ← الرجوع
-  </button>
-
-
-  <div class="chat-container">
-
-    <div class="chat-header">
-
-      <div class="chat-avatar">
-        👷
-      </div>
-
-      <div>
-
-        <strong id="chatOperatorName">
-          فهد القحطاني
-        </strong>
-
-        <span>
-          متصل
-        </span>
-
-      </div>
-
-    </div>
-
-
-    <div
-      id="chatMessages"
-      class="chat-messages"
-    ></div>
-
-
-    <div class="chat-input-area">
-
-      <input
-        id="chatInput"
-        type="text"
-        placeholder="اكتب رسالتك..."
-      >
-
 
       <button
-        id="sendChatBtn"
+        id="trackOperatorBtn"
+        class="main-btn"
         type="button"
       >
-        إرسال
+        📍 تتبع المعدة
       </button>
 
     </div>
@@ -1298,7 +2075,7 @@
 
 
 <!-- =====================================================
-     تتبع المعدة
+     التتبع
 ===================================================== -->
 
 
@@ -1307,65 +2084,98 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
       📍
     </div>
 
+
     <h1>
       تتبع المعدة
     </h1>
 
+
     <p>
-      المعدة في طريقها إليك
+      المعدة في الطريق إليك
     </p>
 
   </div>
 
 
-  <div class="card">
 
+  <div class="tracking-map">
 
-    <div class="tracking-map">
+    <div class="map-placeholder">
 
-      <div class="map-customer-marker">
-        👤
+      <div class="customer-marker">
+        📍
       </div>
 
-      <div class="map-route-line"></div>
+      <div class="route-line"></div>
 
-      <div class="map-equipment-marker">
+      <div class="equipment-marker">
         🚜
       </div>
 
     </div>
 
+  </div>
 
-    <div class="tracking-info">
 
-      <h2>
-        المعدة في الطريق إليك
-      </h2>
 
-      <p>
-        المشغل فهد القحطاني
-      </p>
+  <div class="card tracking-card">
+
+
+    <div class="tracking-status">
 
       <strong>
-        الوصول المتوقع: 8 دقائق
+        المعدة في الطريق إليك
       </strong>
+
+      <span id="trackingEta">
+        الوصول خلال 8 دقائق
+      </span>
 
     </div>
 
 
-    <button
-      id="openChatFromTrackingBtn"
-      class="main-btn"
-      type="button"
-    >
-      💬 محادثة مع المشغل
-    </button>
+
+    <div class="tracking-operator">
+
+      <div class="matched-avatar">
+        👷
+      </div>
+
+
+      <div>
+
+        <strong id="trackingOperatorName">
+          فهد القحطاني
+        </strong>
+
+        <span>
+          مشغل المعدة
+        </span>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="tracking-distance">
+
+      <span>
+        المسافة
+      </span>
+
+      <strong id="trackingDistance">
+        2.4 كم
+      </strong>
+
+    </div>
 
 
   </div>
@@ -1375,7 +2185,7 @@
 
 
 <!-- =====================================================
-     وصل المشغل
+     وصول المعدة للعميل
 ===================================================== -->
 
 
@@ -1384,15 +2194,18 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
-      ✅
+      📍
     </div>
+
 
     <h1>
       وصلت المعدة
     </h1>
+
 
     <p>
       وصل المشغل إلى موقع العمل
@@ -1401,31 +2214,52 @@
   </div>
 
 
-  <div class="card">
+
+  <div class="card arrived-card">
 
 
-    <div class="arrival-card">
+    <div class="arrived-icon">
+      🚜
+    </div>
 
-      <div class="arrival-icon">
-        🚜
-      </div>
 
-      <h2>
-        المعدة وصلت
-      </h2>
+    <h2>
+      المعدة وصلت إلى موقعك
+    </h2>
 
-      <p>
-        المشغل فهد القحطاني وصل إلى موقع العمل.
-      </p>
+
+    <p>
+      المشغل
+      <strong id="arrivedOperatorName">
+        فهد القحطاني
+      </strong>
+      وصل إلى موقع العمل.
+    </p>
+
+
+    <div class="arrived-info">
+
+      <span>
+        نوع المعدة
+      </span>
+
+      <strong id="arrivedEquipment">
+        -
+      </strong>
 
     </div>
 
 
-    <div
-      id="customerArrivalStatus"
-      class="status-message"
-    >
-      بانتظار بدء العمل من المشغل
+    <div class="arrived-info">
+
+      <span>
+        حالة الطلب
+      </span>
+
+      <strong>
+        في الموقع
+      </strong>
+
     </div>
 
   </div>
@@ -1435,7 +2269,7 @@
 
 
 <!-- =====================================================
-     العمل جارٍ
+     بدء العمل
 ===================================================== -->
 
 
@@ -1444,27 +2278,36 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
-      🚜
+      🛠️
     </div>
+
 
     <h1>
       العمل جارٍ
     </h1>
 
+
     <p>
-      المعدة تعمل في موقعك الآن
+      يتم تنفيذ العمل الآن
     </p>
 
   </div>
 
 
-  <div class="card">
+
+  <div class="card working-card">
 
 
-    <div class="work-timer-card">
+    <div class="working-status">
+      🟢 العمل جارٍ
+    </div>
+
+
+    <div class="working-timer">
 
       <span>
         مدة العمل
@@ -1477,44 +2320,34 @@
     </div>
 
 
-    <div class="info-row">
+    <div class="working-info">
 
-      <span>
-        المشغل
-      </span>
+      <div>
 
-      <strong id="workingOperatorName">
-        فهد القحطاني
-      </strong>
+        <span>
+          المشغل
+        </span>
+
+        <strong id="workingOperatorName">
+          -
+        </strong>
+
+      </div>
+
+
+      <div>
+
+        <span>
+          المعدة
+        </span>
+
+        <strong id="workingEquipment">
+          -
+        </strong>
+
+      </div>
 
     </div>
-
-
-    <div class="info-row">
-
-      <span>
-        المعدة
-      </span>
-
-      <strong id="workingEquipment">
-        بوكلين
-      </strong>
-
-    </div>
-
-
-    <p class="status-message">
-      المشغل هو المسؤول عن إنهاء العمل
-    </p>
-
-
-    <button
-      id="openChatFromWorkingBtn"
-      class="main-btn"
-      type="button"
-    >
-      💬 المحادثة
-    </button>
 
   </div>
 
@@ -1523,7 +2356,7 @@
 
 
 <!-- =====================================================
-     انتهاء العمل - العميل
+     اكتمال العمل للعميل
 ===================================================== -->
 
 
@@ -1532,35 +2365,77 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
       ✅
     </div>
 
+
     <h1>
-      انتهى العمل
+      تم إنهاء العمل
     </h1>
 
+
     <p>
-      تم إنهاء العمل من قبل المشغل
+      شكرًا لاستخدامك مِعدة
     </p>
 
   </div>
 
 
+
   <div class="card">
 
 
-    <div class="completion-summary">
+    <div class="completed-summary">
+
+      <div class="completed-icon">
+        🚜
+      </div>
+
 
       <h2>
-        تم إكمال طلبك بنجاح
+        اكتمل طلبك بنجاح
       </h2>
 
+
       <p>
-        شكرًا لاستخدامك مِعدة
+        تم إنهاء العمل بواسطة صاحب المعدة.
       </p>
+
+    </div>
+
+
+    <div class="info-row">
+
+      <span>
+        المدة
+      </span>
+
+      <strong id="completedDuration">
+        -
+      </strong>
+
+    </div>
+
+
+    <div class="info-row">
+
+      <span>
+        الإجمالي
+      </span>
+
+      <strong>
+
+        <span id="completedPrice">
+          -
+        </span>
+
+        ريال
+
+      </strong>
 
     </div>
 
@@ -1570,64 +2445,7 @@
       class="main-btn"
       type="button"
     >
-      متابعة الدفع
-    </button>
-
-  </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     إنهاء العمل - صاحب المعدة
-===================================================== -->
-
-
-<section
-  id="operatorCompletedScreen"
-  class="screen"
->
-
-  <div class="hero">
-
-    <div class="hero-icon">
-      ✅
-    </div>
-
-    <h1>
-      تم إنهاء العمل
-    </h1>
-
-    <p>
-      تم إنهاء الطلب بنجاح
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-
-    <div class="completion-summary">
-
-      <h2>
-        أحسنت
-      </h2>
-
-      <p>
-        تم تسجيل انتهاء العمل
-      </p>
-
-    </div>
-
-
-    <button
-      id="operatorPaymentBtn"
-      class="main-btn"
-      type="button"
-    >
-      عرض تفاصيل الدخل
+      المتابعة للدفع
     </button>
 
   </div>
@@ -1646,21 +2464,25 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
       💳
     </div>
 
+
     <h1>
       الدفع
     </h1>
 
+
     <p>
-      تفاصيل المبلغ المستحق
+      أكمل عملية الدفع
     </p>
 
   </div>
+
 
 
   <div class="card">
@@ -1669,22 +2491,50 @@
     <div class="payment-total">
 
       <span>
-        الإجمالي
+        المبلغ المستحق
       </span>
 
-      <strong id="paymentTotal">
-        0 ريال
+      <strong>
+
+        <span id="paymentAmount">
+          0
+        </span>
+
+        ريال
+
       </strong>
 
     </div>
 
 
+    <label>
+      طريقة الدفع
+    </label>
+
+
+    <select id="paymentMethodSelect">
+
+      <option value="">
+        اختر طريقة الدفع
+      </option>
+
+      <option value="cash">
+        نقدًا
+      </option>
+
+      <option value="card">
+        بطاقة
+      </option>
+
+    </select>
+
+
     <button
-      id="payNowBtn"
+      id="confirmPaymentBtn"
       class="main-btn"
       type="button"
     >
-      الدفع الآن
+      تأكيد الدفع
     </button>
 
   </div>
@@ -1703,15 +2553,18 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
       ⭐
     </div>
 
+
     <h1>
       قيّم تجربتك
     </h1>
+
 
     <p>
       تقييمك يساعدنا على تحسين مِعدة
@@ -1720,45 +2573,32 @@
   </div>
 
 
+
   <div class="card">
+
 
     <div
       id="ratingStars"
       class="rating-stars"
     >
 
-      <button
-        type="button"
-        data-rating="1"
-      >
+      <button type="button" data-rating="1">
         ★
       </button>
 
-      <button
-        type="button"
-        data-rating="2"
-      >
+      <button type="button" data-rating="2">
         ★
       </button>
 
-      <button
-        type="button"
-        data-rating="3"
-      >
+      <button type="button" data-rating="3">
         ★
       </button>
 
-      <button
-        type="button"
-        data-rating="4"
-      >
+      <button type="button" data-rating="4">
         ★
       </button>
 
-      <button
-        type="button"
-        data-rating="5"
-      >
+      <button type="button" data-rating="5">
         ★
       </button>
 
@@ -1766,8 +2606,9 @@
 
 
     <textarea
-      id="ratingComment"
-      placeholder="اكتب ملاحظتك إن وجدت"
+      id="ratingCommentInput"
+      rows="4"
+      placeholder="اكتب تعليقك (اختياري)"
     ></textarea>
 
 
@@ -1786,7 +2627,7 @@
 
 
 <!-- =====================================================
-     شكراً
+     شكرًا
 ===================================================== -->
 
 
@@ -1795,27 +2636,50 @@
   class="screen"
 >
 
+
   <div class="hero">
 
     <div class="hero-icon">
-      🎉
+      ❤️
     </div>
+
 
     <h1>
       شكرًا لك
     </h1>
 
+
     <p>
-      شكرًا لاستخدامك مِعدة
+      سعداء بخدمتك في مِعدة
     </p>
 
   </div>
 
 
+
   <div class="card">
 
+    <div class="thank-you-content">
+
+      <div class="thank-you-icon">
+        🚜
+      </div>
+
+
+      <h2>
+        تم استلام تقييمك
+      </h2>
+
+
+      <p>
+        شكرًا لثقتك في مِعدة.
+      </p>
+
+    </div>
+
+
     <button
-      id="backToHomeBtn"
+      id="backToCustomerHomeBtn"
       class="main-btn"
       type="button"
     >
@@ -1825,38 +2689,403 @@
   </div>
 
 </section>
-      التطبيق
-    </h2>
+
+
+
+<!-- =====================================================
+     محادثة العميل مع صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="chatScreen"
+  class="screen"
+>
+
+
+  <div class="chat-header">
 
 
     <button
-      id="customerLanguageBtn"
-      class="home-menu-item"
+      id="backFromChatBtn"
+      class="back-btn"
       type="button"
     >
+      ←
+    </button>
 
-      <div class="home-menu-icon">
-        🌐
+
+    <div class="chat-user">
+
+
+      <div class="chat-avatar">
+        👷
       </div>
 
 
-      <div class="home-menu-text">
+      <div>
 
-        <strong>
-          اللغة
+        <strong id="chatUserName">
+          فهد القحطاني
         </strong>
 
-        <span>
-          العربية
+        <span id="chatUserStatus">
+          متصل
         </span>
 
       </div>
 
+    </div>
 
-      <span class="home-arrow">
-        ←
-      </span>
+  </div>
 
+
+
+  <div
+    id="chatMessages"
+    class="chat-messages"
+  ></div>
+
+
+
+  <div class="chat-input-area">
+
+
+    <input
+      id="chatInput"
+      type="text"
+      placeholder="اكتب رسالتك..."
+      autocomplete="off"
+    >
+
+
+    <button
+      id="sendChatBtn"
+      type="button"
+    >
+      إرسال
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     إعدادات العميل
+===================================================== -->
+
+
+<section
+  id="customerSettingsScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerSettingsBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⚙️
+    </div>
+
+
+    <h1>
+      الإعدادات
+    </h1>
+
+
+    <p>
+      إدارة حسابك وتفضيلات التطبيق
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      👤 الاسم
+    </label>
+
+
+    <input
+      id="customerSettingsNameInput"
+      type="text"
+      placeholder="اسمك"
+    >
+
+
+    <label>
+      📧 البريد الإلكتروني
+    </label>
+
+
+    <input
+      id="customerSettingsEmailInput"
+      type="email"
+      placeholder="البريد الإلكتروني"
+      disabled
+    >
+
+
+    <label>
+      📱 رقم الجوال
+    </label>
+
+
+    <input
+      id="customerSettingsPhoneInput"
+      type="tel"
+      placeholder="05xxxxxxxx"
+    >
+
+
+    <label>
+      📍 المدينة
+    </label>
+
+
+    <input
+      id="customerSettingsCityInput"
+      type="text"
+      placeholder="المدينة"
+    >
+
+
+    <button
+      id="saveCustomerSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ التغييرات
+    </button>
+
+
+    <button
+      id="customerChangePasswordBtn"
+      class="back-btn"
+      type="button"
+    >
+      🔐 تغيير كلمة المرور
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الطلبات الحالية للعميل
+===================================================== -->
+
+
+<section
+  id="customerCurrentOrdersScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerCurrentOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+
+    <h1>
+      الطلبات الحالية
+    </h1>
+
+
+    <p>
+      تابع طلباتك الحالية
+    </p>
+
+  </div>
+
+
+
+  <div
+    id="customerCurrentOrdersList"
+    class="requests-list"
+  ></div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الطلبات السابقة للعميل
+===================================================== -->
+
+
+<section
+  id="customerPreviousOrdersScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerPreviousOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🕘
+    </div>
+
+
+    <h1>
+      الطلبات السابقة
+    </h1>
+
+
+    <p>
+      عرض سجل طلباتك السابقة
+    </p>
+
+  </div>
+
+
+
+  <div
+    id="customerPreviousOrdersList"
+    class="requests-list"
+  ></div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الدعم الفني للعميل
+===================================================== -->
+
+
+<section
+  id="customerSupportScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerSupportBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🛟
+    </div>
+
+
+    <h1>
+      الدعم الفني
+    </h1>
+
+
+    <p>
+      نحن هنا لمساعدتك
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      نوع المشكلة
+    </label>
+
+
+    <select id="supportTicketType">
+
+      <option value="">
+        اختر نوع المشكلة
+      </option>
+
+      <option value="order">
+        مشكلة في الطلب
+      </option>
+
+      <option value="payment">
+        مشكلة في الدفع
+      </option>
+
+      <option value="account">
+        مشكلة في الحساب
+      </option>
+
+      <option value="equipment">
+        مشكلة في المعدة
+      </option>
+
+      <option value="other">
+        أخرى
+      </option>
+
+    </select>
+
+
+    <label>
+      تفاصيل المشكلة
+    </label>
+
+
+    <textarea
+      id="supportTicketMessage"
+      rows="6"
+      placeholder="اشرح لنا المشكلة..."
+    ></textarea>
+
+
+    <p
+      id="supportTicketStatus"
+      class="phone-error"
+    ></p>
+
+
+    <button
+      id="submitSupportTicketBtn"
+      class="main-btn"
+      type="button"
+    >
+      إرسال طلب الدعم
     </button>
 
 
@@ -1868,12 +3097,736 @@
 
 
     <h2>
-      الدعم
+      طلبات الدعم السابقة
     </h2>
 
 
+    <div
+      id="customerSupportTicketsList"
+      class="requests-list"
+    ></div>
+
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     الدعم الفني لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorSupportScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorSupportBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🛟
+    </div>
+
+
+    <h1>
+      الدعم الفني
+    </h1>
+
+
+    <p>
+      نحن هنا لمساعدتك
+    </p>
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      نوع المشكلة
+    </label>
+
+
+    <select id="operatorSupportTicketType">
+
+      <option value="">
+        اختر نوع المشكلة
+      </option>
+
+      <option value="order">
+        مشكلة في الطلب
+      </option>
+
+      <option value="payment">
+        مشكلة في الدفع
+      </option>
+
+      <option value="account">
+        مشكلة في الحساب
+      </option>
+
+      <option value="equipment">
+        مشكلة في المعدة
+      </option>
+
+      <option value="verification">
+        مشكلة في التوثيق
+      </option>
+
+      <option value="other">
+        أخرى
+      </option>
+
+    </select>
+
+
+    <label>
+      تفاصيل المشكلة
+    </label>
+
+
+    <textarea
+      id="operatorSupportTicketMessage"
+      rows="6"
+      placeholder="اشرح لنا المشكلة..."
+    ></textarea>
+
+
+    <p
+      id="operatorSupportTicketStatus"
+      class="phone-error"
+    ></p>
+
+
     <button
-      id="customerSettingsSupportBtn"
+      id="submitOperatorSupportTicketBtn"
+      class="main-btn"
+      type="button"
+    >
+      إرسال طلب الدعم
+    </button>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <h2>
+      طلبات الدعم السابقة
+    </h2>
+
+
+    <div
+      id="operatorSupportTicketsList"
+      class="requests-list"
+    ></div>
+
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     بوابة موظفي الدعم
+===================================================== -->
+
+
+<section
+  id="supportLoginScreen"
+  class="screen support-screen"
+>
+
+
+  <div class="support-wrap">
+
+
+    <div class="support-card support-login-card">
+
+
+      <div class="hero-icon">
+        🛡️
+      </div>
+
+
+      <h1 class="support-title">
+        دخول موظفي الدعم
+      </h1>
+
+
+      <p class="support-subtitle">
+        هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.
+      </p>
+
+
+      <label for="supportEmailInput">
+        📧 البريد الإلكتروني
+      </label>
+
+
+      <input
+        id="supportEmailInput"
+        class="support-input"
+        type="email"
+        autocomplete="username"
+        placeholder="بريد الموظف"
+      >
+
+
+      <label for="supportPasswordInput">
+        🔐 كلمة المرور
+      </label>
+
+
+      <input
+        id="supportPasswordInput"
+        class="support-input"
+        type="password"
+        autocomplete="current-password"
+        placeholder="كلمة المرور"
+      >
+
+
+      <p
+        id="supportLoginError"
+        class="support-error"
+      ></p>
+
+
+      <button
+        id="supportLoginBtn"
+        class="support-btn support-primary"
+        type="button"
+      >
+        دخول الموظف
+      </button>
+
+
+      <button
+        id="supportForgotBtn"
+        class="support-link"
+        type="button"
+      >
+        نسيت كلمة المرور؟
+      </button>
+
+
+      <button
+        id="supportBackBtn"
+        class="support-btn support-secondary"
+        type="button"
+      >
+        العودة إلى مِعدة
+      </button>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     استعادة كلمة مرور موظف الدعم
+===================================================== -->
+
+
+<section
+  id="supportForgotScreen"
+  class="screen support-screen"
+>
+
+
+  <div class="support-wrap">
+
+
+    <div class="support-card support-login-card">
+
+
+      <div class="hero-icon">
+        📧
+      </div>
+
+
+      <h1 class="support-title">
+        استعادة كلمة المرور
+      </h1>
+
+
+      <p class="support-subtitle">
+        أدخل بريد موظف الدعم لإرسال رابط إعادة تعيين كلمة المرور.
+      </p>
+
+
+      <input
+        id="supportResetEmailInput"
+        class="support-input"
+        type="email"
+        autocomplete="email"
+        placeholder="بريد الموظف"
+      >
+
+
+      <p
+        id="supportResetMessage"
+        class="support-error"
+      ></p>
+
+
+      <button
+        id="supportResetBtn"
+        class="support-btn support-primary"
+        type="button"
+      >
+        إرسال رابط الاستعادة
+      </button>
+
+
+      <button
+        id="supportForgotBackBtn"
+        class="support-btn support-secondary"
+        type="button"
+      >
+        العودة للدخول
+      </button>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     لوحة موظف الدعم
+===================================================== -->
+
+
+<section
+  id="supportDashboardScreen"
+  class="screen support-screen"
+>
+
+
+  <div class="support-wrap">
+
+
+    <div class="support-topbar">
+
+
+      <div>
+
+        <div class="support-brand">
+          مِعدة | مركز الدعم
+        </div>
+
+
+        <span
+          id="supportEmployeeEmail"
+          class="support-badge"
+        >
+          موظف دعم
+        </span>
+
+      </div>
+
+
+      <div class="support-header-actions">
+
+
+        <button
+          id="supportRefreshBtn"
+          class="support-btn support-secondary"
+          type="button"
+        >
+          تحديث
+        </button>
+
+
+        <button
+          id="supportLogoutBtn"
+          class="support-btn support-danger"
+          type="button"
+        >
+          تسجيل الخروج
+        </button>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <div class="support-grid">
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          🎫 طلبات الدعم
+        </div>
+
+        <div
+          id="supportStatTickets"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          👤 العملاء
+        </div>
+
+        <div
+          id="supportStatCustomers"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          🚜 أصحاب المعدات
+        </div>
+
+        <div
+          id="supportStatOperators"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          📦 الطلبات الحالية
+        </div>
+
+        <div
+          id="supportStatOrders"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+    </div>
+
+
+
+    <div
+      class="support-menu"
+      id="supportMenu"
+    >
+
+
+      <button
+        type="button"
+        data-support-section="tickets"
+        class="active"
+      >
+        🎫 الدعم
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="customers"
+      >
+        👤 العملاء
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="operators"
+      >
+        🚜 المعدات
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="orders"
+      >
+        📦 الطلبات
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="chats"
+      >
+        💬 المحادثات
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="reports"
+      >
+        ⚠️ البلاغات
+      </button>
+
+
+      <button
+        type="button"
+        data-support-section="settings"
+      >
+        ⚙️ الإعدادات
+      </button>
+
+
+    </div>
+
+
+
+    <div
+      id="supportSectionTickets"
+      class="support-section active"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          🎫 طلبات الدعم
+        </h2>
+
+        <div
+          id="supportTicketsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionCustomers"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          👤 بيانات العملاء
+        </h2>
+
+        <div
+          id="supportCustomersList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionOperators"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          🚜 بيانات أصحاب المعدات
+        </h2>
+
+        <div
+          id="supportOperatorsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionOrders"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          📦 الطلبات الحالية
+        </h2>
+
+        <div
+          id="supportOrdersList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionChats"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          💬 محادثات الدعم
+        </h2>
+
+        <div
+          id="supportChatsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionReports"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          ⚠️ البلاغات والمشاكل
+        </h2>
+
+        <div
+          id="supportReportsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      id="supportSectionSettings"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          ⚙️ إعدادات الموظف
+        </h2>
+
+
+        <div class="support-row">
+
+          <span>
+            البريد
+          </span>
+
+          <strong id="supportSettingsEmail">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="support-row">
+
+          <span>
+            الصلاحية
+          </span>
+
+          <strong id="supportSettingsRole">
+            موظف دعم
+          </strong>
+
+        </div>
+
+
+        <div class="support-row">
+
+          <span>
+            الحالة
+          </span>
+
+          <strong>
+            مفعل
+          </strong>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+</section>
+    <button
+      id="appSupportFromSettingsBtn"
       class="home-menu-item"
       type="button"
     >
@@ -1907,13 +3860,24 @@
 
 
 
-  <button
-    id="customerSettingsLogoutBtn"
-    class="home-logout-btn"
-    type="button"
-  >
-    🚪 تسجيل الخروج
-  </button>
+  <div class="card">
+
+
+    <h2>
+      الحساب
+    </h2>
+
+
+    <button
+      id="deleteAccountBtn"
+      class="danger-btn"
+      type="button"
+    >
+      حذف الحساب
+    </button>
+
+
+  </div>
 
 
 </section>
@@ -1921,18 +3885,2125 @@
 
 
 <!-- =====================================================
-     الدعم الفني - العميل
+     تعديل بيانات العميل
 ===================================================== -->
 
 
 <section
-  id="technicalSupportScreen"
+  id="editCustomerDataScreen"
   class="screen"
 >
 
 
   <button
-    id="backFromTechnicalSupportBtn"
+    id="backFromEditCustomerDataBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      👤
+    </div>
+
+
+    <h1>
+      بياناتي
+    </h1>
+
+
+    <p>
+      تعديل بيانات حسابك
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      👤 الاسم
+    </label>
+
+
+    <input
+      id="editCustomerNameInput"
+      type="text"
+      placeholder="اسمك"
+    >
+
+
+
+    <label>
+      📱 رقم الجوال
+    </label>
+
+
+    <input
+      id="editCustomerPhoneInput"
+      type="tel"
+      placeholder="05xxxxxxxx"
+    >
+
+
+
+    <label>
+      📍 المدينة
+    </label>
+
+
+    <input
+      id="editCustomerCityInput"
+      type="text"
+      placeholder="المدينة"
+    >
+
+
+
+    <button
+      id="saveCustomerDataBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ البيانات
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة تعديل البريد
+===================================================== -->
+
+
+<section
+  id="editEmailScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromEditEmailBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📧
+    </div>
+
+
+    <h1>
+      تعديل البريد الإلكتروني
+    </h1>
+
+
+    <p>
+      أدخل البريد الإلكتروني الجديد
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      البريد الإلكتروني الجديد
+    </label>
+
+
+    <input
+      id="newEmailInput"
+      type="email"
+      placeholder="example@email.com"
+    >
+
+
+    <p
+      id="emailChangeMessage"
+      class="phone-error"
+    ></p>
+
+
+    <button
+      id="saveNewEmailBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ البريد
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة تعديل الجوال
+===================================================== -->
+
+
+<section
+  id="editPhoneScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromEditPhoneBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📱
+    </div>
+
+
+    <h1>
+      تعديل رقم الجوال
+    </h1>
+
+
+    <p>
+      أدخل رقم الجوال الجديد
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      رقم الجوال الجديد
+    </label>
+
+
+    <input
+      id="newPhoneInput"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+    >
+
+
+    <p
+      id="phoneChangeMessage"
+      class="phone-error"
+    ></p>
+
+
+    <button
+      id="saveNewPhoneBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ رقم الجوال
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     تغيير كلمة المرور
+===================================================== -->
+
+
+<section
+  id="changePasswordScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromChangePasswordBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🔐
+    </div>
+
+
+    <h1>
+      تغيير كلمة المرور
+    </h1>
+
+
+    <p>
+      أنشئ كلمة مرور جديدة لحسابك
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      كلمة المرور الجديدة
+    </label>
+
+
+    <input
+      id="newPasswordInput"
+      type="password"
+      placeholder="كلمة المرور الجديدة"
+      autocomplete="new-password"
+    >
+
+
+    <label>
+      تأكيد كلمة المرور
+    </label>
+
+
+    <input
+      id="confirmNewPasswordInput"
+      type="password"
+      placeholder="تأكيد كلمة المرور"
+      autocomplete="new-password"
+    >
+
+
+    <p
+      id="passwordChangeMessage"
+      class="phone-error"
+    ></p>
+
+
+    <button
+      id="saveNewPasswordBtn"
+      class="main-btn"
+      type="button"
+    >
+      تغيير كلمة المرور
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     تأكيد حذف الحساب
+===================================================== -->
+
+
+<section
+  id="deleteAccountScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ⚠️
+    </div>
+
+
+    <h1>
+      حذف الحساب
+    </h1>
+
+
+    <p>
+      هل أنت متأكد من رغبتك في حذف حسابك؟
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <p>
+      سيتم حذف بيانات حسابك ولا يمكن التراجع عن هذه العملية.
+    </p>
+
+
+    <button
+      id="confirmDeleteAccountBtn"
+      class="danger-btn"
+      type="button"
+    >
+      نعم، حذف الحساب
+    </button>
+
+
+    <button
+      id="cancelDeleteAccountBtn"
+      class="back-btn"
+      type="button"
+    >
+      إلغاء
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     بيانات العميل
+===================================================== -->
+
+
+<section
+  id="customerProfileScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerProfileBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      👤
+    </div>
+
+
+    <h1>
+      الملف الشخصي
+    </h1>
+
+
+    <p>
+      بيانات حسابك في مِعدة
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="profile-row">
+
+      <span>
+        الاسم
+      </span>
+
+      <strong id="profileCustomerName">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+      <span>
+        البريد الإلكتروني
+      </span>
+
+      <strong id="profileCustomerEmail">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+      <span>
+        رقم الجوال
+      </span>
+
+      <strong id="profileCustomerPhone">
+        -
+      </strong>
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+      <span>
+        المدينة
+      </span>
+
+      <strong id="profileCustomerCity">
+        -
+      </strong>
+
+    </div>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     التحقق من وصول العميل
+===================================================== -->
+
+
+<section
+  id="customerArrivalScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📍
+    </div>
+
+
+    <h1>
+      تم الوصول
+    </h1>
+
+
+    <p>
+      صاحب المعدة وصل إلى موقع العمل
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="success-icon">
+      🚜
+    </div>
+
+
+    <h2>
+      المعدة في موقع العمل
+    </h2>
+
+
+    <p>
+      انتظر بدء العمل من صاحب المعدة.
+    </p>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     العمل للعميل
+===================================================== -->
+
+
+<section
+  id="customerWorkingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🛠️
+    </div>
+
+
+    <h1>
+      العمل جارٍ
+    </h1>
+
+
+    <p>
+      صاحب المعدة بدأ تنفيذ العمل
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="working-status">
+      🟢 العمل جارٍ
+    </div>
+
+
+    <div class="working-timer">
+
+
+      <span>
+        مدة العمل
+      </span>
+
+
+      <strong id="customerWorkTimer">
+        00:00:00
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        المشغل
+      </span>
+
+
+      <strong id="customerWorkingOperator">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        المعدة
+      </span>
+
+
+      <strong id="customerWorkingEquipment">
+        -
+      </strong>
+
+
+    </div>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة وصول صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorArrivedScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📍
+    </div>
+
+
+    <h1>
+      وصلت إلى موقع العميل
+    </h1>
+
+
+    <p>
+      يمكنك الآن بدء العمل
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="success-icon">
+      🚜
+    </div>
+
+
+    <h2>
+      تم تسجيل وصولك
+    </h2>
+
+
+    <p>
+      عند استعدادك اضغط على بدء العمل.
+    </p>
+
+
+    <button
+      id="operatorArrivedStartWorkBtn"
+      class="main-btn"
+      type="button"
+    >
+      ▶️ بدء العمل
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     العمل لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorWorkingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🛠️
+    </div>
+
+
+    <h1>
+      العمل جارٍ
+    </h1>
+
+
+    <p>
+      يتم تنفيذ العمل الآن
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="working-status">
+      🟢 العمل جارٍ
+    </div>
+
+
+    <div class="working-timer">
+
+
+      <span>
+        مدة العمل
+      </span>
+
+
+      <strong id="operatorWorkingTimer">
+        00:00:00
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        العميل
+      </span>
+
+
+      <strong id="operatorWorkingCustomer">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        المعدة
+      </span>
+
+
+      <strong id="operatorWorkingEquipment">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <button
+      id="operatorWorkingEndBtn"
+      class="main-btn"
+      type="button"
+    >
+      ✅ إنهاء العمل
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     اكتمال العمل لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorCompletedScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ✅
+    </div>
+
+
+    <h1>
+      تم إنهاء العمل
+    </h1>
+
+
+    <p>
+      تم تسجيل انتهاء العمل بنجاح
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="completed-summary">
+
+
+      <div class="completed-icon">
+        🚜
+      </div>
+
+
+      <h2>
+        العمل مكتمل
+      </h2>
+
+
+      <p>
+        يمكنك الآن مراجعة تفاصيل العملية.
+      </p>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        العميل
+      </span>
+
+
+      <strong id="operatorCompletedCustomer">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        مدة العمل
+      </span>
+
+
+      <strong id="operatorCompletedDuration">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        الإجمالي
+      </span>
+
+
+      <strong>
+
+
+        <span id="operatorCompletedPrice">
+          -
+        </span>
+
+
+        ريال
+
+
+      </strong>
+
+
+    </div>
+
+
+    <button
+      id="operatorCompletedHomeBtn"
+      class="main-btn"
+      type="button"
+    >
+      العودة للرئيسية
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     دفع صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorPaymentScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      💰
+    </div>
+
+
+    <h1>
+      تفاصيل الدخل
+    </h1>
+
+
+    <p>
+      تفاصيل المبلغ الخاص بهذا العمل
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="payment-total">
+
+
+      <span>
+        إجمالي العمل
+      </span>
+
+
+      <strong>
+
+
+        <span id="operatorPaymentAmount">
+          0
+        </span>
+
+
+        ريال
+
+
+      </strong>
+
+
+    </div>
+
+
+    <div class="info-row">
+
+
+      <span>
+        حالة الدفع
+      </span>
+
+
+      <strong id="operatorPaymentStatus">
+        -
+      </strong>
+
+
+    </div>
+
+
+    <button
+      id="operatorPaymentDoneBtn"
+      class="main-btn"
+      type="button"
+    >
+      متابعة
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     تقييم العميل لصاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorRatingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ⭐
+    </div>
+
+
+    <h1>
+      تقييم العميل
+    </h1>
+
+
+    <p>
+      يمكنك الاطلاع على تقييم العميل للعملية
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div
+      id="operatorRatingStars"
+      class="rating-stars"
+    >
+
+
+      <button type="button" data-rating="1">
+        ★
+      </button>
+
+
+      <button type="button" data-rating="2">
+        ★
+      </button>
+
+
+      <button type="button" data-rating="3">
+        ★
+      </button>
+
+
+      <button type="button" data-rating="4">
+        ★
+      </button>
+
+
+      <button type="button" data-rating="5">
+        ★
+      </button>
+
+
+    </div>
+
+
+    <p>
+      تقييم العميل لك يظهر هنا بعد إتمام التقييم.
+    </p>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة الخطأ العامة
+===================================================== -->
+
+
+<section
+  id="errorScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ⚠️
+    </div>
+
+
+    <h1>
+      حدث خطأ
+    </h1>
+
+
+    <p id="errorScreenMessage">
+      حدث خطأ غير متوقع.
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <button
+      id="errorBackBtn"
+      class="main-btn"
+      type="button"
+    >
+      العودة
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     نهاية صفحات التطبيق
+===================================================== -->
+
+
+<script>
+
+
+/* =====================================================
+   عناصر Firebase العامة
+===================================================== */
+
+
+window.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+
+    console.log(
+      "MA3DA INDEX LOADED"
+    );
+
+
+  }
+);
+
+
+</script>
+
+
+</body>
+</html>
+      id="chatBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 محادثة
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     تتبع المعدة
+===================================================== -->
+
+
+<section
+  id="trackingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📍
+    </div>
+
+
+    <h1>
+      تتبع المعدة
+    </h1>
+
+
+    <p>
+      المعدة في طريقها إليك
+    </p>
+
+
+  </div>
+
+
+
+  <div class="map-container">
+
+
+    <div class="fake-map">
+
+
+      <div class="map-road road-one"></div>
+
+
+      <div class="map-road road-two"></div>
+
+
+      <div class="map-road road-three"></div>
+
+
+      <div class="customer-map-marker">
+        📍
+      </div>
+
+
+      <div class="equipment-map-marker">
+        🚜
+      </div>
+
+
+      <div class="map-route"></div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="tracking-status">
+
+
+      <strong>
+        المعدة في الطريق إليك
+      </strong>
+
+
+      <span id="trackingStatusText">
+        الوصول خلال 8 دقائق
+      </span>
+
+
+    </div>
+
+
+
+    <div class="tracking-driver">
+
+
+      <div class="driver-avatar">
+        ف
+      </div>
+
+
+      <div>
+
+
+        <strong id="trackingDriverName">
+          فهد القحطاني
+        </strong>
+
+
+        <span>
+          مشغل المعدة
+        </span>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        المسافة
+      </span>
+
+
+      <strong id="trackingDistance">
+        2.4 كم
+      </strong>
+
+
+    </div>
+
+
+
+    <button
+      id="trackingChatBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 محادثة
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     وصول المعدة
+===================================================== -->
+
+
+<section
+  id="arrivedScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🚜
+    </div>
+
+
+    <h1>
+      وصلت المعدة
+    </h1>
+
+
+    <p>
+      وصلت المعدة إلى موقع العمل
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="success-icon">
+      ✓
+    </div>
+
+
+    <h2>
+      المشغل وصل إلى موقع العمل
+    </h2>
+
+
+    <p>
+      فهد القحطاني وصل إلى موقع العمل.
+    </p>
+
+
+    <div class="info-row">
+
+
+      <span>
+        حالة الطلب
+      </span>
+
+
+      <strong>
+        في الموقع
+      </strong>
+
+
+    </div>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     بدء العمل
+===================================================== -->
+
+
+<section
+  id="workingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🛠️
+    </div>
+
+
+    <h1>
+      العمل جارٍ
+    </h1>
+
+
+    <p>
+      يتم تنفيذ العمل الآن
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="working-status">
+      🟢 العمل جارٍ
+    </div>
+
+
+    <div class="working-timer">
+
+
+      <span>
+        مدة العمل
+      </span>
+
+
+      <strong id="workTimer">
+        00:00:00
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        المشغل
+      </span>
+
+
+      <strong id="workingOperatorName">
+        فهد القحطاني
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        المعدة
+      </span>
+
+
+      <strong id="workingEquipment">
+        -
+      </strong>
+
+
+    </div>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     اكتمال العمل
+===================================================== -->
+
+
+<section
+  id="completedScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ✅
+    </div>
+
+
+    <h1>
+      تم إنهاء العمل
+    </h1>
+
+
+    <p>
+      تم إكمال طلبك بنجاح
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="success-icon">
+      ✓
+    </div>
+
+
+    <h2>
+      شكرًا لاستخدامك مِعدة
+    </h2>
+
+
+    <div class="info-row">
+
+
+      <span>
+        مدة العمل
+      </span>
+
+
+      <strong id="completedDuration">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        المبلغ
+      </span>
+
+
+      <strong>
+
+
+        <span id="completedPrice">
+          -
+        </span>
+
+
+        ريال
+
+
+      </strong>
+
+
+    </div>
+
+
+    <button
+      id="paymentBtn"
+      class="main-btn"
+      type="button"
+    >
+      متابعة للدفع
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     الدفع
+===================================================== -->
+
+
+<section
+  id="paymentScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      💳
+    </div>
+
+
+    <h1>
+      الدفع
+    </h1>
+
+
+    <p>
+      اختر طريقة الدفع المناسبة
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="payment-total">
+
+
+      <span>
+        المبلغ المطلوب
+      </span>
+
+
+      <strong>
+
+
+        <span id="paymentAmount">
+          0
+        </span>
+
+
+        ريال
+
+
+      </strong>
+
+
+    </div>
+
+
+
+    <label>
+      طريقة الدفع
+    </label>
+
+
+    <select id="paymentMethod">
+
+
+      <option value="">
+        اختر طريقة الدفع
+      </option>
+
+
+      <option value="cash">
+        نقدًا
+      </option>
+
+
+      <option value="card">
+        بطاقة
+      </option>
+
+
+    </select>
+
+
+
+    <button
+      id="confirmPaymentBtn"
+      class="main-btn"
+      type="button"
+    >
+      تأكيد الدفع
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     التقييم
+===================================================== -->
+
+
+<section
+  id="ratingScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ⭐
+    </div>
+
+
+    <h1>
+      قيّم تجربتك
+    </h1>
+
+
+    <p>
+      رأيك يهمنا
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div
+      id="ratingStars"
+      class="rating-stars"
+    >
+
+
+      <button
+        type="button"
+        data-rating="1"
+      >
+        ★
+      </button>
+
+
+      <button
+        type="button"
+        data-rating="2"
+      >
+        ★
+      </button>
+
+
+      <button
+        type="button"
+        data-rating="3"
+      >
+        ★
+      </button>
+
+
+      <button
+        type="button"
+        data-rating="4"
+      >
+        ★
+      </button>
+
+
+      <button
+        type="button"
+        data-rating="5"
+      >
+        ★
+      </button>
+
+
+    </div>
+
+
+
+    <textarea
+      id="ratingComment"
+      rows="4"
+      placeholder="اكتب تعليقك..."
+    ></textarea>
+
+
+
+    <button
+      id="submitRatingBtn"
+      class="main-btn"
+      type="button"
+    >
+      إرسال التقييم
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شكرًا
+===================================================== -->
+
+
+<section
+  id="thankYouScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      ❤️
+    </div>
+
+
+    <h1>
+      شكرًا لك
+    </h1>
+
+
+    <p>
+      سعداء بخدمتك
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="success-icon">
+      ✓
+    </div>
+
+
+    <h2>
+      تم استلام تقييمك
+    </h2>
+
+
+    <p>
+      شكرًا لاستخدامك مِعدة.
+    </p>
+
+
+    <button
+      id="homeAfterThankYouBtn"
+      class="main-btn"
+      type="button"
+    >
+      العودة للرئيسية
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     محادثة
+===================================================== -->
+
+
+<section
+  id="chatScreen"
+  class="screen"
+>
+
+
+  <div class="chat-page">
+
+
+    <div class="chat-header">
+
+
+      <button
+        id="backFromChatBtn"
+        class="chat-back-btn"
+        type="button"
+      >
+        ←
+      </button>
+
+
+      <div class="chat-user">
+
+
+        <div class="chat-avatar">
+          ف
+        </div>
+
+
+        <div>
+
+
+          <strong id="chatUserName">
+            فهد القحطاني
+          </strong>
+
+
+          <span id="chatUserStatus">
+            متصل
+          </span>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+    <div
+      id="chatMessages"
+      class="chat-messages"
+    ></div>
+
+
+
+    <div class="chat-input-area">
+
+
+      <input
+        id="chatInput"
+        type="text"
+        placeholder="اكتب رسالتك..."
+        autocomplete="off"
+      >
+
+
+      <button
+        id="sendChatBtn"
+        type="button"
+      >
+        إرسال
+      </button>
+
+
+    </div>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة طلبات العميل
+===================================================== -->
+
+
+<section
+  id="customerOrdersScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromCustomerOrdersBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+
+    <h1>
+      طلباتي
+    </h1>
+
+
+    <p>
+      متابعة طلباتك
+    </p>
+
+
+  </div>
+
+
+
+  <div
+    id="customerOrdersList"
+    class="requests-list"
+  ></div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     صفحة الدعم
+===================================================== -->
+
+
+<section
+  id="supportScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromSupportBtn"
     class="back-btn"
     type="button"
   >
@@ -1954,7 +6025,7 @@
 
 
     <p>
-      نحن هنا لمساعدتك
+      فريق مِعدة جاهز لمساعدتك
     </p>
 
 
@@ -1966,88 +6037,74 @@
 
 
     <label>
-      نوع المشكلة
+      نوع الطلب
     </label>
 
 
-    <select id="supportProblemType">
+    <select id="supportType">
+
 
       <option value="">
-        اختر نوع المشكلة
+        اختر نوع الطلب
       </option>
 
-      <option value="طلب">
+
+      <option value="order">
         مشكلة في الطلب
       </option>
 
-      <option value="حساب">
-        مشكلة في الحساب
-      </option>
 
-      <option value="دفع">
+      <option value="payment">
         مشكلة في الدفع
       </option>
 
-      <option value="معدة">
-        مشكلة في المعدة
+
+      <option value="account">
+        مشكلة في الحساب
       </option>
 
-      <option value="تطبيق">
-        مشكلة في التطبيق
+
+      <option value="operator">
+        مشكلة مع صاحب المعدة
       </option>
 
-      <option value="أخرى">
+
+      <option value="other">
         أخرى
       </option>
+
 
     </select>
 
 
+
     <label>
-      وصف المشكلة
+      الرسالة
     </label>
 
 
     <textarea
-      id="supportProblemDescription"
-      placeholder="اكتب تفاصيل المشكلة..."
+      id="supportMessage"
+      rows="6"
+      placeholder="اكتب مشكلتك بالتفصيل..."
     ></textarea>
 
 
+
+    <p
+      id="supportMessageStatus"
+      class="phone-error"
+    ></p>
+
+
+
     <button
-      id="submitSupportTicketBtn"
+      id="sendSupportBtn"
       class="main-btn"
       type="button"
     >
-      إرسال للدعم
+      إرسال الطلب
     </button>
-
-
-    <div
-      id="supportTicketMessage"
-      class="status-message"
-    ></div>
-
-
-  </div>
-
-
-
-  <div class="card">
-
-
-    <h2>
-      طلبات الدعم السابقة
-    </h2>
-
-
-    <div id="customerSupportTicketsList">
-
-      <p class="support-empty">
-        جاري تحميل الطلبات...
-      </p>
-
-    </div>
 
 
   </div>
@@ -2058,18 +6115,18 @@
 
 
 <!-- =====================================================
-     نسيت كلمة المرور
+     صفحة المحادثات
 ===================================================== -->
 
 
 <section
-  id="forgotPasswordScreen"
+  id="conversationsScreen"
   class="screen"
 >
 
 
   <button
-    id="backFromForgotPasswordBtn"
+    id="backFromConversationsBtn"
     class="back-btn"
     type="button"
   >
@@ -2081,17 +6138,60 @@
 
 
     <div class="hero-icon">
-      🔐
+      💬
     </div>
 
 
     <h1>
-      نسيت كلمة المرور؟
+      المحادثات
     </h1>
 
 
     <p>
-      أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور
+      محادثاتك مع أصحاب المعدات
+    </p>
+
+
+  </div>
+
+
+
+  <div
+    id="conversationsList"
+    class="requests-list"
+  ></div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة توثيق صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorVerificationReviewScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🔍
+    </div>
+
+
+    <h1>
+      مراجعة التوثيق
+    </h1>
+
+
+    <p>
+      نراجع بياناتك قبل تفعيل حساب صاحب المعدة
     </p>
 
 
@@ -2102,32 +6202,131 @@
   <div class="card">
 
 
-    <label>
-      📧 البريد الإلكتروني
-    </label>
+    <div class="verification-status">
 
 
-    <input
-      id="resetEmailInput"
-      type="email"
-      inputmode="email"
-      autocomplete="email"
-      placeholder="example@email.com"
-    >
+      <span>
+        حالة الطلب
+      </span>
 
 
-    <p
-      id="resetEmailMessage"
-      class="phone-error"
-    ></p>
+      <strong id="verificationStatus">
+        قيد المراجعة
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        الاسم
+      </span>
+
+
+      <strong id="verificationName">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        نوع المعدة
+      </span>
+
+
+      <strong id="verificationEquipment">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="info-row">
+
+
+      <span>
+        المدينة
+      </span>
+
+
+      <strong id="verificationCity">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <p id="verificationMessage"></p>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة نجاح التوثيق
+===================================================== -->
+
+
+<section
+  id="verificationSuccessScreen"
+  class="screen"
+>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🎉
+    </div>
+
+
+    <h1>
+      تم توثيق حسابك
+    </h1>
+
+
+    <p>
+      يمكنك الآن استخدام حساب صاحب المعدة
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card center">
+
+
+    <div class="success-icon">
+      ✓
+    </div>
 
 
     <button
-      id="sendResetPasswordBtn"
+      id="verificationContinueBtn"
       class="main-btn"
       type="button"
     >
-      إرسال رابط إعادة التعيين
+      الدخول إلى حسابي
     </button>
 
 
@@ -2139,104 +6338,377 @@
 
 
 <!-- =====================================================
-     بوابة موظفي الدعم
-     لا تظهر في المسار العادي
-     تفتح فقط عبر ?staff=1
+     شاشة رفض التوثيق
 ===================================================== -->
 
 
 <section
-  id="supportLoginScreen"
+  id="verificationRejectedScreen"
   class="screen"
 >
 
 
-  <div class="support-screen">
+  <div class="hero">
 
 
-    <div class="support-wrap">
+    <div class="hero-icon">
+      ⚠️
+    </div>
 
 
-      <div class="support-topbar">
-
-        <div class="support-brand">
-          مِعدة
-        </div>
-
-        <span class="support-badge">
-          موظفو الدعم
-        </span>
-
-      </div>
+    <h1>
+      تعذر توثيق الحساب
+    </h1>
 
 
-
-      <div class="support-card support-login-card">
-
-
-        <h1 class="support-title">
-          دخول موظفي الدعم
-        </h1>
+    <p>
+      نحتاج بعض التعديلات على بياناتك
+    </p>
 
 
-        <p class="support-subtitle">
-          هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.
-        </p>
+  </div>
 
 
-        <label>
-          البريد الإلكتروني
-        </label>
+
+  <div class="card">
 
 
-        <input
-          id="supportEmailInput"
-          class="support-input"
-          type="email"
-          autocomplete="username"
-          placeholder="support@ma3da.com"
-        >
+    <div class="verification-status rejected">
 
 
-        <label>
-          كلمة المرور
-        </label>
+      <span>
+        سبب الرفض
+      </span>
 
 
-        <input
-          id="supportPasswordInput"
-          class="support-input"
-          type="password"
-          autocomplete="current-password"
-          placeholder="كلمة المرور"
-        >
+      <strong id="verificationRejectedReason">
+        -
+      </strong>
 
 
-        <div
-          id="supportLoginError"
-          class="support-error"
-        ></div>
+    </div>
 
 
-        <button
-          id="supportLoginBtn"
-          class="support-btn support-primary"
-          type="button"
-        >
-          تسجيل الدخول
-        </button>
+
+    <button
+      id="verificationEditBtn"
+      class="main-btn"
+      type="button"
+    >
+      تعديل البيانات
+    </button>
 
 
-        <button
-          id="supportForgotPasswordBtn"
-          class="support-link"
-          type="button"
-        >
-          نسيت كلمة المرور؟
-        </button>
+  </div>
 
 
-      </div>
+</section>
+
+
+
+<!-- =====================================================
+     صفحة إضافة المعدة
+===================================================== -->
+
+
+<section
+  id="addEquipmentScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromAddEquipmentBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      🚜
+    </div>
+
+
+    <h1>
+      إضافة المعدة
+    </h1>
+
+
+    <p>
+      أضف بيانات المعدة التي ستعمل بها
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <label>
+      نوع المعدة
+    </label>
+
+
+    <select id="equipmentType">
+
+
+      <option value="">
+        اختر نوع المعدة
+      </option>
+
+
+      <option value="بوكلين">
+        بوكلين
+      </option>
+
+
+      <option value="شيول">
+        شيول
+      </option>
+
+
+      <option value="قلاب">
+        قلاب
+      </option>
+
+
+      <option value="كرين">
+        كرين
+      </option>
+
+
+      <option value="حفار">
+        حفار
+      </option>
+
+
+      <option value="بلدوزر">
+        بلدوزر
+      </option>
+
+
+    </select>
+
+
+
+    <label>
+      موديل المعدة
+    </label>
+
+
+    <input
+      id="equipmentModel"
+      type="text"
+      placeholder="مثال: CAT 320"
+    >
+
+
+
+    <label>
+      سنة الصنع
+    </label>
+
+
+    <input
+      id="equipmentYear"
+      type="number"
+      placeholder="مثال: 2022"
+    >
+
+
+
+    <label>
+      المدينة
+    </label>
+
+
+    <input
+      id="equipmentCity"
+      type="text"
+      placeholder="مثال: جدة"
+    >
+
+
+
+    <label>
+      السعر بالساعة
+    </label>
+
+
+    <input
+      id="equipmentHourlyPrice"
+      type="number"
+      min="0"
+      placeholder="مثال: 250"
+    >
+
+
+
+    <label>
+      حالة المعدة
+    </label>
+
+
+    <select id="equipmentAvailability">
+
+
+      <option value="available">
+        متاحة
+      </option>
+
+
+      <option value="unavailable">
+        غير متاحة
+      </option>
+
+
+    </select>
+
+
+
+    <label>
+      صورة المعدة
+    </label>
+
+
+    <input
+      id="equipmentImage"
+      type="file"
+      accept="image/*"
+    >
+
+
+
+    <button
+      id="saveEquipmentBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ المعدة
+    </button>
+
+
+  </div>
+
+
+</section>
+
+
+
+<!-- =====================================================
+     شاشة معلومات صاحب المعدة
+===================================================== -->
+
+
+<section
+  id="operatorProfileScreen"
+  class="screen"
+>
+
+
+  <button
+    id="backFromOperatorProfileBtn"
+    class="back-btn"
+    type="button"
+  >
+    ← الرجوع
+  </button>
+
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      👤
+    </div>
+
+
+    <h1>
+      ملف صاحب المعدة
+    </h1>
+
+
+    <p>
+      بيانات الحساب
+    </p>
+
+
+  </div>
+
+
+
+  <div class="card">
+
+
+    <div class="profile-row">
+
+
+      <span>
+        الاسم
+      </span>
+
+
+      <strong id="operatorProfileName">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+
+      <span>
+        البريد الإلكتروني
+      </span>
+
+
+      <strong id="operatorProfileEmail">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+
+      <span>
+        رقم الجوال
+      </span>
+
+
+      <strong id="operatorProfilePhone">
+        -
+      </strong>
+
+
+    </div>
+
+
+
+    <div class="profile-row">
+
+
+      <span>
+        المدينة
+      </span>
+
+
+      <strong id="operatorProfileCity">
+        -
+      </strong>
 
 
     </div>
@@ -2250,492 +6722,1802 @@
 
 
 <!-- =====================================================
-     لوحة موظفي الدعم
+     شاشة إشعار
 ===================================================== -->
 
 
 <section
-  id="supportDashboardScreen"
+  id="notificationScreen"
   class="screen"
 >
 
 
-  <div class="support-screen">
+  <div class="hero">
 
 
-    <div class="support-wrap">
-
-
-      <div class="support-topbar">
-
-
-        <div>
-
-          <div class="support-brand">
-            مِعدة
-          </div>
-
-          <span class="support-badge">
-            لوحة موظفي الدعم
-          </span>
-
-        </div>
-
-
-        <div class="support-header-actions">
-
-          <button
-            id="supportRefreshBtn"
-            class="support-btn support-secondary"
-            type="button"
-          >
-            تحديث
-          </button>
-
-
-          <button
-            id="supportLogoutBtn"
-            class="support-btn support-danger"
-            type="button"
-          >
-            تسجيل الخروج
-          </button>
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- الإحصائيات -->
-
-
-      <div class="support-grid">
-
-
-        <div class="support-card">
-
-          <span class="support-label">
-            طلبات الدعم
-          </span>
-
-          <div
-            id="supportTicketsCount"
-            class="support-stat"
-          >
-            0
-          </div>
-
-        </div>
-
-
-        <div class="support-card">
-
-          <span class="support-label">
-            الطلبات الحالية
-          </span>
-
-          <div
-            id="supportCurrentOrdersCount"
-            class="support-stat"
-          >
-            0
-          </div>
-
-        </div>
-
-
-        <div class="support-card">
-
-          <span class="support-label">
-            العملاء
-          </span>
-
-          <div
-            id="supportCustomersCount"
-            class="support-stat"
-          >
-            0
-          </div>
-
-        </div>
-
-
-        <div class="support-card">
-
-          <span class="support-label">
-            أصحاب المعدات
-          </span>
-
-          <div
-            id="supportOperatorsCount"
-            class="support-stat"
-          >
-            0
-          </div>
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- القائمة -->
-
-
-      <div class="support-menu">
-
-
-        <button
-          class="active"
-          data-support-section="supportTicketsSection"
-          type="button"
-        >
-          طلبات الدعم
-        </button>
-
-
-        <button
-          data-support-section="supportCustomersSection"
-          type="button"
-        >
-          العملاء
-        </button>
-
-
-        <button
-          data-support-section="supportOperatorsSection"
-          type="button"
-        >
-          أصحاب المعدات
-        </button>
-
-
-        <button
-          data-support-section="supportOrdersSection"
-          type="button"
-        >
-          الطلبات الحالية
-        </button>
-
-
-        <button
-          data-support-section="supportChatsSection"
-          type="button"
-        >
-          المحادثات
-        </button>
-
-
-        <button
-          data-support-section="supportReportsSection"
-          type="button"
-        >
-          البلاغات والمشاكل
-        </button>
-
-
-        <button
-          data-support-section="supportStaffSettingsSection"
-          type="button"
-        >
-          إعدادات الموظف
-        </button>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           طلبات الدعم
-      ================================================= -->
-
-
-      <div
-        id="supportTicketsSection"
-        class="support-section active"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            طلبات الدعم
-          </h2>
-
-
-          <div id="supportTicketsList">
-
-            <div class="support-empty">
-              جاري تحميل طلبات الدعم...
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           العملاء
-      ================================================= -->
-
-
-      <div
-        id="supportCustomersSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            العملاء
-          </h2>
-
-
-          <div id="supportCustomersList">
-
-            <div class="support-empty">
-              جاري تحميل العملاء...
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           أصحاب المعدات
-      ================================================= -->
-
-
-      <div
-        id="supportOperatorsSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            أصحاب المعدات
-          </h2>
-
-
-          <div id="supportOperatorsList">
-
-            <div class="support-empty">
-              جاري تحميل أصحاب المعدات...
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           الطلبات الحالية
-      ================================================= -->
-
-
-      <div
-        id="supportOrdersSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            الطلبات الحالية
-          </h2>
-
-
-          <div id="supportOrdersList">
-
-            <div class="support-empty">
-              جاري تحميل الطلبات...
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           المحادثات
-      ================================================= -->
-
-
-      <div
-        id="supportChatsSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            محادثات الدعم
-          </h2>
-
-
-          <div id="supportChatsList">
-
-            <div class="support-empty">
-              لا توجد محادثات حالياً.
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           البلاغات والمشاكل
-      ================================================= -->
-
-
-      <div
-        id="supportReportsSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            البلاغات والمشاكل
-          </h2>
-
-
-          <div id="supportReportsList">
-
-            <div class="support-empty">
-              جاري تحميل البلاغات...
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-      <!-- =================================================
-           إعدادات الموظف
-      ================================================= -->
-
-
-      <div
-        id="supportStaffSettingsSection"
-        class="support-section"
-      >
-
-
-        <div class="support-card">
-
-
-          <h2>
-            إعدادات الموظف
-          </h2>
-
-
-          <div class="support-row">
-
-            <span>
-              البريد الإلكتروني
-            </span>
-
-            <strong id="supportStaffEmail">
-              -
-            </strong>
-
-          </div>
-
-
-          <div class="support-row">
-
-            <span>
-              الصلاحية
-            </span>
-
-            <strong id="supportStaffRole">
-              موظف دعم
-            </strong>
-
-          </div>
-
-
-          <button
-            id="supportChangePasswordBtn"
-            class="support-btn support-primary"
-            type="button"
-          >
-            تغيير كلمة المرور
-          </button>
-
-
-        </div>
-
-
-      </div>
-
-
+    <div class="hero-icon">
+      🔔
     </div>
+
+
+    <h1>
+      الإشعارات
+    </h1>
+
+
+    <p>
+      آخر التنبيهات والتحديثات
+    </p>
 
 
   </div>
 
 
+
+  <div
+    id="notificationsList"
+    class="requests-list"
+  ></div>
+
+
 </section>
 
 
+<!-- =====================================================
+     نهاية الجزء
+===================================================== -->
 
-</main>
+<!-- سيتم تحميل Firebase وملفات التطبيق في الأسفل -->
+    <!-- =====================================================
+         شاشة المشغل أثناء التوجه للعميل
+    ===================================================== -->
+
+    <section
+      id="operatorTrackingScreen"
+      class="screen"
+    >
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          🚜
+        </div>
+
+        <h1>
+          في الطريق إلى العميل
+        </h1>
+
+        <p>
+          توجه إلى موقع العمل
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="tracking-info">
+
+          <div class="info-row">
+
+            <span>
+              📍 موقع العميل
+            </span>
+
+            <strong id="operatorTrackingLocation">
+              موقع العميل
+            </strong>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <span>
+              📏 المسافة
+            </span>
+
+            <strong id="operatorTrackingDistance">
+              2.4 كم
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <button
+          id="operatorArrivedBtn"
+          class="main-btn"
+          type="button"
+        >
+          📍 وصلت إلى موقع العميل
+        </button>
+
+      </div>
+
+    </section>
 
 
 
-<script type="module" src="./firebase.js"></script>
+    <!-- =====================================================
+         شاشة الطلبات السابقة
+    ===================================================== -->
 
-<script src="./script.js"></script>
+    <section
+      id="previousOrdersScreen"
+      class="screen"
+    >
+
+      <button
+        id="backFromPreviousOrdersBtn"
+        class="back-btn"
+        type="button"
+      >
+        ← الرجوع
+      </button>
+
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          📚
+        </div>
+
+        <h1>
+          الطلبات السابقة
+        </h1>
+
+        <p>
+          سجل طلباتك السابقة
+        </p>
+
+      </div>
+
+
+      <div
+        id="previousOrdersList"
+        class="requests-list"
+      ></div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         الطلب الحالي
+    ===================================================== -->
+
+    <section
+      id="currentOrderScreen"
+      class="screen"
+    >
+
+      <button
+        id="backFromCurrentOrderBtn"
+        class="back-btn"
+        type="button"
+      >
+        ← الرجوع
+      </button>
+
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          📦
+        </div>
+
+        <h1>
+          الطلب الحالي
+        </h1>
+
+        <p>
+          تفاصيل الطلب الجاري
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="info-row">
+
+          <span>
+            نوع المعدة
+          </span>
+
+          <strong id="currentOrderEquipment">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            الموقع
+          </span>
+
+          <strong id="currentOrderLocation">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            المدة
+          </span>
+
+          <strong id="currentOrderDuration">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            الحالة
+          </span>
+
+          <strong id="currentOrderStatus">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            السعر
+          </span>
+
+          <strong id="currentOrderPrice">
+            -
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         إعدادات صاحب المعدة
+    ===================================================== -->
+
+    <section
+      id="operatorSettingsScreen"
+      class="screen"
+    >
+
+      <button
+        id="backFromOperatorSettingsBtn"
+        class="back-btn"
+        type="button"
+      >
+        ← الرجوع
+      </button>
+
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          ⚙️
+        </div>
+
+        <h1>
+          الإعدادات
+        </h1>
+
+        <p>
+          إدارة حساب صاحب المعدة
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <button
+          id="operatorEditProfileBtn"
+          class="home-menu-item"
+          type="button"
+        >
+
+          <div class="home-menu-icon">
+            👤
+          </div>
+
+          <div class="home-menu-text">
+
+            <strong>
+              بيانات الحساب
+            </strong>
+
+            <span>
+              تعديل بياناتك الشخصية
+            </span>
+
+          </div>
+
+          <span class="home-arrow">
+            ←
+          </span>
+
+        </button>
+
+
+        <button
+          id="operatorEditEquipmentBtn"
+          class="home-menu-item"
+          type="button"
+        >
+
+          <div class="home-menu-icon">
+            🚜
+          </div>
+
+          <div class="home-menu-text">
+
+            <strong>
+              بيانات المعدة
+            </strong>
+
+            <span>
+              تعديل بيانات المعدة
+            </span>
+
+          </div>
+
+          <span class="home-arrow">
+            ←
+          </span>
+
+        </button>
+
+
+        <button
+          id="operatorSupportBtn"
+          class="home-menu-item"
+          type="button"
+        >
+
+          <div class="home-menu-icon">
+            🛟
+          </div>
+
+          <div class="home-menu-text">
+
+            <strong>
+              الدعم الفني
+            </strong>
+
+            <span>
+              تواصل مع فريق الدعم
+            </span>
+
+          </div>
+
+          <span class="home-arrow">
+            ←
+          </span>
+
+        </button>
+
+      </div>
+
+
+      <div class="card">
+
+        <button
+          id="operatorLogoutBtn"
+          class="danger-btn"
+          type="button"
+        >
+          🚪 تسجيل الخروج
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         تعديل بيانات المعدة
+    ===================================================== -->
+
+    <section
+      id="editEquipmentScreen"
+      class="screen"
+    >
+
+      <button
+        id="backFromEditEquipmentBtn"
+        class="back-btn"
+        type="button"
+      >
+        ← الرجوع
+      </button>
+
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          🚜
+        </div>
+
+        <h1>
+          تعديل المعدة
+        </h1>
+
+        <p>
+          تعديل بيانات المعدة
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <label>
+          نوع المعدة
+        </label>
+
+        <select id="editEquipmentType">
+
+          <option value="">
+            اختر نوع المعدة
+          </option>
+
+          <option value="بوكلين">
+            بوكلين
+          </option>
+
+          <option value="شيول">
+            شيول
+          </option>
+
+          <option value="قلاب">
+            قلاب
+          </option>
+
+          <option value="كرين">
+            كرين
+          </option>
+
+          <option value="حفار">
+            حفار
+          </option>
+
+          <option value="بلدوزر">
+            بلدوزر
+          </option>
+
+        </select>
+
+
+        <label>
+          الموديل
+        </label>
+
+        <input
+          id="editEquipmentModel"
+          type="text"
+          placeholder="موديل المعدة"
+        >
+
+
+        <label>
+          سنة الصنع
+        </label>
+
+        <input
+          id="editEquipmentYear"
+          type="number"
+          placeholder="سنة الصنع"
+        >
+
+
+        <label>
+          المدينة
+        </label>
+
+        <input
+          id="editEquipmentCity"
+          type="text"
+          placeholder="المدينة"
+        >
+
+
+        <label>
+          السعر بالساعة
+        </label>
+
+        <input
+          id="editEquipmentHourlyPrice"
+          type="number"
+          min="0"
+          placeholder="السعر بالساعة"
+        >
+
+
+        <label>
+          حالة المعدة
+        </label>
+
+        <select id="editEquipmentAvailability">
+
+          <option value="available">
+            متاحة
+          </option>
+
+          <option value="unavailable">
+            غير متاحة
+          </option>
+
+        </select>
+
+
+        <label>
+          تغيير الصورة
+        </label>
+
+        <input
+          id="editEquipmentImage"
+          type="file"
+          accept="image/*"
+        >
+
+
+        <button
+          id="updateEquipmentBtn"
+          class="main-btn"
+          type="button"
+        >
+          حفظ التعديلات
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         شاشة البحث عن معدة
+    ===================================================== -->
+
+    <section
+      id="searchingScreen"
+      class="screen"
+    >
+
+      <div class="hero">
+
+        <div class="search-loader">
+          🔎
+        </div>
+
+        <h1>
+          جاري البحث عن معدة
+        </h1>
+
+        <p>
+          نبحث لك عن صاحب معدة مناسب قريب منك
+        </p>
+
+      </div>
+
+
+      <div class="card center">
+
+        <div
+          id="searchingAnimation"
+          class="searching-animation"
+        >
+
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </div>
+
+
+        <p id="searchingText">
+          جاري البحث...
+        </p>
+
+
+        <button
+          id="cancelSearchBtn"
+          class="back-btn"
+          type="button"
+        >
+          إلغاء البحث
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         شاشة المطابقة
+    ===================================================== -->
+
+    <section
+      id="matchedScreen"
+      class="screen"
+    >
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          🎉
+        </div>
+
+        <h1>
+          تم العثور على صاحب معدة
+        </h1>
+
+        <p>
+          تم قبول طلبك
+        </p>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="matched-driver">
+
+          <div class="driver-avatar">
+            ف
+          </div>
+
+          <div>
+
+            <strong id="matchedOperatorName">
+              فهد القحطاني
+            </strong>
+
+            <span>
+              ⭐ 4.8
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            المعدة
+          </span>
+
+          <strong id="matchedEquipment">
+            CAT 320
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            المسافة
+          </span>
+
+          <strong id="matchedDistance">
+            2.4 كم
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            الوصول المتوقع
+          </span>
+
+          <strong id="matchedEta">
+            8 دقائق
+          </strong>
+
+        </div>
+
+
+        <button
+          id="matchedCallBtn"
+          class="main-btn"
+          type="button"
+        >
+          📞 اتصال
+        </button>
+
+
+        <button
+          id="matchedChatBtn"
+          class="main-btn"
+          type="button"
+        >
+          💬 محادثة
+        </button>
+
+
+        <button
+          id="matchedTrackingBtn"
+          class="main-btn"
+          type="button"
+        >
+          📍 تتبع المعدة
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         صفحة تفاصيل الطلب
+    ===================================================== -->
+
+    <section
+      id="requestDetailsScreen"
+      class="screen"
+    >
+
+      <button
+        id="backFromRequestDetailsBtn"
+        class="back-btn"
+        type="button"
+      >
+        ← الرجوع
+      </button>
+
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          📋
+        </div>
+
+        <h1>
+          تفاصيل الطلب
+        </h1>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="info-row">
+
+          <span>
+            المعدة
+          </span>
+
+          <strong id="requestDetailsEquipment">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            الموقع
+          </span>
+
+          <strong id="requestDetailsLocation">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            المدة
+          </span>
+
+          <strong id="requestDetailsDuration">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            المشغل
+          </span>
+
+          <strong id="requestDetailsOperator">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            السعر
+          </span>
+
+          <strong id="requestDetailsPrice">
+            -
+          </strong>
+
+        </div>
+
+
+        <div class="info-row">
+
+          <span>
+            الحالة
+          </span>
+
+          <strong id="requestDetailsStatus">
+            -
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         شاشة لا توجد طلبات
+    ===================================================== -->
+
+    <section
+      id="emptyOrdersScreen"
+      class="screen"
+    >
+
+      <div class="hero">
+
+        <div class="hero-icon">
+          📭
+        </div>
+
+        <h1>
+          لا توجد طلبات
+        </h1>
+
+        <p>
+          لا توجد طلبات حالية في الوقت الحالي
+        </p>
+
+      </div>
+
+
+      <div class="card center">
+
+        <button
+          id="emptyOrdersNewRequestBtn"
+          class="main-btn"
+          type="button"
+        >
+          طلب معدة
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         إشعار عام
+    ===================================================== -->
+
+    <div
+      id="toast"
+      class="toast"
+      aria-live="polite"
+    ></div>
+
+
+
+    <!-- =====================================================
+         نافذة تأكيد عامة
+    ===================================================== -->
+
+    <div
+      id="confirmModal"
+      class="modal"
+      style="display:none;"
+    >
+
+      <div class="modal-overlay"></div>
+
+      <div class="modal-card">
+
+        <h3 id="confirmModalTitle">
+          تأكيد
+        </h3>
+
+        <p id="confirmModalMessage">
+          هل أنت متأكد؟
+        </p>
+
+        <div class="modal-actions">
+
+          <button
+            id="confirmModalCancel"
+            class="back-btn"
+            type="button"
+          >
+            إلغاء
+          </button>
+
+          <button
+            id="confirmModalOk"
+            class="main-btn"
+            type="button"
+          >
+            تأكيد
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         نافذة الصورة
+    ===================================================== -->
+
+    <div
+      id="imagePreviewModal"
+      class="modal"
+      style="display:none;"
+    >
+
+      <div class="modal-overlay"></div>
+
+      <div class="image-modal-card">
+
+        <button
+          id="closeImagePreviewBtn"
+          class="close-modal-btn"
+          type="button"
+        >
+          ×
+        </button>
+
+        <img
+          id="imagePreview"
+          alt="معاينة الصورة"
+        >
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         شاشة تحميل
+    ===================================================== -->
+
+    <div
+      id="loadingOverlay"
+      class="loading-overlay"
+      style="display:none;"
+    >
+
+      <div class="loading-box">
+
+        <div class="loading-spinner"></div>
+
+        <p id="loadingText">
+          جاري التحميل...
+        </p>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         Firebase
+    ===================================================== -->
+
+    <script type="module">
+
+      import {
+        initializeApp
+      } from
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+
+      import {
+        getAuth,
+        setPersistence,
+        browserLocalPersistence,
+        onAuthStateChanged,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        sendPasswordResetEmail,
+        updateProfile,
+        signOut
+      } from
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+      import {
+        getFirestore,
+        doc,
+        setDoc,
+        getDoc,
+        addDoc,
+        updateDoc,
+        deleteDoc,
+        collection,
+        getDocs,
+        query,
+        where,
+        orderBy,
+        limit,
+        onSnapshot,
+        serverTimestamp
+      } from
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+      const firebaseConfig = {
+
+        apiKey:
+          "YOUR_API_KEY",
+
+        authDomain:
+          "ma3da-58832.firebaseapp.com",
+
+        projectId:
+          "ma3da-58832",
+
+        storageBucket:
+          "ma3da-58832.firebasestorage.app",
+
+        messagingSenderId:
+          "YOUR_MESSAGING_SENDER_ID",
+
+        appId:
+          "YOUR_APP_ID"
+
+      };
+
+
+      const app =
+        initializeApp(
+          firebaseConfig
+        );
+
+
+      const auth =
+        getAuth(app);
+
+
+      const db =
+        getFirestore(app);
+
+
+      await setPersistence(
+        auth,
+        browserLocalPersistence
+      );
+
+
+      window.ma3daAuth =
+        auth;
+
+
+      window.ma3daDB =
+        db;
+
+
+      window.ma3daDoc =
+        doc;
+
+
+      window.ma3daSetDoc =
+        setDoc;
+
+
+      window.ma3daGetDoc =
+        getDoc;
+
+
+      window.ma3daAddDoc =
+        addDoc;
+
+
+      window.ma3daUpdateDoc =
+        updateDoc;
+
+
+      window.ma3daDeleteDoc =
+        deleteDoc;
+
+
+      window.ma3daCollection =
+        collection;
+
+
+      window.ma3daGetDocs =
+        getDocs;
+
+
+      window.ma3daQuery =
+        query;
+
+
+      window.ma3daWhere =
+        where;
+
+
+      window.ma3daOrderBy =
+        orderBy;
+
+
+      window.ma3daLimit =
+        limit;
+
+
+      window.ma3daOnSnapshot =
+        onSnapshot;
+
+
+      window.ma3daServerTimestamp =
+        serverTimestamp;
+
+
+      window.ma3daSignIn =
+        signInWithEmailAndPassword;
+
+
+      window.ma3daCreateUser =
+        createUserWithEmailAndPassword;
+
+
+      window.ma3daSendPasswordResetEmail =
+        sendPasswordResetEmail;
+
+
+      window.ma3daUpdateProfile =
+        updateProfile;
+
+
+      window.ma3daSignOut =
+        signOut;
+
+
+      window.ma3daGetCurrentUser =
+        ()=>{
+          return auth.currentUser;
+        };
+
+
+      window.ma3daFirebaseReady =
+        true;
+
+
+      window.dispatchEvent(
+        new Event(
+          "ma3daFirebaseReady"
+        )
+      );
+
+
+      onAuthStateChanged(
+        auth,
+        user=>{
+
+          window.ma3daCurrentUser =
+            user || null;
+
+
+          window.dispatchEvent(
+            new CustomEvent(
+              "ma3daAuthChanged",
+              {
+                detail:{
+                  user
+                }
+              }
+            )
+          );
+
+        }
+      );
+
+    </script>
+
+
+
+    <!-- =====================================================
+         ملف التطبيق الرئيسي
+    ===================================================== -->
+
+    <script
+      src="./script.js"
+      defer
+    ></script>
+
+
+
+    <!-- =====================================================
+         بوابة موظفي الدعم
+    ===================================================== -->
+
+    <section
+      id="supportLoginScreen"
+      class="screen support-screen"
+    >
+
+      <div class="support-wrap">
+
+        <div class="support-card support-login-card">
+
+          <div class="hero-icon">
+            🛡️
+          </div>
+
+          <h1 class="support-title">
+            دخول موظفي الدعم
+          </h1>
+
+          <p class="support-subtitle">
+            هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.
+          </p>
+
+
+          <label for="supportEmailInput">
+            📧 البريد الإلكتروني
+          </label>
+
+          <input
+            id="supportEmailInput"
+            class="support-input"
+            type="email"
+            autocomplete="username"
+            placeholder="بريد الموظف"
+          >
+
+
+          <label for="supportPasswordInput">
+            🔐 كلمة المرور
+          </label>
+
+          <input
+            id="supportPasswordInput"
+            class="support-input"
+            type="password"
+            autocomplete="current-password"
+            placeholder="كلمة المرور"
+          >
+
+
+          <p
+            id="supportLoginError"
+            class="support-error"
+          ></p>
+
+
+          <button
+            id="supportLoginBtn"
+            class="support-btn support-primary"
+            type="button"
+          >
+            دخول الموظف
+          </button>
+
+
+          <button
+            id="supportForgotBtn"
+            class="support-link"
+            type="button"
+          >
+            نسيت كلمة المرور؟
+          </button>
+
+
+          <button
+            id="supportBackBtn"
+            class="support-btn support-secondary"
+            type="button"
+          >
+            العودة إلى مِعدة
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         استعادة كلمة مرور الدعم
+    ===================================================== -->
+
+    <section
+      id="supportForgotScreen"
+      class="screen support-screen"
+    >
+
+      <div class="support-wrap">
+
+        <div class="support-card support-login-card">
+
+          <div class="hero-icon">
+            📧
+          </div>
+
+          <h1 class="support-title">
+            استعادة كلمة المرور
+          </h1>
+
+          <p class="support-subtitle">
+            أدخل بريد موظف الدعم لإرسال رابط إعادة تعيين كلمة المرور.
+          </p>
+
+
+          <input
+            id="supportResetEmailInput"
+            class="support-input"
+            type="email"
+            autocomplete="email"
+            placeholder="بريد الموظف"
+          >
+
+
+          <p
+            id="supportResetMessage"
+            class="support-error"
+          ></p>
+
+
+          <button
+            id="supportResetBtn"
+            class="support-btn support-primary"
+            type="button"
+          >
+            إرسال رابط الاستعادة
+          </button>
+
+
+          <button
+            id="supportForgotBackBtn"
+            class="support-btn support-secondary"
+            type="button"
+          >
+            العودة للدخول
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         لوحة موظفي الدعم
+    ===================================================== -->
+
+    <section
+      id="supportDashboardScreen"
+      class="screen support-screen"
+    >
+
+      <div class="support-wrap">
+
+        <div class="support-topbar">
+
+          <div>
+
+            <div class="support-brand">
+              مِعدة | مركز الدعم
+            </div>
+
+            <span
+              id="supportEmployeeEmail"
+              class="support-badge"
+            >
+              موظف دعم
+            </span>
+
+          </div>
+
+
+          <div class="support-header-actions">
+
+            <button
+              id="supportRefreshBtn"
+              class="support-btn support-secondary"
+              type="button"
+            >
+              تحديث
+            </button>
+
+
+            <button
+              id="supportLogoutBtn"
+              class="support-btn support-danger"
+              type="button"
+            >
+              تسجيل الخروج
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="support-grid">
+
+          <div class="support-card">
+
+            <div class="support-label">
+              🎫 طلبات الدعم
+            </div>
+
+            <div
+              id="supportStatTickets"
+              class="support-stat"
+            >
+              0
+            </div>
+
+          </div>
+
+
+          <div class="support-card">
+
+            <div class="support-label">
+              👤 العملاء
+            </div>
+
+            <div
+              id="supportStatCustomers"
+              class="support-stat"
+            >
+              0
+            </div>
+
+          </div>
+
+
+          <div class="support-card">
+
+            <div class="support-label">
+              🚜 أصحاب المعدات
+            </div>
+
+            <div
+              id="supportStatOperators"
+              class="support-stat"
+            >
+              0
+            </div>
+
+          </div>
+
+
+          <div class="support-card">
+
+            <div class="support-label">
+              📦 الطلبات الحالية
+            </div>
+
+            <div
+              id="supportStatOrders"
+              class="support-stat"
+            >
+              0
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="support-menu"
+          id="supportMenu"
+        >
+
+          <button
+            type="button"
+            data-support-section="tickets"
+            class="active"
+          >
+            🎫 الدعم
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="customers"
+          >
+            👤 العملاء
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="operators"
+          >
+            🚜 المعدات
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="orders"
+          >
+            📦 الطلبات
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="chats"
+          >
+            💬 المحادثات
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="reports"
+          >
+            ⚠️ البلاغات
+          </button>
+
+
+          <button
+            type="button"
+            data-support-section="settings"
+          >
+            ⚙️ الإعدادات
+          </button>
+
+        </div>
+
+
+        <div
+          id="supportSectionTickets"
+          class="support-section active"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              🎫 طلبات الدعم
+            </h2>
+
+            <div
+              id="supportTicketsList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionCustomers"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              👤 بيانات العملاء
+            </h2>
+
+            <div
+              id="supportCustomersList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionOperators"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              🚜 بيانات أصحاب المعدات
+            </h2>
+
+            <div
+              id="supportOperatorsList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionOrders"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              📦 الطلبات الحالية
+            </h2>
+
+            <div
+              id="supportOrdersList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionChats"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              💬 محادثات الدعم
+            </h2>
+
+            <div
+              id="supportChatsList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionReports"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              ⚠️ البلاغات والمشاكل
+            </h2>
+
+            <div
+              id="supportReportsList"
+              class="support-empty"
+            >
+              جاري التحميل...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="supportSectionSettings"
+          class="support-section"
+        >
+
+          <div class="support-card">
+
+            <h2>
+              ⚙️ إعدادات الموظف
+            </h2>
+
+
+            <div class="support-row">
+
+              <span>
+                البريد
+              </span>
+
+              <strong id="supportSettingsEmail">
+                -
+              </strong>
+
+            </div>
+
+
+            <div class="support-row">
+
+              <span>
+                الصلاحية
+              </span>
+
+              <strong id="supportSettingsRole">
+                موظف دعم
+              </strong>
+
+            </div>
+
+
+            <div class="support-row">
+
+              <span>
+                الحالة
+              </span>
+
+              <strong>
+                مفعل
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+  </main>
 
 
 </body>
