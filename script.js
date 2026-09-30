@@ -7881,44 +7881,112 @@ if(operatorHomeLogoutBtn){
 }
 /* =========================================================
    SUPPORT STAFF PORTAL
-   لا تظهر البوابة إلا عبر ?staff=1، ولا يسمح بالدخول إلا
-   لحساب موجود في supportStaff/{uid} أو لديه custom claim مناسب.
-========================================================= */
+   بوابة موظفي الدعم
+   ========================================================= */
 
 const SUPPORT_STAFF_MODE =
   new URLSearchParams(window.location.search).get("staff") === "1";
 
 let supportEmployee = null;
 
+
+/* =========================================================
+   فتح أي شاشة دعم
+   ========================================================= */
+
 function openSupportScreen(id){
-  showScreen(id);
+
+  /*
+    نستخدم querySelectorAll هنا مباشرة
+    حتى نضمن أن جميع شاشات index.html موجودة
+    حتى لو تم تحميل script.js قبل نهاية الصفحة.
+  */
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(screen => {
+      screen.classList.remove("active");
+    });
+
+  const screen =
+    document.getElementById(id);
+
+  if(screen){
+
+    screen.classList.add("active");
+
+    window.scrollTo(
+      0,
+      0
+    );
+
+  }
+
 }
 
+
+/* =========================================================
+   الحصول على حساب موظف الدعم
+   ========================================================= */
+
 async function getSupportEmployee(){
+
   const user =
     window.ma3daGetCurrentUser
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
 
-  if(!user) return null;
+  if(!user)
+    return null;
+
+
+  /* -----------------------------------------
+     التحقق من Custom Claims
+     ----------------------------------------- */
 
   try{
-    if(typeof user.getIdTokenResult === "function"){
-      const token = await user.getIdTokenResult();
-      const role = token?.claims?.role;
 
-      if(role === "support" || role === "admin"){
-        return { user, role };
+    if(
+      typeof user.getIdTokenResult ===
+      "function"
+    ){
+
+      const token =
+        await user.getIdTokenResult();
+
+      const role =
+        token?.claims?.role;
+
+      if(
+        role === "support" ||
+        role === "admin"
+      ){
+
+        return {
+          user,
+          role
+        };
+
       }
+
     }
+
   }catch(error){
+
     console.warn(
       "تعذر قراءة صلاحية الموظف من Firebase:",
       error
     );
+
   }
 
+
+  /* -----------------------------------------
+     التحقق من supportStaff/{uid}
+     ----------------------------------------- */
+
   try{
+
     if(
       window.ma3daDB &&
       window.ma3daDoc &&
@@ -7932,29 +8000,44 @@ async function getSupportEmployee(){
           user.uid
         );
 
+
       const snapshot =
-        await window.ma3daGetDoc(ref);
+        await window.ma3daGetDoc(
+          ref
+        );
+
 
       if(snapshot.exists()){
 
         const data =
           snapshot.data() || {};
 
+
         const role =
-          data.role || "support";
+          data.role ||
+          "support";
+
 
         if(
-          (role === "support" || role === "admin") &&
+          (
+            role === "support" ||
+            role === "admin"
+          ) &&
           data.active !== false
         ){
+
           return {
             user,
             role,
             data
           };
+
         }
+
       }
+
     }
+
   }catch(error){
 
     console.error(
@@ -7964,48 +8047,73 @@ async function getSupportEmployee(){
 
   }
 
+
   return null;
+
 }
+
+
+/* =========================================================
+   حماية لوحة موظفي الدعم
+   ========================================================= */
 
 async function requireSupportEmployee(){
 
   const employee =
     await getSupportEmployee();
 
+
   if(!employee){
 
-    supportEmployee = null;
+    supportEmployee =
+      null;
+
 
     localStorage.removeItem(
       "supportEmployee"
     );
 
+
     openSupportScreen(
       "supportLoginScreen"
     );
 
+
     return null;
+
   }
+
 
   supportEmployee =
     employee;
 
+
   localStorage.setItem(
     "supportEmployee",
     JSON.stringify({
+
       uid:
         employee.user.uid,
 
       email:
-        employee.user.email || "",
+        employee.user.email ||
+        "",
 
       role:
         employee.role
+
     })
   );
 
+
   return employee;
+
 }
+
+
+/* =========================================================
+   تسجيل دخول موظف الدعم
+   ========================================================= */
 
 async function supportLogin(){
 
@@ -8017,6 +8125,7 @@ async function supportLogin(){
       ?.value
       .trim();
 
+
   const password =
     document
       .getElementById(
@@ -8024,13 +8133,23 @@ async function supportLogin(){
       )
       ?.value;
 
+
   const error =
     document.getElementById(
       "supportLoginError"
     );
 
-  if(error)
-    error.textContent = "";
+
+  if(error){
+
+    error.textContent =
+      "";
+
+    error.style.color =
+      "#b91c1c";
+
+  }
+
 
   if(!email){
 
@@ -8039,7 +8158,9 @@ async function supportLogin(){
         "اكتب بريد الموظف.";
 
     return;
+
   }
+
 
   if(!password){
 
@@ -8048,7 +8169,9 @@ async function supportLogin(){
         "اكتب كلمة المرور.";
 
     return;
+
   }
+
 
   if(
     typeof window.ma3daLogin !==
@@ -8060,12 +8183,15 @@ async function supportLogin(){
         "خدمة تسجيل الدخول غير جاهزة.";
 
     return;
+
   }
+
 
   const button =
     document.getElementById(
       "supportLoginBtn"
     );
+
 
   if(button){
 
@@ -8077,6 +8203,7 @@ async function supportLogin(){
 
   }
 
+
   try{
 
     await window.ma3daLogin(
@@ -8084,15 +8211,23 @@ async function supportLogin(){
       password
     );
 
+
     const employee =
       await getSupportEmployee();
+
 
     if(!employee){
 
       try{
 
-        if(window.ma3daLogout)
+        if(
+          typeof window.ma3daLogout ===
+          "function"
+        ){
+
           await window.ma3daLogout();
+
+        }
 
       }catch(logoutError){
 
@@ -8102,19 +8237,28 @@ async function supportLogin(){
 
       }
 
-      if(error)
+
+      if(error){
+
         error.textContent =
           "هذا الحساب ليس حساب موظف دعم مصرحًا له.";
 
+      }
+
+
       return;
+
     }
+
 
     supportEmployee =
       employee;
 
+
     localStorage.setItem(
       "supportEmployee",
       JSON.stringify({
+
         uid:
           employee.user.uid,
 
@@ -8124,10 +8268,13 @@ async function supportLogin(){
 
         role:
           employee.role
+
       })
     );
 
+
     await openSupportDashboard();
+
 
   }catch(errorObject){
 
@@ -8136,10 +8283,14 @@ async function supportLogin(){
       errorObject
     );
 
-    if(error)
+
+    if(error){
+
       error.textContent =
         errorObject?.message ||
         "تعذر تسجيل الدخول.";
+
+    }
 
   }finally{
 
@@ -8154,7 +8305,13 @@ async function supportLogin(){
     }
 
   }
+
 }
+
+
+/* =========================================================
+   استعادة كلمة المرور
+   ========================================================= */
 
 async function supportResetPassword(){
 
@@ -8166,18 +8323,29 @@ async function supportResetPassword(){
       ?.value
       .trim();
 
+
   const message =
     document.getElementById(
       "supportResetMessage"
     );
+
 
   const button =
     document.getElementById(
       "supportResetBtn"
     );
 
-  if(message)
-    message.textContent = "";
+
+  if(message){
+
+    message.textContent =
+      "";
+
+    message.style.color =
+      "#b91c1c";
+
+  }
+
 
   if(!email){
 
@@ -8186,7 +8354,9 @@ async function supportResetPassword(){
         "اكتب بريد الموظف.";
 
     return;
+
   }
+
 
   if(
     typeof window.ma3daSendPasswordResetEmail !==
@@ -8198,7 +8368,9 @@ async function supportResetPassword(){
         "خدمة الاستعادة غير جاهزة.";
 
     return;
+
   }
+
 
   if(button){
 
@@ -8210,11 +8382,13 @@ async function supportResetPassword(){
 
   }
 
+
   try{
 
     await window.ma3daSendPasswordResetEmail(
       email
     );
+
 
     if(message){
 
@@ -8226,12 +8400,14 @@ async function supportResetPassword(){
 
     }
 
+
   }catch(error){
 
     console.error(
       "خطأ استعادة كلمة مرور الموظف:",
       error
     );
+
 
     if(message){
 
@@ -8243,6 +8419,7 @@ async function supportResetPassword(){
         "تعذر إرسال رابط الاستعادة.";
 
     }
+
 
   }finally{
 
@@ -8257,7 +8434,13 @@ async function supportResetPassword(){
     }
 
   }
+
 }
+
+
+/* =========================================================
+   أقسام لوحة الدعم
+   ========================================================= */
 
 function supportSetSection(name){
 
@@ -8265,7 +8448,7 @@ function supportSetSection(name){
     .querySelectorAll(
       "[data-support-section]"
     )
-    .forEach(button=>{
+    .forEach(button => {
 
       button.classList.toggle(
         "active",
@@ -8275,11 +8458,12 @@ function supportSetSection(name){
 
     });
 
+
   document
     .querySelectorAll(
       ".support-section"
     )
-    .forEach(section=>{
+    .forEach(section => {
 
       section.classList.remove(
         "active"
@@ -8287,18 +8471,33 @@ function supportSetSection(name){
 
     });
 
+
+  const sectionId =
+    `supportSection${
+      name.charAt(0).toUpperCase()
+    }${name.slice(1)}`;
+
+
   const section =
     document.getElementById(
-      `supportSection${
-        name.charAt(0).toUpperCase()
-      }${name.slice(1)}`
+      sectionId
     );
 
-  if(section)
+
+  if(section){
+
     section.classList.add(
       "active"
     );
+
+  }
+
 }
+
+
+/* =========================================================
+   عرض قائمة
+   ========================================================= */
 
 function supportSetList(
   id,
@@ -8310,10 +8509,20 @@ function supportSetList(
       id
     );
 
-  if(list)
+
+  if(list){
+
     list.innerHTML =
       html;
+
+  }
+
 }
+
+
+/* =========================================================
+   صف بيانات
+   ========================================================= */
 
 function supportRow(
   title,
@@ -8322,11 +8531,24 @@ function supportRow(
 
   return `
     <div class="support-row">
-      <span>${title}</span>
-      <strong>${value ?? "-"}</strong>
+
+      <span>
+        ${title}
+      </span>
+
+      <strong>
+        ${value ?? "-"}
+      </strong>
+
     </div>
   `;
+
 }
+
+
+/* =========================================================
+   جلب Collection من Firestore
+   ========================================================= */
 
 async function supportGetCollection(
   name
@@ -8336,8 +8558,17 @@ async function supportGetCollection(
     !window.ma3daDB ||
     !window.ma3daCollection ||
     !window.ma3daGetDocs
-  )
+  ){
+
+    console.warn(
+      "Firebase غير جاهز لتحميل:",
+      name
+    );
+
     return [];
+
+  }
+
 
   try{
 
@@ -8349,22 +8580,28 @@ async function supportGetCollection(
         )
       );
 
+
     const rows = [];
 
+
     snapshot.forEach(
-      docSnap=>{
+      docSnap => {
 
         rows.push({
+
           id:
             docSnap.id,
 
           ...(docSnap.data() || {})
+
         });
 
       }
     );
 
+
     return rows;
+
 
   }catch(error){
 
@@ -8373,9 +8610,17 @@ async function supportGetCollection(
       error
     );
 
+
     return [];
+
   }
+
 }
+
+
+/* =========================================================
+   الطلبات / التذاكر
+   ========================================================= */
 
 async function loadSupportTickets(){
 
@@ -8384,22 +8629,27 @@ async function loadSupportTickets(){
       "supportTickets"
     );
 
+
   const list =
     document.getElementById(
       "supportTicketsList"
     );
+
 
   const stat =
     document.getElementById(
       "supportStatTickets"
     );
 
+
   if(stat)
     stat.textContent =
       rows.length;
 
+
   if(!list)
     return;
+
 
   if(!rows.length){
 
@@ -8407,12 +8657,14 @@ async function loadSupportTickets(){
       '<div class="support-empty">لا توجد طلبات دعم مسجلة حاليًا.</div>';
 
     return;
+
   }
+
 
   list.innerHTML =
     rows
       .slice(0,50)
-      .map(row=>`
+      .map(row => `
 
         <div class="support-row">
 
@@ -8450,7 +8702,13 @@ async function loadSupportTickets(){
 
       `)
       .join("");
+
 }
+
+
+/* =========================================================
+   العملاء والمشغلين
+   ========================================================= */
 
 async function loadSupportUsers(){
 
@@ -8459,45 +8717,56 @@ async function loadSupportUsers(){
       "users"
     );
 
+
   const customers =
-    users.filter(row=>
-      row.role === "customer" ||
-      row.userType === "customer"
+    users.filter(
+      row =>
+        row.role === "customer" ||
+        row.userType === "customer"
     );
 
+
   const operators =
-    users.filter(row=>
-      row.role === "operator" ||
-      row.userType === "operator"
+    users.filter(
+      row =>
+        row.role === "operator" ||
+        row.userType === "operator"
     );
+
 
   const customerList =
     document.getElementById(
       "supportCustomersList"
     );
 
+
   const operatorList =
     document.getElementById(
       "supportOperatorsList"
     );
+
 
   const customerStat =
     document.getElementById(
       "supportStatCustomers"
     );
 
+
   const operatorStat =
     document.getElementById(
       "supportStatOperators"
     );
 
+
   if(customerStat)
     customerStat.textContent =
       customers.length;
 
+
   if(operatorStat)
     operatorStat.textContent =
       operators.length;
+
 
   if(customerList){
 
@@ -8506,14 +8775,16 @@ async function loadSupportUsers(){
 
         ? customers
             .slice(0,50)
-            .map(row=>
+            .map(row =>
               supportRow(
+
                 row.name ||
                   "عميل",
 
                 row.email ||
                   row.phone ||
                   row.id
+
               )
             )
             .join("")
@@ -8522,6 +8793,7 @@ async function loadSupportUsers(){
 
   }
 
+
   if(operatorList){
 
     operatorList.innerHTML =
@@ -8529,14 +8801,16 @@ async function loadSupportUsers(){
 
         ? operators
             .slice(0,50)
-            .map(row=>
+            .map(row =>
               supportRow(
+
                 row.name ||
                   "صاحب معدة / مشغل",
 
                 row.email ||
                   row.phone ||
                   row.id
+
               )
             )
             .join("")
@@ -8544,7 +8818,13 @@ async function loadSupportUsers(){
         : '<div class="support-empty">لا توجد بيانات مشغلين في مجموعة users.</div>';
 
   }
+
 }
+
+
+/* =========================================================
+   المعدات
+   ========================================================= */
 
 async function loadSupportEquipment(){
 
@@ -8553,22 +8833,27 @@ async function loadSupportEquipment(){
       "equipment"
     );
 
+
   const list =
     document.getElementById(
       "supportOperatorsList"
     );
+
 
   const stat =
     document.getElementById(
       "supportStatOperators"
     );
 
+
   if(stat)
     stat.textContent =
       equipment.length;
 
+
   if(!list)
     return;
+
 
   if(!equipment.length){
 
@@ -8576,18 +8861,21 @@ async function loadSupportEquipment(){
       '<div class="support-empty">لا توجد معدات مسجلة حاليًا.</div>';
 
     return;
+
   }
+
 
   list.innerHTML =
     equipment
       .slice(0,50)
-      .map(row=>`
+      .map(row => `
 
         <div class="support-row">
 
           <div>
 
             <strong>
+
               ${
                 row.type ||
                 "معدة"
@@ -8597,20 +8885,25 @@ async function loadSupportEquipment(){
                 row.model ||
                 ""
               }
+
             </strong>
 
             <br>
 
             <small>
+
               ${
                 row.city ||
                 "بدون مدينة"
               }
+
             </small>
 
           </div>
 
+
           <span>
+
             ${
               row.availability ===
               "available"
@@ -8619,13 +8912,20 @@ async function loadSupportEquipment(){
 
                 : "غير متاحة"
             }
+
           </span>
 
         </div>
 
       `)
       .join("");
+
 }
+
+
+/* =========================================================
+   الطلبات الحالية
+   ========================================================= */
 
 async function loadSupportOrders(){
 
@@ -8634,34 +8934,41 @@ async function loadSupportOrders(){
       "requests"
     );
 
+
   const current =
-    rows.filter(row=>
-      [
-        "searching",
-        "accepted",
-        "arrived",
-        "working"
-      ].includes(
-        row.status
-      )
+    rows.filter(
+      row =>
+        [
+          "searching",
+          "accepted",
+          "arrived",
+          "working"
+        ].includes(
+          row.status
+        )
     );
+
 
   const list =
     document.getElementById(
       "supportOrdersList"
     );
 
+
   const stat =
     document.getElementById(
       "supportStatOrders"
     );
 
+
   if(stat)
     stat.textContent =
       current.length;
 
+
   if(!list)
     return;
+
 
   if(!current.length){
 
@@ -8669,47 +8976,62 @@ async function loadSupportOrders(){
       '<div class="support-empty">لا توجد طلبات حالية.</div>';
 
     return;
+
   }
+
 
   list.innerHTML =
     current
       .slice(0,50)
-      .map(row=>`
+      .map(row => `
 
         <div class="support-row">
 
           <div>
 
             <strong>
+
               ${
                 row.equipment ||
                 "طلب معدة"
               }
+
             </strong>
 
             <br>
 
             <small>
+
               ${
                 row.location ||
                 "بدون موقع"
               }
+
             </small>
 
           </div>
 
+
           <span>
+
             ${
               row.status ||
               "-"
             }
+
           </span>
 
         </div>
 
       `)
       .join("");
+
 }
+
+
+/* =========================================================
+   المحادثات
+   ========================================================= */
 
 async function loadSupportChats(){
 
@@ -8718,13 +9040,16 @@ async function loadSupportChats(){
       "supportTickets"
     );
 
+
   const list =
     document.getElementById(
       "supportChatsList"
     );
 
+
   if(!list)
     return;
+
 
   if(!tickets.length){
 
@@ -8732,50 +9057,65 @@ async function loadSupportChats(){
       '<div class="support-empty">لا توجد محادثات دعم حاليًا.</div>';
 
     return;
+
   }
+
 
   list.innerHTML =
     tickets
       .slice(0,50)
-      .map(row=>`
+      .map(row => `
 
         <div class="support-row">
 
           <div>
 
             <strong>
+
               ${
                 row.subject ||
                 row.title ||
                 "محادثة دعم"
               }
+
             </strong>
 
             <br>
 
             <small>
+
               ${
                 row.customerEmail ||
                 row.email ||
                 row.customerId ||
                 "مستخدم"
               }
+
             </small>
 
           </div>
 
+
           <span>
+
             ${
               row.status ||
               "مفتوح"
             }
+
           </span>
 
         </div>
 
       `)
       .join("");
+
 }
+
+
+/* =========================================================
+   البلاغات
+   ========================================================= */
 
 async function loadSupportReports(){
 
@@ -8784,13 +9124,16 @@ async function loadSupportReports(){
       "reports"
     );
 
+
   const list =
     document.getElementById(
       "supportReportsList"
     );
 
+
   if(!list)
     return;
+
 
   if(!rows.length){
 
@@ -8798,63 +9141,82 @@ async function loadSupportReports(){
       '<div class="support-empty">لا توجد بلاغات أو مشاكل مسجلة.</div>';
 
     return;
+
   }
+
 
   list.innerHTML =
     rows
       .slice(0,50)
-      .map(row=>`
+      .map(row => `
 
         <div class="support-row">
 
           <div>
 
             <strong>
+
               ${
                 row.title ||
                 row.subject ||
                 "بلاغ"
               }
+
             </strong>
 
             <br>
 
             <small>
+
               ${
                 row.description ||
                 row.message ||
                 "بدون وصف"
               }
+
             </small>
 
           </div>
 
+
           <span>
+
             ${
               row.status ||
               "مفتوح"
             }
+
           </span>
 
         </div>
 
       `)
       .join("");
+
 }
+
+
+/* =========================================================
+   فتح لوحة موظف الدعم
+   ========================================================= */
 
 async function openSupportDashboard(){
 
   const employee =
     await requireSupportEmployee();
 
+
   if(!employee)
     return;
+
 
   const email =
     employee.user.email ||
     "";
 
-  [
+
+  const emailElements = [
+
     document.getElementById(
       "supportEmployeeEmail"
     ),
@@ -8863,29 +9225,53 @@ async function openSupportDashboard(){
       "supportSettingsEmail"
     )
 
-  ].forEach(element=>{
+  ];
 
-    if(element)
-      element.textContent =
-        email ||
-        "موظف دعم";
 
-  });
+  emailElements.forEach(
+    element => {
+
+      if(element){
+
+        element.textContent =
+          email ||
+          "موظف دعم";
+
+      }
+
+    }
+  );
+
 
   const role =
     document.getElementById(
       "supportSettingsRole"
     );
 
-  if(role)
+
+  if(role){
+
     role.textContent =
       employee.role === "admin"
         ? "مدير دعم"
         : "موظف دعم";
 
+  }
+
+
   openSupportScreen(
     "supportDashboardScreen"
   );
+
+
+  /*
+    نفتح قسم التذاكر افتراضيًا
+  */
+
+  supportSetSection(
+    "tickets"
+  );
+
 
   await Promise.all([
 
@@ -8902,42 +9288,132 @@ async function openSupportDashboard(){
     loadSupportReports()
 
   ]);
+
 }
 
-function initSupportPortal(){
 
-  if(!SUPPORT_STAFF_MODE)
-    return;
+/* =========================================================
+   تسجيل الخروج
+   ========================================================= */
+
+async function supportLogout(){
+
+  try{
+
+    if(
+      typeof window.ma3daLogout ===
+      "function"
+    ){
+
+      await window.ma3daLogout();
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "تعذر تسجيل خروج موظف الدعم:",
+      error
+    );
+
+  }finally{
+
+    supportEmployee =
+      null;
+
+
+    localStorage.removeItem(
+      "supportEmployee"
+    );
+
+
+    openSupportScreen(
+      "roleScreen"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   زر دخول موظفي الدعم من صفحة اختيار الدور
+   ========================================================= */
+
+function initSupportRoleButton(){
+
+  const supportStaffBtn =
+    document.getElementById(
+      "supportStaffBtn"
+    );
+
+
+  if(
+    supportStaffBtn &&
+    !supportStaffBtn.dataset.supportReady
+  ){
+
+    supportStaffBtn.dataset.supportReady =
+      "true";
+
+
+    supportStaffBtn.addEventListener(
+      "click",
+      () => {
+
+        openSupportScreen(
+          "supportLoginScreen"
+        );
+
+      }
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   تشغيل أزرار بوابة الدعم
+   ========================================================= */
+
+function initSupportPortal(){
 
   const loginButton =
     document.getElementById(
       "supportLoginBtn"
     );
 
+
   const forgotButton =
     document.getElementById(
       "supportForgotBtn"
     );
+
 
   const resetButton =
     document.getElementById(
       "supportResetBtn"
     );
 
+
   const backButton =
     document.getElementById(
       "supportBackBtn"
     );
+
 
   const forgotBackButton =
     document.getElementById(
       "supportForgotBackBtn"
     );
 
+
   const logoutButton =
     document.getElementById(
       "supportLogoutBtn"
     );
+
 
   const refreshButton =
     document.getElementById(
@@ -8945,83 +9421,207 @@ function initSupportPortal(){
     );
 
 
-  if(loginButton)
+  /* -----------------------------------------
+     زر دخول الموظف
+     ----------------------------------------- */
+
+  if(
+    loginButton &&
+    !loginButton.dataset.supportReady
+  ){
+
+    loginButton.dataset.supportReady =
+      "true";
+
+
     loginButton.addEventListener(
       "click",
       supportLogin
     );
 
+  }
 
-  if(forgotButton)
+
+  /* -----------------------------------------
+     نسيت كلمة المرور
+     ----------------------------------------- */
+
+  if(
+    forgotButton &&
+    !forgotButton.dataset.supportReady
+  ){
+
+    forgotButton.dataset.supportReady =
+      "true";
+
+
     forgotButton.addEventListener(
       "click",
-      ()=>openSupportScreen(
-        "supportForgotScreen"
-      )
+      () => {
+
+        openSupportScreen(
+          "supportForgotScreen"
+        );
+
+      }
     );
 
+  }
 
-  if(resetButton)
+
+  /* -----------------------------------------
+     إرسال رابط الاستعادة
+     ----------------------------------------- */
+
+  if(
+    resetButton &&
+    !resetButton.dataset.supportReady
+  ){
+
+    resetButton.dataset.supportReady =
+      "true";
+
+
     resetButton.addEventListener(
       "click",
       supportResetPassword
     );
 
+  }
 
-  if(backButton)
+
+  /* -----------------------------------------
+     العودة من تسجيل دخول الدعم
+     ----------------------------------------- */
+
+  if(
+    backButton &&
+    !backButton.dataset.supportReady
+  ){
+
+    backButton.dataset.supportReady =
+      "true";
+
+
     backButton.addEventListener(
       "click",
-      ()=>{
-        window.location.href =
-          window.location.pathname;
+      () => {
+
+        openSupportScreen(
+          "roleScreen"
+        );
+
       }
     );
 
+  }
 
-  if(forgotBackButton)
+
+  /* -----------------------------------------
+     العودة من صفحة نسيت كلمة المرور
+     ----------------------------------------- */
+
+  if(
+    forgotBackButton &&
+    !forgotBackButton.dataset.supportReady
+  ){
+
+    forgotBackButton.dataset.supportReady =
+      "true";
+
+
     forgotBackButton.addEventListener(
       "click",
-      ()=>openSupportScreen(
-        "supportLoginScreen"
-      )
+      () => {
+
+        openSupportScreen(
+          "supportLoginScreen"
+        );
+
+      }
     );
 
+  }
+
+
+  /* -----------------------------------------
+     أقسام لوحة الدعم
+     ----------------------------------------- */
 
   document
     .querySelectorAll(
       "[data-support-section]"
     )
-    .forEach(button=>{
+    .forEach(button => {
+
+      if(
+        button.dataset.supportReady
+      )
+        return;
+
+
+      button.dataset.supportReady =
+        "true";
+
 
       button.addEventListener(
         "click",
-        async()=>{
+        async () => {
 
           const section =
             button.dataset
               .supportSection;
 
+
+          if(!section)
+            return;
+
+
           supportSetSection(
             section
           );
 
-          if(section === "tickets")
+
+          if(section === "tickets"){
+
             await loadSupportTickets();
 
-          if(section === "customers")
+          }
+
+
+          if(section === "customers"){
+
             await loadSupportUsers();
 
-          if(section === "operators")
+          }
+
+
+          if(section === "operators"){
+
             await loadSupportEquipment();
 
-          if(section === "orders")
+          }
+
+
+          if(section === "orders"){
+
             await loadSupportOrders();
 
-          if(section === "chats")
+          }
+
+
+          if(section === "chats"){
+
             await loadSupportChats();
 
-          if(section === "reports")
+          }
+
+
+          if(section === "reports"){
+
             await loadSupportReports();
+
+          }
 
         }
       );
@@ -9029,77 +9629,176 @@ function initSupportPortal(){
     });
 
 
-  if(refreshButton)
+  /* -----------------------------------------
+     تحديث لوحة الدعم
+     ----------------------------------------- */
+
+  if(
+    refreshButton &&
+    !refreshButton.dataset.supportReady
+  ){
+
+    refreshButton.dataset.supportReady =
+      "true";
+
+
     refreshButton.addEventListener(
       "click",
-      openSupportDashboard
-    );
+      async () => {
 
-
-  if(logoutButton)
-    logoutButton.addEventListener(
-      "click",
-      async()=>{
-
-        try{
-
-          if(window.ma3daLogout)
-            await window.ma3daLogout();
-
-        }catch(error){
-
-          console.error(
-            "تعذر تسجيل خروج موظف الدعم:",
-            error
-          );
-
-        }finally{
-
-          supportEmployee =
-            null;
-
-          localStorage.removeItem(
-            "supportEmployee"
-          );
-
-          window.location.href =
-            window.location.pathname;
-
-        }
+        await openSupportDashboard();
 
       }
     );
 
+  }
 
-  (async()=>{
 
-    try{
+  /* -----------------------------------------
+     تسجيل الخروج
+     ----------------------------------------- */
 
-      const employee =
-        await getSupportEmployee();
+  if(
+    logoutButton &&
+    !logoutButton.dataset.supportReady
+  ){
 
-      if(employee)
-        await openSupportDashboard();
+    logoutButton.dataset.supportReady =
+      "true";
 
-      else
+
+    logoutButton.addEventListener(
+      "click",
+      supportLogout
+    );
+
+  }
+
+
+  /* -----------------------------------------
+     زر الدخول من صفحة اختيار الدور
+     ----------------------------------------- */
+
+  initSupportRoleButton();
+
+}
+
+
+/* =========================================================
+   تشغيل البوابة بعد اكتمال HTML
+   ========================================================= */
+
+function startSupportPortal(){
+
+  initSupportPortal();
+
+
+  /*
+    إذا دخل الموظف بالرابط:
+    ?staff=1
+
+    نفتح صفحة الدخول تلقائيًا.
+  */
+
+  if(SUPPORT_STAFF_MODE){
+
+    const currentUser =
+      window.ma3daGetCurrentUser
+        ? window.ma3daGetCurrentUser()
+        : Promise.resolve(
+            window.ma3daAuth?.currentUser ||
+            null
+          );
+
+
+    Promise.resolve(
+      currentUser
+    )
+      .then(
+        async user => {
+
+          if(user){
+
+            const employee =
+              await getSupportEmployee();
+
+
+            if(employee){
+
+              supportEmployee =
+                employee;
+
+
+              await openSupportDashboard();
+
+
+              return;
+
+            }
+
+          }
+
+
+          openSupportScreen(
+            "supportLoginScreen"
+          );
+
+        }
+      )
+      .catch(error => {
+
+        console.error(
+          "تعذر تشغيل بوابة موظفي الدعم:",
+          error
+        );
+
+
         openSupportScreen(
           "supportLoginScreen"
         );
 
-    }catch(error){
+      });
 
-      console.error(
-        "تعذر تشغيل بوابة الدعم:",
-        error
-      );
+  }
 
-      openSupportScreen(
-        "supportLoginScreen"
-      );
-
-    }
-
-  })();
 }
 
-initSupportPortal();
+
+/* =========================================================
+   مهم جدًا:
+   script.js يتم تحميله ديناميكيًا قبل نهاية index.html
+   لذلك ننتظر DOM إذا لم يكن مكتملًا.
+   ========================================================= */
+
+if(
+  document.readyState ===
+  "loading"
+){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    startSupportPortal,
+    {
+      once: true
+    }
+  );
+
+}else{
+
+  startSupportPortal();
+
+}
+
+
+/* =========================================================
+   دعم إضافي إذا تم إنشاء زر الدعم بعد تحميل script.js
+   ========================================================= */
+
+setTimeout(
+  () => {
+
+    initSupportRoleButton();
+
+  },
+  500
+);
