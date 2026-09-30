@@ -8115,7 +8115,6 @@ async function requireSupportEmployee(){
 /* =========================================================
    تسجيل دخول موظف الدعم
    ========================================================= */
-
 async function supportLogin(){
 
   const email =
@@ -8213,39 +8212,113 @@ async function supportLogin(){
     );
 
 
-    const employee =
-      await getSupportEmployee();
+    /*
+      ننتظر قليلًا حتى يتأكد Firebase
+      من تثبيت المستخدم الحالي بعد تسجيل الدخول
+    */
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          500
+        )
+    );
+
+
+    /*
+      نقرأ المستخدم مباشرة من Firebase
+      بدل الاعتماد فقط على الدالة العامة
+    */
+
+    const currentUser =
+      window.ma3daAuth?.currentUser;
+
+
+    if(!currentUser){
+
+      if(error)
+        error.textContent =
+          "تم تسجيل الدخول، لكن لم يتم التعرف على حساب الموظف. حاول مرة أخرى.";
+
+      return;
+
+    }
+
+
+    /*
+      نتحقق من موظف الدعم باستخدام
+      UID المستخدم الحالي مباشرة
+    */
+
+    let employee = null;
+
+
+    try{
+
+      const ref =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "supportStaff",
+          currentUser.uid
+        );
+
+
+      const snapshot =
+        await window.ma3daGetDoc(
+          ref
+        );
+
+
+      if(snapshot.exists()){
+
+        const data =
+          snapshot.data() || {};
+
+
+        const role =
+          data.role ||
+          "support";
+
+
+        if(
+          (
+            role === "support" ||
+            role === "admin"
+          ) &&
+          data.active !== false
+        ){
+
+          employee = {
+
+            user:
+              currentUser,
+
+            role,
+
+            data
+
+          };
+
+        }
+
+      }
+
+    }catch(checkError){
+
+      console.error(
+        "خطأ قراءة بيانات موظف الدعم:",
+        checkError
+      );
+
+    }
 
 
     if(!employee){
 
-      try{
-
-        if(
-          typeof window.ma3daLogout ===
-          "function"
-        ){
-
-          await window.ma3daLogout();
-
-        }
-
-      }catch(logoutError){
-
-        console.error(
-          logoutError
-        );
-
-      }
-
-
-      if(error){
-
+      if(error)
         error.textContent =
           "هذا الحساب ليس حساب موظف دعم مصرحًا له.";
-
-      }
-
 
       return;
 
@@ -8308,7 +8381,6 @@ async function supportLogin(){
   }
 
 }
-
 
 /* =========================================================
    استعادة كلمة المرور
