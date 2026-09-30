@@ -7938,7 +7938,8 @@ async function getSupportEmployee(){
 
   if(!user)
     return null;
-
+console.log("SUPPORT CHECK UID:", user.uid);
+console.log("SUPPORT CHECK EMAIL:", user.email);
 
   /* -----------------------------------------
      التحقق من Custom Claims
