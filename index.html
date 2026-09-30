@@ -3696,4 +3696,509 @@ window.ma3daAddDoc = addDoc;
 
 
 </body>
+ <!-- =====================================================
+     بوابة موظفي الدعم
+     تفتح فقط عبر ?staff=1
+===================================================== -->
+
+<section
+  id="supportLoginScreen"
+  class="screen support-screen"
+>
+
+  <div class="support-wrap">
+
+    <div class="support-card support-login-card">
+
+      <div class="hero-icon">
+        🛡️
+      </div>
+
+      <h1 class="support-title">
+        دخول موظفي الدعم
+      </h1>
+
+      <p class="support-subtitle">
+        هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.
+      </p>
+
+
+      <label for="supportEmailInput">
+        📧 البريد الإلكتروني
+      </label>
+
+      <input
+        id="supportEmailInput"
+        class="support-input"
+        type="email"
+        autocomplete="username"
+        placeholder="بريد الموظف"
+      >
+
+
+      <label for="supportPasswordInput">
+        🔐 كلمة المرور
+      </label>
+
+      <input
+        id="supportPasswordInput"
+        class="support-input"
+        type="password"
+        autocomplete="current-password"
+        placeholder="كلمة المرور"
+      >
+
+
+      <p
+        id="supportLoginError"
+        class="support-error"
+      ></p>
+
+
+      <button
+        id="supportLoginBtn"
+        class="support-btn support-primary"
+        type="button"
+      >
+        دخول الموظف
+      </button>
+
+
+      <button
+        id="supportForgotBtn"
+        class="support-link"
+        type="button"
+      >
+        نسيت كلمة المرور؟
+      </button>
+
+
+      <button
+        id="supportBackBtn"
+        class="support-btn support-secondary"
+        type="button"
+      >
+        العودة إلى مِعدة
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<section
+  id="supportForgotScreen"
+  class="screen support-screen"
+>
+
+  <div class="support-wrap">
+
+    <div class="support-card support-login-card">
+
+      <div class="hero-icon">
+        📧
+      </div>
+
+      <h1 class="support-title">
+        استعادة كلمة المرور
+      </h1>
+
+      <p class="support-subtitle">
+        أدخل بريد موظف الدعم لإرسال رابط إعادة تعيين كلمة المرور.
+      </p>
+
+
+      <input
+        id="supportResetEmailInput"
+        class="support-input"
+        type="email"
+        autocomplete="email"
+        placeholder="بريد الموظف"
+      >
+
+
+      <p
+        id="supportResetMessage"
+        class="support-error"
+      ></p>
+
+
+      <button
+        id="supportResetBtn"
+        class="support-btn support-primary"
+        type="button"
+      >
+        إرسال رابط الاستعادة
+      </button>
+
+
+      <button
+        id="supportForgotBackBtn"
+        class="support-btn support-secondary"
+        type="button"
+      >
+        العودة للدخول
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<section
+  id="supportDashboardScreen"
+  class="screen support-screen"
+>
+
+  <div class="support-wrap">
+
+    <div class="support-topbar">
+
+      <div>
+
+        <div class="support-brand">
+          مِعدة | مركز الدعم
+        </div>
+
+        <span
+          id="supportEmployeeEmail"
+          class="support-badge"
+        >
+          موظف دعم
+        </span>
+
+      </div>
+
+
+      <div class="support-header-actions">
+
+        <button
+          id="supportRefreshBtn"
+          class="support-btn support-secondary"
+          type="button"
+        >
+          تحديث
+        </button>
+
+
+        <button
+          id="supportLogoutBtn"
+          class="support-btn support-danger"
+          type="button"
+        >
+          تسجيل الخروج
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="support-grid">
+
+      <div class="support-card">
+
+        <div class="support-label">
+          🎫 طلبات الدعم
+        </div>
+
+        <div
+          id="supportStatTickets"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          👤 العملاء
+        </div>
+
+        <div
+          id="supportStatCustomers"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          🚜 أصحاب المعدات
+        </div>
+
+        <div
+          id="supportStatOperators"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+
+      <div class="support-card">
+
+        <div class="support-label">
+          📦 الطلبات الحالية
+        </div>
+
+        <div
+          id="supportStatOrders"
+          class="support-stat"
+        >
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="support-menu"
+      id="supportMenu"
+    >
+
+      <button
+        type="button"
+        data-support-section="tickets"
+        class="active"
+      >
+        🎫 الدعم
+      </button>
+
+      <button
+        type="button"
+        data-support-section="customers"
+      >
+        👤 العملاء
+      </button>
+
+      <button
+        type="button"
+        data-support-section="operators"
+      >
+        🚜 المعدات
+      </button>
+
+      <button
+        type="button"
+        data-support-section="orders"
+      >
+        📦 الطلبات
+      </button>
+
+      <button
+        type="button"
+        data-support-section="chats"
+      >
+        💬 المحادثات
+      </button>
+
+      <button
+        type="button"
+        data-support-section="reports"
+      >
+        ⚠️ البلاغات
+      </button>
+
+      <button
+        type="button"
+        data-support-section="settings"
+      >
+        ⚙️ الإعدادات
+      </button>
+
+    </div>
+
+
+    <div
+      id="supportSectionTickets"
+      class="support-section active"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          🎫 طلبات الدعم
+        </h2>
+
+        <div
+          id="supportTicketsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionCustomers"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          👤 بيانات العملاء
+        </h2>
+
+        <div
+          id="supportCustomersList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionOperators"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          🚜 بيانات أصحاب المعدات
+        </h2>
+
+        <div
+          id="supportOperatorsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionOrders"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          📦 الطلبات الحالية
+        </h2>
+
+        <div
+          id="supportOrdersList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionChats"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          💬 محادثات الدعم
+        </h2>
+
+        <div
+          id="supportChatsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionReports"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          ⚠️ البلاغات والمشاكل
+        </h2>
+
+        <div
+          id="supportReportsList"
+          class="support-empty"
+        >
+          جاري التحميل...
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="supportSectionSettings"
+      class="support-section"
+    >
+
+      <div class="support-card">
+
+        <h2>
+          ⚙️ إعدادات الموظف
+        </h2>
+
+        <div class="support-row">
+          <span>البريد</span>
+          <strong id="supportSettingsEmail">-</strong>
+        </div>
+
+        <div class="support-row">
+          <span>الصلاحية</span>
+          <strong id="supportSettingsRole">
+            موظف دعم
+          </strong>
+        </div>
+
+        <div class="support-row">
+          <span>الحالة</span>
+          <strong>
+            مفعل
+          </strong>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
 </html>
