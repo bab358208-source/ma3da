@@ -12450,3 +12450,20 @@ setTimeout(
 
 
 })();
+/* =========================================================
+   فتح صفحة موظفي الدعم من الصفحة الرئيسية
+========================================================= */
+
+document.addEventListener("click", function(event){
+
+  const supportBtn =
+    event.target.closest("#supportRoleBtn");
+
+  if(!supportBtn)
+    return;
+
+  event.preventDefault();
+
+  openSupportScreen("supportLoginScreen");
+
+});
