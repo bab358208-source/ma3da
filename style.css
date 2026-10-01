@@ -2843,3 +2843,373 @@ html[data-theme="dark"] .operator-logout-btn {
     font-size: 17px;
   }
 }
+/* =========================================================
+   MA3DA ROLE SCREEN
+   التصميم المتفق عليه
+========================================================= */
+
+#roleScreen {
+  background: #f7f1e5;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.role-page {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 35px 20px 25px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  color: #171717;
+}
+
+
+/* =========================================================
+   EQUIPMENT IMAGE
+========================================================= */
+
+.role-equipment-image {
+  width: 100%;
+  height: 210px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 10px;
+}
+
+.role-equipment-image img {
+  width: 100%;
+  max-width: 390px;
+  height: 210px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.role-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.role-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 10px;
+
+  font-size: 25px;
+  font-weight: 900;
+
+  color: #171717;
+}
+
+.role-header h1 {
+  margin: 0 0 8px;
+
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 900;
+
+  color: #171717;
+}
+
+.role-header p {
+  margin: 0;
+
+  font-size: 15px;
+  line-height: 1.7;
+
+  color: #666;
+}
+
+
+/* =========================================================
+   ROLE OPTIONS
+========================================================= */
+
+.role-options {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+
+/* =========================================================
+   ROLE BUTTON
+========================================================= */
+
+.role-option {
+  width: 100%;
+  min-height: 82px;
+
+  padding: 13px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 13px;
+
+  background: #fffdf8;
+
+  border: 1px solid #e2d6bd;
+  border-radius: 18px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.05);
+
+  color: #171717;
+
+  cursor: pointer;
+
+  text-align: right;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.role-option:hover {
+  transform: translateY(-2px);
+
+  border-color: #c79b3b;
+
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+.role-option:active {
+  transform: scale(0.98);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.role-option-icon {
+  width: 52px;
+  height: 52px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #f3e5bd;
+
+  font-size: 25px;
+}
+
+
+/* =========================================================
+   TEXT
+========================================================= */
+
+.role-option-text {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.role-option-text strong {
+  font-size: 17px;
+  font-weight: 800;
+
+  color: #171717;
+}
+
+.role-option-text span {
+  font-size: 13px;
+  line-height: 1.5;
+
+  color: #777;
+}
+
+
+/* =========================================================
+   ARROW
+========================================================= */
+
+.role-arrow {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #c79b3b;
+
+  color: #fff;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.role-divider {
+  width: 100%;
+
+  height: 1px;
+
+  margin-top: 32px;
+  margin-bottom: 18px;
+
+  background: #d8c9aa;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.role-footer {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 9px;
+
+  padding-bottom: 8px;
+
+  font-size: 12px;
+}
+
+.role-footer a {
+  color: #666;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.role-footer a:hover {
+  color: #b4872d;
+}
+
+.role-footer span {
+  color: #b99a5a;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .role-page {
+    padding:
+      25px
+      16px
+      20px;
+  }
+
+  .role-equipment-image {
+    height: 185px;
+  }
+
+  .role-equipment-image img {
+    height: 185px;
+  }
+
+  .role-header {
+    margin-bottom: 22px;
+  }
+
+  .role-header h1 {
+    font-size: 25px;
+  }
+
+  .role-header p {
+    font-size: 14px;
+  }
+
+  .role-option {
+    min-height: 78px;
+    padding: 11px 13px;
+  }
+
+  .role-option-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 23px;
+  }
+
+  .role-option-text strong {
+    font-size: 16px;
+  }
+
+  .role-option-text span {
+    font-size: 12px;
+  }
+
+  .role-arrow {
+    width: 31px;
+    height: 31px;
+    font-size: 16px;
+  }
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .role-page {
+    padding-top: 18px;
+  }
+
+  .role-equipment-image {
+    height: 160px;
+  }
+
+  .role-equipment-image img {
+    height: 160px;
+  }
+
+  .role-header h1 {
+    font-size: 23px;
+  }
+
+  .role-option {
+    min-height: 73px;
+  }
+
+}
