@@ -178,176 +178,155 @@
        2. اختيار الدور
   ====================================================== -->
 
-  <!-- ROLE SCREEN - MA3DA GOLD DESIGN -->
-<section id="roleScreen" class="screen ma3da-role-screen">
+  <section id="roleScreen" class="screen">
 
-  <!-- Header / Hero -->
-  <div class="ma3da-hero">
-    <div class="ma3da-hero-overlay"></div>
+  <div class="role-page">
 
-    <div class="ma3da-brand">
-      <div class="ma3da-logo">
-        <span>مِعدة</span>
-        <span class="ma3da-logo-excavator">🚜</span>
-      </div>
-
-      <p>كل احتياجاتك في مكان واحد</p>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="ma3da-role-content">
-
-    <div class="ma3da-role-heading">
-      <h1>اختر طريقة الاستخدام</h1>
-      <p>حدد نوع حسابك للمتابعة</p>
+    <!-- صورة المعدة -->
+    <div class="role-equipment-image">
+      <img
+        src="./equipment.png"
+        alt="معدة ثقيلة"
+      >
     </div>
 
-    <!-- Customer -->
-    <button
-      id="customerRoleBtn"
-      class="ma3da-role-card ma3da-customer-card"
-      type="button"
-    >
-      <span class="ma3da-role-icon ma3da-customer-icon">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="19" r="12" fill="currentColor"/>
-          <path
-            d="M10 55V49C10 38 19 32 32 32S54 38 54 49V55Z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
+    <!-- العنوان -->
+    <div class="role-header">
 
-      <span class="ma3da-role-label">أنا عميل</span>
-      <span class="ma3da-role-arrow">›</span>
-    </button>
-
-    <!-- Equipment Owner -->
-    <button
-      id="operatorRoleBtn"
-      class="ma3da-role-card ma3da-operator-card"
-      type="button"
-    >
-      <span class="ma3da-role-icon ma3da-machine-icon">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <path
-            d="M8 40H30L39 31L45 36L36 47H8Z"
-            fill="currentColor"
-          />
-          <path
-            d="M23 15H37L43 31H27Z"
-            fill="currentColor"
-          />
-          <path
-            d="M37 15L48 7L53 12L43 25"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M49 7L56 12L53 20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="5"
-            stroke-linecap="round"
-          />
-          <rect x="5" y="46" width="49" height="9" rx="4.5"
-            fill="currentColor"/>
-          <circle cx="16" cy="50.5" r="2" fill="#FFF8E9"/>
-          <circle cx="28" cy="50.5" r="2" fill="#FFF8E9"/>
-          <circle cx="40" cy="50.5" r="2" fill="#FFF8E9"/>
-        </svg>
-      </span>
-
-      <span class="ma3da-role-label">أنا صاحب معدة</span>
-      <span class="ma3da-role-arrow">›</span>
-    </button>
-
-    <!-- Contractor -->
-    <button
-      id="contractorRoleBtn"
-      class="ma3da-role-card ma3da-contractor-card"
-      type="button"
-    >
-      <span class="ma3da-role-icon ma3da-contractor-icon">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <path
-            d="M15 24V18C15 8 22 5 30 5S45 8 45 18V24Z"
-            fill="currentColor"
-          />
-          <path
-            d="M12 20H48V26H12Z"
-            fill="currentColor"
-          />
-          <path
-            d="M18 28C18 20 24 17 30 17S42 20 42 28V34C42 43 36 47 30 47S18 43 18 34Z"
-            fill="currentColor"
-          />
-          <path
-            d="M7 60V53C7 45 16 41 25 41H35C44 41 49 45 49 53V60Z"
-            fill="currentColor"
-          />
-          <rect x="42" y="34" width="19" height="26" rx="2"
-            fill="#B88013"/>
-          <rect x="46" y="39" width="4" height="5" fill="#FFF8E9"/>
-          <rect x="53" y="39" width="4" height="5" fill="#FFF8E9"/>
-          <rect x="46" y="48" width="4" height="5" fill="#FFF8E9"/>
-          <rect x="53" y="48" width="4" height="5" fill="#FFF8E9"/>
-        </svg>
-      </span>
-
-      <span class="ma3da-role-label">أنا مقاول و صاحب مشروع</span>
-      <span class="ma3da-role-arrow">›</span>
-    </button>
-
-    <!-- Footer -->
-    <div class="ma3da-role-footer">
-
-      <div class="ma3da-footer-divider">
-        <span></span>
-        <i></i>
-        <span></span>
+      <div class="role-logo">
+        مِعدة
       </div>
 
-      <p class="ma3da-login-help">
-        عندك مشكلة في تسجيل الدخول؟
+      <h1>
+        مرحبًا بك في مِعدة
+      </h1>
+
+      <p>
+        اختر طريقة استخدامك للمنصة
       </p>
 
+    </div>
+
+    <!-- خيارات الحساب -->
+    <div class="role-options">
+
       <button
-        id="supportLoginBtn"
-        class="ma3da-support-link"
+        id="customerRoleBtn"
+        class="role-option"
         type="button"
       >
-        <svg viewBox="0 0 32 32" aria-hidden="true">
-          <path
-            d="M16 3L27 7V15C27 22 22 27 16 30C10 27 5 22 5 15V7Z"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.8"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M11 16L14.5 19.5L21.5 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
 
-        <span>صفحة موظفي الدعم</span>
-        <span class="ma3da-support-arrow">›</span>
+        <div class="role-option-icon">
+          👷
+        </div>
+
+        <div class="role-option-text">
+
+          <strong>
+            أنا عميل
+          </strong>
+
+          <span>
+            أحتاج معدة لتنفيذ عملي
+          </span>
+
+        </div>
+
+        <div class="role-arrow">
+          ←
+        </div>
+
+      </button>
+
+
+      <button
+        id="operatorRoleBtn"
+        class="role-option"
+        type="button"
+      >
+
+        <div class="role-option-icon">
+          🚜
+        </div>
+
+        <div class="role-option-text">
+
+          <strong>
+            أنا صاحب معدة / مشغل
+          </strong>
+
+          <span>
+            أريد استقبال طلبات العملاء
+          </span>
+
+        </div>
+
+        <div class="role-arrow">
+          ←
+        </div>
+
+      </button>
+
+
+      <button
+        id="supportRoleBtn"
+        class="role-option"
+        type="button"
+      >
+
+        <div class="role-option-icon">
+          💬
+        </div>
+
+        <div class="role-option-text">
+
+          <strong>
+            الدعم والمساعدة
+          </strong>
+
+          <span>
+            تحتاج مساعدة؟ تواصل معنا
+          </span>
+
+        </div>
+
+        <div class="role-arrow">
+          ←
+        </div>
+
       </button>
 
     </div>
+
+
+    <!-- الفاصل -->
+    <div class="role-divider"></div>
+
+
+    <!-- روابط الدعم -->
+    <div class="role-footer">
+
+      <a href="#" id="roleTermsLink">
+        الشروط والأحكام
+      </a>
+
+      <span>•</span>
+
+      <a href="#" id="rolePrivacyLink">
+        الخصوصية
+      </a>
+
+      <span>•</span>
+
+      <a href="#" id="roleContactLink">
+        تواصل معنا
+      </a>
+
+    </div>
+
   </div>
+
 </section>
-
-
   <!-- =====================================================
        3. تسجيل الدخول
   ====================================================== -->
