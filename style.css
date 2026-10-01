@@ -3213,3 +3213,283 @@ html[data-theme="dark"] .operator-logout-btn {
   }
 
 }
+/* =========================================================
+   ROLE SCREEN
+========================================================= */
+#roleScreen {
+  background: #f7f1e5;
+  min-height: 100vh;
+  padding: 0;
+}
+.role-page {
+  width: 100%;
+  max-width: 520px;
+  min-height: calc(100vh - 185px);
+  margin: 0 auto;
+  padding:
+    30px
+    20px
+    25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* =========================================================
+   EQUIPMENT IMAGE
+========================================================= */
+.role-equipment-image {
+  width: 100%;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.role-equipment-image img {
+  width: 100%;
+  max-width: 390px;
+  height: 190px;
+  object-fit: contain;
+}
+/* =========================================================
+   HEADER
+========================================================= */
+.role-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 25px;
+}
+.role-logo {
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #171717;
+}
+.role-header h1 {
+  margin: 0 0 8px;
+  font-size: 27px;
+  line-height: 1.35;
+  font-weight: 900;
+  color: #171717;
+}
+.role-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #777;
+}
+/* =========================================================
+   MAIN OPTIONS
+========================================================= */
+.role-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+/* =========================================================
+   OPTION BUTTON
+========================================================= */
+.role-option {
+  width: 100%;
+  min-height: 78px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #fffdf8;
+  border: 1px solid #e2d6bd;
+  border-radius: 17px;
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.05);
+  color: #171717;
+  cursor: pointer;
+  text-align: right;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.role-option:hover {
+  transform: translateY(-2px);
+  border-color: #c79b3b;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.role-option:active {
+  transform: scale(0.98);
+}
+/* =========================================================
+   ICON
+========================================================= */
+.role-option-icon {
+  width: 49px;
+  height: 49px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #f3e5bd;
+  font-size: 23px;
+}
+/* =========================================================
+   TEXT
+========================================================= */
+.role-option-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.role-option-text strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: #171717;
+}
+.role-option-text span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #777;
+}
+/* =========================================================
+   ARROW
+========================================================= */
+.role-arrow {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #c79b3b;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+}
+/* =========================================================
+   SPACER
+========================================================= */
+.role-spacer {
+  flex: 1;
+}
+/* =========================================================
+   SUPPORT AREA
+========================================================= */
+.role-support-area {
+  width: 100%;
+  min-height: 185px;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.role-support-content {
+  width: 100%;
+  max-width: 520px;
+  padding:
+    22px
+    25px
+    25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* =========================================================
+   SUBTLE SUPPORT LINKS
+========================================================= */
+.support-subtle-link {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  color: #aaa;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    color 0.2s ease;
+}
+.support-subtle-link:hover {
+  color: #d0ae67;
+}
+/* =========================================================
+   SUPPORT LINES
+========================================================= */
+.support-line {
+  width: 100%;
+  height: 1px;
+  background: #333;
+}
+/* =========================================================
+   MOBILE
+========================================================= */
+@media (max-width: 600px) {
+  .role-page {
+    padding:
+      22px
+      16px
+      20px;
+    min-height: calc(100vh - 175px);
+  }
+  .role-equipment-image {
+    height: 165px;
+  }
+  .role-equipment-image img {
+    height: 165px;
+  }
+  .role-header {
+    margin-bottom: 21px;
+  }
+  .role-header h1 {
+    font-size: 24px;
+  }
+  .role-header p {
+    font-size: 13px;
+  }
+  .role-option {
+    min-height: 74px;
+    padding: 10px 12px;
+  }
+  .role-option-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 21px;
+  }
+  .role-option-text strong {
+    font-size: 16px;
+  }
+  .role-option-text span {
+    font-size: 11px;
+  }
+  .role-arrow {
+    width: 30px;
+    height: 30px;
+  }
+  .role-support-area {
+    min-height: 175px;
+  }
+  .role-support-content {
+    padding:
+      20px
+      18px
+      22px;
+  }
+}
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+@media (max-width: 380px) {
+  .role-equipment-image {
+    height: 145px;
+  }
+  .role-equipment-image img {
+    height: 145px;
+  }
+  .role-header h1 {
+    font-size: 22px;
+  }
+  .role-option {
+    min-height: 70px;
+  }
+}
