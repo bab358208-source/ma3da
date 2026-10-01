@@ -2481,3 +2481,365 @@ html[data-theme="dark"] .operator-logout-btn {
   }
 
 }
+/* =====================================================
+   MA3DA ROLE SCREEN — CREAM & GOLD
+===================================================== */
+
+#roleScreen.ma3da-role-screen {
+  --ma3da-gold: #c99019;
+  --ma3da-gold-dark: #a9710b;
+  --ma3da-gold-light: #fff0cf;
+  --ma3da-cream: #fffaf0;
+  --ma3da-black: #242421;
+  --ma3da-gray: #858585;
+
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 0 30px;
+  background: var(--ma3da-cream);
+  color: var(--ma3da-black);
+  overflow: hidden;
+  font-family: inherit;
+}
+
+/* HERO */
+
+#roleScreen .ma3da-hero {
+  position: relative;
+  height: 370px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 249, 236, 0.10),
+      rgba(255, 242, 215, 0.20)
+    ),
+    url("https://images.unsplash.com/photo-1580901368919-7738efb0f87e?auto=format&fit=crop&w=1200&q=85")
+    center 55% / cover no-repeat,
+    #f5e5c7;
+}
+
+#roleScreen .ma3da-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 250, 240, 0.70) 0%,
+    rgba(255, 246, 228, 0.38) 55%,
+    rgba(201, 144, 25, 0.18) 100%
+  );
+}
+
+#roleScreen .ma3da-brand {
+  position: relative;
+  z-index: 1;
+  margin-top: 95px;
+  text-align: center;
+}
+
+#roleScreen .ma3da-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+}
+
+#roleScreen .ma3da-logo > span:first-child {
+  font-size: clamp(58px, 15vw, 82px);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -4px;
+  color: #20201d;
+}
+
+#roleScreen .ma3da-logo-excavator {
+  position: absolute;
+  top: -34px;
+  right: 8px;
+  font-size: 43px;
+  transform: rotate(-8deg);
+  filter: saturate(0.85);
+}
+
+#roleScreen .ma3da-brand p {
+  margin: 12px 0 0;
+  color: #77756f;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* MAIN CONTENT */
+
+#roleScreen .ma3da-role-content {
+  position: relative;
+  z-index: 2;
+  margin-top: -34px;
+  padding: 42px 7.4% 15px;
+  background: linear-gradient(
+    180deg,
+    #fffdf8 0%,
+    #fffaf0 100%
+  );
+  border-radius: 50% 50% 0 0 / 35px 35px 0 0;
+}
+
+/* HEADING */
+
+#roleScreen .ma3da-role-heading {
+  text-align: center;
+  margin: 0 0 55px;
+}
+
+#roleScreen .ma3da-role-heading h1 {
+  margin: 0;
+  font-size: clamp(27px, 7vw, 39px);
+  font-weight: 900;
+  line-height: 1.5;
+  color: var(--ma3da-black);
+}
+
+#roleScreen .ma3da-role-heading p {
+  margin: 8px 0 0;
+  color: var(--ma3da-gray);
+  font-size: clamp(17px, 4.5vw, 24px);
+  font-weight: 600;
+}
+
+/* ROLE CARDS */
+
+#roleScreen .ma3da-role-card {
+  width: 100%;
+  min-height: 145px;
+  margin: 0 0 32px;
+  padding: 18px 30px 18px 24px;
+
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 12px;
+
+  background: rgba(255, 252, 245, 0.92);
+  border: 1.5px solid #e7a52b;
+  border-radius: 26px;
+  box-shadow: 0 8px 22px rgba(139, 95, 15, 0.045);
+
+  color: var(--ma3da-black);
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+#roleScreen .ma3da-role-card:active {
+  transform: scale(0.985);
+  background: #fff3d8;
+  box-shadow: 0 3px 10px rgba(139, 95, 15, 0.10);
+}
+
+/* ICON CIRCLE */
+
+#roleScreen .ma3da-role-icon {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff0d0;
+  color: #252521;
+}
+
+#roleScreen .ma3da-role-icon svg {
+  width: 67px;
+  height: 67px;
+  display: block;
+}
+
+#roleScreen .ma3da-machine-icon svg {
+  width: 76px;
+  height: 76px;
+}
+
+#roleScreen .ma3da-contractor-icon svg {
+  width: 73px;
+  height: 73px;
+}
+
+#roleScreen .ma3da-role-label {
+  display: block;
+  min-width: 0;
+  font-size: clamp(19px, 5.2vw, 30px);
+  font-weight: 850;
+  line-height: 1.6;
+  white-space: normal;
+  color: #252521;
+}
+
+#roleScreen .ma3da-role-arrow {
+  color: var(--ma3da-gold);
+  font-size: 42px;
+  font-family: Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1;
+  text-align: center;
+}
+
+/* FOOTER */
+
+#roleScreen .ma3da-role-footer {
+  margin-top: 58px;
+  text-align: center;
+}
+
+#roleScreen .ma3da-footer-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  margin: 0 0 42px;
+}
+
+#roleScreen .ma3da-footer-divider span {
+  height: 1px;
+  flex: 1;
+  background: #d6a44a;
+}
+
+#roleScreen .ma3da-footer-divider i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: #d69a1d;
+}
+
+#roleScreen .ma3da-login-help {
+  margin: 0 0 24px;
+  color: #292925;
+  font-size: clamp(18px, 4.8vw, 25px);
+  font-weight: 700;
+}
+
+#roleScreen .ma3da-support-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+
+  color: var(--ma3da-gold-dark);
+  font-family: inherit;
+  font-size: clamp(18px, 4.8vw, 25px);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#roleScreen .ma3da-support-link svg {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+#roleScreen .ma3da-support-arrow {
+  font-family: Arial, sans-serif;
+  font-size: 38px;
+  line-height: 1;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  #roleScreen .ma3da-hero {
+    height: 330px;
+  }
+
+  #roleScreen .ma3da-brand {
+    margin-top: 88px;
+  }
+
+  #roleScreen .ma3da-role-content {
+    margin-top: -28px;
+    padding: 38px 7.3% 20px;
+  }
+
+  #roleScreen .ma3da-role-heading {
+    margin-bottom: 38px;
+  }
+
+  #roleScreen .ma3da-role-card {
+    min-height: 120px;
+    grid-template-columns: 78px minmax(0, 1fr) 18px;
+    gap: 10px;
+    padding: 15px 18px;
+    margin-bottom: 22px;
+    border-radius: 23px;
+  }
+
+  #roleScreen .ma3da-role-icon {
+    width: 72px;
+    height: 72px;
+  }
+
+  #roleScreen .ma3da-role-icon svg,
+  #roleScreen .ma3da-machine-icon svg,
+  #roleScreen .ma3da-contractor-icon svg {
+    width: 55px;
+    height: 55px;
+  }
+
+  #roleScreen .ma3da-role-label {
+    font-size: clamp(17px, 4.7vw, 24px);
+  }
+
+  #roleScreen .ma3da-role-arrow {
+    font-size: 34px;
+  }
+
+  #roleScreen .ma3da-role-footer {
+    margin-top: 40px;
+  }
+
+  #roleScreen .ma3da-footer-divider {
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+}
+
+/* VERY SMALL PHONES */
+
+@media (max-width: 380px) {
+  #roleScreen .ma3da-role-card {
+    grid-template-columns: 62px minmax(0, 1fr) 15px;
+    gap: 8px;
+    padding: 13px;
+  }
+
+  #roleScreen .ma3da-role-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  #roleScreen .ma3da-role-icon svg,
+  #roleScreen .ma3da-machine-icon svg,
+  #roleScreen .ma3da-contractor-icon svg {
+    width: 47px;
+    height: 47px;
+  }
+
+  #roleScreen .ma3da-role-label {
+    font-size: 17px;
+  }
+}
