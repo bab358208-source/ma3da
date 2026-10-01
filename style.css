@@ -24,10 +24,14 @@ button {
   cursor: pointer;
 }
 
+/* =========================================================
+   HEADER
+========================================================= */
+
 .header {
   height: 70px;
   background: #111;
-  color: white;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -40,14 +44,17 @@ button {
 }
 
 .login-btn {
-  background: white;
+  background: #fff;
   color: #111;
   border: 0;
   padding: 11px 18px;
   border-radius: 12px;
   font-weight: bold;
-  cursor: pointer;
 }
+
+/* =========================================================
+   GENERAL
+========================================================= */
 
 main {
   min-height: calc(100vh - 70px);
@@ -82,11 +89,11 @@ main {
 }
 
 .card {
-  background: white;
   width: 100%;
   max-width: 520px;
   margin: auto;
   padding: 25px;
+  background: #fff;
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,.07);
 }
@@ -104,7 +111,7 @@ textarea {
   padding: 14px;
   border: 1px solid #ddd;
   border-radius: 12px;
-  background: white;
+  background: #fff;
   font-size: 16px;
 }
 
@@ -117,19 +124,22 @@ textarea {
   width: 100%;
   border: 0;
   background: #111;
-  color: white;
+  color: #fff;
   padding: 16px;
   border-radius: 14px;
   margin-top: 22px;
   font-size: 17px;
   font-weight: bold;
-  cursor: pointer;
 }
 
 .center-screen,
 .center {
   text-align: center;
 }
+
+/* =========================================================
+   LOADING / SUCCESS
+========================================================= */
 
 .loader {
   font-size: 70px;
@@ -153,12 +163,16 @@ textarea {
   margin: 0 auto 18px;
   border-radius: 50%;
   background: #111;
-  color: white;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 35px;
 }
+
+/* =========================================================
+   DRIVER / ORDER INFO
+========================================================= */
 
 .driver-card {
   display: flex;
@@ -174,7 +188,7 @@ textarea {
   width: 52px;
   height: 52px;
   background: #111;
-  color: white;
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -195,6 +209,10 @@ textarea {
   padding: 15px 0;
   border-bottom: 1px solid #eee;
 }
+
+/* =========================================================
+   MAP / TRACKING
+========================================================= */
 
 .map {
   position: relative;
@@ -222,7 +240,7 @@ textarea {
 
 .road {
   position: absolute;
-  background: white;
+  background: #fff;
   border: 2px solid #ddd;
 }
 
@@ -280,6 +298,10 @@ textarea {
   direction: ltr;
 }
 
+/* =========================================================
+   PAYMENT / RATING
+========================================================= */
+
 .price-box {
   background: #f5f5f5;
   padding: 20px;
@@ -305,12 +327,11 @@ textarea {
 
 .payment-option {
   border: 1px solid #ddd;
-  background: white;
+  background: #fff;
   padding: 18px;
   border-radius: 14px;
   text-align: right;
   font-size: 17px;
-  cursor: pointer;
 }
 
 .payment-option.selected {
@@ -331,17 +352,15 @@ textarea {
   background: transparent;
   font-size: 42px;
   color: #ccc;
-  cursor: pointer;
 }
 
 .stars button.selected {
   color: #111;
 }
 
-
-/* ===============================
+/* =========================================================
    OPERATOR SCREEN
-================================ */
+========================================================= */
 
 #operatorScreen {
   padding: 25px 16px 40px;
@@ -357,7 +376,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: white;
+  background: #fff;
   padding: 18px;
   border-radius: 18px;
   margin-bottom: 18px;
@@ -383,7 +402,7 @@ textarea {
 }
 
 .operator-request-card {
-  background: white;
+  background: #fff;
   border-radius: 24px;
   padding: 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
@@ -466,12 +485,11 @@ textarea {
 
 .operator-buttons button {
   flex: 1;
-  border: none;
+  border: 0;
   padding: 16px;
   border-radius: 14px;
   font-size: 16px;
   font-weight: bold;
-  cursor: pointer;
 }
 
 .reject-btn {
@@ -481,12 +499,12 @@ textarea {
 
 .accept-btn {
   background: #111;
-  color: white;
+  color: #fff;
 }
 
 .operator-status {
   margin-top: 18px;
-  background: white;
+  background: #fff;
   padding: 16px;
   border-radius: 18px;
   display: flex;
@@ -504,10 +522,9 @@ textarea {
   color: #777;
 }
 
-
-/* ===============================
-   CHAT SCREEN
-================================ */
+/* =========================================================
+   CHAT
+========================================================= */
 
 #chatScreen {
   padding: 0 !important;
@@ -533,15 +550,14 @@ textarea {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: white;
+  background: #fff;
   border-bottom: 1px solid #ddd;
 }
 
 #chatScreen .chat-back {
-  border: none;
+  border: 0;
   background: none;
   font-size: 28px;
-  cursor: pointer;
 }
 
 #chatScreen .chat-driver-info {
@@ -562,12 +578,12 @@ textarea {
   font-weight: bold;
 }
 
-#chatScreen .chat-driver-info strong {
+#chatScreen .chat-driver-info strong,
+#chatScreen .chat-driver-info span {
   display: block;
 }
 
 #chatScreen .chat-driver-info span {
-  display: block;
   font-size: 13px;
   color: #22a447;
   margin-top: 3px;
@@ -588,7 +604,7 @@ textarea {
 }
 
 #chatScreen .message.received {
-  background: white;
+  background: #fff;
   margin-right: auto;
 }
 
@@ -602,16 +618,13 @@ textarea {
   display: flex;
   gap: 8px;
   padding: 10px;
-  background: white;
+  background: #fff;
   border-top: 1px solid #ddd;
 }
 
 #chatScreen .chat-input-row input {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  font-size: 16px;
 }
 
 #chatScreen .chat-input-row .main-btn {
@@ -620,10 +633,9 @@ textarea {
   padding: 10px 16px;
 }
 
-
-/* ================================
-   MA3DA INTRO SCREENS
-================================ */
+/* =========================================================
+   INTRO SCREENS
+========================================================= */
 
 #introScreen,
 #whyMa3daScreen,
@@ -634,7 +646,6 @@ textarea {
   flex-direction: column;
   justify-content: space-between;
   padding: 40px 20px 25px;
-  box-sizing: border-box;
   text-align: center;
 }
 
@@ -711,7 +722,6 @@ textarea {
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  box-sizing: border-box;
   padding: 20px 5px 5px;
   background: transparent;
   box-shadow: none;
@@ -752,20 +762,18 @@ textarea {
 #howWorksScreen .main-btn {
   width: 100%;
   min-height: 56px;
-  border: none;
+  border: 0;
   border-radius: 16px;
   font-size: 18px;
   font-weight: 800;
-  cursor: pointer;
 }
 
 #howMa3daScreen #howMa3daSkipBtn,
 #howMa3daScreen #howMa3daBackBtn {
   margin-top: 12px;
-  border: none;
+  border: 0;
   background: transparent;
   font-size: 15px;
-  cursor: pointer;
   opacity: .65;
 }
 
@@ -773,30 +781,17 @@ textarea {
   display: none;
 }
 
-
 /* =========================================================
-   MA3DA — NEW CUSTOMER HOME DESIGN
+   CUSTOMER HOME
 ========================================================= */
 
 #customerHomeScreen {
   min-height: 100vh;
   padding: 0;
   background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(0,0,0,.055),
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 0% 38%,
-      rgba(0,0,0,.035),
-      transparent 25%
-    ),
-    linear-gradient(
-      180deg,
-      #fafafa 0%,
-      #f1f2f4 100%
-    );
+    radial-gradient(circle at 100% 0%, rgba(0,0,0,.055), transparent 30%),
+    radial-gradient(circle at 0% 38%, rgba(0,0,0,.035), transparent 25%),
+    linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
   color: #111;
 }
 
@@ -807,11 +802,6 @@ textarea {
   margin: 0 auto;
   padding: 24px 18px 36px;
 }
-
-
-/* ================================
-   CUSTOMER HOME HEADER
-================================ */
 
 #customerHomeScreen .home-header {
   display: flex;
@@ -855,11 +845,6 @@ textarea {
   box-shadow: 0 10px 25px rgba(0,0,0,.13);
 }
 
-
-/* ================================
-   REQUEST HERO CARD
-================================ */
-
 #customerHomeScreen .home-request-card {
   position: relative;
   min-height: 222px;
@@ -867,16 +852,9 @@ textarea {
   margin-bottom: 31px;
   overflow: hidden;
   border-radius: 28px;
-  background:
-    linear-gradient(
-      145deg,
-      #101010 0%,
-      #171717 52%,
-      #272727 100%
-    );
+  background: linear-gradient(145deg, #101010 0%, #171717 52%, #272727 100%);
   color: #fff;
-  box-shadow:
-    0 20px 40px rgba(0,0,0,.17);
+  box-shadow: 0 20px 40px rgba(0,0,0,.17);
 }
 
 #customerHomeScreen .home-request-card::before {
@@ -941,15 +919,13 @@ textarea {
   width: 100%;
   min-height: 53px;
   margin-top: 18px;
-  border: none;
+  border: 0;
   border-radius: 16px;
   background: #fff;
   color: #111;
   font-size: 15px;
   font-weight: 900;
-  transition:
-    transform .15s ease,
-    box-shadow .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 #customerHomeScreen .home-request-btn span {
@@ -965,11 +941,6 @@ textarea {
   box-shadow: 0 8px 20px rgba(0,0,0,.18);
 }
 
-
-/* ================================
-   CUSTOMER HOME SECTIONS
-================================ */
-
 #customerHomeScreen .home-section {
   margin-bottom: 25px;
 }
@@ -980,11 +951,6 @@ textarea {
   line-height: 1.4;
   font-weight: 900;
 }
-
-
-/* ================================
-   CUSTOMER MENU CARDS
-================================ */
 
 #customerHomeScreen .home-menu-item {
   position: relative;
@@ -1001,10 +967,7 @@ textarea {
   color: #111;
   text-align: right;
   box-shadow: 0 7px 20px rgba(0,0,0,.045);
-  transition:
-    transform .15s ease,
-    box-shadow .15s ease,
-    background .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 #customerHomeScreen .home-menu-item:active {
@@ -1028,11 +991,6 @@ textarea {
   color: #999;
   font-size: 18px;
 }
-
-
-/* ================================
-   FEATURES
-================================ */
 
 #customerHomeScreen .home-features {
   display: grid;
@@ -1075,11 +1033,6 @@ textarea {
   line-height: 1.4;
 }
 
-
-/* ================================
-   CUSTOMER LOGOUT
-================================ */
-
 #customerHomeScreen .home-logout-btn {
   width: 100%;
   min-height: 53px;
@@ -1090,9 +1043,6 @@ textarea {
   color: #777;
   font-size: 14px;
   font-weight: 800;
-  transition:
-    transform .15s ease,
-    background .15s ease;
 }
 
 #customerHomeScreen .home-logout-btn span {
@@ -1103,250 +1053,6 @@ textarea {
   transform: scale(.985);
 }
 
-
-/* ================================
-   MOBILE CUSTOMER HOME
-================================ */
-
-@media (max-width: 600px) {
-
-  #customerHomeScreen .home-page {
-    padding:
-      22px
-      16px
-      30px;
-  }
-
-  #customerHomeScreen .home-header {
-    margin-bottom: 22px;
-  }
-
-  #customerHomeScreen .home-header h1 {
-    font-size: 28px;
-  }
-
-  #customerHomeScreen .home-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 17px;
-  }
-
-  #customerHomeScreen .home-request-card {
-    min-height: 211px;
-    padding: 22px 19px 19px;
-    border-radius: 25px;
-  }
-
-  #customerHomeScreen .home-request-content h2 {
-    font-size: 24px;
-  }
-
-  #customerHomeScreen .home-request-btn {
-    min-height: 52px;
-  }
-
-  #customerHomeScreen .home-menu-item {
-    min-height: 66px;
-    border-radius: 17px;
-  }
-
-  #customerHomeScreen .home-features {
-    gap: 7px;
-  }
-
-  #customerHomeScreen .home-feature {
-    min-height: 103px;
-    border-radius: 17px;
-  }
-}
-
-
-/* ================================
-   VERY SMALL PHONES
-================================ */
-
-@media (max-width: 380px) {
-
-  #customerHomeScreen .home-page {
-    padding-left: 13px;
-    padding-right: 13px;
-  }
-
-  #customerHomeScreen .home-header h1 {
-    font-size: 25px;
-  }
-
-  #customerHomeScreen .home-request-card {
-    padding: 20px;
-    border-radius: 23px;
-  }
-
-  #customerHomeScreen .home-request-content h2 {
-    font-size: 22px;
-  }
-
-  #customerHomeScreen .home-request-content p {
-    font-size: 13px;
-  }
-
-  #customerHomeScreen .home-feature {
-    min-height: 98px;
-  }
-
-  #customerHomeScreen .home-feature strong {
-    font-size: 11px;
-  }
-
-  #customerHomeScreen .home-feature span {
-    font-size: 9px;
-  }
-}
-
-
-/* ================================
-   DARK MODE
-================================ */
-
-html[data-theme="dark"] body {
-  background: #111;
-  color: #f5f5f5;
-}
-
-html[data-theme="dark"] #customerHomeScreen {
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(255,255,255,.045),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #171717 0%,
-      #101010 100%
-    );
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-greeting {
-  color: #888;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-avatar {
-  background: #242424;
-  box-shadow: none;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-request-card {
-  background:
-    linear-gradient(
-      145deg,
-      #1d1d1d,
-      #121212
-    );
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-menu-item {
-  background: #1d1d1d;
-  border-color: #2a2a2a;
-  color: #f5f5f5;
-  box-shadow: none;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-menu-item::before {
-  background: #292929;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-menu-item::after {
-  color: #777;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-feature {
-  background: #1d1d1d;
-  border-color: #292929;
-  box-shadow: none;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-feature span {
-  color: #888;
-}
-
-html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
-  background: #1d1d1d;
-  border-color: #2a2a2a;
-  color: #aaa;
-}
-
-
-/* ================================
-   GENERAL DARK MODE
-================================ */
-
-html[data-theme="dark"] .card {
-  background: #1e1e1e;
-  color: #f5f5f5;
-}
-
-html[data-theme="dark"] input,
-html[data-theme="dark"] select,
-html[data-theme="dark"] textarea {
-  background: #1e1e1e;
-  color: #f5f5f5;
-  border-color: #444;
-}
-
-html[data-theme="dark"] .hero p {
-  color: #aaa;
-}
-
-html[data-theme="dark"] .driver-card {
-  background: #1e1e1e;
-}
-
-html[data-theme="dark"] .operator-header,
-html[data-theme="dark"] .operator-request-card,
-html[data-theme="dark"] .operator-status {
-  background: #1e1e1e;
-  color: #f5f5f5;
-}
-
-html[data-theme="dark"] .operator-notes {
-  background: #292929;
-}
-
-html[data-theme="dark"] .price-box {
-  background: #292929;
-}
-
-html[data-theme="dark"] .payment-option {
-  background: #1e1e1e;
-  color: #f5f5f5;
-  border-color: #444;
-}
-
-
-/* ================================
-   GENERAL MOBILE
-================================ */
-
-@media (max-width: 600px) {
-
-  .hero h1 {
-    font-size: 27px;
-  }
-
-  .card {
-    padding: 20px;
-  }
-
-  .operator-request-card {
-    padding: 18px;
-  }
-
-  .operator-buttons button {
-    padding: 15px 8px;
-  }
-}
-
-
 /* =========================================================
    OPERATOR DASHBOARD
 ========================================================= */
@@ -1355,16 +1061,8 @@ html[data-theme="dark"] .payment-option {
   min-height: 100vh;
   padding: 0;
   background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(0,0,0,.055),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #fafafa 0%,
-      #f1f2f4 100%
-    );
+    radial-gradient(circle at 100% 0%, rgba(0,0,0,.055), transparent 30%),
+    linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
 }
 
 .operator-dashboard {
@@ -1406,7 +1104,7 @@ html[data-theme="dark"] .payment-option {
   flex-shrink: 0;
   border-radius: 18px;
   background: #111;
-  color: white;
+  color: #fff;
   font-size: 25px;
   box-shadow: 0 10px 25px rgba(0,0,0,.13);
 }
@@ -1418,7 +1116,7 @@ html[data-theme="dark"] .payment-option {
   padding: 17px;
   margin-bottom: 28px;
   border-radius: 19px;
-  background: white;
+  background: #fff;
   border: 1px solid rgba(0,0,0,.05);
   box-shadow: 0 8px 22px rgba(0,0,0,.05);
 }
@@ -1467,11 +1165,10 @@ html[data-theme="dark"] .payment-option {
 }
 
 .operator-small-btn {
-  border: none;
+  border: 0;
   background: transparent;
   color: #555;
   font-weight: 800;
-  cursor: pointer;
 }
 
 .operator-menu-card {
@@ -1534,7 +1231,7 @@ html[data-theme="dark"] .payment-option {
 .operator-equipment-dashboard-card {
   overflow: hidden;
   border-radius: 23px;
-  background: white;
+  background: #fff;
   box-shadow: 0 9px 25px rgba(0,0,0,.06);
 }
 
@@ -1554,7 +1251,6 @@ html[data-theme="dark"] .payment-option {
 .operator-equipment-data {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
 }
 
 .operator-equipment-data > div {
@@ -1584,7 +1280,6 @@ html[data-theme="dark"] .payment-option {
   font-size: 14px;
   font-weight: 800;
 }
-
 
 /* =========================================================
    OPERATOR REQUEST / ORDER
@@ -1623,7 +1318,6 @@ html[data-theme="dark"] .payment-option {
   object-fit: cover;
 }
 
-
 /* =========================================================
    OPERATOR STATS
 ========================================================= */
@@ -1644,7 +1338,7 @@ html[data-theme="dark"] .payment-option {
   align-items: center;
   justify-content: center;
   border-radius: 19px;
-  background: white;
+  background: #fff;
   text-align: center;
   box-shadow: 0 7px 20px rgba(0,0,0,.05);
 }
@@ -1682,106 +1376,6 @@ html[data-theme="dark"] .payment-option {
   color: #888;
 }
 
-
-/* =========================================================
-   OPERATOR DARK MODE
-========================================================= */
-
-html[data-theme="dark"] #operatorHomeScreen {
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(255,255,255,.04),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #171717 0%,
-      #101010 100%
-    );
-}
-
-html[data-theme="dark"] .operator-dashboard-avatar {
-  background: #242424;
-}
-
-html[data-theme="dark"] .operator-online-card,
-html[data-theme="dark"] .operator-menu-card,
-html[data-theme="dark"] .operator-equipment-dashboard-card,
-html[data-theme="dark"] .operator-stat-card {
-  background: #1d1d1d;
-  color: #f5f5f5;
-  border-color: #292929;
-  box-shadow: none;
-}
-
-html[data-theme="dark"] .operator-menu-icon {
-  background: #292929;
-}
-
-html[data-theme="dark"] .operator-online-card span,
-html[data-theme="dark"] .operator-menu-content span,
-html[data-theme="dark"] .operator-equipment-data span,
-html[data-theme="dark"] .operator-greeting {
-  color: #888;
-}
-
-html[data-theme="dark"] .operator-current-status {
-  background: #292929;
-}
-
-html[data-theme="dark"] .operator-logout-btn {
-  background: #1d1d1d;
-  border-color: #292929;
-  color: #aaa;
-}
-
-
-/* =========================================================
-   OPERATOR MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
-
-  .operator-dashboard {
-    padding:
-      22px
-      16px
-      30px;
-  }
-
-  .operator-dashboard-header h1 {
-    font-size: 27px;
-  }
-
-  .operator-equipment-image-wrap {
-    height: 175px;
-  }
-
-}
-
-@media (max-width: 380px) {
-
-  .operator-dashboard {
-    padding-left: 13px;
-    padding-right: 13px;
-  }
-
-  .operator-menu-card {
-    min-height: 68px;
-  }
-
-  .operator-stat-card {
-    min-height: 112px;
-  }
-
-  .operator-stat-card strong {
-    font-size: 14px;
-  }
-
-}
-
-
 /* =========================================================
    SUPPORT STAFF PORTAL
 ========================================================= */
@@ -1795,18 +1389,9 @@ html[data-theme="dark"] .operator-logout-btn {
   margin: 0;
   overflow-x: hidden;
   overflow-y: auto;
-
   background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(0,0,0,.055),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #fafafa 0%,
-      #f1f2f4 100%
-    );
+    radial-gradient(circle at 100% 0%, rgba(0,0,0,.055), transparent 30%),
+    linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
 }
 
 .support-screen.active {
@@ -1874,17 +1459,15 @@ html[data-theme="dark"] .operator-logout-btn {
   border-radius: 12px;
   font-size: 16px;
   margin: 7px 0 12px;
-  box-sizing: border-box;
 }
 
 .support-btn {
+  width: 100%;
   border: 0;
   border-radius: 12px;
   padding: 13px 15px;
   font-size: 15px;
   font-weight: 700;
-  cursor: pointer;
-  width: 100%;
   margin-top: 8px;
 }
 
@@ -1907,7 +1490,6 @@ html[data-theme="dark"] .operator-logout-btn {
   background: none;
   border: 0;
   color: #1769aa;
-  cursor: pointer;
   padding: 10px 0;
   font-size: 14px;
 }
@@ -1940,7 +1522,6 @@ html[data-theme="dark"] .operator-logout-btn {
   background: #fff;
   border-radius: 12px;
   padding: 10px 13px;
-  cursor: pointer;
 }
 
 .support-menu button.active {
@@ -1996,45 +1577,6 @@ html[data-theme="dark"] .operator-logout-btn {
   margin: 0;
 }
 
-
-/* =========================================================
-   SUPPORT MOBILE
-========================================================= */
-
-@media (max-width: 520px) {
-
-  .support-screen {
-    padding: 0 !important;
-  }
-
-  .support-wrap {
-    min-height: 100vh;
-    padding:
-      22px
-      16px
-      30px;
-  }
-
-  .support-login-card {
-    margin-top: 0;
-  }
-
-  .support-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .support-topbar {
-    align-items: flex-start;
-  }
-
-  .support-header-actions {
-    flex-direction: column;
-  }
-
-  .support-header-actions .support-btn {
-    width: 100%;
-  }
-}
 /* =========================================================
    CONTRACTOR
 ========================================================= */
@@ -2050,8 +1592,6 @@ html[data-theme="dark"] .operator-logout-btn {
   max-width: 600px;
   margin: 0 auto;
 }
-
-/* HEADER */
 
 .contractor-header {
   display: flex;
@@ -2074,15 +1614,19 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 14px;
 }
 
-/* CARDS */
-
-.contractor-card {
-  background: #ffffff;
+.contractor-card,
+.contractor-request-box,
+.contractor-details-card,
+.contractor-settings-card {
+  background: #fff;
   border-radius: 20px;
   padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
   border: 1px solid #eef0f2;
+  box-shadow: 0 7px 22px rgba(0,0,0,.05);
+}
+
+.contractor-card {
+  margin-bottom: 16px;
 }
 
 .contractor-card h2 {
@@ -2097,7 +1641,7 @@ html[data-theme="dark"] .operator-logout-btn {
   line-height: 1.7;
 }
 
-/* FORM */
+/* CONTRACTOR FORM */
 
 .contractor-form-group {
   margin-bottom: 16px;
@@ -2122,8 +1666,7 @@ html[data-theme="dark"] .operator-logout-btn {
   color: #111827;
   font-size: 15px;
   outline: none;
-  transition: 0.2s;
-  font-family: inherit;
+  transition: .2s;
 }
 
 .contractor-form-group textarea {
@@ -2135,10 +1678,10 @@ html[data-theme="dark"] .operator-logout-btn {
 .contractor-form-group select:focus,
 .contractor-form-group textarea:focus {
   border-color: #111827;
-  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.07);
+  box-shadow: 0 0 0 3px rgba(17,24,39,.07);
 }
 
-/* BUTTONS */
+/* CONTRACTOR BUTTONS */
 
 .contractor-btn {
   width: 100%;
@@ -2147,13 +1690,11 @@ html[data-theme="dark"] .operator-logout-btn {
   padding: 14px 16px;
   font-size: 15px;
   font-weight: 800;
-  cursor: pointer;
-  font-family: inherit;
-  transition: 0.2s;
+  transition: .2s;
 }
 
 .contractor-btn:active {
-  transform: scale(0.98);
+  transform: scale(.98);
 }
 
 .contractor-btn-primary {
@@ -2171,7 +1712,7 @@ html[data-theme="dark"] .operator-logout-btn {
   color: #c62828;
 }
 
-/* DASHBOARD */
+/* CONTRACTOR DASHBOARD */
 
 .contractor-welcome {
   background: #111827;
@@ -2205,15 +1746,14 @@ html[data-theme="dark"] .operator-logout-btn {
   border-radius: 18px;
   background: #fff;
   padding: 18px 12px;
-  cursor: pointer;
   font-family: inherit;
   text-align: center;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
-  transition: 0.2s;
+  box-shadow: 0 5px 18px rgba(0,0,0,.04);
+  transition: .2s;
 }
 
 .contractor-menu-btn:active {
-  transform: scale(0.97);
+  transform: scale(.97);
 }
 
 .contractor-menu-btn .icon {
@@ -2236,17 +1776,7 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 11px;
 }
 
-/* REQUEST */
-
-.contractor-request-box {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid #eef0f2;
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.05);
-}
-
-/* ORDERS */
+/* CONTRACTOR ORDERS */
 
 .contractor-orders-list {
   display: flex;
@@ -2259,7 +1789,7 @@ html[data-theme="dark"] .operator-logout-btn {
   border: 1px solid #eceff2;
   border-radius: 18px;
   padding: 17px;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 5px 18px rgba(0,0,0,.04);
   cursor: pointer;
 }
 
@@ -2286,15 +1816,7 @@ html[data-theme="dark"] .operator-logout-btn {
   font-weight: 800;
 }
 
-/* DETAILS */
-
-.contractor-details-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid #eceff2;
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.05);
-}
+/* CONTRACTOR DETAILS */
 
 .contractor-detail-row {
   display: flex;
@@ -2321,7 +1843,7 @@ html[data-theme="dark"] .operator-logout-btn {
   text-align: left;
 }
 
-/* PROJECTS */
+/* CONTRACTOR PROJECTS */
 
 .contractor-project-card {
   background: #fff;
@@ -2329,7 +1851,7 @@ html[data-theme="dark"] .operator-logout-btn {
   padding: 18px;
   margin-bottom: 12px;
   border: 1px solid #eceff2;
-  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 5px 18px rgba(0,0,0,.04);
 }
 
 .contractor-project-card h3 {
@@ -2344,17 +1866,7 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 13px;
 }
 
-/* SETTINGS */
-
-.contractor-settings-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid #eceff2;
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.05);
-}
-
-/* SUPPORT */
+/* CONTRACTOR SUPPORT */
 
 .contractor-support-card {
   text-align: center;
@@ -2362,7 +1874,7 @@ html[data-theme="dark"] .operator-logout-btn {
   border-radius: 20px;
   padding: 28px 20px;
   border: 1px solid #eceff2;
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 7px 22px rgba(0,0,0,.05);
 }
 
 .contractor-support-icon {
@@ -2382,7 +1894,7 @@ html[data-theme="dark"] .operator-logout-btn {
   line-height: 1.8;
 }
 
-/* EMPTY STATE */
+/* CONTRACTOR EMPTY */
 
 .contractor-empty {
   text-align: center;
@@ -2409,7 +1921,7 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 13px;
 }
 
-/* BACK BUTTON */
+/* CONTRACTOR BACK */
 
 .contractor-back-btn {
   border: 0;
@@ -2419,14 +1931,451 @@ html[data-theme="dark"] .operator-logout-btn {
   padding: 10px 14px;
   font-size: 14px;
   font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(0,0,0,.05);
 }
 
-/* MOBILE */
+/* =========================================================
+   ROLE SCREEN
+========================================================= */
+
+#roleScreen {
+  background: #f7f1e5;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.role-page {
+  width: 100%;
+  max-width: 520px;
+  min-height: calc(100vh - 185px);
+  margin: 0 auto;
+  padding: 30px 20px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.role-equipment-image {
+  width: 100%;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.role-equipment-image img {
+  width: 100%;
+  max-width: 390px;
+  height: 190px;
+  object-fit: contain;
+  display: block;
+}
+
+.role-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.role-logo {
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #171717;
+}
+
+.role-header h1 {
+  margin: 0 0 8px;
+  font-size: 27px;
+  line-height: 1.35;
+  font-weight: 900;
+  color: #171717;
+}
+
+.role-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #777;
+}
+
+.role-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.role-option {
+  width: 100%;
+  min-height: 78px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #fffdf8;
+  border: 1px solid #e2d6bd;
+  border-radius: 17px;
+  box-shadow: 0 5px 16px rgba(0,0,0,.05);
+  color: #171717;
+  cursor: pointer;
+  text-align: right;
+  transition:
+    transform .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.role-option:hover {
+  transform: translateY(-2px);
+  border-color: #c79b3b;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+}
+
+.role-option:active {
+  transform: scale(.98);
+}
+
+.role-option-icon {
+  width: 49px;
+  height: 49px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #f3e5bd;
+  font-size: 23px;
+}
+
+.role-option-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.role-option-text strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: #171717;
+}
+
+.role-option-text span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #777;
+}
+
+.role-arrow {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #c79b3b;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.role-spacer {
+  flex: 1;
+}
+
+.role-support-area {
+  width: 100%;
+  min-height: 185px;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-support-content {
+  width: 100%;
+  max-width: 520px;
+  padding: 22px 25px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.support-subtle-link {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  color: #aaa;
+  font-size: 12px;
+  text-align: center;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.support-subtle-link:hover {
+  color: #d0ae67;
+}
+
+.support-line {
+  width: 100%;
+  height: 1px;
+  background: #333;
+}
+
+/* =========================================================
+   GENERAL DARK MODE
+========================================================= */
+
+html[data-theme="dark"] body {
+  background: #111;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] .card {
+  background: #1e1e1e;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-color: #444;
+}
+
+html[data-theme="dark"] .hero p {
+  color: #aaa;
+}
+
+html[data-theme="dark"] .driver-card {
+  background: #1e1e1e;
+}
+
+html[data-theme="dark"] .operator-header,
+html[data-theme="dark"] .operator-request-card,
+html[data-theme="dark"] .operator-status {
+  background: #1e1e1e;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] .operator-notes,
+html[data-theme="dark"] .price-box {
+  background: #292929;
+}
+
+html[data-theme="dark"] .payment-option {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  border-color: #444;
+}
+
+/* CUSTOMER DARK */
+
+html[data-theme="dark"] #customerHomeScreen {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.045), transparent 30%),
+    linear-gradient(180deg, #171717 0%, #101010 100%);
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-greeting {
+  color: #888;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-avatar {
+  background: #242424;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-request-card {
+  background: linear-gradient(145deg, #1d1d1d, #121212);
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-item,
+html[data-theme="dark"] #customerHomeScreen .home-feature {
+  background: #1d1d1d;
+  border-color: #292929;
+  color: #f5f5f5;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-item::before {
+  background: #292929;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-menu-item::after,
+html[data-theme="dark"] #customerHomeScreen .home-feature span {
+  color: #888;
+}
+
+html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
+  background: #1d1d1d;
+  border-color: #2a2a2a;
+  color: #aaa;
+}
+
+/* OPERATOR DARK */
+
+html[data-theme="dark"] #operatorHomeScreen {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,255,255,.04), transparent 30%),
+    linear-gradient(180deg, #171717 0%, #101010 100%);
+}
+
+html[data-theme="dark"] .operator-dashboard-avatar {
+  background: #242424;
+}
+
+html[data-theme="dark"] .operator-online-card,
+html[data-theme="dark"] .operator-menu-card,
+html[data-theme="dark"] .operator-equipment-dashboard-card,
+html[data-theme="dark"] .operator-stat-card {
+  background: #1d1d1d;
+  color: #f5f5f5;
+  border-color: #292929;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .operator-menu-icon {
+  background: #292929;
+}
+
+html[data-theme="dark"] .operator-online-card span,
+html[data-theme="dark"] .operator-menu-content span,
+html[data-theme="dark"] .operator-equipment-data span,
+html[data-theme="dark"] .operator-greeting {
+  color: #888;
+}
+
+html[data-theme="dark"] .operator-current-status {
+  background: #292929;
+}
+
+html[data-theme="dark"] .operator-logout-btn {
+  background: #1d1d1d;
+  border-color: #292929;
+  color: #aaa;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 600px) {
+
+  .hero h1 {
+    font-size: 27px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .operator-request-card {
+    padding: 18px;
+  }
+
+  .operator-buttons button {
+    padding: 15px 8px;
+  }
+
+  /* CUSTOMER */
+
+  #customerHomeScreen .home-page {
+    padding: 22px 16px 30px;
+  }
+
+  #customerHomeScreen .home-header {
+    margin-bottom: 22px;
+  }
+
+  #customerHomeScreen .home-header h1 {
+    font-size: 28px;
+  }
+
+  #customerHomeScreen .home-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 17px;
+  }
+
+  #customerHomeScreen .home-request-card {
+    min-height: 211px;
+    padding: 22px 19px 19px;
+    border-radius: 25px;
+  }
+
+  #customerHomeScreen .home-request-content h2 {
+    font-size: 24px;
+  }
+
+  #customerHomeScreen .home-request-btn {
+    min-height: 52px;
+  }
+
+  #customerHomeScreen .home-menu-item {
+    min-height: 66px;
+    border-radius: 17px;
+  }
+
+  #customerHomeScreen .home-features {
+    gap: 7px;
+  }
+
+  #customerHomeScreen .home-feature {
+    min-height: 103px;
+    border-radius: 17px;
+  }
+
+  /* OPERATOR */
+
+  .operator-dashboard {
+    padding: 22px 16px 30px;
+  }
+
+  .operator-dashboard-header h1 {
+    font-size: 27px;
+  }
+
+  .operator-equipment-image-wrap {
+    height: 175px;
+  }
+
+  /* SUPPORT */
+
+  .support-screen {
+    padding: 0 !important;
+  }
+
+  .support-wrap {
+    min-height: 100vh;
+    padding: 22px 16px 30px;
+  }
+
+  .support-login-card {
+    margin-top: 0;
+  }
+
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .support-topbar {
+    align-items: flex-start;
+  }
+
+  .support-header-actions {
+    flex-direction: column;
+  }
+
+  .support-header-actions .support-btn {
+    width: 100%;
+  }
+
+  /* CONTRACTOR */
 
   .contractor-screen {
     padding: 20px 14px 35px;
@@ -2462,11 +2411,126 @@ html[data-theme="dark"] .operator-logout-btn {
     border-radius: 18px;
   }
 
+  /* ROLE */
+
+  .role-page {
+    padding: 22px 16px 20px;
+    min-height: calc(100vh - 175px);
+  }
+
+  .role-equipment-image {
+    height: 165px;
+  }
+
+  .role-equipment-image img {
+    height: 165px;
+  }
+
+  .role-header {
+    margin-bottom: 21px;
+  }
+
+  .role-header h1 {
+    font-size: 24px;
+  }
+
+  .role-header p {
+    font-size: 13px;
+  }
+
+  .role-option {
+    min-height: 74px;
+    padding: 10px 12px;
+  }
+
+  .role-option-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 21px;
+  }
+
+  .role-option-text strong {
+    font-size: 16px;
+  }
+
+  .role-option-text span {
+    font-size: 11px;
+  }
+
+  .role-arrow {
+    width: 30px;
+    height: 30px;
+  }
+
+  .role-support-area {
+    min-height: 175px;
+  }
+
+  .role-support-content {
+    padding: 20px 18px 22px;
+  }
 }
 
-/* SMALL PHONES */
+/* =========================================================
+   SMALL PHONES
+========================================================= */
 
 @media (max-width: 380px) {
+
+  #customerHomeScreen .home-page {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  #customerHomeScreen .home-header h1 {
+    font-size: 25px;
+  }
+
+  #customerHomeScreen .home-request-card {
+    padding: 20px;
+    border-radius: 23px;
+  }
+
+  #customerHomeScreen .home-request-content h2 {
+    font-size: 22px;
+  }
+
+  #customerHomeScreen .home-request-content p {
+    font-size: 13px;
+  }
+
+  #customerHomeScreen .home-feature {
+    min-height: 98px;
+  }
+
+  #customerHomeScreen .home-feature strong {
+    font-size: 11px;
+  }
+
+  #customerHomeScreen .home-feature span {
+    font-size: 9px;
+  }
+
+  /* OPERATOR */
+
+  .operator-dashboard {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+
+  .operator-menu-card {
+    min-height: 68px;
+  }
+
+  .operator-stat-card {
+    min-height: 112px;
+  }
+
+  .operator-stat-card strong {
+    font-size: 14px;
+  }
+
+  /* CONTRACTOR */
 
   .contractor-menu {
     grid-template-columns: 1fr;
@@ -2480,1015 +2544,20 @@ html[data-theme="dark"] .operator-logout-btn {
     font-size: 21px;
   }
 
-}
-/* =====================================================
-   MA3DA ROLE SCREEN — CREAM & GOLD
-===================================================== */
+  /* ROLE */
 
-#roleScreen.ma3da-role-screen {
-  --ma3da-gold: #c99019;
-  --ma3da-gold-dark: #a9710b;
-  --ma3da-gold-light: #fff0cf;
-  --ma3da-cream: #fffaf0;
-  --ma3da-black: #242421;
-  --ma3da-gray: #858585;
-
-  position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 0 0 30px;
-  background: var(--ma3da-cream);
-  color: var(--ma3da-black);
-  overflow: hidden;
-  font-family: inherit;
-}
-
-/* HERO */
-
-#roleScreen .ma3da-hero {
-  position: relative;
-  height: 370px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow: hidden;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 249, 236, 0.10),
-      rgba(255, 242, 215, 0.20)
-    ),
-    url("https://images.unsplash.com/photo-1580901368919-7738efb0f87e?auto=format&fit=crop&w=1200&q=85")
-    center 55% / cover no-repeat,
-    #f5e5c7;
-}
-
-#roleScreen .ma3da-hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 250, 240, 0.70) 0%,
-    rgba(255, 246, 228, 0.38) 55%,
-    rgba(201, 144, 25, 0.18) 100%
-  );
-}
-
-#roleScreen .ma3da-brand {
-  position: relative;
-  z-index: 1;
-  margin-top: 95px;
-  text-align: center;
-}
-
-#roleScreen .ma3da-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  position: relative;
-}
-
-#roleScreen .ma3da-logo > span:first-child {
-  font-size: clamp(58px, 15vw, 82px);
-  font-weight: 950;
-  line-height: 1.1;
-  letter-spacing: -4px;
-  color: #20201d;
-}
-
-#roleScreen .ma3da-logo-excavator {
-  position: absolute;
-  top: -34px;
-  right: 8px;
-  font-size: 43px;
-  transform: rotate(-8deg);
-  filter: saturate(0.85);
-}
-
-#roleScreen .ma3da-brand p {
-  margin: 12px 0 0;
-  color: #77756f;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-/* MAIN CONTENT */
-
-#roleScreen .ma3da-role-content {
-  position: relative;
-  z-index: 2;
-  margin-top: -34px;
-  padding: 42px 7.4% 15px;
-  background: linear-gradient(
-    180deg,
-    #fffdf8 0%,
-    #fffaf0 100%
-  );
-  border-radius: 50% 50% 0 0 / 35px 35px 0 0;
-}
-
-/* HEADING */
-
-#roleScreen .ma3da-role-heading {
-  text-align: center;
-  margin: 0 0 55px;
-}
-
-#roleScreen .ma3da-role-heading h1 {
-  margin: 0;
-  font-size: clamp(27px, 7vw, 39px);
-  font-weight: 900;
-  line-height: 1.5;
-  color: var(--ma3da-black);
-}
-
-#roleScreen .ma3da-role-heading p {
-  margin: 8px 0 0;
-  color: var(--ma3da-gray);
-  font-size: clamp(17px, 4.5vw, 24px);
-  font-weight: 600;
-}
-
-/* ROLE CARDS */
-
-#roleScreen .ma3da-role-card {
-  width: 100%;
-  min-height: 145px;
-  margin: 0 0 32px;
-  padding: 18px 30px 18px 24px;
-
-  display: grid;
-  grid-template-columns: 112px minmax(0, 1fr) 22px;
-  align-items: center;
-  gap: 12px;
-
-  background: rgba(255, 252, 245, 0.92);
-  border: 1.5px solid #e7a52b;
-  border-radius: 26px;
-  box-shadow: 0 8px 22px rgba(139, 95, 15, 0.045);
-
-  color: var(--ma3da-black);
-  font-family: inherit;
-  text-align: right;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-#roleScreen .ma3da-role-card:active {
-  transform: scale(0.985);
-  background: #fff3d8;
-  box-shadow: 0 3px 10px rgba(139, 95, 15, 0.10);
-}
-
-/* ICON CIRCLE */
-
-#roleScreen .ma3da-role-icon {
-  width: 96px;
-  height: 96px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #fff0d0;
-  color: #252521;
-}
-
-#roleScreen .ma3da-role-icon svg {
-  width: 67px;
-  height: 67px;
-  display: block;
-}
-
-#roleScreen .ma3da-machine-icon svg {
-  width: 76px;
-  height: 76px;
-}
-
-#roleScreen .ma3da-contractor-icon svg {
-  width: 73px;
-  height: 73px;
-}
-
-#roleScreen .ma3da-role-label {
-  display: block;
-  min-width: 0;
-  font-size: clamp(19px, 5.2vw, 30px);
-  font-weight: 850;
-  line-height: 1.6;
-  white-space: normal;
-  color: #252521;
-}
-
-#roleScreen .ma3da-role-arrow {
-  color: var(--ma3da-gold);
-  font-size: 42px;
-  font-family: Arial, sans-serif;
-  font-weight: 400;
-  line-height: 1;
-  text-align: center;
-}
-
-/* FOOTER */
-
-#roleScreen .ma3da-role-footer {
-  margin-top: 58px;
-  text-align: center;
-}
-
-#roleScreen .ma3da-footer-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 25px;
-  margin: 0 0 42px;
-}
-
-#roleScreen .ma3da-footer-divider span {
-  height: 1px;
-  flex: 1;
-  background: #d6a44a;
-}
-
-#roleScreen .ma3da-footer-divider i {
-  width: 10px;
-  height: 10px;
-  flex: 0 0 10px;
-  border-radius: 50%;
-  background: #d69a1d;
-}
-
-#roleScreen .ma3da-login-help {
-  margin: 0 0 24px;
-  color: #292925;
-  font-size: clamp(18px, 4.8vw, 25px);
-  font-weight: 700;
-}
-
-#roleScreen .ma3da-support-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-
-  padding: 8px 10px;
-  border: 0;
-  background: transparent;
-
-  color: var(--ma3da-gold-dark);
-  font-family: inherit;
-  font-size: clamp(18px, 4.8vw, 25px);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-#roleScreen .ma3da-support-link svg {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-}
-
-#roleScreen .ma3da-support-arrow {
-  font-family: Arial, sans-serif;
-  font-size: 38px;
-  line-height: 1;
-}
-
-/* MOBILE */
-
-@media (max-width: 600px) {
-  #roleScreen .ma3da-hero {
-    height: 330px;
-  }
-
-  #roleScreen .ma3da-brand {
-    margin-top: 88px;
-  }
-
-  #roleScreen .ma3da-role-content {
-    margin-top: -28px;
-    padding: 38px 7.3% 20px;
-  }
-
-  #roleScreen .ma3da-role-heading {
-    margin-bottom: 38px;
-  }
-
-  #roleScreen .ma3da-role-card {
-    min-height: 120px;
-    grid-template-columns: 78px minmax(0, 1fr) 18px;
-    gap: 10px;
-    padding: 15px 18px;
-    margin-bottom: 22px;
-    border-radius: 23px;
-  }
-
-  #roleScreen .ma3da-role-icon {
-    width: 72px;
-    height: 72px;
-  }
-
-  #roleScreen .ma3da-role-icon svg,
-  #roleScreen .ma3da-machine-icon svg,
-  #roleScreen .ma3da-contractor-icon svg {
-    width: 55px;
-    height: 55px;
-  }
-
-  #roleScreen .ma3da-role-label {
-    font-size: clamp(17px, 4.7vw, 24px);
-  }
-
-  #roleScreen .ma3da-role-arrow {
-    font-size: 34px;
-  }
-
-  #roleScreen .ma3da-role-footer {
-    margin-top: 40px;
-  }
-
-  #roleScreen .ma3da-footer-divider {
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-}
-
-/* VERY SMALL PHONES */
-
-@media (max-width: 380px) {
-  #roleScreen .ma3da-role-card {
-    grid-template-columns: 62px minmax(0, 1fr) 15px;
-    gap: 8px;
-    padding: 13px;
-  }
-
-  #roleScreen .ma3da-role-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  #roleScreen .ma3da-role-icon svg,
-  #roleScreen .ma3da-machine-icon svg,
-  #roleScreen .ma3da-contractor-icon svg {
-    width: 47px;
-    height: 47px;
-  }
-
-  #roleScreen .ma3da-role-label {
-    font-size: 17px;
-  }
-}
-/* =========================================================
-   MA3DA ROLE SCREEN
-   التصميم المتفق عليه
-========================================================= */
-
-#roleScreen {
-  background: #f7f1e5;
-  min-height: 100vh;
-  padding: 0;
-}
-
-.role-page {
-  width: 100%;
-  max-width: 520px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 35px 20px 25px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  color: #171717;
-}
-
-
-/* =========================================================
-   EQUIPMENT IMAGE
-========================================================= */
-
-.role-equipment-image {
-  width: 100%;
-  height: 210px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 10px;
-}
-
-.role-equipment-image img {
-  width: 100%;
-  max-width: 390px;
-  height: 210px;
-
-  object-fit: contain;
-
-  display: block;
-}
-
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.role-header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.role-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 10px;
-
-  font-size: 25px;
-  font-weight: 900;
-
-  color: #171717;
-}
-
-.role-header h1 {
-  margin: 0 0 8px;
-
-  font-size: 28px;
-  line-height: 1.3;
-  font-weight: 900;
-
-  color: #171717;
-}
-
-.role-header p {
-  margin: 0;
-
-  font-size: 15px;
-  line-height: 1.7;
-
-  color: #666;
-}
-
-
-/* =========================================================
-   ROLE OPTIONS
-========================================================= */
-
-.role-options {
-  width: 100%;
-
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
-
-
-/* =========================================================
-   ROLE BUTTON
-========================================================= */
-
-.role-option {
-  width: 100%;
-  min-height: 82px;
-
-  padding: 13px 16px;
-
-  display: flex;
-  align-items: center;
-  gap: 13px;
-
-  background: #fffdf8;
-
-  border: 1px solid #e2d6bd;
-  border-radius: 18px;
-
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.05);
-
-  color: #171717;
-
-  cursor: pointer;
-
-  text-align: right;
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.role-option:hover {
-  transform: translateY(-2px);
-
-  border-color: #c79b3b;
-
-  box-shadow:
-    0 8px 22px rgba(0, 0, 0, 0.08);
-}
-
-.role-option:active {
-  transform: scale(0.98);
-}
-
-
-/* =========================================================
-   ICON
-========================================================= */
-
-.role-option-icon {
-  width: 52px;
-  height: 52px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 15px;
-
-  background: #f3e5bd;
-
-  font-size: 25px;
-}
-
-
-/* =========================================================
-   TEXT
-========================================================= */
-
-.role-option-text {
-  min-width: 0;
-  flex: 1;
-
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.role-option-text strong {
-  font-size: 17px;
-  font-weight: 800;
-
-  color: #171717;
-}
-
-.role-option-text span {
-  font-size: 13px;
-  line-height: 1.5;
-
-  color: #777;
-}
-
-
-/* =========================================================
-   ARROW
-========================================================= */
-
-.role-arrow {
-  width: 34px;
-  height: 34px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #c79b3b;
-
-  color: #fff;
-
-  font-size: 18px;
-  font-weight: 900;
-}
-
-
-/* =========================================================
-   DIVIDER
-========================================================= */
-
-.role-divider {
-  width: 100%;
-
-  height: 1px;
-
-  margin-top: 32px;
-  margin-bottom: 18px;
-
-  background: #d8c9aa;
-}
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-.role-footer {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-
-  gap: 9px;
-
-  padding-bottom: 8px;
-
-  font-size: 12px;
-}
-
-.role-footer a {
-  color: #666;
-
-  text-decoration: none;
-
-  transition: color 0.2s ease;
-}
-
-.role-footer a:hover {
-  color: #b4872d;
-}
-
-.role-footer span {
-  color: #b99a5a;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
-
-  .role-page {
-    padding:
-      25px
-      16px
-      20px;
-  }
-
-  .role-equipment-image {
-    height: 185px;
-  }
-
-  .role-equipment-image img {
-    height: 185px;
-  }
-
-  .role-header {
-    margin-bottom: 22px;
-  }
-
-  .role-header h1 {
-    font-size: 25px;
-  }
-
-  .role-header p {
-    font-size: 14px;
-  }
-
-  .role-option {
-    min-height: 78px;
-    padding: 11px 13px;
-  }
-
-  .role-option-icon {
-    width: 48px;
-    height: 48px;
-    font-size: 23px;
-  }
-
-  .role-option-text strong {
-    font-size: 16px;
-  }
-
-  .role-option-text span {
-    font-size: 12px;
-  }
-
-  .role-arrow {
-    width: 31px;
-    height: 31px;
-    font-size: 16px;
-  }
-}
-
-
-/* =========================================================
-   SMALL PHONES
-========================================================= */
-
-@media (max-width: 380px) {
-
-  .role-page {
-    padding-top: 18px;
-  }
-
-  .role-equipment-image {
-    height: 160px;
-  }
-
-  .role-equipment-image img {
-    height: 160px;
-  }
-
-  .role-header h1 {
-    font-size: 23px;
-  }
-
-  .role-option {
-    min-height: 73px;
-  }
-
-}
-/* =========================================================
-   ROLE SCREEN
-========================================================= */
-#roleScreen {
-  background: #f7f1e5;
-  min-height: 100vh;
-  padding: 0;
-}
-.role-page {
-  width: 100%;
-  max-width: 520px;
-  min-height: calc(100vh - 185px);
-  margin: 0 auto;
-  padding:
-    30px
-    20px
-    25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-/* =========================================================
-   EQUIPMENT IMAGE
-========================================================= */
-.role-equipment-image {
-  width: 100%;
-  height: 190px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-.role-equipment-image img {
-  width: 100%;
-  max-width: 390px;
-  height: 190px;
-  object-fit: contain;
-}
-/* =========================================================
-   HEADER
-========================================================= */
-.role-header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 25px;
-}
-.role-logo {
-  margin-bottom: 8px;
-  font-size: 24px;
-  font-weight: 900;
-  color: #171717;
-}
-.role-header h1 {
-  margin: 0 0 8px;
-  font-size: 27px;
-  line-height: 1.35;
-  font-weight: 900;
-  color: #171717;
-}
-.role-header p {
-  margin: 0;
-  font-size: 14px;
-  color: #777;
-}
-/* =========================================================
-   MAIN OPTIONS
-========================================================= */
-.role-options {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-}
-/* =========================================================
-   OPTION BUTTON
-========================================================= */
-.role-option {
-  width: 100%;
-  min-height: 78px;
-  padding: 12px 15px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  background: #fffdf8;
-  border: 1px solid #e2d6bd;
-  border-radius: 17px;
-  box-shadow:
-    0 5px 16px rgba(0, 0, 0, 0.05);
-  color: #171717;
-  cursor: pointer;
-  text-align: right;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-.role-option:hover {
-  transform: translateY(-2px);
-  border-color: #c79b3b;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.08);
-}
-.role-option:active {
-  transform: scale(0.98);
-}
-/* =========================================================
-   ICON
-========================================================= */
-.role-option-icon {
-  width: 49px;
-  height: 49px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  background: #f3e5bd;
-  font-size: 23px;
-}
-/* =========================================================
-   TEXT
-========================================================= */
-.role-option-text {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.role-option-text strong {
-  font-size: 17px;
-  font-weight: 800;
-  color: #171717;
-}
-.role-option-text span {
-  font-size: 12px;
-  line-height: 1.5;
-  color: #777;
-}
-/* =========================================================
-   ARROW
-========================================================= */
-.role-arrow {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #c79b3b;
-  color: #fff;
-  font-size: 17px;
-  font-weight: 900;
-}
-/* =========================================================
-   SPACER
-========================================================= */
-.role-spacer {
-  flex: 1;
-}
-/* =========================================================
-   SUPPORT AREA
-========================================================= */
-.role-support-area {
-  width: 100%;
-  min-height: 185px;
-  background: #111;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.role-support-content {
-  width: 100%;
-  max-width: 520px;
-  padding:
-    22px
-    25px
-    25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-/* =========================================================
-   SUBTLE SUPPORT LINKS
-========================================================= */
-.support-subtle-link {
-  display: block;
-  width: 100%;
-  padding: 12px 0;
-  color: #aaa;
-  font-size: 12px;
-  text-align: center;
-  text-decoration: none;
-  transition:
-    color 0.2s ease;
-}
-.support-subtle-link:hover {
-  color: #d0ae67;
-}
-/* =========================================================
-   SUPPORT LINES
-========================================================= */
-.support-line {
-  width: 100%;
-  height: 1px;
-  background: #333;
-}
-/* =========================================================
-   MOBILE
-========================================================= */
-@media (max-width: 600px) {
-  .role-page {
-    padding:
-      22px
-      16px
-      20px;
-    min-height: calc(100vh - 175px);
-  }
-  .role-equipment-image {
-    height: 165px;
-  }
-  .role-equipment-image img {
-    height: 165px;
-  }
-  .role-header {
-    margin-bottom: 21px;
-  }
-  .role-header h1 {
-    font-size: 24px;
-  }
-  .role-header p {
-    font-size: 13px;
-  }
-  .role-option {
-    min-height: 74px;
-    padding: 10px 12px;
-  }
-  .role-option-icon {
-    width: 46px;
-    height: 46px;
-    font-size: 21px;
-  }
-  .role-option-text strong {
-    font-size: 16px;
-  }
-  .role-option-text span {
-    font-size: 11px;
-  }
-  .role-arrow {
-    width: 30px;
-    height: 30px;
-  }
-  .role-support-area {
-    min-height: 175px;
-  }
-  .role-support-content {
-    padding:
-      20px
-      18px
-      22px;
-  }
-}
-/* =========================================================
-   SMALL PHONES
-========================================================= */
-@media (max-width: 380px) {
   .role-equipment-image {
     height: 145px;
   }
+
   .role-equipment-image img {
     height: 145px;
   }
+
   .role-header h1 {
     font-size: 22px;
   }
+
   .role-option {
     min-height: 70px;
   }
