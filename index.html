@@ -213,7 +213,13 @@
       >
         🚜 أنا صاحب معدة / مشغل
       </button>
-
+<button
+  id="contractorRoleBtn"
+  class="main-btn"
+  type="button"
+>
+  🏗️ أنا مقاول / صاحب مشروع
+</button>
       <!-- دخول موظفي الدعم -->
       <button
         id="supportStaffBtn"
@@ -5052,7 +5058,839 @@
 
 </section>
 
+<!-- =========================================================
+     CONTRACTOR / PROJECT OWNER
+========================================================= -->
 
+<!-- CONTRACTOR DATA -->
+<section id="contractorDataScreen" class="screen">
+
+  <div class="hero">
+    <div class="hero-icon">🏗️</div>
+
+    <h1>أكمل بياناتك</h1>
+
+    <p>
+      أدخل بياناتك للبدء باستخدام مِعدة كمقاول أو صاحب مشروع
+    </p>
+  </div>
+
+  <div class="card">
+
+    <label for="contractorNameInput">
+      👤 الاسم
+    </label>
+
+    <input
+      id="contractorNameInput"
+      type="text"
+      placeholder="اكتب اسمك"
+      autocomplete="name"
+    >
+
+    <label for="contractorPhoneInput">
+      📱 رقم الجوال
+    </label>
+
+    <input
+      id="contractorPhoneInput"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+      autocomplete="tel"
+    >
+
+    <label for="contractorCityInput">
+      📍 المدينة
+    </label>
+
+    <input
+      id="contractorCityInput"
+      type="text"
+      placeholder="مثال: جدة"
+      autocomplete="address-level2"
+    >
+
+    <label for="contractorCompanyInput">
+      🏢 اسم المؤسسة / الشركة
+    </label>
+
+    <input
+      id="contractorCompanyInput"
+      type="text"
+      placeholder="اسم المؤسسة أو الشركة"
+    >
+
+    <button
+      id="saveContractorDataBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ ومتابعة
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- CONTRACTOR DASHBOARD -->
+<section id="contractorHomeScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🏗️
+    </div>
+
+    <h1>
+      أهلاً <span id="contractorHomeName">عبدالله</span>
+    </h1>
+
+    <p>
+      لوحة تحكم المقاول وصاحب المشروع
+    </p>
+
+  </div>
+
+
+  <!-- MAIN REQUEST CARD -->
+  <div class="card">
+
+    <h2>
+      تحتاج معدة لمشروعك؟
+    </h2>
+
+    <p>
+      اطلب المعدة التي تحتاجها بسهولة وسنساعدك في الوصول إلى صاحب المعدة أو المشغل المناسب.
+    </p>
+
+    <button
+      id="contractorNewRequestBtn"
+      class="main-btn"
+      type="button"
+    >
+      🚜 اطلب معدة الآن
+    </button>
+
+  </div>
+
+
+  <!-- CURRENT REQUESTS -->
+  <div class="card">
+
+    <h3>
+      📋 الطلبات الحالية
+    </h3>
+
+    <p>
+      تابع طلبات المعدات التي تعمل عليها حالياً.
+    </p>
+
+    <button
+      id="contractorCurrentOrdersBtn"
+      class="main-btn"
+      type="button"
+    >
+      عرض الطلبات الحالية
+    </button>
+
+  </div>
+
+
+  <!-- PREVIOUS REQUESTS -->
+  <div class="card">
+
+    <h3>
+      🗂️ الطلبات السابقة
+    </h3>
+
+    <p>
+      راجع جميع طلبات المعدات السابقة.
+    </p>
+
+    <button
+      id="contractorPreviousOrdersBtn"
+      class="main-btn"
+      type="button"
+    >
+      عرض الطلبات السابقة
+    </button>
+
+  </div>
+
+
+  <!-- PROJECTS -->
+  <div class="card">
+
+    <h3>
+      🏗️ مشاريعي
+    </h3>
+
+    <p>
+      تابع الطلبات والمعدات المرتبطة بمشاريعك.
+    </p>
+
+    <button
+      id="contractorProjectsBtn"
+      class="main-btn"
+      type="button"
+    >
+      عرض المشاريع
+    </button>
+
+  </div>
+
+
+  <!-- SETTINGS -->
+  <div class="card">
+
+    <h3>
+      ⚙️ الحساب
+    </h3>
+
+    <button
+      id="contractorSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      الإعدادات
+    </button>
+
+  </div>
+
+
+  <!-- SUPPORT -->
+  <div class="card">
+
+    <h3>
+      🛟 الدعم الفني
+    </h3>
+
+    <p>
+      تحتاج مساعدة؟ تواصل مع فريق دعم مِعدة.
+    </p>
+
+    <button
+      id="contractorSupportBtn"
+      class="main-btn"
+      type="button"
+    >
+      الدعم الفني
+    </button>
+
+  </div>
+
+
+  <button
+    id="contractorHomeLogoutBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    تسجيل الخروج
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR NEW REQUEST -->
+<section id="contractorRequestScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🚜
+    </div>
+
+    <h1>
+      طلب معدة لمشروعك
+    </h1>
+
+    <p>
+      أدخل تفاصيل المعدة التي تحتاجها
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <label for="contractorRequestLocation">
+      📍 موقع العمل
+    </label>
+
+    <input
+      id="contractorRequestLocation"
+      type="text"
+      placeholder="اكتب موقع العمل"
+    >
+
+
+    <label for="contractorEquipmentType">
+      🚜 نوع المعدة
+    </label>
+
+    <select id="contractorEquipmentType">
+
+      <option value="">
+        اختر نوع المعدة
+      </option>
+
+      <option value="بوكلين">
+        بوكلين
+      </option>
+
+      <option value="شيول">
+        شيول
+      </option>
+
+      <option value="قلاب">
+        قلاب
+      </option>
+
+      <option value="كرين">
+        كرين
+      </option>
+
+      <option value="حفار">
+        حفار
+      </option>
+
+      <option value="بلدوزر">
+        بلدوزر
+      </option>
+
+      <option value="جريدر">
+        جريدر
+      </option>
+
+      <option value="مدحلة">
+        مدحلة
+      </option>
+
+      <option value="رافعة شوكية">
+        رافعة شوكية
+      </option>
+
+      <option value="رافعة تلسكوبية">
+        رافعة تلسكوبية
+      </option>
+
+      <option value="لودر">
+        لودر
+      </option>
+
+      <option value="حفار صغير">
+        حفار صغير
+      </option>
+
+      <option value="سطحة">
+        سطحة
+      </option>
+
+      <option value="ناقلة معدات">
+        ناقلة معدات
+      </option>
+
+      <option value="وايت ماء">
+        وايت ماء
+      </option>
+
+      <option value="مضخة خرسانة">
+        مضخة خرسانة
+      </option>
+
+      <option value="ماكينة فرش أسفلت">
+        ماكينة فرش أسفلت
+      </option>
+
+      <option value="أخرى">
+        أخرى
+      </option>
+
+    </select>
+
+
+    <label for="contractorDuration">
+      ⏱️ مدة العمل
+    </label>
+
+    <select id="contractorDuration">
+
+      <option value="">
+        اختر مدة العمل
+      </option>
+
+      <option value="ساعة واحدة">
+        ساعة واحدة
+      </option>
+
+      <option value="4 ساعات">
+        4 ساعات
+      </option>
+
+      <option value="8 ساعات">
+        8 ساعات
+      </option>
+
+      <option value="يوم كامل">
+        يوم كامل
+      </option>
+
+    </select>
+
+
+    <label for="contractorOperator">
+      👷 المشغل
+    </label>
+
+    <select id="contractorOperator">
+
+      <option value="مع مشغل">
+        مع مشغل
+      </option>
+
+      <option value="بدون مشغل">
+        بدون مشغل
+      </option>
+
+    </select>
+
+
+    <label for="contractorNotes">
+      📝 ملاحظات المشروع
+    </label>
+
+    <textarea
+      id="contractorNotes"
+      rows="4"
+      placeholder="اكتب أي تفاصيل أو ملاحظات مهمة للمشروع"
+    ></textarea>
+
+
+    <button
+      id="submitContractorRequestBtn"
+      class="main-btn"
+      type="button"
+    >
+      إرسال طلب المعدة
+    </button>
+
+
+    <button
+      id="cancelContractorRequestBtn"
+      class="secondary-btn"
+      type="button"
+    >
+      إلغاء
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- CONTRACTOR CURRENT ORDERS -->
+<section id="contractorCurrentOrdersScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      📋
+    </div>
+
+    <h1>
+      طلباتي الحالية
+    </h1>
+
+    <p>
+      الطلبات والمعدات المرتبطة بمشاريعك الحالية
+    </p>
+
+  </div>
+
+
+  <div
+    id="contractorCurrentOrdersList"
+    class="orders-list"
+  >
+
+    <div class="card">
+
+      <p>
+        لا توجد طلبات حالية.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <button
+    id="contractorCurrentOrdersBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة للوحة التحكم
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR PREVIOUS ORDERS -->
+<section id="contractorPreviousOrdersScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🗂️
+    </div>
+
+    <h1>
+      الطلبات السابقة
+    </h1>
+
+    <p>
+      سجل طلبات المعدات السابقة
+    </p>
+
+  </div>
+
+
+  <div
+    id="contractorPreviousOrdersList"
+    class="orders-list"
+  >
+
+    <div class="card">
+
+      <p>
+        لا توجد طلبات سابقة.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <button
+    id="contractorPreviousOrdersBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة للوحة التحكم
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR PROJECTS -->
+<section id="contractorProjectsScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🏗️
+    </div>
+
+    <h1>
+      مشاريعي
+    </h1>
+
+    <p>
+      تابع طلبات المعدات الخاصة بمشاريعك
+    </p>
+
+  </div>
+
+
+  <div
+    id="contractorProjectsList"
+    class="orders-list"
+  >
+
+    <div class="card">
+
+      <h3>
+        مشاريعك
+      </h3>
+
+      <p>
+        ستظهر هنا المشاريع والطلبات المرتبطة بحسابك.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <button
+    id="contractorProjectsBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة للوحة التحكم
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR ORDER DETAILS -->
+<section id="contractorOrderDetailsScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🚜
+    </div>
+
+    <h1>
+      تفاصيل الطلب
+    </h1>
+
+    <p>
+      تفاصيل طلب المعدة وحالة التنفيذ
+    </p>
+
+  </div>
+
+
+  <div
+    id="contractorOrderDetails"
+    class="card"
+  >
+
+    <div class="order-detail-row">
+      <span>حالة الطلب</span>
+      <strong id="contractorOrderStatus">
+        -
+      </strong>
+    </div>
+
+
+    <div class="order-detail-row">
+      <span>المعدة</span>
+      <strong id="contractorOrderEquipment">
+        -
+      </strong>
+    </div>
+
+
+    <div class="order-detail-row">
+      <span>المدة</span>
+      <strong id="contractorOrderDuration">
+        -
+      </strong>
+    </div>
+
+
+    <div class="order-detail-row">
+      <span>الموقع</span>
+      <strong id="contractorOrderLocation">
+        -
+      </strong>
+    </div>
+
+
+    <div class="order-detail-row">
+      <span>المشغل</span>
+      <strong id="contractorOrderOperator">
+        -
+      </strong>
+    </div>
+
+
+    <div class="order-detail-row">
+      <span>السعر</span>
+      <strong id="contractorOrderPrice">
+        -
+      </strong>
+    </div>
+
+  </div>
+
+
+  <button
+    id="contractorOrderChatBtn"
+    class="main-btn"
+    type="button"
+  >
+    💬 محادثة
+  </button>
+
+
+  <button
+    id="contractorOrderBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR SETTINGS -->
+<section id="contractorSettingsScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      ⚙️
+    </div>
+
+    <h1>
+      إعدادات الحساب
+    </h1>
+
+    <p>
+      إدارة بيانات المقاول وصاحب المشروع
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <label for="contractorSettingsName">
+      👤 الاسم
+    </label>
+
+    <input
+      id="contractorSettingsName"
+      type="text"
+      placeholder="الاسم"
+    >
+
+
+    <label for="contractorSettingsPhone">
+      📱 رقم الجوال
+    </label>
+
+    <input
+      id="contractorSettingsPhone"
+      type="tel"
+      inputmode="tel"
+      placeholder="05xxxxxxxx"
+    >
+
+
+    <label for="contractorSettingsCity">
+      📍 المدينة
+    </label>
+
+    <input
+      id="contractorSettingsCity"
+      type="text"
+      placeholder="المدينة"
+    >
+
+
+    <label for="contractorSettingsCompany">
+      🏢 المؤسسة / الشركة
+    </label>
+
+    <input
+      id="contractorSettingsCompany"
+      type="text"
+      placeholder="اسم المؤسسة أو الشركة"
+    >
+
+
+    <button
+      id="saveContractorSettingsBtn"
+      class="main-btn"
+      type="button"
+    >
+      حفظ التعديلات
+    </button>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      🔐 كلمة المرور
+    </h3>
+
+    <p>
+      يمكنك إعادة تعيين كلمة المرور المرتبطة بحسابك.
+    </p>
+
+    <button
+      id="contractorChangePasswordBtn"
+      class="main-btn"
+      type="button"
+    >
+      تغيير كلمة المرور
+    </button>
+
+  </div>
+
+
+  <button
+    id="contractorSettingsBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة للوحة التحكم
+  </button>
+
+</section>
+
+
+<!-- CONTRACTOR SUPPORT -->
+<section id="contractorSupportScreen" class="screen">
+
+  <div class="hero">
+
+    <div class="hero-icon">
+      🛟
+    </div>
+
+    <h1>
+      الدعم الفني
+    </h1>
+
+    <p>
+      فريق مِعدة جاهز لمساعدتك
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      تحتاج مساعدة؟
+    </h3>
+
+    <p>
+      إذا واجهتك مشكلة في طلب معدة أو متابعة مشروعك، تواصل مع فريق الدعم.
+    </p>
+
+
+    <button
+      id="contractorSupportChatBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 التواصل مع الدعم
+    </button>
+
+  </div>
+
+
+  <button
+    id="contractorSupportBackBtn"
+    class="secondary-btn"
+    type="button"
+  >
+    العودة للوحة التحكم
+  </button>
+
+</section>
 </body>
 </html>
  
