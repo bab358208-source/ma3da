@@ -9993,52 +9993,55 @@ setTimeout(
      CONTRACTOR ROLE BUTTON
   ========================================================= */
 
-  const contractorRoleBtn =
-    document.getElementById(
-      "contractorRoleBtn"
-    );
+  /* =========================================================
+   CONTRACTOR ROLE BUTTON
+========================================================= */
 
-  if (contractorRoleBtn) {
+document.addEventListener(
+  "click",
+  function(event) {
 
-    contractorRoleBtn.addEventListener(
-      "click",
-      function () {
+    const contractorRoleBtn =
+      event.target.closest(
+        "#contractorRoleBtn"
+      );
 
-        contractorSetRole();
+    if (!contractorRoleBtn)
+      return;
 
-        /*
-          نخلي نظام تسجيل الدخول الحالي
-          في مِعدة يكمل طريقه.
-        */
+    contractorSetRole();
 
-        const phoneRoleText =
-          document.getElementById(
-            "phoneRoleText"
-          );
+    const phoneRoleText =
+      document.getElementById(
+        "phoneRoleText"
+      );
 
-        if (phoneRoleText) {
-          phoneRoleText.textContent =
-            "تسجيل الدخول كمقاول / صاحب مشروع";
-        }
+    if (phoneRoleText) {
 
-        const phoneTitle =
-          document.querySelector(
-            "#phoneScreen h1"
-          );
+      phoneRoleText.textContent =
+        "تسجيل الدخول كمقاول / صاحب مشروع";
 
-        if (phoneTitle) {
-          phoneTitle.textContent =
-            "تسجيل الدخول";
-        }
+    }
 
-        contractorShowScreen(
-          "phoneScreen"
-        );
+    const phoneTitle =
+      document.querySelector(
+        "#phoneScreen h1"
+      );
 
-      }
+    if (phoneTitle) {
+
+      phoneTitle.textContent =
+        "تسجيل الدخول";
+
+    }
+
+    contractorShowScreen(
+      "phoneScreen"
     );
 
   }
+);
+        
 
 
   /* =========================================================
