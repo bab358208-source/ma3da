@@ -1293,6 +1293,32 @@ if(emailLoginBtn){
   return;
  
 }
+       if (
+  selectedRole === "contractor"
+) {
+
+  if (
+    typeof window.openContractorHome === "function"
+  ) {
+
+    await window.openContractorHome();
+
+  } else {
+
+    console.error(
+      "openContractorHome غير موجود"
+    );
+
+    if (error) {
+      error.textContent =
+        "تعذر فتح صفحة المقاول، أعد تحميل الصفحة";
+    }
+
+  }
+
+  return;
+
+}
  
         if(
           selectedRole ===
@@ -10007,6 +10033,9 @@ document.addEventListener(
       return;
 
     contractorSetRole();
+
+   selectedRole = "contractor";
+localStorage.setItem("selectedRole", "contractor");
 
     const phoneRoleText =
       document.getElementById(
