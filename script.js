@@ -9875,3 +9875,2578 @@ setTimeout(
   },
   500
 );
+/* =========================================================
+   CONTRACTOR / PROJECT OWNER
+   مِعدة
+========================================================= */
+
+(function () {
+
+  "use strict";
+
+  /* =========================================================
+     CONTRACTOR STATE
+  ========================================================= */
+
+  let contractorCurrentOrderId =
+    localStorage.getItem("contractorCurrentOrderId") || null;
+
+  let contractorCurrentOrder =
+    JSON.parse(
+      localStorage.getItem("contractorCurrentOrder") || "null"
+    );
+
+  let contractorProfile =
+    JSON.parse(
+      localStorage.getItem("contractorProfile") || "null"
+    );
+
+
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
+  function contractorShowScreen(screenId) {
+
+    if (typeof showScreen === "function") {
+      showScreen(screenId);
+      return;
+    }
+
+    document
+      .querySelectorAll(".screen")
+      .forEach(screen => {
+        screen.classList.remove("active");
+      });
+
+    const screen =
+      document.getElementById(screenId);
+
+    if (screen) {
+      screen.classList.add("active");
+    }
+  }
+
+
+  function getContractorUser() {
+
+    if (
+      typeof window.ma3daGetCurrentUser ===
+      "function"
+    ) {
+      return window.ma3daGetCurrentUser();
+    }
+
+    if (window.ma3daAuth) {
+      return window.ma3daAuth.currentUser || null;
+    }
+
+    return null;
+  }
+
+
+  function contractorSaveLocal(profile) {
+
+    contractorProfile = profile;
+
+    localStorage.setItem(
+      "contractorProfile",
+      JSON.stringify(profile)
+    );
+  }
+
+
+  function contractorGetProfile() {
+
+    return contractorProfile ||
+      JSON.parse(
+        localStorage.getItem(
+          "contractorProfile"
+        ) || "null"
+      );
+  }
+
+
+  function contractorSetRole() {
+
+    localStorage.setItem(
+      "ma3daRole",
+      "contractor"
+    );
+
+    localStorage.setItem(
+      "userRole",
+      "contractor"
+    );
+
+    localStorage.setItem(
+      "currentRole",
+      "contractor"
+    );
+
+    window.ma3daCurrentRole =
+      "contractor";
+  }
+
+
+  /* =========================================================
+     CONTRACTOR ROLE BUTTON
+  ========================================================= */
+
+  const contractorRoleBtn =
+    document.getElementById(
+      "contractorRoleBtn"
+    );
+
+  if (contractorRoleBtn) {
+
+    contractorRoleBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorSetRole();
+
+        /*
+          نخلي نظام تسجيل الدخول الحالي
+          في مِعدة يكمل طريقه.
+        */
+
+        const phoneRoleText =
+          document.getElementById(
+            "phoneRoleText"
+          );
+
+        if (phoneRoleText) {
+          phoneRoleText.textContent =
+            "تسجيل الدخول كمقاول / صاحب مشروع";
+        }
+
+        const phoneTitle =
+          document.querySelector(
+            "#phoneScreen h1"
+          );
+
+        if (phoneTitle) {
+          phoneTitle.textContent =
+            "تسجيل الدخول";
+        }
+
+        contractorShowScreen(
+          "phoneScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     LOAD CONTRACTOR PROFILE
+  ========================================================= */
+
+  async function loadContractorProfile() {
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return null;
+    }
+
+    try {
+
+      const contractorRef =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "contractors",
+          user.uid
+        );
+
+      const snapshot =
+        await window.ma3daGetDoc(
+          contractorRef
+        );
+
+      if (
+        snapshot &&
+        snapshot.exists()
+      ) {
+
+        const data =
+          snapshot.data();
+
+        contractorSaveLocal({
+          ...data,
+          uid: user.uid
+        });
+
+        fillContractorProfile(
+          data
+        );
+
+        return data;
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Contractor profile error:",
+        error
+      );
+
+    }
+
+    return null;
+  }
+
+
+  /* =========================================================
+     FILL CONTRACTOR DATA
+  ========================================================= */
+
+  function fillContractorProfile(
+    data
+  ) {
+
+    if (!data) {
+      return;
+    }
+
+    const name =
+      data.name ||
+      data.contractorName ||
+      "";
+
+    const phone =
+      data.phone ||
+      "";
+
+    const city =
+      data.city ||
+      "";
+
+    const company =
+      data.company ||
+      data.companyName ||
+      "";
+
+
+    const nameInput =
+      document.getElementById(
+        "contractorNameInput"
+      );
+
+    const phoneInput =
+      document.getElementById(
+        "contractorPhoneInput"
+      );
+
+    const cityInput =
+      document.getElementById(
+        "contractorCityInput"
+      );
+
+    const companyInput =
+      document.getElementById(
+        "contractorCompanyInput"
+      );
+
+
+    if (nameInput) {
+      nameInput.value = name;
+    }
+
+    if (phoneInput) {
+      phoneInput.value = phone;
+    }
+
+    if (cityInput) {
+      cityInput.value = city;
+    }
+
+    if (companyInput) {
+      companyInput.value = company;
+    }
+
+
+    const homeName =
+      document.getElementById(
+        "contractorHomeName"
+      );
+
+    if (homeName) {
+      homeName.textContent =
+        name || "مقاول";
+    }
+
+
+    const settingsName =
+      document.getElementById(
+        "contractorSettingsName"
+      );
+
+    const settingsPhone =
+      document.getElementById(
+        "contractorSettingsPhone"
+      );
+
+    const settingsCity =
+      document.getElementById(
+        "contractorSettingsCity"
+      );
+
+    const settingsCompany =
+      document.getElementById(
+        "contractorSettingsCompany"
+      );
+
+
+    if (settingsName) {
+      settingsName.value = name;
+    }
+
+    if (settingsPhone) {
+      settingsPhone.value = phone;
+    }
+
+    if (settingsCity) {
+      settingsCity.value = city;
+    }
+
+    if (settingsCompany) {
+      settingsCompany.value = company;
+    }
+
+  }
+
+
+  /* =========================================================
+     SAVE CONTRACTOR DATA
+  ========================================================= */
+
+  const saveContractorDataBtn =
+    document.getElementById(
+      "saveContractorDataBtn"
+    );
+
+  if (saveContractorDataBtn) {
+
+    saveContractorDataBtn.addEventListener(
+      "click",
+      async function () {
+
+        const user =
+          getContractorUser();
+
+        if (!user) {
+
+          alert(
+            "يجب تسجيل الدخول أولاً."
+          );
+
+          return;
+        }
+
+
+        const name =
+          document
+            .getElementById(
+              "contractorNameInput"
+            )
+            ?.value
+            ?.trim();
+
+        const phone =
+          document
+            .getElementById(
+              "contractorPhoneInput"
+            )
+            ?.value
+            ?.trim();
+
+        const city =
+          document
+            .getElementById(
+              "contractorCityInput"
+            )
+            ?.value
+            ?.trim();
+
+        const company =
+          document
+            .getElementById(
+              "contractorCompanyInput"
+            )
+            ?.value
+            ?.trim();
+
+
+        if (!name) {
+
+          alert(
+            "اكتب اسمك."
+          );
+
+          return;
+        }
+
+
+        if (!phone) {
+
+          alert(
+            "اكتب رقم الجوال."
+          );
+
+          return;
+        }
+
+
+        if (!city) {
+
+          alert(
+            "اكتب المدينة."
+          );
+
+          return;
+        }
+
+
+        try {
+
+          saveContractorDataBtn.disabled =
+            true;
+
+          saveContractorDataBtn.textContent =
+            "جاري الحفظ...";
+
+
+          const contractorData = {
+
+            uid: user.uid,
+
+            name: name,
+
+            phone: phone,
+
+            city: city,
+
+            company: company,
+
+            email:
+              user.email || "",
+
+            role:
+              "contractor",
+
+            updatedAt:
+              new Date()
+
+          };
+
+
+          const contractorRef =
+            window.ma3daDoc(
+              window.ma3daDB,
+              "contractors",
+              user.uid
+            );
+
+
+          await window.ma3daSetDoc(
+            contractorRef,
+            contractorData,
+            {
+              merge: true
+            }
+          );
+
+
+          contractorSaveLocal(
+            contractorData
+          );
+
+
+          fillContractorProfile(
+            contractorData
+          );
+
+
+          contractorShowScreen(
+            "contractorHomeScreen"
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Save contractor error:",
+            error
+          );
+
+          alert(
+            "تعذر حفظ بيانات المقاول."
+          );
+
+        } finally {
+
+          saveContractorDataBtn.disabled =
+            false;
+
+          saveContractorDataBtn.textContent =
+            "حفظ ومتابعة";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     OPEN CONTRACTOR HOME
+  ========================================================= */
+
+  async function openContractorHome() {
+
+    contractorSetRole();
+
+    const profile =
+      await loadContractorProfile();
+
+    if (profile) {
+
+      fillContractorProfile(
+        profile
+      );
+
+      contractorShowScreen(
+        "contractorHomeScreen"
+      );
+
+      return;
+    }
+
+
+    const localProfile =
+      contractorGetProfile();
+
+    if (localProfile) {
+
+      fillContractorProfile(
+        localProfile
+      );
+
+      contractorShowScreen(
+        "contractorHomeScreen"
+      );
+
+      return;
+    }
+
+
+    contractorShowScreen(
+      "contractorDataScreen"
+    );
+
+  }
+
+
+  window.openContractorHome =
+    openContractorHome;
+
+
+  /* =========================================================
+     NEW REQUEST
+  ========================================================= */
+
+  const contractorNewRequestBtn =
+    document.getElementById(
+      "contractorNewRequestBtn"
+    );
+
+  if (contractorNewRequestBtn) {
+
+    contractorNewRequestBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorSetRole();
+
+        contractorShowScreen(
+          "contractorRequestScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     SUBMIT CONTRACTOR REQUEST
+  ========================================================= */
+
+  const submitContractorRequestBtn =
+    document.getElementById(
+      "submitContractorRequestBtn"
+    );
+
+  if (submitContractorRequestBtn) {
+
+    submitContractorRequestBtn.addEventListener(
+      "click",
+      async function () {
+
+        const user =
+          getContractorUser();
+
+        if (!user) {
+
+          alert(
+            "يجب تسجيل الدخول أولاً."
+          );
+
+          return;
+        }
+
+
+        const profile =
+          contractorGetProfile();
+
+
+        const location =
+          document
+            .getElementById(
+              "contractorRequestLocation"
+            )
+            ?.value
+            ?.trim();
+
+        const equipment =
+          document
+            .getElementById(
+              "contractorEquipmentType"
+            )
+            ?.value;
+
+        const duration =
+          document
+            .getElementById(
+              "contractorDuration"
+            )
+            ?.value;
+
+        const operator =
+          document
+            .getElementById(
+              "contractorOperator"
+            )
+            ?.value;
+
+        const notes =
+          document
+            .getElementById(
+              "contractorNotes"
+            )
+            ?.value
+            ?.trim();
+
+
+        if (!location) {
+
+          alert(
+            "اكتب موقع العمل."
+          );
+
+          return;
+        }
+
+
+        if (!equipment) {
+
+          alert(
+            "اختر نوع المعدة."
+          );
+
+          return;
+        }
+
+
+        if (!duration) {
+
+          alert(
+            "اختر مدة العمل."
+          );
+
+          return;
+        }
+
+
+        if (!operator) {
+
+          alert(
+            "اختر المشغل."
+          );
+
+          return;
+        }
+
+
+        /*
+          الأسعار نفسها المستخدمة
+          في نظام مِعدة الحالي.
+        */
+
+        const hourlyPrices = {
+
+          "بوكلين": 250,
+          "شيول": 220,
+          "قلاب": 180,
+          "كرين": 350,
+          "حفار": 250,
+          "بلدوزر": 300
+
+        };
+
+
+        const durationHours = {
+
+          "ساعة واحدة": 1,
+          "4 ساعات": 4,
+          "8 ساعات": 8,
+          "يوم كامل": 10
+
+        };
+
+
+        const hours =
+          durationHours[duration] ||
+          1;
+
+        const hourlyPrice =
+          hourlyPrices[equipment] ||
+          0;
+
+        const price =
+          hourlyPrice * hours;
+
+
+        try {
+
+          submitContractorRequestBtn.disabled =
+            true;
+
+          submitContractorRequestBtn.textContent =
+            "جاري إرسال الطلب...";
+
+
+          const requestData = {
+
+            location: location,
+
+            equipment: equipment,
+
+            duration: duration,
+
+            durationHours: hours,
+
+            operator: operator,
+
+            notes: notes,
+
+            price: price,
+
+            customerId: user.uid,
+
+            customerEmail:
+              user.email || "",
+
+            requesterId:
+              user.uid,
+
+            requesterRole:
+              "contractor",
+
+            requesterType:
+              "contractor",
+
+            contractorId:
+              user.uid,
+
+            contractorName:
+              profile?.name || "",
+
+            contractorPhone:
+              profile?.phone || "",
+
+            contractorCity:
+              profile?.city || "",
+
+            contractorCompany:
+              profile?.company || "",
+
+            status:
+              "searching",
+
+            createdAt:
+              new Date()
+
+          };
+
+
+          const requestsCollection =
+            window.ma3daCollection(
+              window.ma3daDB,
+              "requests"
+            );
+
+
+          const result =
+            await window.ma3daAddDoc(
+              requestsCollection,
+              requestData
+            );
+
+
+          contractorCurrentOrderId =
+            result.id;
+
+
+          contractorCurrentOrder = {
+
+            id: result.id,
+
+            ...requestData
+
+          };
+
+
+          localStorage.setItem(
+            "contractorCurrentOrderId",
+            result.id
+          );
+
+
+          localStorage.setItem(
+            "contractorCurrentOrder",
+            JSON.stringify(
+              contractorCurrentOrder
+            )
+          );
+
+
+          alert(
+            "تم إرسال طلب المعدة بنجاح."
+          );
+
+
+          contractorShowScreen(
+            "contractorCurrentOrdersScreen"
+          );
+
+
+          await loadContractorCurrentOrders();
+
+
+        } catch (error) {
+
+          console.error(
+            "Contractor request error:",
+            error
+          );
+
+          if (
+            error?.code ===
+            "permission-denied"
+          ) {
+
+            alert(
+              "ليس لديك صلاحية لإرسال الطلب. تحقق من قواعد Firebase."
+            );
+
+          } else {
+
+            alert(
+              "تعذر إرسال الطلب حالياً."
+            );
+
+          }
+
+        } finally {
+
+          submitContractorRequestBtn.disabled =
+            false;
+
+          submitContractorRequestBtn.textContent =
+            "إرسال طلب المعدة";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CANCEL NEW REQUEST
+  ========================================================= */
+
+  const cancelContractorRequestBtn =
+    document.getElementById(
+      "cancelContractorRequestBtn"
+    );
+
+  if (cancelContractorRequestBtn) {
+
+    cancelContractorRequestBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     LOAD CURRENT ORDERS
+  ========================================================= */
+
+  async function loadContractorCurrentOrders() {
+
+    const list =
+      document.getElementById(
+        "contractorCurrentOrdersList"
+      );
+
+    if (!list) {
+      return;
+    }
+
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return;
+    }
+
+
+    list.innerHTML = `
+      <div class="card">
+        <p>جاري تحميل الطلبات...</p>
+      </div>
+    `;
+
+
+    try {
+
+      const requestsRef =
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        );
+
+
+      const snapshot =
+        await window.ma3daGetDocs(
+          requestsRef
+        );
+
+
+      const orders = [];
+
+
+      snapshot.forEach(
+        docSnap => {
+
+          const data =
+            docSnap.data();
+
+          const requesterId =
+            data.contractorId ||
+            data.requesterId ||
+            data.customerId;
+
+
+          const role =
+            data.requesterRole ||
+            data.requesterType;
+
+
+          if (
+            requesterId === user.uid &&
+            (
+              role === "contractor" ||
+              data.contractorId === user.uid
+            )
+          ) {
+
+            const status =
+              data.status || "";
+
+
+            if (
+              status !== "completed" &&
+              status !== "cancelled" &&
+              status !== "rejected"
+            ) {
+
+              orders.push({
+
+                id: docSnap.id,
+
+                ...data
+
+              });
+
+            }
+
+          }
+
+        }
+      );
+
+
+      orders.sort(
+        (a, b) => {
+
+          const aTime =
+            a.createdAt?.seconds ||
+            0;
+
+          const bTime =
+            b.createdAt?.seconds ||
+            0;
+
+          return bTime - aTime;
+
+        }
+      );
+
+
+      if (!orders.length) {
+
+        list.innerHTML = `
+          <div class="card">
+            <p>لا توجد طلبات حالية.</p>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      list.innerHTML =
+        orders
+          .map(
+            order =>
+              createContractorOrderCard(
+                order
+              )
+          )
+          .join("");
+
+
+    } catch (error) {
+
+      console.error(
+        "Load contractor orders error:",
+        error
+      );
+
+      list.innerHTML = `
+        <div class="card">
+          <p>تعذر تحميل الطلبات.</p>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     LOAD PREVIOUS ORDERS
+  ========================================================= */
+
+  async function loadContractorPreviousOrders() {
+
+    const list =
+      document.getElementById(
+        "contractorPreviousOrdersList"
+      );
+
+    if (!list) {
+      return;
+    }
+
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return;
+    }
+
+
+    list.innerHTML = `
+      <div class="card">
+        <p>جاري تحميل الطلبات...</p>
+      </div>
+    `;
+
+
+    try {
+
+      const requestsRef =
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        );
+
+
+      const snapshot =
+        await window.ma3daGetDocs(
+          requestsRef
+        );
+
+
+      const orders = [];
+
+
+      snapshot.forEach(
+        docSnap => {
+
+          const data =
+            docSnap.data();
+
+          const requesterId =
+            data.contractorId ||
+            data.requesterId ||
+            data.customerId;
+
+
+          const role =
+            data.requesterRole ||
+            data.requesterType;
+
+
+          if (
+            requesterId === user.uid &&
+            (
+              role === "contractor" ||
+              data.contractorId === user.uid
+            )
+          ) {
+
+            const status =
+              data.status || "";
+
+
+            if (
+              status === "completed" ||
+              status === "cancelled" ||
+              status === "rejected"
+            ) {
+
+              orders.push({
+
+                id: docSnap.id,
+
+                ...data
+
+              });
+
+            }
+
+          }
+
+        }
+      );
+
+
+      orders.sort(
+        (a, b) => {
+
+          const aTime =
+            a.createdAt?.seconds ||
+            0;
+
+          const bTime =
+            b.createdAt?.seconds ||
+            0;
+
+          return bTime - aTime;
+
+        }
+      );
+
+
+      if (!orders.length) {
+
+        list.innerHTML = `
+          <div class="card">
+            <p>لا توجد طلبات سابقة.</p>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      list.innerHTML =
+        orders
+          .map(
+            order =>
+              createContractorOrderCard(
+                order,
+                true
+              )
+          )
+          .join("");
+
+
+    } catch (error) {
+
+      console.error(
+        "Load contractor previous orders error:",
+        error
+      );
+
+      list.innerHTML = `
+        <div class="card">
+          <p>تعذر تحميل الطلبات السابقة.</p>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ORDER CARD
+  ========================================================= */
+
+  function createContractorOrderCard(
+    order,
+    previous = false
+  ) {
+
+    const statusText =
+      getContractorStatusText(
+        order.status
+      );
+
+
+    const price =
+      order.price
+        ? `${order.price} ريال`
+        : "غير محدد";
+
+
+    return `
+
+      <div
+        class="card contractor-order-card"
+        data-contractor-order-id="${order.id}"
+      >
+
+        <h3>
+          🚜 ${escapeContractorHtml(
+            order.equipment || "-"
+          )}
+        </h3>
+
+
+        <p>
+          📍 ${escapeContractorHtml(
+            order.location || "-"
+          )}
+        </p>
+
+
+        <p>
+          ⏱️ ${escapeContractorHtml(
+            order.duration || "-"
+          )}
+        </p>
+
+
+        <p>
+          💰 ${price}
+        </p>
+
+
+        <p>
+          الحالة:
+          <strong>
+            ${statusText}
+          </strong>
+        </p>
+
+
+        <button
+          type="button"
+          class="main-btn"
+          data-contractor-order-details="${order.id}"
+        >
+          عرض التفاصيل
+        </button>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     STATUS
+  ========================================================= */
+
+  function getContractorStatusText(
+    status
+  ) {
+
+    const statuses = {
+
+      searching:
+        "جاري البحث عن معدة",
+
+      accepted:
+        "تم قبول الطلب",
+
+      arrived:
+        "المعدة وصلت",
+
+      working:
+        "العمل جارٍ",
+
+      completed:
+        "تم إكمال العمل",
+
+      cancelled:
+        "تم إلغاء الطلب",
+
+      rejected:
+        "تم رفض الطلب"
+
+    };
+
+
+    return (
+      statuses[status] ||
+      "جاري معالجة الطلب"
+    );
+
+  }
+
+
+  /* =========================================================
+     ORDER DETAILS
+  ========================================================= */
+
+  async function openContractorOrderDetails(
+    orderId
+  ) {
+
+    if (!orderId) {
+      return;
+    }
+
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return;
+    }
+
+
+    try {
+
+      const orderRef =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "requests",
+          orderId
+        );
+
+
+      const snapshot =
+        await window.ma3daGetDoc(
+          orderRef
+        );
+
+
+      if (
+        !snapshot.exists()
+      ) {
+
+        alert(
+          "الطلب غير موجود."
+        );
+
+        return;
+      }
+
+
+      const order =
+        snapshot.data();
+
+
+      const requesterId =
+        order.contractorId ||
+        order.requesterId ||
+        order.customerId;
+
+
+      if (
+        requesterId !== user.uid
+      ) {
+
+        alert(
+          "لا يمكنك عرض هذا الطلب."
+        );
+
+        return;
+      }
+
+
+      contractorCurrentOrderId =
+        orderId;
+
+
+      contractorCurrentOrder = {
+
+        id: orderId,
+
+        ...order
+
+      };
+
+
+      localStorage.setItem(
+        "contractorCurrentOrderId",
+        orderId
+      );
+
+
+      localStorage.setItem(
+        "contractorCurrentOrder",
+        JSON.stringify(
+          contractorCurrentOrder
+        )
+      );
+
+
+      const status =
+        document.getElementById(
+          "contractorOrderStatus"
+        );
+
+      const equipment =
+        document.getElementById(
+          "contractorOrderEquipment"
+        );
+
+      const duration =
+        document.getElementById(
+          "contractorOrderDuration"
+        );
+
+      const location =
+        document.getElementById(
+          "contractorOrderLocation"
+        );
+
+      const operator =
+        document.getElementById(
+          "contractorOrderOperator"
+        );
+
+      const price =
+        document.getElementById(
+          "contractorOrderPrice"
+        );
+
+
+      if (status) {
+
+        status.textContent =
+          getContractorStatusText(
+            order.status
+          );
+
+      }
+
+
+      if (equipment) {
+
+        equipment.textContent =
+          order.equipment || "-";
+
+      }
+
+
+      if (duration) {
+
+        duration.textContent =
+          order.duration || "-";
+
+      }
+
+
+      if (location) {
+
+        location.textContent =
+          order.location || "-";
+
+      }
+
+
+      if (operator) {
+
+        operator.textContent =
+          order.operator || "-";
+
+      }
+
+
+      if (price) {
+
+        price.textContent =
+          order.price
+            ? `${order.price} ريال`
+            : "-";
+
+      }
+
+
+      contractorShowScreen(
+        "contractorOrderDetailsScreen"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Contractor details error:",
+        error
+      );
+
+      alert(
+        "تعذر تحميل تفاصيل الطلب."
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CONTRACTOR EVENTS
+  ========================================================= */
+
+  document.addEventListener(
+    "click",
+    function (event) {
+
+      const detailsBtn =
+        event.target.closest(
+          "[data-contractor-order-details]"
+        );
+
+
+      if (detailsBtn) {
+
+        openContractorOrderDetails(
+          detailsBtn.dataset
+            .contractorOrderDetails
+        );
+
+        return;
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     CURRENT ORDERS BUTTON
+  ========================================================= */
+
+  const contractorCurrentOrdersBtn =
+    document.getElementById(
+      "contractorCurrentOrdersBtn"
+    );
+
+  if (contractorCurrentOrdersBtn) {
+
+    contractorCurrentOrdersBtn.addEventListener(
+      "click",
+      async function () {
+
+        contractorShowScreen(
+          "contractorCurrentOrdersScreen"
+        );
+
+        await loadContractorCurrentOrders();
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     PREVIOUS ORDERS BUTTON
+  ========================================================= */
+
+  const contractorPreviousOrdersBtn =
+    document.getElementById(
+      "contractorPreviousOrdersBtn"
+    );
+
+  if (contractorPreviousOrdersBtn) {
+
+    contractorPreviousOrdersBtn.addEventListener(
+      "click",
+      async function () {
+
+        contractorShowScreen(
+          "contractorPreviousOrdersScreen"
+        );
+
+        await loadContractorPreviousOrders();
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     PROJECTS
+  ========================================================= */
+
+  const contractorProjectsBtn =
+    document.getElementById(
+      "contractorProjectsBtn"
+    );
+
+  if (contractorProjectsBtn) {
+
+    contractorProjectsBtn.addEventListener(
+      "click",
+      async function () {
+
+        contractorShowScreen(
+          "contractorProjectsScreen"
+        );
+
+        await loadContractorProjects();
+
+      }
+    );
+
+  }
+
+
+  async function loadContractorProjects() {
+
+    const list =
+      document.getElementById(
+        "contractorProjectsList"
+      );
+
+    if (!list) {
+      return;
+    }
+
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return;
+    }
+
+
+    list.innerHTML = `
+      <div class="card">
+        <p>جاري تحميل المشاريع...</p>
+      </div>
+    `;
+
+
+    try {
+
+      const requestsRef =
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        );
+
+
+      const snapshot =
+        await window.ma3daGetDocs(
+          requestsRef
+        );
+
+
+      const orders = [];
+
+
+      snapshot.forEach(
+        docSnap => {
+
+          const data =
+            docSnap.data();
+
+
+          const requesterId =
+            data.contractorId ||
+            data.requesterId ||
+            data.customerId;
+
+
+          if (
+            requesterId === user.uid &&
+            (
+              data.requesterRole ===
+                "contractor" ||
+              data.requesterType ===
+                "contractor" ||
+              data.contractorId ===
+                user.uid
+            )
+          ) {
+
+            orders.push({
+
+              id: docSnap.id,
+
+              ...data
+
+            });
+
+          }
+
+        }
+      );
+
+
+      if (!orders.length) {
+
+        list.innerHTML = `
+          <div class="card">
+            <h3>🏗️ لا توجد مشاريع</h3>
+            <p>
+              عند إنشاء طلبات معدات ستظهر هنا.
+            </p>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      list.innerHTML =
+        orders
+          .map(
+            order => `
+
+              <div class="card">
+
+                <h3>
+                  🏗️ مشروع
+                </h3>
+
+                <p>
+                  🚜 ${escapeContractorHtml(
+                    order.equipment || "-"
+                  )}
+                </p>
+
+                <p>
+                  📍 ${escapeContractorHtml(
+                    order.location || "-"
+                  )}
+                </p>
+
+                <p>
+                  الحالة:
+                  <strong>
+                    ${getContractorStatusText(
+                      order.status
+                    )}
+                  </strong>
+                </p>
+
+                <button
+                  type="button"
+                  class="main-btn"
+                  data-contractor-order-details="${order.id}"
+                >
+                  عرض الطلب
+                </button>
+
+              </div>
+
+            `
+          )
+          .join("");
+
+
+    } catch (error) {
+
+      console.error(
+        "Contractor projects error:",
+        error
+      );
+
+      list.innerHTML = `
+        <div class="card">
+          <p>تعذر تحميل المشاريع.</p>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SETTINGS
+  ========================================================= */
+
+  const contractorSettingsBtn =
+    document.getElementById(
+      "contractorSettingsBtn"
+    );
+
+  if (contractorSettingsBtn) {
+
+    contractorSettingsBtn.addEventListener(
+      "click",
+      async function () {
+
+        const profile =
+          contractorGetProfile();
+
+        if (profile) {
+
+          fillContractorProfile(
+            profile
+          );
+
+        } else {
+
+          await loadContractorProfile();
+
+        }
+
+        contractorShowScreen(
+          "contractorSettingsScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     SAVE SETTINGS
+  ========================================================= */
+
+  const saveContractorSettingsBtn =
+    document.getElementById(
+      "saveContractorSettingsBtn"
+    );
+
+  if (saveContractorSettingsBtn) {
+
+    saveContractorSettingsBtn.addEventListener(
+      "click",
+      async function () {
+
+        const user =
+          getContractorUser();
+
+        if (!user) {
+
+          alert(
+            "يجب تسجيل الدخول."
+          );
+
+          return;
+        }
+
+
+        const name =
+          document
+            .getElementById(
+              "contractorSettingsName"
+            )
+            ?.value
+            ?.trim();
+
+        const phone =
+          document
+            .getElementById(
+              "contractorSettingsPhone"
+            )
+            ?.value
+            ?.trim();
+
+        const city =
+          document
+            .getElementById(
+              "contractorSettingsCity"
+            )
+            ?.value
+            ?.trim();
+
+        const company =
+          document
+            .getElementById(
+              "contractorSettingsCompany"
+            )
+            ?.value
+            ?.trim();
+
+
+        if (!name) {
+
+          alert(
+            "اكتب الاسم."
+          );
+
+          return;
+        }
+
+
+        try {
+
+          saveContractorSettingsBtn.disabled =
+            true;
+
+          saveContractorSettingsBtn.textContent =
+            "جاري الحفظ...";
+
+
+          const data = {
+
+            uid: user.uid,
+
+            name: name,
+
+            phone: phone,
+
+            city: city,
+
+            company: company,
+
+            email:
+              user.email || "",
+
+            role:
+              "contractor",
+
+            updatedAt:
+              new Date()
+
+          };
+
+
+          const contractorRef =
+            window.ma3daDoc(
+              window.ma3daDB,
+              "contractors",
+              user.uid
+            );
+
+
+          await window.ma3daSetDoc(
+            contractorRef,
+            data,
+            {
+              merge: true
+            }
+          );
+
+
+          contractorSaveLocal(
+            data
+          );
+
+
+          fillContractorProfile(
+            data
+          );
+
+
+          alert(
+            "تم حفظ التعديلات."
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Contractor settings error:",
+            error
+          );
+
+          alert(
+            "تعذر حفظ التعديلات."
+          );
+
+        } finally {
+
+          saveContractorSettingsBtn.disabled =
+            false;
+
+          saveContractorSettingsBtn.textContent =
+            "حفظ التعديلات";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     SETTINGS BACK
+  ========================================================= */
+
+  const contractorSettingsBackBtn =
+    document.getElementById(
+      "contractorSettingsBackBtn"
+    );
+
+  if (contractorSettingsBackBtn) {
+
+    contractorSettingsBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CURRENT ORDERS BACK
+  ========================================================= */
+
+  const contractorCurrentOrdersBackBtn =
+    document.getElementById(
+      "contractorCurrentOrdersBackBtn"
+    );
+
+  if (contractorCurrentOrdersBackBtn) {
+
+    contractorCurrentOrdersBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     PREVIOUS ORDERS BACK
+  ========================================================= */
+
+  const contractorPreviousOrdersBackBtn =
+    document.getElementById(
+      "contractorPreviousOrdersBackBtn"
+    );
+
+  if (contractorPreviousOrdersBackBtn) {
+
+    contractorPreviousOrdersBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     PROJECTS BACK
+  ========================================================= */
+
+  const contractorProjectsBackBtn =
+    document.getElementById(
+      "contractorProjectsBackBtn"
+    );
+
+  if (contractorProjectsBackBtn) {
+
+    contractorProjectsBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ORDER DETAILS BACK
+  ========================================================= */
+
+  const contractorOrderBackBtn =
+    document.getElementById(
+      "contractorOrderBackBtn"
+    );
+
+  if (contractorOrderBackBtn) {
+
+    contractorOrderBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorCurrentOrdersScreen"
+        );
+
+        loadContractorCurrentOrders();
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     ORDER CHAT
+  ========================================================= */
+
+  const contractorOrderChatBtn =
+    document.getElementById(
+      "contractorOrderChatBtn"
+    );
+
+  if (contractorOrderChatBtn) {
+
+    contractorOrderChatBtn.addEventListener(
+      "click",
+      function () {
+
+        /*
+          نستخدم شاشة المحادثة الموجودة
+          في مِعدة بدلاً من إنشاء شاشة جديدة.
+        */
+
+        if (
+          typeof showScreen ===
+          "function"
+        ) {
+
+          showScreen(
+            "chatScreen"
+          );
+
+        } else {
+
+          contractorShowScreen(
+            "chatScreen"
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     SUPPORT
+  ========================================================= */
+
+  const contractorSupportBtn =
+    document.getElementById(
+      "contractorSupportBtn"
+    );
+
+  if (contractorSupportBtn) {
+
+    contractorSupportBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorSupportScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  const contractorSupportBackBtn =
+    document.getElementById(
+      "contractorSupportBackBtn"
+    );
+
+  if (contractorSupportBackBtn) {
+
+    contractorSupportBackBtn.addEventListener(
+      "click",
+      function () {
+
+        contractorShowScreen(
+          "contractorHomeScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  const contractorSupportChatBtn =
+    document.getElementById(
+      "contractorSupportChatBtn"
+    );
+
+  if (contractorSupportChatBtn) {
+
+    contractorSupportChatBtn.addEventListener(
+      "click",
+      function () {
+
+        /*
+          نفتح شاشة الشات الموجودة
+          حالياً في التطبيق.
+        */
+
+        contractorShowScreen(
+          "chatScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CHANGE PASSWORD
+  ========================================================= */
+
+  const contractorChangePasswordBtn =
+    document.getElementById(
+      "contractorChangePasswordBtn"
+    );
+
+  if (contractorChangePasswordBtn) {
+
+    contractorChangePasswordBtn.addEventListener(
+      "click",
+      function () {
+
+        /*
+          نستخدم شاشة تغيير كلمة المرور
+          الموجودة أصلاً في التطبيق.
+        */
+
+        contractorShowScreen(
+          "changePasswordScreen"
+        );
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
+  const contractorHomeLogoutBtn =
+    document.getElementById(
+      "contractorHomeLogoutBtn"
+    );
+
+  if (contractorHomeLogoutBtn) {
+
+    contractorHomeLogoutBtn.addEventListener(
+      "click",
+      async function () {
+
+        try {
+
+          if (
+            window.ma3daAuth &&
+            typeof window.ma3daAuth
+              .signOut === "function"
+          ) {
+
+            await window.ma3daAuth.signOut();
+
+          } else if (
+            typeof window.ma3daSignOut ===
+            "function"
+          ) {
+
+            await window.ma3daSignOut();
+
+          }
+
+
+          localStorage.removeItem(
+            "ma3daRole"
+          );
+
+          localStorage.removeItem(
+            "userRole"
+          );
+
+          localStorage.removeItem(
+            "currentRole"
+          );
+
+          localStorage.removeItem(
+            "contractorCurrentOrderId"
+          );
+
+          localStorage.removeItem(
+            "contractorCurrentOrder"
+          );
+
+          localStorage.removeItem(
+            "contractorProfile"
+          );
+
+
+          contractorProfile = null;
+
+          contractorCurrentOrder = null;
+
+          contractorCurrentOrderId = null;
+
+
+          contractorShowScreen(
+            "roleScreen"
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Contractor logout error:",
+            error
+          );
+
+          alert(
+            "تعذر تسجيل الخروج."
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     HTML ESCAPE
+  ========================================================= */
+
+  function escapeContractorHtml(
+    value
+  ) {
+
+    return String(
+      value ?? ""
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* =========================================================
+     CONTRACTOR AUTO OPEN
+  ========================================================= */
+
+  async function contractorAutoOpen() {
+
+    const role =
+      localStorage.getItem(
+        "ma3daRole"
+      ) ||
+      localStorage.getItem(
+        "userRole"
+      ) ||
+      localStorage.getItem(
+        "currentRole"
+      );
+
+
+    if (
+      role !== "contractor"
+    ) {
+      return;
+    }
+
+
+    const user =
+      getContractorUser();
+
+    if (!user) {
+      return;
+    }
+
+
+    /*
+      لا نفتح لوحة المقاول بالقوة
+      إذا كان التطبيق يعرض شاشة أخرى
+      أثناء تسجيل الدخول.
+    */
+
+    const activeScreen =
+      document.querySelector(
+        ".screen.active"
+      );
+
+
+    if (
+      activeScreen &&
+      (
+        activeScreen.id ===
+          "roleScreen" ||
+        activeScreen.id ===
+          "phoneScreen" ||
+        activeScreen.id ===
+          "otpScreen"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    const profile =
+      await loadContractorProfile();
+
+
+    if (profile) {
+
+      fillContractorProfile(
+        profile
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     FIREBASE READY
+  ========================================================= */
+
+  if (
+    window.ma3daFirebaseReady
+  ) {
+
+    Promise.resolve(
+      window.ma3daFirebaseReady
+    )
+      .then(
+        () => {
+
+          contractorAutoOpen();
+
+        }
+      )
+      .catch(
+        () => {}
+      );
+
+  }
+
+
+  /* =========================================================
+     EXPOSE FUNCTIONS
+  ========================================================= */
+
+  window.loadContractorProfile =
+    loadContractorProfile;
+
+  window.loadContractorCurrentOrders =
+    loadContractorCurrentOrders;
+
+  window.loadContractorPreviousOrders =
+    loadContractorPreviousOrders;
+
+  window.loadContractorProjects =
+    loadContractorProjects;
+
+  window.openContractorOrderDetails =
+    openContractorOrderDetails;
+
+
+})();
