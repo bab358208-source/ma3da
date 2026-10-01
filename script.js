@@ -9992,219 +9992,66 @@ setTimeout(
   /* =========================================================
      CONTRACTOR ROLE BUTTON
   ========================================================= */
-
-/* =========================================================
-   CONTRACTOR ROLE BUTTON
-========================================================= */
-
 document.addEventListener(
+
   "click",
+
   function(event) {
 
     const contractorRoleBtn =
+
       event.target.closest(
+
         "#contractorRoleBtn"
+
       );
 
     if (!contractorRoleBtn)
+
       return;
 
     contractorSetRole();
 
     const phoneRoleText =
+
       document.getElementById(
+
         "phoneRoleText"
+
       );
 
     if (phoneRoleText) {
 
       phoneRoleText.textContent =
+
         "تسجيل الدخول كمقاول / صاحب مشروع";
 
     }
 
     const phoneTitle =
+
       document.querySelector(
+
         "#phoneScreen h1"
+
       );
 
     if (phoneTitle) {
 
       phoneTitle.textContent =
+
         "تسجيل الدخول";
 
     }
 
     contractorShowScreen(
+
       "phoneScreen"
+
     );
 
   }
-);
 
-
- 
- 
-
- 
-
-
-
-
- 
-
-
-
-
-
- 
-/* =========================================================
-   CONTRACTOR ROLE BUTTON
-========================================================= */
-
-document.addEventListener(
-  "click",
-  function(event) {
-
-    const contractorRoleBtn =
-      event.target.closest(
-        "#contractorRoleBtn"
-      );
-
-    if (!contractorRoleBtn)
-      return;
-
-    contractorSetRole();
-
-    const phoneRoleText =
-      document.getElementById(
-        "phoneRoleText"
-      );
-
-    if (phoneRoleText) {
-
-      phoneRoleText.textContent =
-        "تسجيل الدخول كمقاول / صاحب مشروع";
-
-    }
-
-    const phoneTitle =
-      document.querySelector(
-        "#phoneScreen h1"
-      );
-
-    if (phoneTitle) {
-
-      phoneTitle.textContent =
-        "تسجيل الدخول";
-
-    }
-
-    contractorShowScreen(
-      "phoneScreen"
-    );
-
-  }
-);
-
-
- 
-/* ========================
-=================================
-   CONTRACTOR ROLE BUTTON
-========================================================= */
-
-document.addEventListener(
-  "click",
-  function(event) {
-
-    const contractorRoleBtn =
-      event.target.closest(
-        "#contractorRoleBtn"
-      );
-
-    if (!contractorRoleBtn)
-      return;
-
-    contractorSetRole();
-
-    const phoneRoleText =
-      document.getElementById(
-        "phoneRoleText"
-      );
-
-    if (phoneRoleText) {
-
-      phoneRoleText.textContent =
-        "تسجيل الدخول كمقاول / صاحب مشروع";
-
-    }
-
-    const phoneTitle =
-      document.querySelector(
-        "#phoneScreen h1"
-      );
-
-    if (phoneTitle) {
-
-      phoneTitle.textContent =
-        "تسجيل الدخول";
-
-    }
-
-    contractorShowScreen(
-      "phoneScreen"
-    );
-
-  }
-);
-  /* =========================================================
-   CONTRACTOR ROLE BUTTON
-========================================================= */
-
-document.addEventListener(
-  "click",
-  function(event) {
-
-    const contractorRoleBtn =
-      event.target.closest(
-        "#contractorRoleBtn"
-      );
-
-    if (!contractorRoleBtn)
-      return;
-
-    contractorSetRole();
-
-    const phoneRoleText =
-      document.getElementById(
-        "phoneRoleText"
-      );
-
-    if (phoneRoleText) {
-
-      phoneRoleText.textContent =
-        "تسجيل الدخول كمقاول / صاحب مشروع";
-
-    }
-
-    const phoneTitle =
-      document.querySelector(
-        "#phoneScreen h1"
-      );
-
-    if (phoneTitle) {
-
-      phoneTitle.textContent =
-        "تسجيل الدخول";
-
-    }
-
-    contractorShowScreen(
-      "phoneScreen"
-    );
-
-  }
 );
         
 
