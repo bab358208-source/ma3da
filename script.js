@@ -7711,7 +7711,7 @@ if(operatorCallCustomerBtn){
  
     }
   );
- 
+  
 }
  
 /* OPERATOR CHAT */
