@@ -2559,8 +2559,11 @@ async function sendChatMessage(){
     );
  
     alert(
-      "تعذر إرسال الرسالة"
-    );
+  "تعذر إرسال الرسالة:\n" +
+  (error?.code || "") +
+  "\n" +
+  (error?.message || error)
+);
  
   }
  
