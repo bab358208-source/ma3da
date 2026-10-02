@@ -2670,6 +2670,58 @@ function startChatListener(){
     );
  
 }
+/* =========================================================
+   CHAT SEND - CUSTOMER + OPERATOR
+========================================================= */
+
+document.addEventListener(
+  "click",
+  function(event){
+
+    const sendButton =
+      event.target.closest(
+        "#sendChatBtn"
+      );
+
+    if(!sendButton)
+      return;
+
+    event.preventDefault();
+
+    sendChatMessage();
+
+  }
+);
+
+
+/* =========================================================
+   CHAT ENTER - CUSTOMER + OPERATOR
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.key !== "Enter" ||
+      event.shiftKey
+    )
+      return;
+
+    const input =
+      event.target.closest(
+        "#chatInput"
+      );
+
+    if(!input)
+      return;
+
+    event.preventDefault();
+
+    sendChatMessage();
+
+  }
+);
 /* TRACKING */
  
 function startTracking(){
