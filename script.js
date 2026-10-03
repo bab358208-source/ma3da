@@ -10311,18 +10311,22 @@ localStorage.setItem("selectedRole", "contractor");
           );
  
  
-        } catch (error) {
- 
-          console.error(
-            "Save contractor error:",
-            error
-          );
- 
-          alert(
-            "تعذر حفظ بيانات المقاول."
-          );
- 
-        } finally {
+        catch (error) {
+
+  console.error(
+    "Save contractor error:",
+    error
+  );
+
+  alert(
+    "تعذر حفظ بيانات المقاول:\n" +
+    (error?.code || "") +
+    "\n" +
+    (error?.message || "خطأ غير معروف")
+  );
+
+}
+        finally {
  
           saveContractorDataBtn.disabled =
             false;
