@@ -10311,7 +10311,7 @@ localStorage.setItem("selectedRole", "contractor");
           );
  
  
-        catch (error) {
+        } catch (error) {
 
   console.error(
     "Save contractor error:",
@@ -10319,10 +10319,7 @@ localStorage.setItem("selectedRole", "contractor");
   );
 
   alert(
-    "تعذر حفظ بيانات المقاول:\n" +
-    (error?.code || "") +
-    "\n" +
-    (error?.message || "خطأ غير معروف")
+    "تعذر حفظ بيانات المقاول."
   );
 
 }
