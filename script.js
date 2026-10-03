@@ -10310,19 +10310,17 @@ localStorage.setItem("selectedRole", "contractor");
             "contractorHomeScreen"
           );
  
- 
-        } catch (error) {
-
-  console.error(
-    "Save contractor error:",
-    error
-  );
+ } catch (error) {
+  console.error("Save contractor error:", error);
 
   alert(
-    "تعذر حفظ بيانات المقاول."
+    "سبب فشل الحفظ:\n" +
+    (error?.code || "بدون رمز") +
+    "\n" +
+    (error?.message || "خطأ غير معروف")
   );
-
 }
+        
         finally {
  
           saveContractorDataBtn.disabled =
