@@ -10171,7 +10171,7 @@ localStorage.setItem("selectedRole", "contractor");
       async function () {
  
         const user =
-          getContractorUser();
+  await getContractorUser();
  
         if (!user) {
  
