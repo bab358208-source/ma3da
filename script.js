@@ -5476,24 +5476,26 @@ const snapshot =
       }
     );
  
-  }catch(error){
- 
+  } catch(error) {
+
     console.error(
       "خطأ في تحميل الطلبات الجديدة:",
       error
     );
- 
+
     list.innerHTML = `
       <div class="card center">
+        <h3>تفاصيل خطأ تحميل الطلبات</h3>
+        <p dir="ltr">
+          ${error.code || "unknown"}
+        </p>
         <p>
-          تعذر تحميل الطلبات.
+          ${error.message || "لا توجد تفاصيل"}
         </p>
       </div>
     `;
- 
+
   }
- 
-}
  
 /* ACCEPT */
  
