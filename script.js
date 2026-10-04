@@ -5273,14 +5273,28 @@ async function loadOperatorNewRequests(){
  
     }
  
-    const snapshot =
-      await window.ma3daGetDocs(
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        )
-      );
- 
+    
+const { where } = await import(
+  "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"
+);
+
+const requestsCollection =
+  window.ma3daCollection(
+    window.ma3daDB,
+    "requests"
+  );
+
+const requestsQuery =
+  window.ma3daQuery(
+    requestsCollection,
+    where("status", "==", "searching")
+  );
+
+const snapshot =
+  await window.ma3daGetDocs(
+    requestsQuery
+  );
+
     const requests = [];
  
     snapshot.forEach(
