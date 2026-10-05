@@ -2437,244 +2437,758 @@ if(trackingBtn){
  
 }
  
-/* CHAT */
- 
+/* =========================================================
+   CHAT
+   CUSTOMER + EQUIPMENT OWNER
+
+   FIRESTORE PATH:
+   requests/{requestId}/messages/{messageId}
+========================================================= */
+
+
+/* =========================================================
+   CHAT VARIABLES
+========================================================= */
+
+let chatMessagesUnsubscribe = null;
+
+let chatSending = false;
+
+
+/* =========================================================
+   GET CURRENT USER
+========================================================= */
+
+async function getChatCurrentUser(){
+
+  try{
+
+    if(window.ma3daFirebaseReady){
+
+      await window.ma3daFirebaseReady;
+
+    }
+
+    if(
+      typeof window.ma3daGetCurrentUser ===
+      "function"
+    ){
+
+      const user =
+        await window.ma3daGetCurrentUser();
+
+      if(user){
+
+        return user;
+
+      }
+
+    }
+
+    if(
+      window.ma3daAuth &&
+      window.ma3daAuth.currentUser
+    ){
+
+      return window.ma3daAuth.currentUser;
+
+    }
+
+    return null;
+
+  }catch(error){
+
+    console.error(
+      "CHAT USER ERROR:",
+      error
+    );
+
+    return null;
+
+  }
+
+}
+
+
+/* =========================================================
+   GET CURRENT REQUEST ID
+========================================================= */
+
+function getChatRequestId(){
+
+  const requestId =
+    localStorage.getItem(
+      "currentRequestId"
+    );
+
+  if(
+    !requestId ||
+    String(requestId).trim() === ""
+  ){
+
+    return null;
+
+  }
+
+  return String(
+    requestId
+  ).trim();
+
+}
+
+
+/* =========================================================
+   GET CHAT MESSAGES COLLECTION
+========================================================= */
+
+function getChatMessagesCollection(
+  requestId
+){
+
+  if(
+    !requestId ||
+    !window.ma3daDB ||
+    typeof window.ma3daCollection !==
+      "function"
+  ){
+
+    return null;
+
+  }
+
+  return window.ma3daCollection(
+    window.ma3daDB,
+    "requests",
+    requestId,
+    "messages"
+  );
+
+}
+
+
+/* =========================================================
+   CUSTOMER CHAT BUTTON
+========================================================= */
+
 const chatBtn =
-  document.getElementById("chatBtn");
- 
+  document.getElementById(
+    "chatBtn"
+  );
+
 if(chatBtn){
- 
+
   chatBtn.addEventListener(
     "click",
-    ()=>{
- 
-      showScreen(
-        "chatScreen"
-      );
-startChatListener();
-      setTimeout(
-        ()=>{
- 
-          document
-            .getElementById(
-              "chatInput"
-            )
-            ?.focus();
- 
-        },
-        100
-      );
- 
+    async()=>{
+
+      try{
+
+        const user =
+          await getChatCurrentUser();
+
+        if(!user){
+
+          alert(
+            "يجب تسجيل الدخول أولًا."
+          );
+
+          return;
+
+        }
+
+        const requestId =
+          getChatRequestId();
+
+        if(!requestId){
+
+          alert(
+            "لا يوجد طلب مرتبط بالمحادثة."
+          );
+
+          return;
+
+        }
+
+        showScreen(
+          "chatScreen"
+        );
+
+        await startChatListener();
+
+        setTimeout(
+          ()=>{
+
+            document
+              .getElementById(
+                "chatInput"
+              )
+              ?.focus();
+
+          },
+          100
+        );
+
+      }catch(error){
+
+        console.error(
+          "OPEN CUSTOMER CHAT ERROR:",
+          error
+        );
+
+        alert(
+          "تعذر فتح المحادثة."
+        );
+
+      }
+
     }
   );
- 
+
 }
- 
+
+
+/* =========================================================
+   SEND CHAT MESSAGE
+========================================================= */
+
 async function sendChatMessage(){
- 
-  const input =
-    document.getElementById("chatInput");
- 
-  const messages =
-    document.getElementById("chatMessages");
- 
-  if(!input || !messages)
+
+  if(chatSending){
+
     return;
- 
+
+  }
+
+  const input =
+    document.getElementById(
+      "chatInput"
+    );
+
+  if(!input){
+
+    console.error(
+      "CHAT: chatInput غير موجود."
+    );
+
+    return;
+
+  }
+
   const text =
     input.value.trim();
- 
-  if(!text)
+
+  if(!text){
+
     return;
- 
+
+  }
+
+  chatSending =
+    true;
+
+  const sendButton =
+    document.getElementById(
+      "sendChatBtn"
+    );
+
+  if(sendButton){
+
+    sendButton.disabled =
+      true;
+
+  }
+
   try{
- 
+
+    /*
+      انتظار Firebase
+    */
+
     if(window.ma3daFirebaseReady){
- 
+
       await window.ma3daFirebaseReady;
- 
+
     }
- 
+
+
+    /*
+      المستخدم الحالي
+    */
+
     const user =
-      window.ma3daGetCurrentUser
-        ? await window.ma3daGetCurrentUser()
-        : window.ma3daAuth?.currentUser;
- 
+      await getChatCurrentUser();
+
     if(!user){
- 
+
       alert(
-        "يجب تسجيل الدخول لإرسال الرسائل"
+        "يجب تسجيل الدخول لإرسال الرسالة."
       );
- 
+
       return;
- 
+
     }
- 
+
+
+    /*
+      رقم الطلب
+    */
+
     const requestId =
-      localStorage.getItem("currentRequestId");
- 
+      getChatRequestId();
+
     if(!requestId){
- 
+
       alert(
-        "لا يوجد طلب مرتبط بالمحادثة"
+        "لا يوجد طلب مرتبط بهذه المحادثة."
       );
- 
+
       return;
- 
+
     }
- 
-    const messagesCollection =
-      window.ma3daCollection(
-        window.ma3daDB,
-        "requests",
-        requestId,
-        "messages"
+
+
+    /*
+      التأكد من أدوات Firestore
+    */
+
+    if(
+      !window.ma3daDB ||
+      typeof window.ma3daCollection !==
+        "function" ||
+      typeof window.ma3daAddDoc !==
+        "function"
+    ){
+
+      throw new Error(
+        "أدوات Firestore غير جاهزة."
       );
- 
+
+    }
+
+
+    /*
+      المسار الوحيد للشات:
+
+      requests
+        ↓
+      requestId
+        ↓
+      messages
+        ↓
+      messageId
+    */
+
+    const messagesCollection =
+      getChatMessagesCollection(
+        requestId
+      );
+
+    if(!messagesCollection){
+
+      throw new Error(
+        "تعذر إنشاء مسار رسائل الشات."
+      );
+
+    }
+
+
+    /*
+      حفظ الرسالة
+    */
+
     await window.ma3daAddDoc(
       messagesCollection,
       {
- 
-        text: text,
- 
+
+        text:
+          text,
+
         senderId:
           user.uid,
- 
+
         senderRole:
-          selectedRole || "",
- 
+          typeof selectedRole !==
+          "undefined"
+            ? selectedRole
+            : "",
+
         createdAt:
           Date.now()
- 
+
       }
     );
- 
-    input.value = "";
- 
+
+
+    /*
+      تنظيف الحقل
+    */
+
+    input.value =
+      "";
+
+    input.focus();
+
   }catch(error){
- 
+
     console.error(
-      "تعذر إرسال الرسالة:",
+      "SEND CHAT MESSAGE ERROR:",
       error
     );
- 
+
     alert(
-  "تعذر إرسال الرسالة:\n" +
-  (error?.code || "") +
-  "\n" +
-  (error?.message || error)
-);
- 
-  }
- 
-}
-let chatMessagesUnsubscribe = null;
- 
-function startChatListener(){
- 
-  if(chatMessagesUnsubscribe){
- 
-    chatMessagesUnsubscribe();
- 
-    chatMessagesUnsubscribe = null;
- 
-  }
- 
-  const requestId =
-    localStorage.getItem("currentRequestId");
- 
-  if(!requestId)
-    return;
- 
-  if(
-    !window.ma3daDB ||
-    !window.ma3daCollection ||
-    !window.ma3daOnSnapshot ||
-    !window.ma3daQuery ||
-    !window.ma3daOrderBy
-  ){
- 
-    console.error(
-      "أدوات الشات في Firebase غير جاهزة"
-    );
- 
-    return;
- 
-  }
- 
-  const messagesCollection =
-    window.ma3daCollection(
-      window.ma3daDB,
-      "requests",
-      requestId,
-      "messages"
-    );
- 
-  const messagesQuery =
-    window.ma3daQuery(
-      messagesCollection,
-      window.ma3daOrderBy(
-        "createdAt",
-        "asc"
+      "تعذر إرسال الرسالة:\n" +
+      (
+        error?.code ||
+        ""
+      ) +
+      "\n" +
+      (
+        error?.message ||
+        error
       )
     );
- 
-  chatMessagesUnsubscribe =
-    window.ma3daOnSnapshot(
-      messagesQuery,
-      snapshot => {
- 
-        const messages =
-          document.getElementById("chatMessages");
- 
-        if(!messages)
-          return;
- 
-        messages.innerHTML = "";
- 
-        snapshot.forEach(
-          doc => {
- 
-            const data =
-              doc.data();
- 
-            const message =
-              document.createElement(
-                "div"
-              );
- 
-            message.className =
-              data.senderRole === selectedRole
-                ? "message sent"
-                : "message received";
- 
-            message.textContent =
-              data.text || "";
- 
-            messages.appendChild(
-              message
-            );
- 
-          }
-        );
- 
-        messages.scrollTop =
-          messages.scrollHeight;
- 
-      },
-      error => {
- 
-        console.error(
-          "تعذر استقبال رسائل الشات:",
-          error
-        );
- 
-      }
-    );
- 
+
+  }finally{
+
+    chatSending =
+      false;
+
+    if(sendButton){
+
+      sendButton.disabled =
+        false;
+
+    }
+
+  }
+
 }
+
+
 /* =========================================================
-   CHAT SEND - CUSTOMER + OPERATOR
+   STOP CHAT LISTENER
+========================================================= */
+
+function stopChatListener(){
+
+  if(chatMessagesUnsubscribe){
+
+    try{
+
+      chatMessagesUnsubscribe();
+
+    }catch(error){
+
+      console.error(
+        "STOP CHAT ERROR:",
+        error
+      );
+
+    }
+
+    chatMessagesUnsubscribe =
+      null;
+
+  }
+
+}
+
+
+/* =========================================================
+   START CHAT LISTENER
+========================================================= */
+
+async function startChatListener(){
+
+  try{
+
+    /*
+      إيقاف المستمع السابق
+    */
+
+    stopChatListener();
+
+
+    /*
+      انتظار Firebase
+    */
+
+    if(window.ma3daFirebaseReady){
+
+      await window.ma3daFirebaseReady;
+
+    }
+
+
+    /*
+      المستخدم الحالي
+    */
+
+    const user =
+      await getChatCurrentUser();
+
+    if(!user){
+
+      console.error(
+        "CHAT: لا يوجد مستخدم مسجل."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      رقم الطلب
+    */
+
+    const requestId =
+      getChatRequestId();
+
+    if(!requestId){
+
+      const messages =
+        document.getElementById(
+          "chatMessages"
+        );
+
+      if(messages){
+
+        messages.innerHTML = `
+          <div class="message received">
+            لا توجد محادثة مرتبطة بالطلب الحالي.
+          </div>
+        `;
+
+      }
+
+      console.error(
+        "CHAT: currentRequestId غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      التأكد من أدوات Firebase
+    */
+
+    if(
+      !window.ma3daDB ||
+      typeof window.ma3daCollection !==
+        "function" ||
+      typeof window.ma3daOnSnapshot !==
+        "function" ||
+      typeof window.ma3daQuery !==
+        "function" ||
+      typeof window.ma3daOrderBy !==
+        "function"
+    ){
+
+      console.error(
+        "CHAT: أدوات Firebase غير جاهزة."
+      );
+
+      return;
+
+    }
+
+
+    /*
+      requests/{requestId}/messages
+    */
+
+    const messagesCollection =
+      getChatMessagesCollection(
+        requestId
+      );
+
+    if(!messagesCollection){
+
+      return;
+
+    }
+
+
+    /*
+      ترتيب الرسائل
+    */
+
+    const messagesQuery =
+      window.ma3daQuery(
+        messagesCollection,
+        window.ma3daOrderBy(
+          "createdAt",
+          "asc"
+        )
+      );
+
+
+    /*
+      الاستماع المباشر
+    */
+
+    chatMessagesUnsubscribe =
+      window.ma3daOnSnapshot(
+        messagesQuery,
+
+        snapshot=>{
+
+          const messages =
+            document.getElementById(
+              "chatMessages"
+            );
+
+          if(!messages){
+
+            return;
+
+          }
+
+
+          /*
+            مسح العرض الحالي
+          */
+
+          messages.innerHTML =
+            "";
+
+
+          /*
+            لا توجد رسائل
+          */
+
+          if(snapshot.empty){
+
+            messages.innerHTML = `
+              <div class="message received">
+                لا توجد رسائل بعد.
+              </div>
+            `;
+
+            return;
+
+          }
+
+
+          /*
+            عرض الرسائل
+          */
+
+          snapshot.forEach(
+            messageDoc=>{
+
+              const data =
+                messageDoc.data() || {};
+
+
+              /*
+                تحديد صاحب الرسالة
+                باستخدام UID فقط.
+
+                لا نعتمد على selectedRole.
+              */
+
+              const isMine =
+                String(
+                  data.senderId || ""
+                ) ===
+                String(
+                  user.uid
+                );
+
+
+              /*
+                إنشاء الرسالة
+              */
+
+              const message =
+                document.createElement(
+                  "div"
+                );
+
+
+              /*
+                رسالة مرسلة أو مستلمة
+              */
+
+              message.className =
+                isMine
+                  ? "message sent"
+                  : "message received";
+
+
+              /*
+                النص
+              */
+
+              message.textContent =
+                data.text || "";
+
+
+              /*
+                إضافة الرسالة
+              */
+
+              messages.appendChild(
+                message
+              );
+
+            }
+          );
+
+
+          /*
+            النزول لآخر رسالة
+          */
+
+          messages.scrollTop =
+            messages.scrollHeight;
+
+        },
+
+        error=>{
+
+          console.error(
+            "CHAT REALTIME ERROR:",
+            error
+          );
+
+          const messages =
+            document.getElementById(
+              "chatMessages"
+            );
+
+          if(messages){
+
+            messages.innerHTML = `
+              <div class="message received">
+                تعذر تحميل رسائل المحادثة.
+              </div>
+            `;
+
+          }
+
+        }
+
+      );
+
+  }catch(error){
+
+    console.error(
+      "START CHAT LISTENER ERROR:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   SEND BUTTON
 ========================================================= */
 
 document.addEventListener(
@@ -2686,8 +3200,11 @@ document.addEventListener(
         "#sendChatBtn"
       );
 
-    if(!sendButton)
+    if(!sendButton){
+
       return;
+
+    }
 
     event.preventDefault();
 
@@ -2698,7 +3215,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   CHAT ENTER - CUSTOMER + OPERATOR
+   ENTER TO SEND
 ========================================================= */
 
 document.addEventListener(
@@ -2708,16 +3225,22 @@ document.addEventListener(
     if(
       event.key !== "Enter" ||
       event.shiftKey
-    )
+    ){
+
       return;
+
+    }
 
     const input =
       event.target.closest(
         "#chatInput"
       );
 
-    if(!input)
+    if(!input){
+
       return;
+
+    }
 
     event.preventDefault();
 
