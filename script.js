@@ -2567,6 +2567,80 @@ function getChatMessagesCollection(
 
 
 /* =========================================================
+   OPEN CHAT
+========================================================= */
+
+async function openMa3daChat(){
+
+  try{
+
+    const user =
+      await getChatCurrentUser();
+
+    if(!user){
+
+      alert(
+        "يجب تسجيل الدخول أولًا."
+      );
+
+      return;
+
+    }
+
+    const requestId =
+      getChatRequestId();
+
+    if(!requestId){
+
+      alert(
+        "لا يوجد طلب مرتبط بالمحادثة."
+      );
+
+      return;
+
+    }
+
+    showScreen(
+      "chatScreen"
+    );
+
+    await startChatListener();
+
+    setTimeout(
+      ()=>{
+
+        const input =
+          document.getElementById(
+            "chatInput"
+          );
+
+        if(input){
+
+          input.focus();
+
+        }
+
+      },
+      100
+    );
+
+  }catch(error){
+
+    console.error(
+      "OPEN CHAT ERROR:",
+      error
+    );
+
+    alert(
+      "تعذر فتح المحادثة."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
    CUSTOMER CHAT BUTTON
 ========================================================= */
 
@@ -2579,69 +2653,26 @@ if(chatBtn){
 
   chatBtn.addEventListener(
     "click",
-    async()=>{
+    openMa3daChat
+  );
 
-      try{
+}
 
-        const user =
-          await getChatCurrentUser();
 
-        if(!user){
+/* =========================================================
+   OPERATOR CHAT BUTTON
+========================================================= */
 
-          alert(
-            "يجب تسجيل الدخول أولًا."
-          );
+const operatorChatCustomerBtn =
+  document.getElementById(
+    "operatorChatCustomerBtn"
+  );
 
-          return;
+if(operatorChatCustomerBtn){
 
-        }
-
-        const requestId =
-          getChatRequestId();
-
-        if(!requestId){
-
-          alert(
-            "لا يوجد طلب مرتبط بالمحادثة."
-          );
-
-          return;
-
-        }
-
-        showScreen(
-          "chatScreen"
-        );
-
-        await startChatListener();
-
-        setTimeout(
-          ()=>{
-
-            document
-              .getElementById(
-                "chatInput"
-              )
-              ?.focus();
-
-          },
-          100
-        );
-
-      }catch(error){
-
-        console.error(
-          "OPEN CUSTOMER CHAT ERROR:",
-          error
-        );
-
-        alert(
-          "تعذر فتح المحادثة."
-        );
-
-      }
-
-    }
+  operatorChatCustomerBtn.addEventListener(
+    "click",
+    openMa3daChat
   );
 
 }
@@ -2700,10 +2731,6 @@ async function sendChatMessage(){
 
   try{
 
-    /*
-      انتظار Firebase
-    */
-
     if(window.ma3daFirebaseReady){
 
       await window.ma3daFirebaseReady;
@@ -2711,9 +2738,7 @@ async function sendChatMessage(){
     }
 
 
-    /*
-      المستخدم الحالي
-    */
+    /* المستخدم */
 
     const user =
       await getChatCurrentUser();
@@ -2729,9 +2754,7 @@ async function sendChatMessage(){
     }
 
 
-    /*
-      رقم الطلب
-    */
+    /* الطلب */
 
     const requestId =
       getChatRequestId();
@@ -2747,9 +2770,7 @@ async function sendChatMessage(){
     }
 
 
-    /*
-      التأكد من أدوات Firestore
-    */
+    /* أدوات Firestore */
 
     if(
       !window.ma3daDB ||
@@ -2766,17 +2787,7 @@ async function sendChatMessage(){
     }
 
 
-    /*
-      المسار الوحيد للشات:
-
-      requests
-        ↓
-      requestId
-        ↓
-      messages
-        ↓
-      messageId
-    */
+    /* requests/{requestId}/messages */
 
     const messagesCollection =
       getChatMessagesCollection(
@@ -2792,9 +2803,7 @@ async function sendChatMessage(){
     }
 
 
-    /*
-      حفظ الرسالة
-    */
+    /* حفظ الرسالة */
 
     await window.ma3daAddDoc(
       messagesCollection,
@@ -2819,9 +2828,7 @@ async function sendChatMessage(){
     );
 
 
-    /*
-      تنظيف الحقل
-    */
+    /* تنظيف الحقل */
 
     input.value =
       "";
@@ -2902,16 +2909,10 @@ async function startChatListener(){
 
   try{
 
-    /*
-      إيقاف المستمع السابق
-    */
-
     stopChatListener();
 
 
-    /*
-      انتظار Firebase
-    */
+    /* انتظار Firebase */
 
     if(window.ma3daFirebaseReady){
 
@@ -2920,9 +2921,7 @@ async function startChatListener(){
     }
 
 
-    /*
-      المستخدم الحالي
-    */
+    /* المستخدم */
 
     const user =
       await getChatCurrentUser();
@@ -2938,19 +2937,17 @@ async function startChatListener(){
     }
 
 
-    /*
-      رقم الطلب
-    */
+    /* رقم الطلب */
 
     const requestId =
       getChatRequestId();
 
-    if(!requestId){
+    const messages =
+      document.getElementById(
+        "chatMessages"
+      );
 
-      const messages =
-        document.getElementById(
-          "chatMessages"
-        );
+    if(!requestId){
 
       if(messages){
 
@@ -2971,9 +2968,7 @@ async function startChatListener(){
     }
 
 
-    /*
-      التأكد من أدوات Firebase
-    */
+    /* أدوات Firebase */
 
     if(
       !window.ma3daDB ||
@@ -2996,9 +2991,7 @@ async function startChatListener(){
     }
 
 
-    /*
-      requests/{requestId}/messages
-    */
+    /* requests/{requestId}/messages */
 
     const messagesCollection =
       getChatMessagesCollection(
@@ -3012,9 +3005,7 @@ async function startChatListener(){
     }
 
 
-    /*
-      ترتيب الرسائل
-    */
+    /* ترتيب الرسائل */
 
     const messagesQuery =
       window.ma3daQuery(
@@ -3026,12 +3017,11 @@ async function startChatListener(){
       );
 
 
-    /*
-      الاستماع المباشر
-    */
+    /* الاستماع المباشر */
 
     chatMessagesUnsubscribe =
       window.ma3daOnSnapshot(
+
         messagesQuery,
 
         snapshot=>{
@@ -3047,18 +3037,9 @@ async function startChatListener(){
 
           }
 
-
-          /*
-            مسح العرض الحالي
-          */
-
           messages.innerHTML =
             "";
 
-
-          /*
-            لا توجد رسائل
-          */
 
           if(snapshot.empty){
 
@@ -3073,10 +3054,6 @@ async function startChatListener(){
           }
 
 
-          /*
-            عرض الرسائل
-          */
-
           snapshot.forEach(
             messageDoc=>{
 
@@ -3085,10 +3062,8 @@ async function startChatListener(){
 
 
               /*
-                تحديد صاحب الرسالة
-                باستخدام UID فقط.
-
-                لا نعتمد على selectedRole.
+                نحدد الرسالة باستخدام UID
+                وليس selectedRole
               */
 
               const isMine =
@@ -3100,19 +3075,11 @@ async function startChatListener(){
                 );
 
 
-              /*
-                إنشاء الرسالة
-              */
-
               const message =
                 document.createElement(
                   "div"
                 );
 
-
-              /*
-                رسالة مرسلة أو مستلمة
-              */
 
               message.className =
                 isMine
@@ -3120,17 +3087,9 @@ async function startChatListener(){
                   : "message received";
 
 
-              /*
-                النص
-              */
-
               message.textContent =
                 data.text || "";
 
-
-              /*
-                إضافة الرسالة
-              */
 
               messages.appendChild(
                 message
@@ -3139,10 +3098,6 @@ async function startChatListener(){
             }
           );
 
-
-          /*
-            النزول لآخر رسالة
-          */
 
           messages.scrollTop =
             messages.scrollHeight;
