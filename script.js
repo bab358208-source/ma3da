@@ -2659,23 +2659,7 @@ if(chatBtn){
 }
 
 
-/* =========================================================
-   OPERATOR CHAT BUTTON
-========================================================= */
 
-const operatorChatCustomerBtn =
-  document.getElementById(
-    "operatorChatCustomerBtn"
-  );
-
-if(operatorChatCustomerBtn){
-
-  operatorChatCustomerBtn.addEventListener(
-    "click",
-    openMa3daChat
-  );
-
-}
 
 
 /* =========================================================
