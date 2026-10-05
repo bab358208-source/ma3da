@@ -2435,11 +2435,9 @@ if(trackingBtn){
     }
   );
  
-}
- 
 /* =========================================================
    CHAT
-   CUSTOMER + EQUIPMENT OWNER
+   CUSTOMER + EQUIPMENT OWNER + CONTRACTOR
 
    FIRESTORE PATH:
    requests/{requestId}/messages/{messageId}
@@ -2587,6 +2585,7 @@ async function openMa3daChat(){
 
     }
 
+
     const requestId =
       getChatRequestId();
 
@@ -2600,11 +2599,14 @@ async function openMa3daChat(){
 
     }
 
+
     showScreen(
       "chatScreen"
     );
 
+
     await startChatListener();
+
 
     setTimeout(
       ()=>{
@@ -2623,6 +2625,7 @@ async function openMa3daChat(){
       },
       100
     );
+
 
   }catch(error){
 
@@ -2659,9 +2662,6 @@ if(chatBtn){
 }
 
 
-
-
-
 /* =========================================================
    SEND CHAT MESSAGE
 ========================================================= */
@@ -2673,6 +2673,7 @@ async function sendChatMessage(){
     return;
 
   }
+
 
   const input =
     document.getElementById(
@@ -2689,6 +2690,7 @@ async function sendChatMessage(){
 
   }
 
+
   const text =
     input.value.trim();
 
@@ -2698,8 +2700,10 @@ async function sendChatMessage(){
 
   }
 
+
   chatSending =
     true;
+
 
   const sendButton =
     document.getElementById(
@@ -2713,6 +2717,7 @@ async function sendChatMessage(){
 
   }
 
+
   try{
 
     if(window.ma3daFirebaseReady){
@@ -2722,7 +2727,9 @@ async function sendChatMessage(){
     }
 
 
-    /* المستخدم */
+    /* =====================================================
+       USER
+    ===================================================== */
 
     const user =
       await getChatCurrentUser();
@@ -2738,7 +2745,9 @@ async function sendChatMessage(){
     }
 
 
-    /* الطلب */
+    /* =====================================================
+       REQUEST
+    ===================================================== */
 
     const requestId =
       getChatRequestId();
@@ -2754,7 +2763,9 @@ async function sendChatMessage(){
     }
 
 
-    /* أدوات Firestore */
+    /* =====================================================
+       FIREBASE
+    ===================================================== */
 
     if(
       !window.ma3daDB ||
@@ -2771,7 +2782,9 @@ async function sendChatMessage(){
     }
 
 
-    /* requests/{requestId}/messages */
+    /* =====================================================
+       MESSAGES COLLECTION
+    ===================================================== */
 
     const messagesCollection =
       getChatMessagesCollection(
@@ -2787,7 +2800,9 @@ async function sendChatMessage(){
     }
 
 
-    /* حفظ الرسالة */
+    /* =====================================================
+       ADD MESSAGE
+    ===================================================== */
 
     await window.ma3daAddDoc(
       messagesCollection,
@@ -2812,12 +2827,22 @@ async function sendChatMessage(){
     );
 
 
-    /* تنظيف الحقل */
+    /* =====================================================
+       CLEAR INPUT
+    ===================================================== */
 
     input.value =
       "";
 
     input.focus();
+
+
+    /* =====================================================
+       REFRESH IMMEDIATELY
+    ===================================================== */
+
+    await loadChatMessages();
+
 
   }catch(error){
 
@@ -2844,10 +2869,284 @@ async function sendChatMessage(){
     chatSending =
       false;
 
+
     if(sendButton){
 
       sendButton.disabled =
         false;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   LOAD CHAT MESSAGES
+========================================================= */
+
+async function loadChatMessages(){
+
+  try{
+
+    if(window.ma3daFirebaseReady){
+
+      await window.ma3daFirebaseReady;
+
+    }
+
+
+    /* =====================================================
+       USER
+    ===================================================== */
+
+    const user =
+      await getChatCurrentUser();
+
+    if(!user){
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       REQUEST ID
+    ===================================================== */
+
+    const requestId =
+      getChatRequestId();
+
+    if(!requestId){
+
+      const messages =
+        document.getElementById(
+          "chatMessages"
+        );
+
+      if(messages){
+
+        messages.innerHTML = `
+          <div class="message received">
+            لا توجد محادثة مرتبطة بالطلب الحالي.
+          </div>
+        `;
+
+      }
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       FIREBASE FUNCTIONS
+    ===================================================== */
+
+    if(
+      !window.ma3daDB ||
+      typeof window.ma3daCollection !==
+        "function" ||
+      typeof window.ma3daGetDocs !==
+        "function"
+    ){
+
+      console.error(
+        "CHAT: أدوات Firestore غير جاهزة."
+      );
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       COLLECTION
+    ===================================================== */
+
+    const messagesCollection =
+      getChatMessagesCollection(
+        requestId
+      );
+
+    if(!messagesCollection){
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       GET DOCUMENTS
+    ===================================================== */
+
+    const snapshot =
+      await window.ma3daGetDocs(
+        messagesCollection
+      );
+
+
+    const chatMessages =
+      [];
+
+
+    snapshot.forEach(
+      messageDoc=>{
+
+        const data =
+          messageDoc.data() || {};
+
+
+        chatMessages.push({
+
+          id:
+            messageDoc.id,
+
+          ...data
+
+        });
+
+      }
+    );
+
+
+    /* =====================================================
+       SORT
+    ===================================================== */
+
+    chatMessages.sort(
+      (a,b)=>{
+
+        const timeA =
+          Number(
+            a.createdAt || 0
+          );
+
+        const timeB =
+          Number(
+            b.createdAt || 0
+          );
+
+        return timeA - timeB;
+
+      }
+    );
+
+
+    /* =====================================================
+       CHAT CONTAINER
+    ===================================================== */
+
+    const messages =
+      document.getElementById(
+        "chatMessages"
+      );
+
+    if(!messages){
+
+      console.error(
+        "CHAT: chatMessages غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    messages.innerHTML =
+      "";
+
+
+    /* =====================================================
+       NO MESSAGES
+    ===================================================== */
+
+    if(
+      chatMessages.length ===
+      0
+    ){
+
+      messages.innerHTML = `
+        <div class="message received">
+          لا توجد رسائل بعد.
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    /* =====================================================
+       RENDER
+    ===================================================== */
+
+    chatMessages.forEach(
+      data=>{
+
+        const isMine =
+          String(
+            data.senderId || ""
+          ) ===
+          String(
+            user.uid
+          );
+
+
+        const message =
+          document.createElement(
+            "div"
+          );
+
+
+        message.className =
+          isMine
+            ? "message sent"
+            : "message received";
+
+
+        message.textContent =
+          data.text || "";
+
+
+        messages.appendChild(
+          message
+        );
+
+      }
+    );
+
+
+    /* =====================================================
+       SCROLL
+    ===================================================== */
+
+    messages.scrollTop =
+      messages.scrollHeight;
+
+
+  }catch(error){
+
+    console.error(
+      "LOAD CHAT MESSAGES ERROR:",
+      error
+    );
+
+
+    const messages =
+      document.getElementById(
+        "chatMessages"
+      );
+
+
+    if(messages){
+
+      messages.innerHTML = `
+        <div class="message received">
+          تعذر تحميل رسائل المحادثة.
+        </div>
+      `;
 
     }
 
@@ -2864,18 +3163,9 @@ function stopChatListener(){
 
   if(chatMessagesUnsubscribe){
 
-    try{
-
-      chatMessagesUnsubscribe();
-
-    }catch(error){
-
-      console.error(
-        "STOP CHAT ERROR:",
-        error
-      );
-
-    }
+    clearInterval(
+      chatMessagesUnsubscribe
+    );
 
     chatMessagesUnsubscribe =
       null;
@@ -2893,10 +3183,16 @@ async function startChatListener(){
 
   try{
 
+    /* =====================================================
+       STOP OLD LISTENER
+    ===================================================== */
+
     stopChatListener();
 
 
-    /* انتظار Firebase */
+    /* =====================================================
+       WAIT FIREBASE
+    ===================================================== */
 
     if(window.ma3daFirebaseReady){
 
@@ -2905,7 +3201,9 @@ async function startChatListener(){
     }
 
 
-    /* المستخدم */
+    /* =====================================================
+       USER
+    ===================================================== */
 
     const user =
       await getChatCurrentUser();
@@ -2921,17 +3219,19 @@ async function startChatListener(){
     }
 
 
-    /* رقم الطلب */
+    /* =====================================================
+       REQUEST
+    ===================================================== */
 
     const requestId =
       getChatRequestId();
 
-    const messages =
-      document.getElementById(
-        "chatMessages"
-      );
-
     if(!requestId){
+
+      const messages =
+        document.getElementById(
+          "chatMessages"
+        );
 
       if(messages){
 
@@ -2943,176 +3243,39 @@ async function startChatListener(){
 
       }
 
-      console.error(
-        "CHAT: currentRequestId غير موجود."
-      );
-
       return;
 
     }
 
 
-    /* أدوات Firebase */
+    /* =====================================================
+       FIRST LOAD
+    ===================================================== */
 
-    if(
-      !window.ma3daDB ||
-      typeof window.ma3daCollection !==
-        "function" ||
-      typeof window.ma3daOnSnapshot !==
-        "function" ||
-      typeof window.ma3daQuery !==
-        "function" ||
-      typeof window.ma3daOrderBy !==
-        "function"
-    ){
-
-      console.error(
-        "CHAT: أدوات Firebase غير جاهزة."
-      );
-
-      return;
-
-    }
+    await loadChatMessages();
 
 
-    /* requests/{requestId}/messages */
+    /* =====================================================
+       POLLING
+       
+       لا نستخدم:
+       ma3daOnSnapshot
+       ma3daQuery
+       ma3daOrderBy
 
-    const messagesCollection =
-      getChatMessagesCollection(
-        requestId
-      );
-
-    if(!messagesCollection){
-
-      return;
-
-    }
-
-
-    /* ترتيب الرسائل */
-
-    const messagesQuery =
-      window.ma3daQuery(
-        messagesCollection,
-        window.ma3daOrderBy(
-          "createdAt",
-          "asc"
-        )
-      );
-
-
-    /* الاستماع المباشر */
+       لأن نسخة index الحالية لا توفرها.
+    ===================================================== */
 
     chatMessagesUnsubscribe =
-      window.ma3daOnSnapshot(
+      setInterval(
+        ()=>{
 
-        messagesQuery,
-
-        snapshot=>{
-
-          const messages =
-            document.getElementById(
-              "chatMessages"
-            );
-
-          if(!messages){
-
-            return;
-
-          }
-
-          messages.innerHTML =
-            "";
-
-
-          if(snapshot.empty){
-
-            messages.innerHTML = `
-              <div class="message received">
-                لا توجد رسائل بعد.
-              </div>
-            `;
-
-            return;
-
-          }
-
-
-          snapshot.forEach(
-            messageDoc=>{
-
-              const data =
-                messageDoc.data() || {};
-
-
-              /*
-                نحدد الرسالة باستخدام UID
-                وليس selectedRole
-              */
-
-              const isMine =
-                String(
-                  data.senderId || ""
-                ) ===
-                String(
-                  user.uid
-                );
-
-
-              const message =
-                document.createElement(
-                  "div"
-                );
-
-
-              message.className =
-                isMine
-                  ? "message sent"
-                  : "message received";
-
-
-              message.textContent =
-                data.text || "";
-
-
-              messages.appendChild(
-                message
-              );
-
-            }
-          );
-
-
-          messages.scrollTop =
-            messages.scrollHeight;
+          loadChatMessages();
 
         },
-
-        error=>{
-
-          console.error(
-            "CHAT REALTIME ERROR:",
-            error
-          );
-
-          const messages =
-            document.getElementById(
-              "chatMessages"
-            );
-
-          if(messages){
-
-            messages.innerHTML = `
-              <div class="message received">
-                تعذر تحميل رسائل المحادثة.
-              </div>
-            `;
-
-          }
-
-        }
-
+        1500
       );
+
 
   }catch(error){
 
@@ -3145,7 +3308,9 @@ document.addEventListener(
 
     }
 
+
     event.preventDefault();
+
 
     sendChatMessage();
 
@@ -3162,13 +3327,15 @@ document.addEventListener(
   function(event){
 
     if(
-      event.key !== "Enter" ||
+      event.key !==
+        "Enter" ||
       event.shiftKey
     ){
 
       return;
 
     }
+
 
     const input =
       event.target.closest(
@@ -3181,7 +3348,9 @@ document.addEventListener(
 
     }
 
+
     event.preventDefault();
+
 
     sendChatMessage();
 
