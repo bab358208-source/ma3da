@@ -2414,27 +2414,31 @@ async function displayMyEquipment(){
   }
  
 }
- 
-/* MATCHED */
- 
+/* =========================================================
+   MATCHED
+========================================================= */
+
 const trackingBtn =
   document.getElementById("trackingBtn");
- 
+
 if(trackingBtn){
- 
+
   trackingBtn.addEventListener(
     "click",
     ()=>{
- 
+      
       showScreen(
         "trackingScreen"
       );
- 
+
       startTracking();
- 
+
     }
   );
- 
+
+}
+
+
 /* =========================================================
    CHAT
    CUSTOMER + EQUIPMENT OWNER + CONTRACTOR
@@ -2449,7 +2453,6 @@ if(trackingBtn){
 ========================================================= */
 
 let chatMessagesUnsubscribe = null;
-
 let chatSending = false;
 
 
@@ -2537,6 +2540,7 @@ function getChatRequestId(){
 
 /* =========================================================
    GET CHAT MESSAGES COLLECTION
+   requests/{requestId}/messages
 ========================================================= */
 
 function getChatMessagesCollection(
@@ -2585,7 +2589,6 @@ async function openMa3daChat(){
 
     }
 
-
     const requestId =
       getChatRequestId();
 
@@ -2599,14 +2602,11 @@ async function openMa3daChat(){
 
     }
 
-
     showScreen(
       "chatScreen"
     );
 
-
     await startChatListener();
-
 
     setTimeout(
       ()=>{
@@ -2625,7 +2625,6 @@ async function openMa3daChat(){
       },
       100
     );
-
 
   }catch(error){
 
@@ -2663,6 +2662,25 @@ if(chatBtn){
 
 
 /* =========================================================
+   OPERATOR CHAT BUTTON
+========================================================= */
+
+const operatorChatCustomerBtn =
+  document.getElementById(
+    "operatorChatCustomerBtn"
+  );
+
+if(operatorChatCustomerBtn){
+
+  operatorChatCustomerBtn.addEventListener(
+    "click",
+    openMa3daChat
+  );
+
+}
+
+
+/* =========================================================
    SEND CHAT MESSAGE
 ========================================================= */
 
@@ -2673,7 +2691,6 @@ async function sendChatMessage(){
     return;
 
   }
-
 
   const input =
     document.getElementById(
@@ -2690,7 +2707,6 @@ async function sendChatMessage(){
 
   }
 
-
   const text =
     input.value.trim();
 
@@ -2700,10 +2716,8 @@ async function sendChatMessage(){
 
   }
 
-
   chatSending =
     true;
-
 
   const sendButton =
     document.getElementById(
@@ -2717,7 +2731,6 @@ async function sendChatMessage(){
 
   }
 
-
   try{
 
     if(window.ma3daFirebaseReady){
@@ -2725,11 +2738,6 @@ async function sendChatMessage(){
       await window.ma3daFirebaseReady;
 
     }
-
-
-    /* =====================================================
-       USER
-    ===================================================== */
 
     const user =
       await getChatCurrentUser();
@@ -2744,11 +2752,6 @@ async function sendChatMessage(){
 
     }
 
-
-    /* =====================================================
-       REQUEST
-    ===================================================== */
-
     const requestId =
       getChatRequestId();
 
@@ -2761,11 +2764,6 @@ async function sendChatMessage(){
       return;
 
     }
-
-
-    /* =====================================================
-       FIREBASE
-    ===================================================== */
 
     if(
       !window.ma3daDB ||
@@ -2781,11 +2779,6 @@ async function sendChatMessage(){
 
     }
 
-
-    /* =====================================================
-       MESSAGES COLLECTION
-    ===================================================== */
-
     const messagesCollection =
       getChatMessagesCollection(
         requestId
@@ -2799,11 +2792,6 @@ async function sendChatMessage(){
 
     }
 
-
-    /* =====================================================
-       ADD MESSAGE
-    ===================================================== */
-
     await window.ma3daAddDoc(
       messagesCollection,
       {
@@ -2815,10 +2803,7 @@ async function sendChatMessage(){
           user.uid,
 
         senderRole:
-          typeof selectedRole !==
-          "undefined"
-            ? selectedRole
-            : "",
+          selectedRole || "",
 
         createdAt:
           Date.now()
@@ -2826,23 +2811,12 @@ async function sendChatMessage(){
       }
     );
 
-
-    /* =====================================================
-       CLEAR INPUT
-    ===================================================== */
-
     input.value =
       "";
 
     input.focus();
 
-
-    /* =====================================================
-       REFRESH IMMEDIATELY
-    ===================================================== */
-
     await loadChatMessages();
-
 
   }catch(error){
 
@@ -2860,7 +2834,7 @@ async function sendChatMessage(){
       "\n" +
       (
         error?.message ||
-        error
+        "خطأ غير معروف"
       )
     );
 
@@ -2868,7 +2842,6 @@ async function sendChatMessage(){
 
     chatSending =
       false;
-
 
     if(sendButton){
 
@@ -2896,11 +2869,6 @@ async function loadChatMessages(){
 
     }
 
-
-    /* =====================================================
-       USER
-    ===================================================== */
-
     const user =
       await getChatCurrentUser();
 
@@ -2910,39 +2878,35 @@ async function loadChatMessages(){
 
     }
 
-
-    /* =====================================================
-       REQUEST ID
-    ===================================================== */
-
     const requestId =
       getChatRequestId();
 
-    if(!requestId){
+    const messages =
+      document.getElementById(
+        "chatMessages"
+      );
 
-      const messages =
-        document.getElementById(
-          "chatMessages"
-        );
+    if(!messages){
 
-      if(messages){
-
-        messages.innerHTML = `
-          <div class="message received">
-            لا توجد محادثة مرتبطة بالطلب الحالي.
-          </div>
-        `;
-
-      }
+      console.error(
+        "CHAT: chatMessages غير موجود."
+      );
 
       return;
 
     }
 
+    if(!requestId){
 
-    /* =====================================================
-       FIREBASE FUNCTIONS
-    ===================================================== */
+      messages.innerHTML = `
+        <div class="message received">
+          لا توجد محادثة مرتبطة بالطلب الحالي.
+        </div>
+      `;
+
+      return;
+
+    }
 
     if(
       !window.ma3daDB ||
@@ -2960,11 +2924,6 @@ async function loadChatMessages(){
 
     }
 
-
-    /* =====================================================
-       COLLECTION
-    ===================================================== */
-
     const messagesCollection =
       getChatMessagesCollection(
         requestId
@@ -2976,27 +2935,19 @@ async function loadChatMessages(){
 
     }
 
-
-    /* =====================================================
-       GET DOCUMENTS
-    ===================================================== */
-
     const snapshot =
       await window.ma3daGetDocs(
         messagesCollection
       );
 
-
     const chatMessages =
       [];
-
 
     snapshot.forEach(
       messageDoc=>{
 
         const data =
           messageDoc.data() || {};
-
 
         chatMessages.push({
 
@@ -3010,57 +2961,23 @@ async function loadChatMessages(){
       }
     );
 
-
-    /* =====================================================
-       SORT
-    ===================================================== */
-
     chatMessages.sort(
       (a,b)=>{
 
-        const timeA =
+        return (
           Number(
             a.createdAt || 0
-          );
-
-        const timeB =
+          ) -
           Number(
             b.createdAt || 0
-          );
-
-        return timeA - timeB;
+          )
+        );
 
       }
     );
 
-
-    /* =====================================================
-       CHAT CONTAINER
-    ===================================================== */
-
-    const messages =
-      document.getElementById(
-        "chatMessages"
-      );
-
-    if(!messages){
-
-      console.error(
-        "CHAT: chatMessages غير موجود."
-      );
-
-      return;
-
-    }
-
-
     messages.innerHTML =
       "";
-
-
-    /* =====================================================
-       NO MESSAGES
-    ===================================================== */
 
     if(
       chatMessages.length ===
@@ -3077,11 +2994,6 @@ async function loadChatMessages(){
 
     }
 
-
-    /* =====================================================
-       RENDER
-    ===================================================== */
-
     chatMessages.forEach(
       data=>{
 
@@ -3093,22 +3005,18 @@ async function loadChatMessages(){
             user.uid
           );
 
-
         const message =
           document.createElement(
             "div"
           );
-
 
         message.className =
           isMine
             ? "message sent"
             : "message received";
 
-
         message.textContent =
           data.text || "";
-
 
         messages.appendChild(
           message
@@ -3117,14 +3025,8 @@ async function loadChatMessages(){
       }
     );
 
-
-    /* =====================================================
-       SCROLL
-    ===================================================== */
-
     messages.scrollTop =
       messages.scrollHeight;
-
 
   }catch(error){
 
@@ -3133,12 +3035,10 @@ async function loadChatMessages(){
       error
     );
 
-
     const messages =
       document.getElementById(
         "chatMessages"
       );
-
 
     if(messages){
 
@@ -3183,27 +3083,13 @@ async function startChatListener(){
 
   try{
 
-    /* =====================================================
-       STOP OLD LISTENER
-    ===================================================== */
-
     stopChatListener();
-
-
-    /* =====================================================
-       WAIT FIREBASE
-    ===================================================== */
 
     if(window.ma3daFirebaseReady){
 
       await window.ma3daFirebaseReady;
 
     }
-
-
-    /* =====================================================
-       USER
-    ===================================================== */
 
     const user =
       await getChatCurrentUser();
@@ -3217,11 +3103,6 @@ async function startChatListener(){
       return;
 
     }
-
-
-    /* =====================================================
-       REQUEST
-    ===================================================== */
 
     const requestId =
       getChatRequestId();
@@ -3247,35 +3128,46 @@ async function startChatListener(){
 
     }
 
-
-    /* =====================================================
-       FIRST LOAD
-    ===================================================== */
+    /* أول تحميل */
 
     await loadChatMessages();
 
-
-    /* =====================================================
-       POLLING
-       
-       لا نستخدم:
-       ma3daOnSnapshot
-       ma3daQuery
-       ma3daOrderBy
-
-       لأن نسخة index الحالية لا توفرها.
-    ===================================================== */
+    /*
+      لا نستخدم onSnapshot أو query
+      لأن نسخة Firebase الحالية
+      في index لا توفر هذه الأدوات.
+    */
 
     chatMessagesUnsubscribe =
       setInterval(
         ()=>{
+          
+          /*
+            لا نعيد التحميل إذا خرج المستخدم
+            من صفحة الشات.
+          */
+
+          const chatScreen =
+            document.getElementById(
+              "chatScreen"
+            );
+
+          if(
+            !chatScreen ||
+            !chatScreen.classList.contains(
+              "active"
+            )
+          ){
+
+            return;
+
+          }
 
           loadChatMessages();
 
         },
         1500
       );
-
 
   }catch(error){
 
@@ -3308,9 +3200,7 @@ document.addEventListener(
 
     }
 
-
     event.preventDefault();
-
 
     sendChatMessage();
 
@@ -3327,15 +3217,13 @@ document.addEventListener(
   function(event){
 
     if(
-      event.key !==
-        "Enter" ||
+      event.key !== "Enter" ||
       event.shiftKey
     ){
 
       return;
 
     }
-
 
     const input =
       event.target.closest(
@@ -3348,14 +3236,15 @@ document.addEventListener(
 
     }
 
-
     event.preventDefault();
-
 
     sendChatMessage();
 
   }
 );
+
+
+
 /* TRACKING */
  
 function startTracking(){
