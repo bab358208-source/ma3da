@@ -805,7 +805,9 @@ function startAcceptanceWatcher(){
             updateTimer();
  
           }
+
 /* COMPLETED */
+
 if(
   data.status ===
   "completed"
@@ -831,6 +833,7 @@ if(
   );
  
 }
+ 
           /* REJECTED */
  
           if(
@@ -872,6 +875,7 @@ if(
     );
  
 }
+ 
 /* ROLE */
  
 const customerRoleBtn =
@@ -1014,9 +1018,6 @@ if(sendResetPasswordBtn){
           "أدخل بريدك الإلكتروني أولاً"
         );
  
-        if(resetEmail)
-          resetEmail.focus();
- 
         return;
  
       }
@@ -1034,192 +1035,40 @@ if(sendResetPasswordBtn){
  
       }
  
-      sendResetPasswordBtn.disabled =
-        true;
- 
-      sendResetPasswordBtn.textContent =
-        "جاري الإرسال...";
- 
       try{
  
-        const result =
-          await window.ma3daSendPasswordResetEmail(
-            email
-          );
- 
-        if(result === true){
- 
-          alert(
-            "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧"
-          );
- 
-        }
- 
-      }catch(errorObject){
- 
-        console.error(
-          "خطأ في استعادة كلمة المرور:",
-          errorObject
+        await window.ma3daSendPasswordResetEmail(
+          email
         );
  
-        if(
-          errorObject?.code ===
-          "auth/user-not-found"
-        ){
- 
-          alert(
-            "لا يوجد حساب بهذا البريد الإلكتروني"
-          );
- 
-        }else if(
-          errorObject?.code ===
-          "auth/invalid-email"
-        ){
- 
-          alert(
-            "البريد الإلكتروني غير صحيح"
-          );
- 
-        }else{
- 
-          alert(
-            errorObject?.message ||
-            "تعذر إرسال رابط إعادة تعيين كلمة المرور"
-          );
- 
-        }
- 
-      }finally{
- 
-        sendResetPasswordBtn.disabled =
-          false;
- 
-        sendResetPasswordBtn.textContent =
-          "إرسال رابط الاستعادة";
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* العودة من صفحة استعادة كلمة المرور */
- 
-const backFromForgotPasswordBtn =
-  document.getElementById("backFromForgotPasswordBtn");
- 
-if(backFromForgotPasswordBtn){
- 
-  backFromForgotPasswordBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      const resetEmail =
-        document.getElementById("resetEmail");
- 
-      if(resetEmail)
-        resetEmail.value = "";
- 
-      showScreen(
-        "phoneScreen"
-      );
- 
-    }
-  );
- 
-}
- 
-/* فتح صفحة صاحب المعدة حسب وجود */
- 
-async function openOperatorAfterLogin(){
- 
-  const user =
-    window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
- 
-  if(!user){
- 
-    alert(
-      "تعذر استعادة تسجيل الدخول"
-    );
- 
-    showScreen(
-      "phoneScreen"
-    );
- 
-    return;
- 
-  }
- 
-  if(!window.ma3daDB){
- 
-    alert(
-      "Firebase غير متصل"
-    );
- 
-    return;
- 
-  }
- 
-  try{
- 
-    const ref =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "equipment",
-        user.uid
-      );
- 
-    const snapshot =
-      await window.ma3daGetDoc(ref);
- 
-    if(snapshot.exists()){
- 
-      await displayMyEquipment();
- 
-      const hasOperatorData =
-        await loadOperatorData();
- 
-      if(!hasOperatorData){
+        alert(
+          "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني"
+        );
  
         showScreen(
-          "operatorDataScreen"
+          "phoneScreen"
         );
  
-        return;
+      }catch(error){
+ 
+        console.error(
+          "تعذر إرسال رابط استعادة كلمة المرور:",
+          error
+        );
+ 
+        alert(
+          "تعذر إرسال رابط استعادة كلمة المرور"
+        );
  
       }
  
-      await loadOperatorHome();
- 
-      showScreen(
-        "operatorHomeScreen"
-      );
- 
-    }else{
- 
-      showScreen(
-        "addEquipmentScreen"
-      );
- 
     }
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في فحص المعدة:",
-      error
-    );
- 
-    alert(
-      "تعذر تحميل بيانات المعدة"
-    );
- 
-  }
+  );
  
 }
+ 
+/* LOGIN */
+ 
 if(emailLoginBtn){
  
   emailLoginBtn.addEventListener(
@@ -1255,94 +1104,41 @@ if(emailLoginBtn){
           error.textContent =
             "Firebase لم يجهز بعد، أعد تحميل الصفحة";
  
-        console.error(
-          "ma3daLogin غير موجود"
-        );
- 
         return;
  
       }
  
-      try{
- 
-        const user =
-          await window.ma3daLogin(
-            email,
-            password
-          );
- 
-        if(!user)
-          return;
- 
-        console.log(
-          "تم تسجيل الدخول بنجاح:",
-          user.uid
+      const user =
+        await window.ma3daLogin(
+          email,
+          password
         );
  
-        localStorage.setItem("selectedRole", selectedRole);
+      if(!user)
+        return;
  
-   if(
-  selectedRole ===
-  "customer"
-){
+      localStorage.setItem(
+        "ma3daLoggedIn",
+        "true"
+      );
  
-  showScreen(
-    "customerDataScreen"
-  );
- 
-  return;
- 
-}
-       if (
-  selectedRole === "contractor"
-) {
-
-  if (
-    typeof window.openContractorHome === "function"
-  ) {
-
-    await window.openContractorHome();
-
-  } else {
-
-    console.error(
-      "openContractorHome غير موجود"
-    );
-
-    if (error) {
-      error.textContent =
-        "تعذر فتح صفحة المقاول، أعد تحميل الصفحة";
-    }
-
-  }
-
-  return;
-
-}
- 
-        if(
-          selectedRole ===
-          "operator"
-        ){
- 
-          await openOperatorAfterLogin();
- 
-        }
- 
-      }catch(loginError){
- 
-        console.error(
-          "خطأ داخل تسجيل الدخول:",
-          loginError
+      const role =
+        localStorage.getItem(
+          "selectedRole"
         );
  
-        if(error){
+      if(role === "operator"){
  
-          error.textContent =
-            loginError?.message ||
-            "تعذر تسجيل الدخول";
+        await openOperatorAfterLogin();
  
-        }
+      }else{
+ 
+        selectedRole =
+          "customer";
+ 
+        showScreen(
+          "customerHomeScreen"
+        );
  
       }
  
@@ -1464,80 +1260,549 @@ if(createAccountBtn){
   );
  
 }
- 
+    async()=>{
+
+      const resetEmail =
+        document.getElementById("resetEmail");
+
+      const email =
+        resetEmail
+          ?.value
+          .trim();
+
+      if(!email){
+
+        alert(
+          "أدخل بريدك الإلكتروني أولاً"
+        );
+
+        if(resetEmail)
+          resetEmail.focus();
+
+        return;
+
+      }
+
+      if(
+        typeof window.ma3daSendPasswordResetEmail !==
+        "function"
+      ){
+
+        alert(
+          "Firebase لم يجهز بعد، أعد تحميل الصفحة"
+        );
+
+        return;
+
+      }
+
+      sendResetPasswordBtn.disabled =
+        true;
+
+      sendResetPasswordBtn.textContent =
+        "جاري الإرسال...";
+
+      try{
+
+        const result =
+          await window.ma3daSendPasswordResetEmail(
+            email
+          );
+
+        if(result === true){
+
+          alert(
+            "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧"
+          );
+
+        }
+
+      }catch(errorObject){
+
+        console.error(
+          "خطأ في استعادة كلمة المرور:",
+          errorObject
+        );
+
+        if(
+          errorObject?.code ===
+          "auth/user-not-found"
+        ){
+
+          alert(
+            "لا يوجد حساب بهذا البريد الإلكتروني"
+          );
+
+        }else if(
+          errorObject?.code ===
+          "auth/invalid-email"
+        ){
+
+          alert(
+            "البريد الإلكتروني غير صحيح"
+          );
+
+        }else{
+
+          alert(
+            errorObject?.message ||
+            "تعذر إرسال رابط إعادة تعيين كلمة المرور"
+          );
+
+        }
+
+      }finally{
+
+        sendResetPasswordBtn.disabled =
+          false;
+
+        sendResetPasswordBtn.textContent =
+          "إرسال رابط الاستعادة";
+
+      }
+
+    }
+  );
+
+}
+
+/* العودة من صفحة استعادة كلمة المرور */
+
+const backFromForgotPasswordBtn =
+  document.getElementById("backFromForgotPasswordBtn");
+
+if(backFromForgotPasswordBtn){
+
+  backFromForgotPasswordBtn.addEventListener(
+    "click",
+    ()=>{
+
+      const resetEmail =
+        document.getElementById("resetEmail");
+
+      if(resetEmail)
+        resetEmail.value = "";
+
+      showScreen(
+        "phoneScreen"
+      );
+
+    }
+  );
+
+}
+
+/* فتح صفحة صاحب المعدة حسب وجود */
+
+async function openOperatorAfterLogin(){
+
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+  if(!user){
+
+    alert(
+      "تعذر استعادة تسجيل الدخول"
+    );
+
+    showScreen(
+      "phoneScreen"
+    );
+
+    return;
+
+  }
+
+  if(!window.ma3daDB){
+
+    alert(
+      "Firebase غير متصل"
+    );
+
+    return;
+
+  }
+
+  try{
+
+    const ref =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+
+    const snapshot =
+      await window.ma3daGetDoc(ref);
+
+    if(snapshot.exists()){
+
+      await displayMyEquipment();
+
+      const hasOperatorData =
+        await loadOperatorData();
+
+      if(!hasOperatorData){
+
+        showScreen(
+          "operatorDataScreen"
+        );
+
+        return;
+
+      }
+
+      await loadOperatorHome();
+
+      showScreen(
+        "operatorHomeScreen"
+      );
+
+    }else{
+
+      showScreen(
+        "addEquipmentScreen"
+      );
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "خطأ في فحص المعدة:",
+      error
+    );
+
+    alert(
+      "تعذر تحميل بيانات المعدة"
+    );
+
+  }
+
+}
+
+if(emailLoginBtn){
+
+  emailLoginBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const {
+        email,
+        password,
+        error
+      } =
+        getEmailData();
+
+      if(!email || !password){
+
+        if(error)
+          error.textContent =
+            "أدخل البريد الإلكتروني وكلمة المرور";
+
+        return;
+
+      }
+
+      if(error)
+        error.textContent = "";
+
+      if(
+        typeof window.ma3daLogin !==
+        "function"
+      ){
+
+        if(error)
+          error.textContent =
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+
+        console.error(
+          "ma3daLogin غير موجود"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const user =
+          await window.ma3daLogin(
+            email,
+            password
+          );
+
+        if(!user)
+          return;
+
+        console.log(
+          "تم تسجيل الدخول بنجاح:",
+          user.uid
+        );
+
+        localStorage.setItem("selectedRole", selectedRole);
+
+        if(
+          selectedRole ===
+          "customer"
+        ){
+
+          showScreen(
+            "customerDataScreen"
+          );
+
+          return;
+
+        }
+
+        if (
+          selectedRole === "contractor"
+        ) {
+
+          if (
+            typeof window.openContractorHome === "function"
+          ) {
+
+            await window.openContractorHome();
+
+          } else {
+
+            console.error(
+              "openContractorHome غير موجود"
+            );
+
+            if (error) {
+              error.textContent =
+                "تعذر فتح صفحة المقاول، أعد تحميل الصفحة";
+            }
+
+          }
+
+          return;
+
+        }
+
+        if(
+          selectedRole ===
+          "operator"
+        ){
+
+          await openOperatorAfterLogin();
+
+        }
+
+      }catch(loginError){
+
+        console.error(
+          "خطأ داخل تسجيل الدخول:",
+          loginError
+        );
+
+        if(error){
+
+          error.textContent =
+            loginError?.message ||
+            "تعذر تسجيل الدخول";
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
+/* CREATE ACCOUNT */
+
+if(createAccountBtn){
+
+  createAccountBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const {
+        email,
+        password,
+        error
+      } =
+        getEmailData();
+
+      if(!email || !password){
+
+        if(error)
+          error.textContent =
+            "أدخل البريد الإلكتروني وكلمة المرور";
+
+        return;
+
+      }
+
+      if(password.length < 6){
+
+        if(error)
+          error.textContent =
+            "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
+
+        return;
+
+      }
+
+      if(error)
+        error.textContent = "";
+
+      if(
+        typeof window.ma3daCreateAccount !==
+        "function"
+      ){
+
+        if(error)
+          error.textContent =
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+
+        console.error(
+          "ma3daCreateAccount غير موجود"
+        );
+
+        return;
+
+      }
+
+      const user =
+        await window.ma3daCreateAccount(
+          email,
+          password
+        );
+
+      if(!user)
+        return;
+
+      console.log(
+        "تم إنشاء الحساب بنجاح:",
+        user.uid
+      );
+
+      /* تم إرسال رابط التحقق من Firebase */
+
+      alert(
+        "تم إنشاء الحساب بنجاح ✅\n\n" +
+        "تم إرسال رابط التحقق إلى بريدك الإلكتروني 📧\n\n" +
+        "افتح البريد واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
+      );
+
+      /* نخرج المستخدم من شاشة الحساب الجديد */
+
+      if(window.ma3daAuth){
+
+        try{
+
+          const {
+            signOut
+          } =
+            await import(
+              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+            );
+
+          await signOut(
+            window.ma3daAuth
+          );
+
+        }catch(signOutError){
+
+          console.error(
+            "تعذر تسجيل الخروج بعد إنشاء الحساب:",
+            signOutError
+          );
+
+        }
+
+      }
+
+      showScreen(
+        "phoneScreen"
+      );
+
+    }
+  );
+
+}
+
 /* OPERATOR */
- 
+
 async function openOperatorScreen(){
- 
+
   await displayMyEquipment();
- 
+
   updateOperatorScreen();
- 
+
   showScreen(
     "operatorScreen"
   );
- 
+
 }
+
 /* LOAD CUSTOMER REQUEST FOR OPERATOR */
- 
+
 async function loadLatestCustomerRequest(){
- 
+
   try{
- 
+
     if(!window.ma3daDB){
- 
+
       console.error(
         "Firebase غير متصل"
       );
- 
+
       return false;
- 
+
     }
- 
+
     if(!window.ma3daGetDocs){
- 
+
       console.error(
         "ma3daGetDocs غير موجود"
       );
- 
+
       return false;
- 
+
     }
- 
+
     const requestsRef =
       window.ma3daCollection(
         window.ma3daDB,
         "requests"
       );
- 
+
     const snapshot =
       await window.ma3daGetDocs(
         requestsRef
       );
- 
+
     if(snapshot.empty){
- 
+
       console.log(
         "لا توجد طلبات عملاء"
       );
- 
+
       return false;
- 
+
     }
- 
+
     let latestRequest = null;
- 
+
     snapshot.forEach(
       docSnapshot => {
- 
+
         const data =
           docSnapshot.data();
- 
+
         if(
           data.status ===
           "searching"
         ){
- 
+
           if(
             !latestRequest ||
             Number(data.createdAt || 0) >
@@ -1545,228 +1810,230 @@ async function loadLatestCustomerRequest(){
               latestRequest.createdAt || 0
             )
           ){
- 
+
             latestRequest = {
- 
+
               id:
                 docSnapshot.id,
- 
+
               ...data
- 
+
             };
- 
+
           }
- 
+
         }
- 
+
       }
     );
- 
+
     if(!latestRequest){
- 
+
       console.log(
         "لا يوجد طلب searching حالي"
       );
- 
+
       return false;
- 
+
     }
- 
+
     order = {
- 
+
       location:
         latestRequest.location || "",
- 
+
       equipment:
         latestRequest.equipment || "",
- 
+
       duration:
         latestRequest.duration || "",
- 
+
       operator:
         latestRequest.operator || "",
- 
+
       notes:
         latestRequest.notes || "",
- 
+
       price:
         Number(
           latestRequest.price || 0
         )
- 
+
     };
- 
+
     localStorage.setItem(
       "currentOrder",
       JSON.stringify(order)
     );
- 
+
     localStorage.setItem(
       "currentRequestId",
       latestRequest.id
     );
- 
+
     updateOperatorScreen();
- 
+
     console.log(
       "تم تحميل طلب العميل من Firebase:",
       latestRequest
     );
- 
+
     return true;
- 
+
   }catch(error){
- 
+
     console.error(
       "تعذر تحميل طلب العميل:",
       error
     );
- 
+
     return false;
- 
+
   }
- 
+
 }
+
 const acceptRequestBtn =
   document.getElementById("acceptRequestBtn");
+
 const arrivedAtCustomerBtn =
   document.getElementById("arrivedAtCustomerBtn");
- 
+
 if(arrivedAtCustomerBtn){
- 
+
   arrivedAtCustomerBtn.addEventListener(
     "click",
     async()=>{
- 
+
       const requestId =
         localStorage.getItem("currentRequestId");
- 
+
       if(!requestId){
- 
+
         alert(
           "لم يتم العثور على رقم الطلب"
         );
- 
+
         return;
- 
+
       }
- 
+
       try{
- 
+
         const requestRef =
           window.ma3daDoc(
             window.ma3daDB,
             "requests",
             requestId
           );
- 
+
         await window.ma3daUpdateDoc(
           requestRef,
           {
             status: "arrived"
           }
         );
- 
+
         const customerLocation =
           document.getElementById("acceptedCustomerLocation");
- 
+
         const arrivedLocation =
           document.getElementById("arrivedCustomerLocation");
- 
+
         if(
           customerLocation &&
           arrivedLocation
         ){
- 
+
           arrivedLocation.textContent =
             customerLocation.textContent;
- 
+
         }
- 
+
         showScreen(
           "operatorArrivedScreen"
         );
- 
+
       }catch(error){
- 
+
         console.error(
           "تعذر تسجيل الوصول:",
           error
         );
- 
+
         alert(
           "تعذر تسجيل الوصول في Firebase"
         );
- 
+
       }
- 
+
     }
   );
- 
+
 }
- 
+
 /* ACCEPT REQUEST */
- 
+
 if(acceptRequestBtn){
- 
+
   acceptRequestBtn.addEventListener(
     "click",
     async()=>{
- 
+
       if(!loadOrder()){
- 
+
         alert(
           "لا يوجد طلب عميل محفوظ"
         );
- 
+
         return;
- 
+
       }
- 
+
       const requestId =
         localStorage.getItem("currentRequestId");
- 
+
       if(!requestId){
- 
+
         alert(
           "لم يتم العثور على رقم طلب العميل"
         );
- 
+
         return;
- 
+
       }
- 
+
       try{
- 
+
         const requestRef =
           window.ma3daDoc(
             window.ma3daDB,
             "requests",
             requestId
           );
- 
+
         const requestSnap =
           await window.ma3daGetDoc(
             requestRef
           );
- 
+
         const requestData =
           requestSnap.data();
- 
+
         const customerLocation =
           requestData?.location ||
           "موقع العميل";
- 
+
         const acceptedCustomerLocation =
           document.getElementById("acceptedCustomerLocation");
- 
+
         if(acceptedCustomerLocation){
- 
+
           acceptedCustomerLocation.textContent =
             customerLocation;
- 
+
         }
- 
+
         await window.ma3daUpdateDoc(
           requestRef,
           {
@@ -1775,670 +2042,29 @@ if(acceptRequestBtn){
             operatorRating: "4.8"
           }
         );
- 
+
         localStorage.setItem(
           "acceptedOrder",
           JSON.stringify({
- 
+
             ...order,
- 
+
             operatorName:
               "فهد القحطاني",
- 
+
             operatorRating:
               "4.8"
- 
+
           })
         );
- 
+
         localStorage.setItem("orderAccepted", "true");
- 
+
         setOrderState(
           "accepted"
         );
- 
+
         updateMatchedScreen();
- 
-        updateWorkingScreen();
- 
-        alert(
-          "تم قبول الطلب بنجاح 🚜"
-        );
- 
-        showScreen(
-          "operatorAcceptedScreen"
-        );
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر تحديث حالة الطلب في Firebase:",
-          error
-        );
- 
-        alert(
-          "تعذر قبول الطلب في Firebase"
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* REJECT */
- 
-const rejectRequestBtn =
-  document.getElementById("rejectRequestBtn");
- 
-if(rejectRequestBtn){
- 
-  rejectRequestBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      const requestId =
-        localStorage.getItem("currentRequestId");
- 
-      if(!requestId){
- 
-        alert(
-          "لم يتم العثور على رقم طلب العميل"
-        );
- 
-        return;
- 
-      }
- 
-      try{
- 
-        const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
- 
-        await window.ma3daUpdateDoc(
-          requestRef,
-          {
-            status: "rejected"
-          }
-        );
- 
-        localStorage.removeItem("acceptedOrder");
- 
-        localStorage.removeItem("orderAccepted");
- 
-        setOrderState(
-          "rejected"
-        );
- 
-        alert(
-          "تم رفض الطلب"
-        );
- 
-        showScreen(
-          "roleScreen"
-        );
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر رفض الطلب في Firebase:",
-          error
-        );
- 
-        alert(
-          "تعذر رفض الطلب في Firebase"
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* EQUIPMENT */
-const saveEquipmentBtn =
-  document.getElementById("saveEquipmentBtn");
- 
-if(saveEquipmentBtn){
- 
-  saveEquipmentBtn.addEventListener(
-    "click",
-    saveEquipment
-  );
- 
-}
-async function saveEquipment(){
- 
-  let type =
-    document
-      .getElementById(
-        "equipmentType"
-      )
-      ?.value;
- 
-  const otherEquipmentType =
-    document
-      .getElementById(
-        "otherEquipmentType"
-      )
-      ?.value.trim();
- 
-  const model =
-    document
-      .getElementById(
-        "equipmentModel"
-      )
-      ?.value.trim();
- 
-  const year =
-    document
-      .getElementById(
-        "equipmentYear"
-      )
-      ?.value.trim();
- 
-  const city =
-    document
-      .getElementById(
-        "equipmentCity"
-      )
-      ?.value.trim();
- 
-  const availability =
-    document
-      .getElementById(
-        "equipmentAvailability"
-      )
-      ?.value;
- 
-  const hourlyPrice =
-    document
-      .getElementById(
-        "equipmentHourlyPrice"
-      )
-      ?.value.trim();
- 
-  const imageInput =
-    document.getElementById("equipmentImage");
- 
-  /* التحقق من نوع المعدة */
- 
-  if(type === "أخرى"){
- 
-    if(!otherEquipmentType){
- 
-      alert(
-        "فضلاً اكتب نوع المعدة"
-      );
- 
-      return;
- 
-    }
- 
-    type =
-      otherEquipmentType;
- 
-  }
- 
-  /* التحقق من البيانات */
- 
-  if(
-    !type ||
-    !model ||
-    !year ||
-    !city ||
-    !hourlyPrice
-  ){
- 
-    alert(
-      "فضلاً أكمل جميع بيانات المعدة"
-    );
- 
-    return;
- 
-  }
- 
-  const user =
-    window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
- 
-  if(!user){
- 
-    alert(
-      "يجب تسجيل الدخول أولاً"
-    );
- 
-    return;
- 
-  }
- 
-  if(!window.ma3daDB){
- 
-    alert(
-      "Firebase غير متصل"
-    );
- 
-    return;
- 
-  }
- 
-  const equipment = {
- 
-    type,
- 
-    model,
- 
-    year,
- 
-    city,
- 
-    availability,
- 
-    hourlyPrice:
-      Number(hourlyPrice),
- 
-    image:"",
- 
-    ownerId:
-      user.uid,
- 
-    ownerEmail:
-      user.email || ""
- 
-  };
- 
-  const saveToFirebase =
-    async()=>{
- 
-      const ref =
-        window.ma3daDoc(
-          window.ma3daDB,
-          "equipment",
-          user.uid
-        );
- 
-      await window.ma3daSetDoc(
-        ref,
-        equipment
-      );
- 
-    };
- 
-  const file =
-    imageInput?.files[0];
- 
-  if(!file){
- 
-    try{
- 
-      await saveToFirebase();
- 
-      localStorage.setItem(
-        "myEquipment",
-        JSON.stringify(
-          equipment
-        )
-      );
- 
-      alert(
-        "تم حفظ المعدة بنجاح 🚜"
-      );
- 
-      await displayMyEquipment();
- 
-      showScreen(
-        "operatorScreen"
-      );
- 
-    }catch(error){
- 
-      console.error(
-        error
-      );
- 
-      alert(
-        "تعذر حفظ المعدة في قاعدة البيانات"
-      );
- 
-    }
- 
-    return;
- 
-  }
- 
-  const reader =
-    new FileReader();
- 
-  reader.onload = ()=>{
- 
-    const image =
-      new Image();
- 
-    image.onload =
-      async()=>{
- 
-        const maxWidth =
-          1000;
- 
-        let width =
-          image.width;
- 
-        let height =
-          image.height;
- 
-        if(width > maxWidth){
- 
-          height =
-            Math.round(
-              maxWidth *
-              height /
-              width
-            );
- 
-          width =
-            maxWidth;
- 
-        }
- 
-        const canvas =
-          document.createElement(
-            "canvas"
-          );
- 
-        canvas.width =
-          width;
- 
-        canvas.height =
-          height;
- 
-        const ctx =
-          canvas.getContext(
-            "2d"
-          );
- 
-        ctx.drawImage(
-          image,
-          0,
-          0,
-          width,
-          height
-        );
- 
-        equipment.image =
-          canvas.toDataURL(
-            "image/jpeg",
-            0.75
-          );
- 
-        try{
- 
-          await saveToFirebase();
- 
-          localStorage.setItem(
-            "myEquipment",
-            JSON.stringify(
-              equipment
-            )
-          );
- 
-          alert(
-            "تم حفظ المعدة بنجاح 🚜"
-          );
- 
-          await displayMyEquipment();
- 
-          showScreen(
-            "operatorScreen"
-          );
- 
-        }catch(error){
- 
-          console.error(
-            error
-          );
- 
-          alert(
-            "تعذر حفظ المعدة في قاعدة البيانات"
-          );
- 
-        }
- 
-      };
- 
-    image.src =
-      reader.result;
- 
-  };
- 
-  reader.readAsDataURL(
-    file
-  );
- 
-}
-/* OTHER EQUIPMENT */
- 
-const equipmentType =
-  document.getElementById("equipmentType");
- 
-const otherEquipmentContainer =
-  document.getElementById("otherEquipmentContainer");
- 
-const otherEquipmentType =
-  document.getElementById("otherEquipmentType");
- 
-if(
-  equipmentType &&
-  otherEquipmentContainer
-){
- 
-  equipmentType.addEventListener(
-    "change",
-    ()=>{
- 
-      if(
-        equipmentType.value ===
-        "أخرى"
-      ){
- 
-        otherEquipmentContainer.style.display =
-          "block";
- 
-        if(otherEquipmentType){
-          otherEquipmentType.focus();
-        }
- 
-      }else{
- 
-        otherEquipmentContainer.style.display =
-          "none";
- 
-        if(otherEquipmentType){
-          otherEquipmentType.value = "";
-        }
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* LOAD EQUIPMENT */
- 
-async function displayMyEquipment(){
- 
-  try{
- 
-    if(!window.ma3daDB){
- 
-      console.log(
-        "Firebase غير متصل"
-      );
- 
-      return false;
- 
-    }
- 
-    const user =
-      window.ma3daGetCurrentUser
-        ? await window.ma3daGetCurrentUser()
-        : window.ma3daAuth?.currentUser;
- 
-    if(!user){
- 
-      console.log(
-        "لا يوجد مستخدم مسجل"
-      );
- 
-      return false;
- 
-    }
- 
-    const ref =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "equipment",
-        user.uid
-      );
- 
-    const snapshot =
-      await window.ma3daGetDoc(
-        ref
-      );
- 
-    if(!snapshot.exists()){
- 
-      console.log(
-        "لا توجد بيانات للمعدة"
-      );
- 
-      return false;
- 
-    }
- 
-    const equipment =
-      snapshot.data();
- 
-    localStorage.setItem(
-      "myEquipment",
-      JSON.stringify(
-        equipment
-      )
-    );
- 
-    const type =
-      document.getElementById("myEquipmentType");
- 
-    const model =
-      document.getElementById("myEquipmentModel");
- 
-    const year =
-      document.getElementById("myEquipmentYear");
- 
-    const city =
-      document.getElementById("myEquipmentCity");
- 
-    const availability =
-      document.getElementById("myEquipmentAvailability");
- 
-    const image =
-      document.getElementById("myEquipmentImage");
- 
-    if(type)
-      type.textContent =
-        equipment.type || "-";
- 
-    if(model)
-      model.textContent =
-        equipment.model || "-";
- 
-    if(year)
-      year.textContent =
-        equipment.year || "-";
- 
-    if(city)
-      city.textContent =
-        equipment.city || "-";
- 
-    if(availability){
- 
-      availability.textContent =
-        equipment.availability ===
-        "available"
-          ? "متاحة الآن"
-          : "غير متاحة";
- 
-    }
- 
-    if(image){
- 
-      if(equipment.image){
- 
-        image.src =
-          equipment.image;
- 
-        image.style.display =
-          "block";
- 
-      }else{
- 
-        image.removeAttribute(
-          "src"
-        );
- 
-        image.style.display =
-          "none";
- 
-      }
- 
-    }
- 
-    return true;
- 
-  }catch(error){
- 
-    console.error(
-      "تعذر تحميل بيانات المعدة:",
-      error
-    );
- 
-    return false;
- 
-  }
- 
-}
-/* =========================================================
-   MATCHED
-========================================================= */
-
-const trackingBtn =
-  document.getElementById("trackingBtn");
-
-if(trackingBtn){
-
-  trackingBtn.addEventListener(
-    "click",
-    ()=>{
-      
-      showScreen(
-        "trackingScreen"
-      );
-
-      startTracking();
-
-    }
-  );
-
-}
-
-
 /* =========================================================
    CHAT
    CUSTOMER + EQUIPMENT OWNER + CONTRACTOR
@@ -2540,6 +2166,7 @@ function getChatRequestId(){
 
 /* =========================================================
    GET CHAT MESSAGES COLLECTION
+
    requests/{requestId}/messages
 ========================================================= */
 
@@ -2660,6 +2287,27 @@ if(chatBtn){
 
 }
 
+
+/* =========================================================
+   OPERATOR CHAT BUTTON
+   IMPORTANT:
+   THIS IS THE ONLY DECLARATION
+   OF operatorChatCustomerBtn
+========================================================= */
+
+const operatorChatCustomerBtn =
+  document.getElementById(
+    "operatorChatCustomerBtn"
+  );
+
+if(operatorChatCustomerBtn){
+
+  operatorChatCustomerBtn.addEventListener(
+    "click",
+    openMa3daChat
+  );
+
+}
 
 
 /* =========================================================
@@ -3115,19 +2763,13 @@ async function startChatListener(){
     await loadChatMessages();
 
     /*
-      لا نستخدم onSnapshot أو query
-      لأن نسخة Firebase الحالية
-      في index لا توفر هذه الأدوات.
+      نستخدم polling بدلاً من onSnapshot
+      للحفاظ على توافق الكود الحالي.
     */
 
     chatMessagesUnsubscribe =
       setInterval(
         ()=>{
-          
-          /*
-            لا نعيد التحميل إذا خرج المستخدم
-            من صفحة الشات.
-          */
 
           const chatScreen =
             document.getElementById(
@@ -3224,8 +2866,6 @@ document.addEventListener(
 
   }
 );
-
-
 
 /* TRACKING */
  
