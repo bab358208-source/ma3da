@@ -2065,6 +2065,654 @@ if(acceptRequestBtn){
         );
 
         updateMatchedScreen();
+               updateWorkingScreen();
+
+        alert(
+          "تم قبول الطلب بنجاح 🚜"
+        );
+
+        showScreen(
+          "operatorAcceptedScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر تحديث حالة الطلب في Firebase:",
+          error
+        );
+
+        alert(
+          "تعذر قبول الطلب في Firebase"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+/* REJECT */
+
+const rejectRequestBtn =
+  document.getElementById("rejectRequestBtn");
+
+if(rejectRequestBtn){
+
+  rejectRequestBtn.addEventListener(
+    "click",
+    async()=>{
+
+      const requestId =
+        localStorage.getItem("currentRequestId");
+
+      if(!requestId){
+
+        alert(
+          "لم يتم العثور على رقم طلب العميل"
+        );
+
+        return;
+
+      }
+
+      try{
+
+        const requestRef =
+          window.ma3daDoc(
+            window.ma3daDB,
+            "requests",
+            requestId
+          );
+
+        await window.ma3daUpdateDoc(
+          requestRef,
+          {
+            status: "rejected"
+          }
+        );
+
+        localStorage.removeItem("acceptedOrder");
+
+        localStorage.removeItem("orderAccepted");
+
+        setOrderState(
+          "rejected"
+        );
+
+        alert(
+          "تم رفض الطلب"
+        );
+
+        showScreen(
+          "roleScreen"
+        );
+
+      }catch(error){
+
+        console.error(
+          "تعذر رفض الطلب في Firebase:",
+          error
+        );
+
+        alert(
+          "تعذر رفض الطلب في Firebase"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+/* EQUIPMENT */
+
+const saveEquipmentBtn =
+  document.getElementById("saveEquipmentBtn");
+
+if(saveEquipmentBtn){
+
+  saveEquipmentBtn.addEventListener(
+    "click",
+    saveEquipment
+  );
+
+}
+
+async function saveEquipment(){
+
+  let type =
+    document
+      .getElementById(
+        "equipmentType"
+      )
+      ?.value;
+
+  const otherEquipmentType =
+    document
+      .getElementById(
+        "otherEquipmentType"
+      )
+      ?.value.trim();
+
+  const model =
+    document
+      .getElementById(
+        "equipmentModel"
+      )
+      ?.value.trim();
+
+  const year =
+    document
+      .getElementById(
+        "equipmentYear"
+      )
+      ?.value.trim();
+
+  const city =
+    document
+      .getElementById(
+        "equipmentCity"
+      )
+      ?.value.trim();
+
+  const availability =
+    document
+      .getElementById(
+        "equipmentAvailability"
+      )
+      ?.value;
+
+  const hourlyPrice =
+    document
+      .getElementById(
+        "equipmentHourlyPrice"
+      )
+      ?.value.trim();
+
+  const imageInput =
+    document.getElementById("equipmentImage");
+
+  /* التحقق من نوع المعدة */
+
+  if(type === "أخرى"){
+
+    if(!otherEquipmentType){
+
+      alert(
+        "فضلاً اكتب نوع المعدة"
+      );
+
+      return;
+
+    }
+
+    type =
+      otherEquipmentType;
+
+  }
+
+  /* التحقق من البيانات */
+
+  if(
+    !type ||
+    !model ||
+    !year ||
+    !city ||
+    !hourlyPrice
+  ){
+
+    alert(
+      "فضلاً أكمل جميع بيانات المعدة"
+    );
+
+    return;
+
+  }
+
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+
+  if(!user){
+
+    alert(
+      "يجب تسجيل الدخول أولاً"
+    );
+
+    return;
+
+  }
+
+  if(!window.ma3daDB){
+
+    alert(
+      "Firebase غير متصل"
+    );
+
+    return;
+
+  }
+
+  const equipment = {
+
+    type,
+
+    model,
+
+    year,
+
+    city,
+
+    availability,
+
+    hourlyPrice:
+      Number(hourlyPrice),
+
+    image:"",
+
+    ownerId:
+      user.uid,
+
+    ownerEmail:
+      user.email || ""
+
+  };
+
+  const saveToFirebase =
+    async()=>{
+
+      const ref =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "equipment",
+          user.uid
+        );
+
+      await window.ma3daSetDoc(
+        ref,
+        equipment
+      );
+
+    };
+
+  const file =
+    imageInput?.files[0];
+
+  if(!file){
+
+    try{
+
+      await saveToFirebase();
+
+      localStorage.setItem(
+        "myEquipment",
+        JSON.stringify(
+          equipment
+        )
+      );
+
+      alert(
+        "تم حفظ المعدة بنجاح 🚜"
+      );
+
+      await displayMyEquipment();
+
+      showScreen(
+        "operatorScreen"
+      );
+
+    }catch(error){
+
+      console.error(
+        error
+      );
+
+      alert(
+        "تعذر حفظ المعدة في قاعدة البيانات"
+      );
+
+    }
+
+    return;
+
+  }
+
+  const reader =
+    new FileReader();
+
+  reader.onload = ()=>{
+
+    const image =
+      new Image();
+
+    image.onload =
+      async()=>{
+
+        const maxWidth =
+          1000;
+
+        let width =
+          image.width;
+
+        let height =
+          image.height;
+
+        if(width > maxWidth){
+
+          height =
+            Math.round(
+              maxWidth *
+              height /
+              width
+            );
+
+          width =
+            maxWidth;
+
+        }
+
+        const canvas =
+          document.createElement(
+            "canvas"
+          );
+
+        canvas.width =
+          width;
+
+        canvas.height =
+          height;
+
+        const ctx =
+          canvas.getContext(
+            "2d"
+          );
+
+        ctx.drawImage(
+          image,
+          0,
+          0,
+          width,
+          height
+        );
+
+        equipment.image =
+          canvas.toDataURL(
+            "image/jpeg",
+            0.75
+          );
+
+        try{
+
+          await saveToFirebase();
+
+          localStorage.setItem(
+            "myEquipment",
+            JSON.stringify(
+              equipment
+            )
+          );
+
+          alert(
+            "تم حفظ المعدة بنجاح 🚜"
+          );
+
+          await displayMyEquipment();
+
+          showScreen(
+            "operatorScreen"
+          );
+
+        }catch(error){
+
+          console.error(
+            error
+          );
+
+          alert(
+            "تعذر حفظ المعدة في قاعدة البيانات"
+          );
+
+        }
+
+      };
+
+    image.src =
+      reader.result;
+
+  };
+
+  reader.readAsDataURL(
+    file
+  );
+
+}
+
+/* OTHER EQUIPMENT */
+
+const equipmentType =
+  document.getElementById("equipmentType");
+
+const otherEquipmentContainer =
+  document.getElementById("otherEquipmentContainer");
+
+const otherEquipmentType =
+  document.getElementById("otherEquipmentType");
+
+if(
+  equipmentType &&
+  otherEquipmentContainer
+){
+
+  equipmentType.addEventListener(
+    "change",
+    ()=>{
+
+      if(
+        equipmentType.value ===
+        "أخرى"
+      ){
+
+        otherEquipmentContainer.style.display =
+          "block";
+
+        if(otherEquipmentType){
+          otherEquipmentType.focus();
+        }
+
+      }else{
+
+        otherEquipmentContainer.style.display =
+          "none";
+
+        if(otherEquipmentType){
+          otherEquipmentType.value = "";
+        }
+
+      }
+
+    }
+  );
+
+}
+
+/* LOAD EQUIPMENT */
+
+async function displayMyEquipment(){
+
+  try{
+
+    if(!window.ma3daDB){
+
+      console.log(
+        "Firebase غير متصل"
+      );
+
+      return false;
+
+    }
+
+    const user =
+      window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
+
+    if(!user){
+
+      console.log(
+        "لا يوجد مستخدم مسجل"
+      );
+
+      return false;
+
+    }
+
+    const ref =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+
+    const snapshot =
+      await window.ma3daGetDoc(
+        ref
+      );
+
+    if(!snapshot.exists()){
+
+      console.log(
+        "لا توجد بيانات للمعدة"
+      );
+
+      return false;
+
+    }
+
+    const equipment =
+      snapshot.data();
+
+    localStorage.setItem(
+      "myEquipment",
+      JSON.stringify(
+        equipment
+      )
+    );
+
+    const type =
+      document.getElementById("myEquipmentType");
+
+    const model =
+      document.getElementById("myEquipmentModel");
+
+    const year =
+      document.getElementById("myEquipmentYear");
+
+    const city =
+      document.getElementById("myEquipmentCity");
+
+    const availability =
+      document.getElementById("myEquipmentAvailability");
+
+    const image =
+      document.getElementById("myEquipmentImage");
+
+    if(type)
+      type.textContent =
+        equipment.type || "-";
+
+    if(model)
+      model.textContent =
+        equipment.model || "-";
+
+    if(year)
+      year.textContent =
+        equipment.year || "-";
+
+    if(city)
+      city.textContent =
+        equipment.city || "-";
+
+    if(availability){
+
+      availability.textContent =
+        equipment.availability ===
+        "available"
+          ? "متاحة الآن"
+          : "غير متاحة";
+
+    }
+
+    if(image){
+
+      if(equipment.image){
+
+        image.src =
+          equipment.image;
+
+        image.style.display =
+          "block";
+
+      }else{
+
+        image.removeAttribute(
+          "src"
+        );
+
+        image.style.display =
+          "none";
+
+      }
+
+    }
+
+    return true;
+
+  }catch(error){
+
+    console.error(
+      "تعذر تحميل بيانات المعدة:",
+      error
+    );
+
+    return false;
+
+  }
+
+}
+
+/* MATCHED */
+
+const trackingBtn =
+  document.getElementById("trackingBtn");
+
+if(trackingBtn){
+
+  trackingBtn.addEventListener(
+    "click",
+    ()=>{
+
+      showScreen(
+        "trackingScreen"
+      );
+
+      startTracking();
+
+    }
+  );
+
+}
+
+/* =========================================================
+   CHAT
+   CUSTOMER + EQUIPMENT OWNER
+
+   FIRESTORE PATH:
+   requests/{requestId}/messages/{messageId}
+========================================================= */
 /* =========================================================
    CHAT
    CUSTOMER + EQUIPMENT OWNER + CONTRACTOR
