@@ -5273,28 +5273,14 @@ async function loadOperatorNewRequests(){
  
     }
  
-    
-const { where } = await import(
-  "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"
-);
-
-const requestsCollection =
-  window.ma3daCollection(
-    window.ma3daDB,
-    "requests"
-  );
-
-const requestsQuery =
-  window.ma3daQuery(
-    requestsCollection,
-    where("status", "==", "searching")
-  );
-
-const snapshot =
-  await window.ma3daGetDocs(
-    requestsQuery
-  );
-
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
+      );
+ 
     const requests = [];
  
     snapshot.forEach(
@@ -5476,26 +5462,24 @@ const snapshot =
       }
     );
  
-  } catch(error) {
-
+  }catch(error){
+ 
     console.error(
       "خطأ في تحميل الطلبات الجديدة:",
       error
     );
-
+ 
     list.innerHTML = `
       <div class="card center">
-        <h3>تفاصيل خطأ تحميل الطلبات</h3>
-        <p dir="ltr">
-          ${error.code || "unknown"}
-        </p>
         <p>
-          ${error.message || "لا توجد تفاصيل"}
+          تعذر تحميل الطلبات.
         </p>
       </div>
     `;
-
+ 
   }
+ 
+}
  
 /* ACCEPT */
  
