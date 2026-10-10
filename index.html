@@ -17,11 +17,11 @@
   >
 
 <style id="ma3da-contractor-styles">
-#contractorDataScreen,#contractorHomeScreen,#contractorRequestScreen,#contractorEquipmentPickerScreen,#contractorCurrentOrdersScreen,#contractorPreviousOrdersScreen,#contractorProjectsScreen,#contractorOrderDetailsScreen,#contractorSettingsScreen,#contractorSupportScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
-#contractorDataScreen .card,#contractorHomeScreen .card,#contractorRequestScreen .card,#contractorEquipmentPickerScreen .card,#contractorCurrentOrdersScreen .card,#contractorPreviousOrdersScreen .card,#contractorProjectsScreen .card,#contractorOrderDetailsScreen .card,#contractorSettingsScreen .card,#contractorSupportScreen .card,.contractor-equipment-card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
-#contractorDataScreen label,#contractorRequestScreen label,#contractorEquipmentPickerScreen label,#contractorSettingsScreen label,#contractorSupportScreen label{display:block;font-weight:600;margin:12px 0 6px}
-#contractorDataScreen input,#contractorRequestScreen input,#contractorRequestScreen select,#contractorRequestScreen textarea,#contractorEquipmentPickerScreen input,#contractorEquipmentPickerScreen select,#contractorEquipmentPickerScreen textarea,#contractorSettingsScreen input,#contractorSupportScreen input,#contractorSupportScreen select,#contractorSupportScreen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}
-#contractorDataScreen button,#contractorHomeScreen button,#contractorRequestScreen button,#contractorEquipmentPickerScreen button,#contractorCurrentOrdersScreen button,#contractorPreviousOrdersScreen button,#contractorProjectsScreen button,#contractorOrderDetailsScreen button,#contractorSettingsScreen button,#contractorSupportScreen button{font:inherit;cursor:pointer}
+#contractorDataScreen,#contractorHomeScreen,#contractorRequestScreen,#contractorEquipmentPickerScreen,#contractorCurrentOrdersScreen,#contractorPreviousOrdersScreen,#contractorProjectsScreen,#contractorOrderDetailsScreen,#contractorSettingsScreen,#contractorSettingsPrefsScreen,#contractorAccountScreen,#contractorSupportScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
+#contractorDataScreen .card,#contractorHomeScreen .card,#contractorRequestScreen .card,#contractorEquipmentPickerScreen .card,#contractorCurrentOrdersScreen .card,#contractorPreviousOrdersScreen .card,#contractorProjectsScreen .card,#contractorOrderDetailsScreen .card,#contractorSettingsScreen .card,#contractorSettingsPrefsScreen .card,#contractorAccountScreen .card,#contractorSupportScreen .card,.contractor-equipment-card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+#contractorDataScreen label,#contractorRequestScreen label,#contractorEquipmentPickerScreen label,#contractorSettingsScreen label,#contractorSettingsPrefsScreen label,#contractorAccountScreen label,#contractorSupportScreen label{display:block;font-weight:600;margin:12px 0 6px}
+#contractorDataScreen input,#contractorRequestScreen input,#contractorRequestScreen select,#contractorRequestScreen textarea,#contractorEquipmentPickerScreen input,#contractorEquipmentPickerScreen select,#contractorEquipmentPickerScreen textarea,#contractorSettingsScreen input,#contractorSettingsPrefsScreen input,#contractorAccountScreen input,#contractorSupportScreen input,#contractorSupportScreen select,#contractorSupportScreen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}
+#contractorDataScreen button,#contractorHomeScreen button,#contractorRequestScreen button,#contractorEquipmentPickerScreen button,#contractorCurrentOrdersScreen button,#contractorPreviousOrdersScreen button,#contractorProjectsScreen button,#contractorOrderDetailsScreen button,#contractorSettingsScreen button,#contractorSettingsPrefsScreen button,#contractorAccountScreen button,#contractorSupportScreen button{font:inherit;cursor:pointer}
 #contractorProjectLat,#contractorProjectLng{box-sizing:border-box;width:100%;padding:10px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
 .contractor-coordinates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .contractor-equipment-card button{width:100%;margin-top:8px}
@@ -31,10 +31,15 @@
 #contractorHomeScreen .contractor-action{min-height:104px;text-align:right;padding:14px;background:#fffdf8;border:1px solid #eadfc5;border-radius:14px;color:#171717}
 #contractorHomeScreen .contractor-action strong{display:block;margin-bottom:6px}
 #contractorHomeScreen .contractor-primary{grid-column:1/-1;background:#f5e8c8;border-color:#d9bd78}
-#contractorDataScreen .main-btn,#contractorRequestScreen .main-btn,#contractorSettingsScreen .main-btn,#contractorSupportScreen .main-btn{width:100%;margin-top:12px}
+#contractorDataScreen .main-btn,#contractorRequestScreen .main-btn,#contractorSettingsScreen .main-btn,#contractorSettingsPrefsScreen .main-btn,#contractorAccountScreen .main-btn,#contractorSupportScreen .main-btn{width:100%;margin-top:12px}
 #contractorCurrentOrdersList .card,#contractorPreviousOrdersList .card,#contractorProjectsList .card{margin:12px 0}
 #contractorSupportFeedback{font-weight:600;margin-top:10px}
 @media(max-width:520px){#contractorHomeScreen .contractor-grid{grid-template-columns:1fr}#contractorHomeScreen .contractor-primary{grid-column:auto}.contractor-coordinates{grid-template-columns:1fr}}
+
+.contractor-project-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.contractor-project-tabs button{margin:0}
+.contractor-project-tabs button[aria-pressed="true"]{background:#f5e8c8;border-color:#d9bd78;color:#171717}
+.contractor-project-tabs button[aria-pressed="false"]{background:#fffdf8;border:1px solid #eadfc5;color:#171717}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -5108,19 +5113,18 @@
     <label for="contractorCityInput">المدينة *</label><input id="contractorCityInput" placeholder="المدينة">
     <label for="contractorCompanyInput">اسم المؤسسة أو الشركة</label><input id="contractorCompanyInput" placeholder="اسم المؤسسة أو الشركة">
     <button id="saveContractorDataBtn" class="main-btn" type="button">حفظ ومتابعة</button>
-    <button type="button" class="back-btn" onclick="showScreen('roleScreen')">العودة</button>
+    <button id="contractorDataBackBtn" type="button" class="back-btn">العودة</button>
   </div>
 </section>
 
 <section id="contractorHomeScreen" class="screen">
   <div class="hero"><div class="hero-icon">🏗️</div><h1>أهلاً <span id="contractorHomeName">بك</span></h1><p>لوحة تحكم المقاول وصاحب المشروع</p></div>
-  <div class="card"><h2>تحتاج معدة لمشروعك؟</h2><p>اطلب المعدة التي تحتاجها بسهولة وسنساعدك في الوصول إلى صاحب المعدة أو المشغل المناسب.</p><button id="contractorNewRequestBtn" class="main-btn contractor-primary" type="button">🚜 اطلب معدة الآن</button></div>
   <div class="contractor-grid">
-    <button id="contractorCurrentOrdersBtn" class="contractor-action" type="button"><strong>📋 الطلبات الحالية</strong><span>تابع طلبات المعدات التي تعمل عليها حالياً.</span><br><u>عرض الطلبات الحالية</u></button>
-    <button id="contractorPreviousOrdersBtn" class="contractor-action" type="button"><strong>🗂️ الطلبات السابقة</strong><span>راجع جميع طلبات المعدات السابقة.</span><br><u>عرض الطلبات السابقة</u></button>
-    <button id="contractorProjectsBtn" class="contractor-action" type="button"><strong>🏗️ مشاريعي</strong><span>تابع الطلبات والمعدات المرتبطة بمشاريعك.</span><br><u>عرض المشاريع</u></button>
-    <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الحساب والإعدادات</strong><span>تعديل بيانات حساب المقاول.</span><br><u>فتح الإعدادات</u></button>
-    <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تحتاج مساعدة؟ تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
+    <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
+    <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
+    <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
+    <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
+    <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
   </div>
   <button id="contractorHomeLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button>
 </section>
@@ -5136,7 +5140,7 @@
     <div class="contractor-coordinates"><label for="contractorProjectLat">خط العرض</label><input id="contractorProjectLat" inputmode="decimal" placeholder="يُحدد من الخريطة"><label for="contractorProjectLng">خط الطول</label><input id="contractorProjectLng" inputmode="decimal" placeholder="يُحدد من الخريطة"></div>
     <button id="contractorUseMyLocationBtn" class="back-btn" type="button">📍 استخدام موقعي الحالي</button>
     <label for="contractorProjectNotes">تفاصيل المشروع (اختياري)</label><textarea id="contractorProjectNotes" rows="3" placeholder="وصف مختصر للمشروع أو ملاحظات مهمة"></textarea>
-    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع واختيار المعدة</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة</button>
+    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
   </div>
 </section>
 <section id="contractorEquipmentPickerScreen" class="screen">
@@ -5152,11 +5156,20 @@
   <div id="contractorNearbyEquipmentList"><div class="card">جارٍ تحميل المعدات القريبة…</div></div>
   <button id="contractorPickerBackBtn" class="back-btn" type="button">العودة للمشروع</button>
 </section>
-<section id="contractorCurrentOrdersScreen" class="screen"><div class="hero"><div class="hero-icon">📋</div><h1>الطلبات الحالية</h1><p>طلبات المعدات النشطة المرتبطة بحسابك</p></div><div id="contractorCurrentOrdersList"></div><button id="contractorCurrentOrdersBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
-<section id="contractorPreviousOrdersScreen" class="screen"><div class="hero"><div class="hero-icon">🗂️</div><h1>الطلبات السابقة</h1><p>الطلبات المكتملة أو الملغاة أو المرفوضة</p></div><div id="contractorPreviousOrdersList"></div><button id="contractorPreviousOrdersBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
-<section id="contractorProjectsScreen" class="screen"><div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>مشاريعك المحفوظة ومواقعها وطلبات المعدات المرتبطة بها</p></div><button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروع جديد</button><div id="contractorProjectsList"></div><button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
+<section id="contractorProjectsScreen" class="screen">
+  <div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.</p></div>
+  <button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروعك</button>
+  <div class="contractor-project-tabs" role="tablist" aria-label="تصنيف المشاريع">
+    <button type="button" class="main-btn" data-contractor-project-filter="current" aria-pressed="true">المشاريع الحالية</button>
+    <button type="button" class="back-btn" data-contractor-project-filter="previous" aria-pressed="false">المشاريع السابقة</button>
+  </div>
+  <div id="contractorProjectsList"></div>
+  <button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
+</section>
 <section id="contractorOrderDetailsScreen" class="screen"><div class="hero"><div class="hero-icon">📄</div><h1>تفاصيل الطلب</h1></div><div class="card"><p>المعدة: <strong id="contractorOrderEquipment">—</strong></p><p>الموقع: <strong id="contractorOrderLocation">—</strong></p><p>المدة: <strong id="contractorOrderDuration">—</strong></p><p>المشغل: <strong id="contractorOrderOperator">—</strong></p><p>التكلفة التقديرية: <strong id="contractorOrderPrice">—</strong></p><p>الحالة: <strong id="contractorOrderStatus">—</strong></p><button id="contractorOrderChatBtn" class="main-btn" type="button">فتح المحادثة</button><button id="contractorOrderBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <section id="contractorSettingsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الحساب والإعدادات</h1><p>تحديث بيانات المقاول</p></div><div class="card"><label for="contractorSettingsName">الاسم *</label><input id="contractorSettingsName" placeholder="الاسم الكامل"><label for="contractorSettingsPhone">رقم الجوال</label><input id="contractorSettingsPhone" type="tel" placeholder="05xxxxxxxx"><label for="contractorSettingsCity">المدينة</label><input id="contractorSettingsCity" placeholder="المدينة"><label for="contractorSettingsCompany">المؤسسة أو الشركة</label><input id="contractorSettingsCompany" placeholder="اسم المؤسسة أو الشركة"><button id="saveContractorSettingsBtn" class="main-btn" type="button">حفظ التعديلات</button><button id="contractorChangePasswordBtn" class="back-btn" type="button">تغيير كلمة المرور</button><button id="contractorSettingsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
+<section id="contractorAccountScreen" class="screen"><div class="hero"><div class="hero-icon">👤</div><h1>الحساب</h1><p>إدارة حساب الدخول في مِعدة</p></div><div class="card"><p>البريد الإلكتروني: <strong id="contractorAccountEmail">—</strong></p><button id="contractorAccountChangePasswordBtn" class="main-btn" type="button">تغيير كلمة المرور</button><button id="contractorAccountLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button><button id="contractorAccountBackBtn" class="back-btn" type="button">العودة</button></div></section>
+<section id="contractorSettingsPrefsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الإعدادات</h1><p>تفضيلات استخدام التطبيق</p></div><div class="card"><label><input id="contractorNotificationsSetting" type="checkbox" checked> تفعيل تنبيهات الطلبات داخل التطبيق</label><p class="muted">يمكن تعديل تفضيل التنبيهات لاحقًا عند تفعيل نظام الإشعارات.</p><button id="contractorSettingsPrefsBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم مِعدة</p></div><div class="card"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 
 
