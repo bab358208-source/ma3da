@@ -12678,3 +12678,54 @@ document.addEventListener("click", function(event){
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",managerBindOwnerButton,{once:true});
   else managerBindOwnerButton();
 })();
+
+
+/* =========================================================
+   CONTRACTOR SUPPORT TICKET — additive, does not change chat
+   Firestore collection: supportTickets
+========================================================= */
+(function bindContractorSupportTicket(){
+  if (window.__ma3daContractorSupportTicketBound) return;
+  window.__ma3daContractorSupportTicketBound = true;
+  document.addEventListener("click", async function(event){
+    const button = event.target.closest("#contractorSupportSubmitBtn");
+    if (!button) return;
+    event.preventDefault();
+    const messageEl = document.getElementById("contractorSupportMessage");
+    const categoryEl = document.getElementById("contractorSupportCategory");
+    const feedback = document.getElementById("contractorSupportFeedback");
+    const message = (messageEl?.value || "").trim();
+    if (!message) { if(feedback) feedback.textContent = "اكتب تفاصيل طلب الدعم أولاً."; return; }
+    let user = null;
+    try {
+      if (typeof window.ma3daGetCurrentUser === "function") user = await window.ma3daGetCurrentUser();
+      if (!user && window.ma3daAuth) user = window.ma3daAuth.currentUser || null;
+      if (!user) { if(feedback) feedback.textContent = "سجّل الدخول أولاً لإرسال طلب الدعم."; return; }
+      if (!window.ma3daFirebaseReady) throw new Error("Firebase is not ready");
+      await Promise.resolve(window.ma3daFirebaseReady);
+      if (typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") throw new Error("Firestore helpers unavailable");
+      button.disabled = true; button.textContent = "جارٍ الإرسال...";
+      const profile = JSON.parse(localStorage.getItem("contractorProfile") || "null") || {};
+      const payload = {
+        requesterId: user.uid,
+        userId: user.uid,
+        requesterEmail: user.email || "",
+        requesterRole: "contractor",
+        requesterName: profile.name || "",
+        category: categoryEl?.value || "استفسار",
+        message,
+        status: "open",
+        createdAt: new Date(),
+        source: "contractor-dashboard"
+      };
+      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB, "supportTickets"), payload);
+      if (feedback) feedback.textContent = "تم إرسال طلبك إلى فريق الدعم بنجاح.";
+      if (messageEl) messageEl.value = "";
+    } catch (error) {
+      console.error("Contractor support ticket error:", error);
+      if (feedback) feedback.textContent = error?.code === "permission-denied" ? "تعذر الإرسال بسبب صلاحيات Firebase. تحقق من قواعد supportTickets." : "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
+    } finally {
+      button.disabled = false; button.textContent = "إرسال إلى الدعم";
+    }
+  });
+})();
