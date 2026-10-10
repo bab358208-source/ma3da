@@ -1281,17 +1281,34 @@ if(emailLoginBtn){
  
         localStorage.setItem("selectedRole", selectedRole);
  
-   if(
-  selectedRole ===
-  "customer"
-){
- 
-  showScreen(
-    "customerDataScreen"
-  );
- 
+   if (selectedRole === "customer") {
+  try {
+    await Promise.resolve(window.ma3daFirebaseReady);
+    const currentUser = window.ma3daAuth?.currentUser || user;
+    if (!currentUser || !window.ma3daDB || !window.ma3daDoc || !window.ma3daGetDoc) {
+      throw new Error("تعذر التحقق من حساب العميل الحالي");
+    }
+    const customerRef = window.ma3daDoc(window.ma3daDB, "customers", currentUser.uid);
+    const customerSnapshot = await window.ma3daGetDoc(customerRef);
+    if (customerSnapshot.exists()) {
+      const data = customerSnapshot.data() || {};
+      const nameInput = document.getElementById("customerNameInput");
+      const phoneInput = document.getElementById("customerPhoneInput");
+      const cityInput = document.getElementById("customerCityInput");
+      if (nameInput) nameInput.value = data.name || "";
+      if (phoneInput) phoneInput.value = data.phone || "";
+      if (cityInput) cityInput.value = data.city || "";
+      showScreen("customerHomeScreen");
+    } else {
+      showScreen("customerDataScreen");
+    }
+  } catch (customerRouteError) {
+    // Authentication already succeeded. Do not strand the customer on the
+    // login screen just because reading an optional profile failed.
+    console.warn("Customer profile lookup failed after successful login:", customerRouteError);
+    showScreen("customerDataScreen");
+  }
   return;
- 
 }
        if (
   selectedRole === "contractor"
@@ -11369,7 +11386,7 @@ localStorage.setItem("selectedRole", "contractor");
   const contractorDataBtn=document.getElementById('contractorDataBtn');
   if(contractorDataBtn)contractorDataBtn.addEventListener('click',async()=>{const profile=contractorGetProfile();if(profile)fillContractorProfile(profile);else await loadContractorProfile();contractorShowScreen('contractorDataScreen');});
   const contractorAccountBtn=document.getElementById('contractorAccountBtn');
-  if(contractorAccountBtn)contractorAccountBtn.addEventListener('click',()=>{const user=getContractorUser();const email=document.getElementById('contractorAccountEmail');if(email)email.textContent=user?.email||'غير متوفر';contractorShowScreen('contractorAccountScreen');});
+  if(contractorAccountBtn)contractorAccountBtn.addEventListener('click',async()=>{const user=await getContractorUser();const email=document.getElementById('contractorAccountEmail');if(email)email.textContent=user?.email||'غير متوفر';contractorShowScreen('contractorAccountScreen');});
   const contractorAccountChangePasswordBtn=document.getElementById('contractorAccountChangePasswordBtn');
   if(contractorAccountChangePasswordBtn)contractorAccountChangePasswordBtn.addEventListener('click',()=>document.getElementById('contractorChangePasswordBtn')?.click());
   const contractorAccountLogoutBtn=document.getElementById('contractorAccountLogoutBtn');
@@ -12313,63 +12330,14 @@ document.addEventListener("click", function(event){
 
 
 /* =========================================================
-   CONTRACTOR SUPPORT TICKET — additive, does not change chat
-   Firestore collection: supportTickets
+   MA3DA SUPPORT TICKETS — single shared implementation
+   Customer, equipment owner, and contractor -> supportTickets
+   Keeps the existing support-staff portal and chat path unchanged.
 ========================================================= */
-(function bindContractorSupportTicket(){
-  if (window.__ma3daContractorSupportTicketBound) return;
-  window.__ma3daContractorSupportTicketBound = true;
-  document.addEventListener("click", async function(event){
-    const button = event.target.closest("#contractorSupportSubmitBtn");
-    if (!button) return;
-    event.preventDefault();
-    const messageEl = document.getElementById("contractorSupportMessage");
-    const categoryEl = document.getElementById("contractorSupportCategory");
-    const feedback = document.getElementById("contractorSupportFeedback");
-    const message = (messageEl?.value || "").trim();
-    if (!message) { if(feedback) feedback.textContent = "اكتب تفاصيل طلب الدعم أولاً."; return; }
-    let user = null;
-    try {
-      if (typeof window.ma3daGetCurrentUser === "function") user = await window.ma3daGetCurrentUser();
-      if (!user && window.ma3daAuth) user = window.ma3daAuth.currentUser || null;
-      if (!user) { if(feedback) feedback.textContent = "سجّل الدخول أولاً لإرسال طلب الدعم."; return; }
-      if (!window.ma3daFirebaseReady) throw new Error("Firebase is not ready");
-      await Promise.resolve(window.ma3daFirebaseReady);
-      if (typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") throw new Error("Firestore helpers unavailable");
-      button.disabled = true; button.textContent = "جارٍ الإرسال...";
-      const profile = JSON.parse(localStorage.getItem("contractorProfile") || "null") || {};
-      const payload = {
-        requesterId: user.uid,
-        userId: user.uid,
-        requesterEmail: user.email || "",
-        requesterRole: "contractor",
-        requesterName: profile.name || "",
-        category: categoryEl?.value || "استفسار",
-        message,
-        status: "open",
-        createdAt: new Date(),
-        source: "contractor-dashboard"
-      };
-      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB, "supportTickets"), payload);
-      if (feedback) feedback.textContent = "تم إرسال طلبك إلى فريق الدعم بنجاح.";
-      if (messageEl) messageEl.value = "";
-    } catch (error) {
-      console.error("Contractor support ticket error:", error);
-      if (feedback) feedback.textContent = error?.code === "permission-denied" ? "تعذر الإرسال بسبب صلاحيات Firebase. تحقق من قواعد supportTickets." : "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
-    } finally {
-      button.disabled = false; button.textContent = "إرسال إلى الدعم";
-    }
-  });
-})();
+(function bindMa3daSupportTickets(){
+  if (window.__ma3daUnifiedSupportTicketsBound) return;
+  window.__ma3daUnifiedSupportTicketsBound = true;
 
-
-/* =========================================================
-   MA3DA CUSTOMER AND OPERATOR SUPPORT TICKETS
-   Tickets are saved to supportTickets for the support dashboard.
-========================================================= */
-(function bindCustomerOperatorSupportTickets(){
-  if (window.__ma3daCustomerOperatorSupportBound) return;
-  window.__ma3daCustomerOperatorSupportBound = true;
   document.addEventListener("click", async function(event){
     const customerSupportOpen = event.target.closest("#supportWhatsAppBtn");
     if (customerSupportOpen) {
@@ -12377,33 +12345,94 @@ document.addEventListener("click", function(event){
       document.getElementById("customerSupportTicketForm")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    const button = event.target.closest("[data-ma3da-support-submit]");
-    if (!button) return;
+    const clicked = event.target.closest(
+      "[data-ma3da-support-submit], #contractorSupportSubmitBtn"
+    );
+    if (!clicked) return;
     event.preventDefault();
-    const role = button.dataset.ma3daSupportSubmit;
-    const prefix = role === "operator" ? "operator" : "customer";
+    if (clicked.dataset.ma3daSupportBusy === "true") return;
+
+    let role = clicked.dataset.ma3daSupportSubmit || "contractor";
+    if (clicked.id === "contractorSupportSubmitBtn") role = "contractor";
+    if (!["customer", "operator", "contractor"].includes(role)) {
+      console.error("Unknown support role:", role);
+      return;
+    }
+
+    const prefix = role === "contractor" ? "contractor" : role;
     const messageEl = document.getElementById(prefix + "SupportMessage");
     const categoryEl = document.getElementById(prefix + "SupportCategory");
     const feedback = document.getElementById(prefix + "SupportFeedback");
     const message = (messageEl?.value || "").trim();
-    if (!message) { if (feedback) feedback.textContent = "اكتب تفاصيل المشكلة أو الاستفسار أولاً."; return; }
+    if (!message) {
+      if (feedback) feedback.textContent = "اكتب تفاصيل المشكلة أو الاستفسار أولاً.";
+      messageEl?.focus();
+      return;
+    }
+
+    clicked.dataset.ma3daSupportBusy = "true";
+    const originalText = clicked.textContent;
+    clicked.disabled = true;
+    clicked.textContent = "جارٍ الإرسال...";
+    if (feedback) feedback.textContent = "";
+
     try {
-      let user = null;
-      if (typeof window.ma3daGetCurrentUser === "function") user = await window.ma3daGetCurrentUser();
-      if (!user && window.ma3daAuth) user = window.ma3daAuth.currentUser || null;
-      if (!user || !user.uid) { if (feedback) feedback.textContent = "سجّل الدخول أولاً لإرسال طلب الدعم."; return; }
-      if (window.ma3daFirebaseReady) await Promise.resolve(window.ma3daFirebaseReady);
-      if (!window.ma3daDB || typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") throw new Error("Firestore helpers unavailable");
-      button.disabled = true; button.textContent = "جارٍ الإرسال...";
-      const payload = { requesterId: user.uid, userId: user.uid, requesterEmail: user.email || "", requesterRole: role, requesterName: "", category: categoryEl?.value || "استفسار", message, status: "open", createdAt: new Date(), source: role + "-support-screen" };
-      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB, "supportTickets"), payload);
-      if (feedback) feedback.textContent = "تم إرسال طلبك إلى فريق الدعم بنجاح.";
+      await Promise.resolve(window.ma3daFirebaseReady);
+      const user = window.ma3daAuth?.currentUser ||
+        (typeof window.ma3daGetCurrentUser === "function" ? await window.ma3daGetCurrentUser() : null);
+      if (!user?.uid) {
+        if (feedback) feedback.textContent = "انتهت جلسة الدخول أو لم تسجّل الدخول. سجّل الدخول ثم أعد إرسال الطلب.";
+        return;
+      }
+      if (!window.ma3daDB || typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") {
+        throw new Error("خدمة قاعدة البيانات غير جاهزة");
+      }
+
+      let requesterName = "";
+      try {
+        if (role === "contractor") {
+          const profile = JSON.parse(localStorage.getItem("contractorProfile") || "null") || {};
+          requesterName = profile.contractorName || profile.name || profile.companyName || "";
+        } else if (role === "customer") {
+          requesterName = document.getElementById("customerNameInput")?.value?.trim() || "";
+        } else {
+          requesterName = document.getElementById("operatorNameInput")?.value?.trim() || "";
+        }
+      } catch (_) {}
+
+      const payload = {
+        requesterId: user.uid,
+        userId: user.uid,
+        requesterEmail: user.email || "",
+        requesterRole: role,
+        requesterName,
+        category: categoryEl?.value || "استفسار",
+        message,
+        status: "open",
+        createdAt: new Date(),
+        source: role + "-support-screen"
+      };
+      await window.ma3daAddDoc(
+        window.ma3daCollection(window.ma3daDB, "supportTickets"),
+        payload
+      );
+      if (feedback) feedback.textContent = "تم إرسال طلبك بنجاح إلى فريق الدعم. سيظهر الطلب في لوحة موظفي الدعم.";
       if (messageEl) messageEl.value = "";
     } catch (error) {
-      console.error("Customer/operator support ticket error:", error);
-      if (feedback) feedback.textContent = error?.code === "permission-denied" ? "تعذر الإرسال بسبب صلاحيات Firebase لمجموعة supportTickets." : "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
+      console.error("Ma3da support ticket error:", error);
+      if (feedback) {
+        if (error?.code === "permission-denied") {
+          feedback.textContent = "تعذر الإرسال بسبب صلاحيات Firebase لمجموعة supportTickets. راجع قواعد Firestore.";
+        } else if (error?.code === "unavailable" || /network/i.test(error?.message || "")) {
+          feedback.textContent = "تعذر الاتصال بالخدمة. تحقق من الإنترنت ثم حاول مرة أخرى.";
+        } else {
+          feedback.textContent = "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
+        }
+      }
     } finally {
-      button.disabled = false; button.textContent = "إرسال إلى الدعم";
+      clicked.disabled = false;
+      clicked.textContent = originalText || "إرسال إلى الدعم";
+      delete clicked.dataset.ma3daSupportBusy;
     }
   });
 })();
