@@ -17,11 +17,16 @@
   >
 
 <style id="ma3da-contractor-styles">
-#contractorDataScreen,#contractorHomeScreen,#contractorRequestScreen,#contractorCurrentOrdersScreen,#contractorPreviousOrdersScreen,#contractorProjectsScreen,#contractorOrderDetailsScreen,#contractorSettingsScreen,#contractorSupportScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
-#contractorDataScreen .card,#contractorHomeScreen .card,#contractorRequestScreen .card,#contractorCurrentOrdersScreen .card,#contractorPreviousOrdersScreen .card,#contractorProjectsScreen .card,#contractorOrderDetailsScreen .card,#contractorSettingsScreen .card,#contractorSupportScreen .card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
-#contractorDataScreen label,#contractorRequestScreen label,#contractorSettingsScreen label,#contractorSupportScreen label{display:block;font-weight:600;margin:12px 0 6px}
-#contractorDataScreen input,#contractorRequestScreen input,#contractorRequestScreen select,#contractorRequestScreen textarea,#contractorSettingsScreen input,#contractorSupportScreen input,#contractorSupportScreen select,#contractorSupportScreen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}
-#contractorDataScreen button,#contractorHomeScreen button,#contractorRequestScreen button,#contractorCurrentOrdersScreen button,#contractorPreviousOrdersScreen button,#contractorProjectsScreen button,#contractorOrderDetailsScreen button,#contractorSettingsScreen button,#contractorSupportScreen button{font:inherit;cursor:pointer}
+#contractorDataScreen,#contractorHomeScreen,#contractorRequestScreen,#contractorEquipmentPickerScreen,#contractorCurrentOrdersScreen,#contractorPreviousOrdersScreen,#contractorProjectsScreen,#contractorOrderDetailsScreen,#contractorSettingsScreen,#contractorSupportScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
+#contractorDataScreen .card,#contractorHomeScreen .card,#contractorRequestScreen .card,#contractorEquipmentPickerScreen .card,#contractorCurrentOrdersScreen .card,#contractorPreviousOrdersScreen .card,#contractorProjectsScreen .card,#contractorOrderDetailsScreen .card,#contractorSettingsScreen .card,#contractorSupportScreen .card,.contractor-equipment-card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+#contractorDataScreen label,#contractorRequestScreen label,#contractorEquipmentPickerScreen label,#contractorSettingsScreen label,#contractorSupportScreen label{display:block;font-weight:600;margin:12px 0 6px}
+#contractorDataScreen input,#contractorRequestScreen input,#contractorRequestScreen select,#contractorRequestScreen textarea,#contractorEquipmentPickerScreen input,#contractorEquipmentPickerScreen select,#contractorEquipmentPickerScreen textarea,#contractorSettingsScreen input,#contractorSupportScreen input,#contractorSupportScreen select,#contractorSupportScreen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}
+#contractorDataScreen button,#contractorHomeScreen button,#contractorRequestScreen button,#contractorEquipmentPickerScreen button,#contractorCurrentOrdersScreen button,#contractorPreviousOrdersScreen button,#contractorProjectsScreen button,#contractorOrderDetailsScreen button,#contractorSettingsScreen button,#contractorSupportScreen button{font:inherit;cursor:pointer}
+#contractorProjectLat,#contractorProjectLng{box-sizing:border-box;width:100%;padding:10px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
+.contractor-coordinates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.contractor-equipment-card button{width:100%;margin-top:8px}
+.contractor-equipment-card img{max-width:100%;max-height:160px;object-fit:cover;border-radius:10px}
+.contractor-distance{font-weight:700;color:#8b6a20}
 #contractorHomeScreen .contractor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 #contractorHomeScreen .contractor-action{min-height:104px;text-align:right;padding:14px;background:#fffdf8;border:1px solid #eadfc5;border-radius:14px;color:#171717}
 #contractorHomeScreen .contractor-action strong{display:block;margin-bottom:6px}
@@ -29,9 +34,10 @@
 #contractorDataScreen .main-btn,#contractorRequestScreen .main-btn,#contractorSettingsScreen .main-btn,#contractorSupportScreen .main-btn{width:100%;margin-top:12px}
 #contractorCurrentOrdersList .card,#contractorPreviousOrdersList .card,#contractorProjectsList .card{margin:12px 0}
 #contractorSupportFeedback{font-weight:600;margin-top:10px}
-@media(max-width:520px){#contractorHomeScreen .contractor-grid{grid-template-columns:1fr}#contractorHomeScreen .contractor-primary{grid-column:auto}}
+@media(max-width:520px){#contractorHomeScreen .contractor-grid{grid-template-columns:1fr}#contractorHomeScreen .contractor-primary{grid-column:auto}.contractor-coordinates{grid-template-columns:1fr}}
 </style>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 </head>
 
 
@@ -5120,20 +5126,35 @@
 </section>
 
 <section id="contractorRequestScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🚜</div><h1>طلب معدة لمشروعك</h1><p>أدخل تفاصيل المعدة التي تحتاجها</p></div>
+  <div class="hero"><div class="hero-icon">🏗️</div><h1>إنشاء مشروع</h1><p>حدد موقع مشروعك أولاً، ثم اختر المعدة المناسبة من المعدات القريبة.</p></div>
   <div class="card">
-    <label for="contractorRequestLocation">موقع العمل *</label><input id="contractorRequestLocation" placeholder="المدينة أو موقع المشروع">
-    <label for="contractorEquipmentType">نوع المعدة *</label><select id="contractorEquipmentType"><option value="">اختر نوع المعدة</option><option value="بوكلين">بوكلين</option><option value="شيول">شيول</option><option value="قلاب">قلاب</option><option value="كرين">كرين</option><option value="حفار">حفار</option><option value="بلدوزر">بلدوزر</option></select>
-    <label for="contractorDuration">مدة العمل *</label><select id="contractorDuration"><option value="">اختر المدة</option><option value="ساعة واحدة">ساعة واحدة</option><option value="4 ساعات">4 ساعات</option><option value="8 ساعات">8 ساعات</option><option value="يوم كامل">يوم كامل</option></select>
-    <label for="contractorOperator">المشغل *</label><select id="contractorOperator"><option value="">اختر الخيار</option><option value="مع مشغل">مع مشغل</option><option value="بدون مشغل">بدون مشغل</option></select>
-    <label for="contractorNotes">ملاحظات المشروع</label><textarea id="contractorNotes" rows="3" placeholder="أي تفاصيل إضافية (اختياري)"></textarea>
-    <button id="submitContractorRequestBtn" class="main-btn" type="button">إرسال طلب المعدة</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة</button>
+    <label for="contractorProjectName">اسم المشروع *</label><input id="contractorProjectName" maxlength="120" placeholder="مثال: مشروع إنشاء مبنى سكني">
+    <label for="contractorProjectCity">المدينة *</label><input id="contractorProjectCity" maxlength="80" placeholder="المدينة">
+    <label for="contractorProjectLocationText">وصف الموقع / العنوان</label><input id="contractorProjectLocationText" maxlength="240" placeholder="الحي أو الشارع أو علامة قريبة">
+    <p>حدد موقع المشروع على الخريطة أو استخدم موقعك الحالي. نحتاج الإحداثيات لعرض المعدات القريبة بدقة.</p>
+    <div id="contractorProjectMap" style="height:260px;border-radius:14px;border:1px solid #d8cfbc;overflow:hidden;background:#f4efe3"></div>
+    <div class="contractor-coordinates"><label for="contractorProjectLat">خط العرض</label><input id="contractorProjectLat" inputmode="decimal" placeholder="يُحدد من الخريطة"><label for="contractorProjectLng">خط الطول</label><input id="contractorProjectLng" inputmode="decimal" placeholder="يُحدد من الخريطة"></div>
+    <button id="contractorUseMyLocationBtn" class="back-btn" type="button">📍 استخدام موقعي الحالي</button>
+    <label for="contractorProjectNotes">تفاصيل المشروع (اختياري)</label><textarea id="contractorProjectNotes" rows="3" placeholder="وصف مختصر للمشروع أو ملاحظات مهمة"></textarea>
+    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع واختيار المعدة</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة</button>
   </div>
 </section>
-
+<section id="contractorEquipmentPickerScreen" class="screen">
+  <div class="hero"><div class="hero-icon">🚜</div><h1>اختر المعدة المناسبة</h1><p id="contractorPickerProjectName">المعدات المتاحة بالقرب من مشروعك</p></div>
+  <div class="card">
+    <p id="contractorPickerProjectLocation"></p>
+    <label for="contractorEquipmentType">نوع المعدة *</label><select id="contractorEquipmentType"><option value="">كل أنواع المعدات</option><option value="بوكلين">بوكلين</option><option value="شيول">شيول</option><option value="قلاب">قلاب</option><option value="كرين">كرين</option><option value="حفار">حفار</option><option value="بلدوزر">بلدوزر</option></select>
+    <label for="contractorDuration">مدة العمل *</label><select id="contractorDuration"><option value="ساعة واحدة">ساعة واحدة</option><option value="4 ساعات">4 ساعات</option><option value="8 ساعات">8 ساعات</option><option value="يوم كامل">يوم كامل</option></select>
+    <label for="contractorOperator">المشغل *</label><select id="contractorOperator"><option value="مع مشغل">مع مشغل</option><option value="بدون مشغل">بدون مشغل</option></select>
+    <label for="contractorNotes">ملاحظات لصاحب المعدة</label><textarea id="contractorNotes" rows="2" placeholder="تفاصيل إضافية (اختياري)"></textarea>
+    <button id="contractorRefreshEquipmentBtn" class="back-btn" type="button">تحديث المعدات القريبة</button>
+  </div>
+  <div id="contractorNearbyEquipmentList"><div class="card">جارٍ تحميل المعدات القريبة…</div></div>
+  <button id="contractorPickerBackBtn" class="back-btn" type="button">العودة للمشروع</button>
+</section>
 <section id="contractorCurrentOrdersScreen" class="screen"><div class="hero"><div class="hero-icon">📋</div><h1>الطلبات الحالية</h1><p>طلبات المعدات النشطة المرتبطة بحسابك</p></div><div id="contractorCurrentOrdersList"></div><button id="contractorCurrentOrdersBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
 <section id="contractorPreviousOrdersScreen" class="screen"><div class="hero"><div class="hero-icon">🗂️</div><h1>الطلبات السابقة</h1><p>الطلبات المكتملة أو الملغاة أو المرفوضة</p></div><div id="contractorPreviousOrdersList"></div><button id="contractorPreviousOrdersBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
-<section id="contractorProjectsScreen" class="screen"><div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>طلبات المعدات المرتبطة بمشاريعك</p></div><div id="contractorProjectsList"></div><button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
+<section id="contractorProjectsScreen" class="screen"><div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>مشاريعك المحفوظة ومواقعها وطلبات المعدات المرتبطة بها</p></div><button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروع جديد</button><div id="contractorProjectsList"></div><button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></section>
 <section id="contractorOrderDetailsScreen" class="screen"><div class="hero"><div class="hero-icon">📄</div><h1>تفاصيل الطلب</h1></div><div class="card"><p>المعدة: <strong id="contractorOrderEquipment">—</strong></p><p>الموقع: <strong id="contractorOrderLocation">—</strong></p><p>المدة: <strong id="contractorOrderDuration">—</strong></p><p>المشغل: <strong id="contractorOrderOperator">—</strong></p><p>التكلفة التقديرية: <strong id="contractorOrderPrice">—</strong></p><p>الحالة: <strong id="contractorOrderStatus">—</strong></p><button id="contractorOrderChatBtn" class="main-btn" type="button">فتح المحادثة</button><button id="contractorOrderBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <section id="contractorSettingsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الحساب والإعدادات</h1><p>تحديث بيانات المقاول</p></div><div class="card"><label for="contractorSettingsName">الاسم *</label><input id="contractorSettingsName" placeholder="الاسم الكامل"><label for="contractorSettingsPhone">رقم الجوال</label><input id="contractorSettingsPhone" type="tel" placeholder="05xxxxxxxx"><label for="contractorSettingsCity">المدينة</label><input id="contractorSettingsCity" placeholder="المدينة"><label for="contractorSettingsCompany">المؤسسة أو الشركة</label><input id="contractorSettingsCompany" placeholder="اسم المؤسسة أو الشركة"><button id="saveContractorSettingsBtn" class="main-btn" type="button">حفظ التعديلات</button><button id="contractorChangePasswordBtn" class="back-btn" type="button">تغيير كلمة المرور</button><button id="contractorSettingsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 <section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم مِعدة</p></div><div class="card"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
