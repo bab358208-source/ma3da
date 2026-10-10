@@ -10483,7 +10483,12 @@ localStorage.setItem("selectedRole", "contractor");
 
   const submitContractorRequestBtn=document.getElementById('submitContractorRequestBtn');
   if(submitContractorRequestBtn)submitContractorRequestBtn.addEventListener('click',async()=>{
-    const user=getContractorUser();if(!user){alert('يجب تسجيل الدخول أولاً.');return;}
+    const user = window.ma3daAuth?.currentUser || null;
+
+if (!user || !user.uid) {
+  alert("انتهت جلسة تسجيل الدخول. سجّل الدخول مجددًا ثم حاول حفظ المشروع.");
+  return;
+}
     const name=document.getElementById('contractorProjectName')?.value.trim();
     const city=document.getElementById('contractorProjectCity')?.value.trim();
     const address=document.getElementById('contractorProjectLocationText')?.value.trim()||'';
