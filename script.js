@@ -7533,9 +7533,8 @@ if(operatorSupportWhatsAppBtn){
     "click",
     ()=>{
  
-      alert(
-        "سيتم ربط الدعم الفني قريبًا."
-      );
+      const form = document.getElementById("operatorSupportTicketForm");
+      if (form) form.scrollIntoView({ behavior: "smooth", block: "center" });
  
     }
   );
@@ -10483,12 +10482,7 @@ localStorage.setItem("selectedRole", "contractor");
 
   const submitContractorRequestBtn=document.getElementById('submitContractorRequestBtn');
   if(submitContractorRequestBtn)submitContractorRequestBtn.addEventListener('click',async()=>{
-    const user = window.ma3daAuth?.currentUser || null;
-
-if (!user || !user.uid) {
-  alert("انتهت جلسة تسجيل الدخول. سجّل الدخول مجددًا ثم حاول حفظ المشروع.");
-  return;
-}
+    const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
     const name=document.getElementById('contractorProjectName')?.value.trim();
     const city=document.getElementById('contractorProjectCity')?.value.trim();
     const address=document.getElementById('contractorProjectLocationText')?.value.trim()||'';
@@ -10514,14 +10508,7 @@ if (!user || !user.uid) {
       }
       contractorEditingProjectId=null;contractorSelectedProject=null;
       contractorShowScreen('contractorProjectsScreen');contractorSetProjectFilter(returnProjectFilter);
-}catch(error){
-  console.error("Save contractor project error:", error);
-
-  alert(
-    "رمز الخطأ: " + (error?.code || "غير معروف") +
-    "\nالتفاصيل: " + (error?.message || String(error))
-  );
-}
+    }catch(error){console.error('Save contractor project error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لحفظ أو تعديل المشاريع في Firebase.':'تعذر حفظ المشروع. تحقق من الاتصال وقواعد Firebase.');}
     finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='حفظ المشروع';}
   });
 
@@ -10589,7 +10576,7 @@ if (!user || !user.uid) {
   document.addEventListener('click',async event=>{
     const button=event.target.closest('[data-contractor-choose-equipment]');if(!button)return;
     const equipment=contractorNearbyEquipmentCache.find(row=>row.id===button.dataset.contractorChooseEquipment);if(!equipment||!contractorSelectedProject)return;
-    const user=getContractorUser();if(!user){alert('يجب تسجيل الدخول أولاً.');return;}
+    const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
     const duration=document.getElementById('contractorDuration')?.value||'ساعة واحدة';
     const operator=document.getElementById('contractorOperator')?.value||'مع مشغل';
     const notes=document.getElementById('contractorNotes')?.value.trim()||'';
@@ -11314,11 +11301,7 @@ if (!user || !user.uid) {
 
   async function loadContractorProjects() {
     const list=document.getElementById('contractorProjectsList');if(!list)return;
-    const user = await getContractorUser();
-if (!user || !user.uid) {
-  list.innerHTML = '<div class="card">سجّل الدخول لعرض مشاريعك.</div>';
-  return;
-}
+    const user=await getContractorUser();if(!user || !user.uid){list.innerHTML='<div class="card">سجّل الدخول لعرض مشاريعك.</div>';return;}
     list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
     try{
       const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));
@@ -11338,18 +11321,18 @@ if (!user || !user.uid) {
   document.addEventListener('click',async event=>{
     const editButton=event.target.closest('[data-contractor-edit-project]');
     if(editButton){
-      try{const user=getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',editButton.dataset.contractorEditProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('تعذر فتح المشروع أو لا تملك صلاحية الوصول إليه.');return;}await contractorStartProjectForm({id:snap.id,...snap.data()});}
+      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',editButton.dataset.contractorEditProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('تعذر فتح المشروع أو لا تملك صلاحية الوصول إليه.');return;}await contractorStartProjectForm({id:snap.id,...snap.data()});}
       catch(error){console.error('Edit contractor project error:',error);alert('تعذر فتح بيانات المشروع للتعديل.');}return;
     }
     const completeButton=event.target.closest('[data-contractor-complete-project]');
     if(completeButton){
       if(!confirm('هل تريد نقل هذا المشروع إلى المشاريع السابقة؟'))return;
-      try{const user=getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
+      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
       catch(error){console.error('Complete contractor project error:',error);alert('تعذر تحديث حالة المشروع.');}return;
     }
     const button=event.target.closest('[data-contractor-project-request]');if(!button)return;
     try{
-      const user=getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',button.dataset.contractorProjectRequest);const snap=await window.ma3daGetDoc(ref);
+      const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',button.dataset.contractorProjectRequest);const snap=await window.ma3daGetDoc(ref);
       if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('تعذر فتح المشروع أو لا تملك صلاحية الوصول إليه.');return;}
       const project={id:snap.id,...snap.data()};if(contractorIsPreviousProject(project)){alert('لا يمكن طلب معدة من مشروع سابق. افتح مشروعًا حاليًا أو أنشئ مشروعًا جديدًا.');return;}
       contractorSelectedProject=project;
@@ -12373,6 +12356,52 @@ document.addEventListener("click", function(event){
     } catch (error) {
       console.error("Contractor support ticket error:", error);
       if (feedback) feedback.textContent = error?.code === "permission-denied" ? "تعذر الإرسال بسبب صلاحيات Firebase. تحقق من قواعد supportTickets." : "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
+    } finally {
+      button.disabled = false; button.textContent = "إرسال إلى الدعم";
+    }
+  });
+})();
+
+
+/* =========================================================
+   MA3DA CUSTOMER AND OPERATOR SUPPORT TICKETS
+   Tickets are saved to supportTickets for the support dashboard.
+========================================================= */
+(function bindCustomerOperatorSupportTickets(){
+  if (window.__ma3daCustomerOperatorSupportBound) return;
+  window.__ma3daCustomerOperatorSupportBound = true;
+  document.addEventListener("click", async function(event){
+    const customerSupportOpen = event.target.closest("#supportWhatsAppBtn");
+    if (customerSupportOpen) {
+      event.preventDefault();
+      document.getElementById("customerSupportTicketForm")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const button = event.target.closest("[data-ma3da-support-submit]");
+    if (!button) return;
+    event.preventDefault();
+    const role = button.dataset.ma3daSupportSubmit;
+    const prefix = role === "operator" ? "operator" : "customer";
+    const messageEl = document.getElementById(prefix + "SupportMessage");
+    const categoryEl = document.getElementById(prefix + "SupportCategory");
+    const feedback = document.getElementById(prefix + "SupportFeedback");
+    const message = (messageEl?.value || "").trim();
+    if (!message) { if (feedback) feedback.textContent = "اكتب تفاصيل المشكلة أو الاستفسار أولاً."; return; }
+    try {
+      let user = null;
+      if (typeof window.ma3daGetCurrentUser === "function") user = await window.ma3daGetCurrentUser();
+      if (!user && window.ma3daAuth) user = window.ma3daAuth.currentUser || null;
+      if (!user || !user.uid) { if (feedback) feedback.textContent = "سجّل الدخول أولاً لإرسال طلب الدعم."; return; }
+      if (window.ma3daFirebaseReady) await Promise.resolve(window.ma3daFirebaseReady);
+      if (!window.ma3daDB || typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") throw new Error("Firestore helpers unavailable");
+      button.disabled = true; button.textContent = "جارٍ الإرسال...";
+      const payload = { requesterId: user.uid, userId: user.uid, requesterEmail: user.email || "", requesterRole: role, requesterName: "", category: categoryEl?.value || "استفسار", message, status: "open", createdAt: new Date(), source: role + "-support-screen" };
+      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB, "supportTickets"), payload);
+      if (feedback) feedback.textContent = "تم إرسال طلبك إلى فريق الدعم بنجاح.";
+      if (messageEl) messageEl.value = "";
+    } catch (error) {
+      console.error("Customer/operator support ticket error:", error);
+      if (feedback) feedback.textContent = error?.code === "permission-denied" ? "تعذر الإرسال بسبب صلاحيات Firebase لمجموعة supportTickets." : "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
     } finally {
       button.disabled = false; button.textContent = "إرسال إلى الدعم";
     }
