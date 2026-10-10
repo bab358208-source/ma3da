@@ -2724,9 +2724,23 @@
       💬 التواصل مع الدعم
     </button>
 
-
   </div>
 
+  <div class="card" id="operatorSupportTicketForm">
+    <h2>إرسال طلب إلى فريق الدعم</h2>
+    <label for="operatorSupportCategory">نوع الطلب</label>
+    <select id="operatorSupportCategory" class="form-control">
+      <option value="مشكلة في المعدة">مشكلة في المعدة</option>
+      <option value="مشكلة في الطلبات">مشكلة في الطلبات</option>
+      <option value="مشكلة في الحساب">مشكلة في الحساب</option>
+      <option value="استفسار">استفسار</option>
+      <option value="بلاغ">بلاغ</option>
+    </select>
+    <label for="operatorSupportMessage">تفاصيل المشكلة</label>
+    <textarea id="operatorSupportMessage" rows="4" placeholder="اكتب تفاصيل المشكلة أو استفسارك هنا" style="width:100%;margin:8px 0;padding:12px;border-radius:10px;box-sizing:border-box"></textarea>
+    <button type="button" id="operatorSupportSubmitBtn" class="main-btn" data-ma3da-support-submit="operator">إرسال إلى الدعم</button>
+    <p id="operatorSupportFeedback" role="status" aria-live="polite"></p>
+  </div>
 
 </section>
 
@@ -3686,6 +3700,20 @@
 
   </div>
 
+  <div class="card" id="customerSupportTicketForm">
+    <h2>إرسال طلب إلى فريق الدعم</h2>
+    <label for="customerSupportCategory">نوع الطلب</label>
+    <select id="customerSupportCategory" class="form-control">
+      <option value="مشكلة في الطلب">مشكلة في الطلب</option>
+      <option value="مشكلة في الحساب">مشكلة في الحساب</option>
+      <option value="استفسار">استفسار</option>
+      <option value="بلاغ">بلاغ</option>
+    </select>
+    <label for="customerSupportMessage">تفاصيل المشكلة</label>
+    <textarea id="customerSupportMessage" rows="4" placeholder="اكتب تفاصيل المشكلة أو استفسارك هنا" style="width:100%;margin:8px 0;padding:12px;border-radius:10px;box-sizing:border-box"></textarea>
+    <button type="button" id="customerSupportSubmitBtn" class="main-btn" data-ma3da-support-submit="customer">إرسال إلى الدعم</button>
+    <p id="customerSupportFeedback" role="status" aria-live="polite"></p>
+  </div>
 
 </section>
 
@@ -5362,50 +5390,24 @@
 
 
 
-  window.ma3daFirebaseReady =
-    authReady.then(() => {
+  // Firebase readiness means initialization is complete, not that the
+  // current user is permanently the user observed on the first page load.
+  window.ma3daFirebaseReady = authReady.then(() => true);
 
-      return new Promise(resolve => {
+  // Always return the live Auth user. The old implementation returned the
+  // initial onAuthStateChanged result forever (often null), breaking all roles.
+  window.ma3daGetCurrentUser = async () => {
+    await authReady;
+    if (auth.currentUser) return auth.currentUser;
 
-
-        const unsubscribe =
-          onAuthStateChanged(
-            auth,
-            user => {
-
-
-              unsubscribe();
-
-
-              console.log(
-                "Firebase Auth جاهز:",
-                user
-                  ? user.uid
-                  : "لا يوجد مستخدم"
-              );
-
-
-              resolve(user);
-
-
-            }
-          );
-
-
+    return await new Promise(resolve => {
+      let unsubscribe = null;
+      unsubscribe = onAuthStateChanged(auth, user => {
+        if (unsubscribe) unsubscribe();
+        resolve(user || null);
       });
-
-
     });
-
-
-
-  window.ma3daGetCurrentUser =
-    async () => {
-
-      return await
-        window.ma3daFirebaseReady;
-
-    };
+  };
 
 
 
@@ -5777,24 +5779,20 @@ window.ma3daOrderBy =
 
 
 
+        const authMessages = {
+          "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+          "auth/wrong-password": "كلمة المرور غير صحيحة.",
+          "auth/user-not-found": "لا يوجد حساب بهذا البريد الإلكتروني.",
+          "auth/invalid-email": "صيغة البريد الإلكتروني غير صحيحة.",
+          "auth/too-many-requests": "تمت محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.",
+          "auth/network-request-failed": "تحقق من اتصال الإنترنت ثم حاول مرة أخرى.",
+          "auth/user-disabled": "هذا الحساب معطّل. تواصل مع الدعم.",
+          "auth/operation-not-allowed": "تسجيل الدخول بالبريد وكلمة المرور غير مفعّل في Firebase Authentication."
+        };
         alert(
-
           "تعذر تسجيل الدخول.\n\n" +
-
-          "رمز الخطأ: " +
-
-          (
-            error.code
-            ||
-            "غير معروف"
-          ) +
-
-          "\n\n" +
-
-          "رسالة الخطأ:\n" +
-
-          error.message
-
+          (authMessages[error.code] || error.message || "حدث خطأ غير معروف.") +
+          "\n\nرمز الخطأ: " + (error.code || "غير معروف")
         );
 
 
