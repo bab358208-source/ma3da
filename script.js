@@ -12400,3 +12400,281 @@ document.addEventListener("click", function(event){
   openSupportScreen("supportLoginScreen");
  
 });
+
+/* =========================================================
+   MA3DA — MULTI-EQUIPMENT MANAGEMENT
+   Added without changing requests/chat paths or existing roles.
+   Firestore collection: equipment
+   Legacy equipment/{uid} records remain supported.
+========================================================= */
+(function installMa3daEquipmentManager(){
+  if (window.__ma3daEquipmentManagerInstalled) return;
+  window.__ma3daEquipmentManagerInstalled = true;
+
+  let managerSelectedEquipmentId = null;
+  let managerSelectedEquipmentData = null;
+  let managerEquipmentCache = [];
+  let managerImageData = "";
+
+  const managerStyle = `
+  #ma3daEquipmentManagerScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
+  #ma3daEquipmentManagerScreen .mam-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  #ma3daEquipmentManagerScreen h2,#ma3daEquipmentManagerScreen h3{margin:0 0 10px}
+  #ma3daEquipmentManagerScreen .mam-muted{color:#666;font-size:14px;line-height:1.7}
+  #ma3daEquipmentManagerScreen .mam-card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+  #ma3daEquipmentManagerScreen .mam-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #ma3daEquipmentManagerScreen .mam-field{display:flex;flex-direction:column;gap:6px;margin:8px 0;font-size:14px}
+  #ma3daEquipmentManagerScreen .mam-field input,#ma3daEquipmentManagerScreen .mam-field select{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #ddd2b8;border-radius:10px;padding:9px;background:#fff;font:inherit;color:#171717}
+  #ma3daEquipmentManagerScreen .mam-btn{border:0;border-radius:10px;padding:11px 14px;min-height:42px;font:inherit;font-weight:700;cursor:pointer}
+  #ma3daEquipmentManagerScreen .mam-primary{background:#c49a35;color:#171717}
+  #ma3daEquipmentManagerScreen .mam-secondary{background:#f2ead8;color:#171717}
+  #ma3daEquipmentManagerScreen .mam-danger{background:#fbe7e4;color:#8d1b12}
+  #ma3daEquipmentManagerScreen .mam-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  #ma3daEquipmentManagerScreen .mam-equipment{display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start}
+  #ma3daEquipmentManagerScreen .mam-photo{width:100px;height:86px;object-fit:cover;border-radius:12px;background:#f2ead8}
+  #ma3daEquipmentManagerScreen .mam-status{display:inline-block;border-radius:20px;background:#f2ead8;padding:4px 9px;font-size:12px;margin:4px 0}
+  #ma3daEquipmentManagerScreen .mam-empty{text-align:center;padding:24px 12px;color:#666}
+  #ma3daEquipmentManagerScreen .mam-preview{max-width:180px;max-height:140px;object-fit:contain;border-radius:12px;display:none;margin-top:8px}
+  @media(max-width:520px){#ma3daEquipmentManagerScreen .mam-grid{grid-template-columns:1fr}#ma3daEquipmentManagerScreen .mam-equipment{grid-template-columns:82px 1fr}#ma3daEquipmentManagerScreen .mam-photo{width:82px;height:76px}#ma3daEquipmentManagerScreen .mam-top{align-items:flex-start;flex-direction:column}}
+  `;
+
+  function managerEscape(value){
+    return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  }
+
+  function managerGetScreen(){
+    let screen = document.getElementById("ma3daEquipmentManagerScreen");
+    if(screen) return screen;
+    if(!document.getElementById("ma3daEquipmentManagerStyles")){
+      const style = document.createElement("style");
+      style.id = "ma3daEquipmentManagerStyles";
+      style.textContent = managerStyle;
+      document.head.appendChild(style);
+    }
+    screen = document.createElement("section");
+    screen.id = "ma3daEquipmentManagerScreen";
+    screen.className = "screen";
+    screen.innerHTML = `
+      <div class="mam-top"><div><h2>معداتي</h2><div class="mam-muted">إضافة معداتك وتعديل بياناتها وإيقاف المعدات التي لم تعد ترغب بعرضها.</div></div><button type="button" class="mam-btn mam-secondary" id="mamBackBtn">رجوع</button></div>
+      <div class="mam-actions"><button type="button" class="mam-btn mam-primary" id="mamAddBtn">＋ إضافة معدة جديدة</button><button type="button" class="mam-btn mam-secondary" id="mamRefreshBtn">تحديث القائمة</button></div>
+      <div id="mamEquipmentList"><div class="mam-empty">جارٍ تحميل المعدات…</div></div>
+      <div class="mam-card" id="mamEditorCard" style="display:none">
+        <h3 id="mamEditorTitle">إضافة معدة</h3>
+        <p class="mam-muted" id="mamEditorNote">ستُحفظ المعدة الجديدة بحالة قيد المراجعة.</p>
+        <div class="mam-grid">
+          <label class="mam-field">نوع المعدة<input id="mamType" maxlength="80" required placeholder="مثال: بوكلين"></label>
+          <label class="mam-field">الموديل<input id="mamModel" maxlength="100" required placeholder="مثال: CAT 320"></label>
+          <label class="mam-field">سنة الصنع<input id="mamYear" inputmode="numeric" maxlength="4" required placeholder="2022"></label>
+          <label class="mam-field">المدينة<input id="mamCity" maxlength="80" required placeholder="الرياض"></label>
+          <label class="mam-field">رقم المعدة / اللوحة<input id="mamPlate" maxlength="60" placeholder="اختياري"></label>
+          <label class="mam-field">السعر بالساعة (ريال)<input id="mamPrice" type="number" min="1" step="1" required placeholder="250"></label>
+          <label class="mam-field">حالة التوفر<select id="mamAvailability"><option value="available">متاحة</option><option value="unavailable">غير متاحة</option></select></label>
+          <label class="mam-field">صورة المعدة<input id="mamImageFile" type="file" accept="image/*"><img class="mam-preview" id="mamImagePreview" alt="معاينة صورة المعدة"></label>
+        </div>
+        <div class="mam-actions"><button type="button" class="mam-btn mam-primary" id="mamSaveBtn">حفظ</button><button type="button" class="mam-btn mam-secondary" id="mamCancelEditBtn">إلغاء</button></div>
+      </div>`;
+    const host = document.querySelector("main") || document.body;
+    host.appendChild(screen);
+    screen.querySelector("#mamBackBtn").addEventListener("click",()=>{
+      managerShowScreen("operatorHomeScreen");
+    });
+    screen.querySelector("#mamAddBtn").addEventListener("click",()=>managerOpenEditor(null));
+    screen.querySelector("#mamRefreshBtn").addEventListener("click",managerLoadEquipment);
+    screen.querySelector("#mamCancelEditBtn").addEventListener("click",()=>{screen.querySelector("#mamEditorCard").style.display="none";});
+    screen.querySelector("#mamSaveBtn").addEventListener("click",managerSaveEquipment);
+    screen.querySelector("#mamImageFile").addEventListener("change", async event=>{
+      const file = event.target.files && event.target.files[0];
+      managerImageData = "";
+      const preview = screen.querySelector("#mamImagePreview");
+      if(!file){preview.style.display="none";return;}
+      if(!file.type.startsWith("image/")){alert("اختر ملف صورة صالحًا.");event.target.value="";return;}
+      try{
+        if(typeof resizeOperatorImage === "function") managerImageData = await resizeOperatorImage(file);
+        else managerImageData = await managerReadImage(file);
+        preview.src = managerImageData;
+        preview.style.display = "block";
+      }catch(error){console.error("تعذر تجهيز صورة المعدة:",error);alert("تعذر قراءة الصورة. جرّب صورة أخرى.");}
+    });
+    screen.querySelector("#mamEquipmentList").addEventListener("click", async event=>{
+      const button = event.target.closest("button[data-mam-action]");
+      if(!button) return;
+      const id = button.dataset.id;
+      const item = managerEquipmentCache.find(row=>row.id===id);
+      if(!item) return;
+      if(button.dataset.mamAction === "edit") managerOpenEditor(item);
+      if(button.dataset.mamAction === "toggle") await managerToggleAvailability(item);
+      if(button.dataset.mamAction === "cancel") await managerCancelEquipment(item);
+    });
+    return screen;
+  }
+
+  function managerReadImage(file){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload=()=>resolve(String(reader.result||""));
+      reader.onerror=reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function managerCurrentUser(){
+    if(window.ma3daFirebaseReady) await window.ma3daFirebaseReady;
+    return window.ma3daGetCurrentUser ? await window.ma3daGetCurrentUser() : window.ma3daAuth?.currentUser || null;
+  }
+
+  async function managerLoadEquipment(){
+    const screen = managerGetScreen();
+    const list = screen.querySelector("#mamEquipmentList");
+    list.innerHTML = '<div class="mam-empty">جارٍ تحميل المعدات…</div>';
+    try{
+      const user = await managerCurrentUser();
+      if(!user) throw new Error("يجب تسجيل الدخول أولًا.");
+      if(!window.ma3daDB || typeof window.ma3daGetDocs !== "function" || typeof window.ma3daCollection !== "function") throw new Error("اتصال قاعدة البيانات غير جاهز.");
+      const snapshot = await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"equipment"));
+      const rows=[];
+      snapshot.forEach(docSnap=>{
+        const data=docSnap.data()||{};
+        // Support both the older equipment/{uid} record and newer individual equipment documents.
+        if(data.ownerId===user.uid || docSnap.id===user.uid){
+          rows.push({id:docSnap.id,...data});
+        }
+      });
+      managerEquipmentCache=rows;
+      if(!rows.length){list.innerHTML='<div class="mam-card mam-empty">لا توجد معدات مسجلة حتى الآن. اضغط «إضافة معدة جديدة» للبدء.</div>';return;}
+      list.innerHTML=rows.map(item=>{
+        const cancelled=item.equipmentStatus==="cancelled";
+        const availability=item.availability==="available"&&!cancelled;
+        const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.verificationStatus==="verified"?"موثقة":"قيد المراجعة");
+        const photo=item.image?`<img class="mam-photo" src="${managerEscape(item.image)}" alt="صورة المعدة">`:'<div class="mam-photo" style="display:flex;align-items:center;justify-content:center">🚜</div>';
+        return `<article class="mam-card"><div class="mam-equipment">${photo}<div><h3>${managerEscape(item.type||"معدة")}${item.model?" — "+managerEscape(item.model):""}</h3><div class="mam-muted">السنة: ${managerEscape(item.year||"—")} · المدينة: ${managerEscape(item.city||"—")}</div><div class="mam-muted">رقم المعدة: ${managerEscape(item.plateNumber||item.equipmentNumber||"غير مسجل")}</div><div class="mam-muted">السعر: ${managerEscape(item.hourlyPrice||0)} ريال/ساعة</div><span class="mam-status">${cancelled?"ملغاة":(availability?"متاحة":"غير متاحة")}</span> <span class="mam-status">${managerEscape(review)}</span></div></div><div class="mam-actions"><button type="button" class="mam-btn mam-secondary" data-mam-action="edit" data-id="${managerEscape(item.id)}">تعديل</button>${cancelled?"":`<button type="button" class="mam-btn mam-secondary" data-mam-action="toggle" data-id="${managerEscape(item.id)}">${availability?"جعلها غير متاحة":"جعلها متاحة"}</button><button type="button" class="mam-btn mam-danger" data-mam-action="cancel" data-id="${managerEscape(item.id)}">إلغاء المعدة</button>`}</div></article>`;
+      }).join("");
+    }catch(error){
+      console.error("تعذر تحميل قائمة المعدات:",error);
+      list.innerHTML=`<div class="mam-card mam-empty">تعذر تحميل المعدات. ${managerEscape(error.message||"")}</div>`;
+    }
+  }
+
+  function managerOpenEditor(item){
+    const screen=managerGetScreen();
+    managerSelectedEquipmentId=item?item.id:null;
+    managerSelectedEquipmentData=item||null;
+    managerImageData=item?.image||"";
+    screen.querySelector("#mamEditorTitle").textContent=item?"تعديل بيانات المعدة":"إضافة معدة جديدة";
+    screen.querySelector("#mamEditorNote").textContent=item?"سيُرسل التعديل إلى موظفي الدعم للمراجعة، ولن تُستبدل البيانات الحالية قبل الموافقة.":"ستُضاف المعدة بحالة قيد المراجعة حتى يتم التحقق منها.";
+    const values={mamType:item?.type||"",mamModel:item?.model||"",mamYear:item?.year||"",mamCity:item?.city||"",mamPlate:item?.plateNumber||item?.equipmentNumber||"",mamPrice:item?.hourlyPrice||"",mamAvailability:item?.availability||"available"};
+    Object.entries(values).forEach(([id,value])=>{const field=screen.querySelector("#"+id);if(field)field.value=value;});
+    const preview=screen.querySelector("#mamImagePreview");
+    if(managerImageData){preview.src=managerImageData;preview.style.display="block";}else{preview.removeAttribute("src");preview.style.display="none";}
+    screen.querySelector("#mamImageFile").value="";
+    screen.querySelector("#mamEditorCard").style.display="block";
+    screen.querySelector("#mamEditorCard").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  async function managerSaveEquipment(){
+    const screen=managerGetScreen();
+    const button=screen.querySelector("#mamSaveBtn");
+    const type=screen.querySelector("#mamType").value.trim();
+    const model=screen.querySelector("#mamModel").value.trim();
+    const year=screen.querySelector("#mamYear").value.trim();
+    const city=screen.querySelector("#mamCity").value.trim();
+    const plateNumber=screen.querySelector("#mamPlate").value.trim();
+    const hourlyPrice=Number(screen.querySelector("#mamPrice").value||0);
+    const availability=screen.querySelector("#mamAvailability").value;
+    if(!type||!model||!year||!city||hourlyPrice<=0){alert("أكمل نوع المعدة والموديل والسنة والمدينة والسعر الصحيح.");return;}
+    if(!window.ma3daAddDoc||!window.ma3daCollection||!window.ma3daSetDoc){alert("أدوات حفظ المعدات غير جاهزة. أعد تحميل الصفحة.");return;}
+    button.disabled=true;button.textContent="جارٍ الحفظ…";
+    try{
+      const user=await managerCurrentUser();
+      if(!user)throw new Error("يجب تسجيل الدخول أولًا.");
+      const now=Date.now();
+      const base={type,model,year,city,plateNumber,hourlyPrice,availability,image:managerImageData||"",ownerId:user.uid,ownerEmail:user.email||"",updatedAt:now};
+      if(managerSelectedEquipmentId){
+        const existing=managerSelectedEquipmentData||{};
+        const pendingChanges={...base,requestedAt:now,requestedBy:user.uid};
+        const ref=window.ma3daDoc(window.ma3daDB,"equipment",managerSelectedEquipmentId);
+        await window.ma3daSetDoc(ref,{...existing,ownerId:user.uid,ownerEmail:user.email||existing.ownerEmail||"",pendingChanges,editStatus:"pending",editRequestedAt:now},{merge:true});
+        alert("تم إرسال التعديلات إلى موظفي الدعم للمراجعة. ستبقى البيانات الحالية كما هي حتى الموافقة.");
+      }else{
+        await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,"equipment"),{...base,createdAt:now,verificationStatus:"pending",equipmentStatus:"active",editStatus:"none"});
+        alert("تمت إضافة المعدة وإرسالها للمراجعة.");
+      }
+      screen.querySelector("#mamEditorCard").style.display="none";
+      await managerLoadEquipment();
+      if(typeof displayMyEquipment==="function") await displayMyEquipment();
+    }catch(error){
+      console.error("تعذر حفظ المعدة:",error);
+      alert("تعذر حفظ بيانات المعدة. تأكد من الاتصال وصلاحيات Firebase.");
+    }finally{button.disabled=false;button.textContent="حفظ";}
+  }
+
+  async function managerToggleAvailability(item){
+    try{
+      const user=await managerCurrentUser();
+      if(!user)throw new Error("يجب تسجيل الدخول أولًا.");
+      const ref=window.ma3daDoc(window.ma3daDB,"equipment",item.id);
+      await window.ma3daUpdateDoc(ref,{availability:item.availability==="available"?"unavailable":"available",updatedAt:Date.now(),ownerId:user.uid});
+      await managerLoadEquipment();
+      if(typeof displayMyEquipment==="function") await displayMyEquipment();
+    }catch(error){console.error("تعذر تغيير توفر المعدة:",error);alert("تعذر تغيير حالة المعدة.");}
+  }
+
+  async function managerCancelEquipment(item){
+    if(!confirm("هل تريد إلغاء هذه المعدة؟ سيتم إيقافها مع الاحتفاظ بسجلها والطلبات السابقة."))return;
+    try{
+      const user=await managerCurrentUser();
+      if(!user)throw new Error("يجب تسجيل الدخول أولًا.");
+      const ref=window.ma3daDoc(window.ma3daDB,"equipment",item.id);
+      await window.ma3daUpdateDoc(ref,{availability:"unavailable",equipmentStatus:"cancelled",cancelledAt:Date.now(),updatedAt:Date.now(),ownerId:user.uid});
+      await managerLoadEquipment();
+      if(typeof displayMyEquipment==="function") await displayMyEquipment();
+      alert("تم إيقاف المعدة مع الاحتفاظ بسجلها.");
+    }catch(error){console.error("تعذر إلغاء المعدة:",error);alert("تعذر إلغاء المعدة.");}
+  }
+
+  // Keep future navigation compatible with this screen even though the original
+  // showScreen() captured a static NodeList before this screen was created.
+  if(typeof showScreen === "function" && !window.__ma3daDynamicScreenNavigation){
+    const previousShowScreen = showScreen;
+    showScreen = function(id){
+      document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
+      previousShowScreen(id);
+    };
+    window.__ma3daDynamicScreenNavigation = true;
+  }
+
+  function managerShowScreen(id){
+    document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
+    const target=document.getElementById(id);
+    if(target)target.classList.add("active");
+    window.scrollTo(0,0);
+  }
+
+  function managerOpen(){
+    managerGetScreen();
+    managerShowScreen("ma3daEquipmentManagerScreen");
+    managerLoadEquipment();
+  }
+
+  // Replace the old single-equipment editor button handler so it cannot overwrite equipment/{uid}.
+  function managerBindOwnerButton(){
+    const oldButton=document.getElementById("operatorEditEquipmentBtn");
+    if(oldButton && !oldButton.dataset.ma3daManagerBound){
+      const newButton=oldButton.cloneNode(true);
+      newButton.dataset.ma3daManagerBound="true";
+      oldButton.replaceWith(newButton);
+      newButton.addEventListener("click",event=>{event.preventDefault();managerOpen();});
+    }
+    const oldSave=document.getElementById("saveOperatorEquipmentBtn");
+    if(oldSave && !oldSave.dataset.ma3daManagerBound){
+      const newSave=oldSave.cloneNode(true);
+      newSave.dataset.ma3daManagerBound="true";
+      oldSave.replaceWith(newSave);
+      newSave.addEventListener("click",event=>{event.preventDefault();managerOpen();});
+    }
+  }
+
+  // Expose a safe entry point and bind after the current page DOM has been created.
+  window.openMa3daEquipmentManager=managerOpen;
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",managerBindOwnerButton,{once:true});
+  else managerBindOwnerButton();
+})();
