@@ -11314,7 +11314,11 @@ if (!user || !user.uid) {
 
   async function loadContractorProjects() {
     const list=document.getElementById('contractorProjectsList');if(!list)return;
-    const user=getContractorUser();if(!user){list.innerHTML='<div class="card">سجّل الدخول لعرض مشاريعك.</div>';return;}
+    const user = await getContractorUser();
+if (!user || !user.uid) {
+  list.innerHTML = '<div class="card">سجّل الدخول لعرض مشاريعك.</div>';
+  return;
+}
     list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
     try{
       const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));
