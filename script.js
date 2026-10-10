@@ -10509,7 +10509,14 @@ localStorage.setItem("selectedRole", "contractor");
       }
       contractorEditingProjectId=null;contractorSelectedProject=null;
       contractorShowScreen('contractorProjectsScreen');contractorSetProjectFilter(returnProjectFilter);
-    }catch(error){console.error('Save contractor project error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لحفظ أو تعديل المشاريع في Firebase.':'تعذر حفظ المشروع. تحقق من الاتصال وقواعد Firebase.');}
+}catch(error){
+  console.error("Save contractor project error:", error);
+
+  alert(
+    "رمز الخطأ: " + (error?.code || "غير معروف") +
+    "\nالتفاصيل: " + (error?.message || String(error))
+  );
+}
     finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='حفظ المشروع';}
   });
 
