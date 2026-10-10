@@ -319,6 +319,15 @@
       🏗️ أنا مقاول أو صاحب مشروع
     </button>
 
+    <button
+      id="supportStaffBtn"
+      class="support-subtle-link"
+      type="button"
+      style="margin-top:16px;background:transparent;border:0;text-decoration:underline;color:#6b5b37;width:100%;"
+    >
+      صفحة موظفي الدعم
+    </button>
+
   </div>
 
 </section>
@@ -5138,6 +5147,77 @@
      Firebase
 ===================================================== -->
 
+
+
+<!-- =====================================================
+     بوابة موظفي الدعم — تمت استعادة واجهتها
+===================================================== -->
+<style id="ma3da-support-portal-styles">
+.support-screen{direction:rtl;text-align:right;max-width:1000px;margin:0 auto;padding:16px;color:#171717}
+.support-wrap{max-width:960px;margin:0 auto}
+.support-card,.support-panel{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+.support-title{margin:8px 0}.support-subtitle{color:#6b6254}
+.support-screen label{display:block;font-weight:600;margin:12px 0 6px}
+.support-input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
+.support-btn{font:inherit;cursor:pointer;border:1px solid #dfd2b4;border-radius:10px;padding:10px 14px;background:#f8f1df;color:#171717;margin:4px}
+.support-primary{background:#b58a36;color:white;border-color:#b58a36}.support-danger{background:#fff0ed;color:#8b2118}
+.support-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.support-brand{font-size:1.2rem;font-weight:700}.support-badge{display:inline-block;margin-top:5px;padding:4px 9px;border-radius:20px;background:#f3e8cc}
+.support-nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.support-nav [data-support-section].active{background:#b58a36;color:white}
+.support-section{display:none}.support-section.active{display:block}.support-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.support-stat{background:#fff;border:1px solid #eadfc5;border-radius:12px;padding:12px}.support-stat strong{display:block;font-size:1.35rem;margin-top:6px}
+.support-row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:white;border:1px solid #eee4d0;border-radius:10px;padding:12px;margin:8px 0;overflow-wrap:anywhere}
+.support-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}
+</style>
+<section id="supportLoginScreen" class="screen support-screen">
+  <div class="support-wrap"><div class="support-card">
+    <div class="hero-icon">🛟</div><h1 class="support-title">دخول موظفي الدعم</h1>
+    <p class="support-subtitle">هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.</p>
+    <label for="supportEmailInput">البريد الإلكتروني</label><input id="supportEmailInput" class="support-input" type="email" autocomplete="username" placeholder="بريد الموظف">
+    <label for="supportPasswordInput">كلمة المرور</label><input id="supportPasswordInput" class="support-input" type="password" autocomplete="current-password" placeholder="كلمة المرور">
+    <p id="supportLoginError" role="status" aria-live="polite"></p>
+    <button id="supportLoginBtn" class="support-btn support-primary" type="button">دخول الموظف</button>
+    <button id="supportForgotBtn" class="support-btn" type="button">نسيت كلمة المرور؟</button>
+    <button id="supportBackBtn" class="support-btn" type="button">العودة</button>
+  </div></div>
+</section>
+<section id="supportForgotScreen" class="screen support-screen">
+  <div class="support-wrap"><div class="support-card"><h1>استعادة كلمة مرور موظف الدعم</h1>
+    <label for="supportResetEmailInput">البريد الإلكتروني</label><input id="supportResetEmailInput" class="support-input" type="email" placeholder="بريد الموظف">
+    <p id="supportResetMessage" role="status" aria-live="polite"></p>
+    <button id="supportResetBtn" class="support-btn support-primary" type="button">إرسال رابط الاستعادة</button>
+    <button id="supportForgotBackBtn" class="support-btn" type="button">العودة لتسجيل الدخول</button>
+  </div></div>
+</section>
+<section id="supportDashboardScreen" class="screen support-screen">
+  <div class="support-wrap">
+    <div class="support-panel support-topbar"><div><div class="support-brand">مِعدة | مركز الدعم</div><span id="supportEmployeeEmail" class="support-badge">موظف دعم</span></div>
+      <div><button id="supportRefreshBtn" class="support-btn" type="button">تحديث</button><button id="supportLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
+    </div>
+    <div class="support-stats">
+      <div class="support-stat">طلبات الدعم<strong id="supportStatTickets">0</strong></div>
+      <div class="support-stat">العملاء<strong id="supportStatCustomers">0</strong></div>
+      <div class="support-stat">أصحاب المعدات<strong id="supportStatOperators">0</strong></div>
+      <div class="support-stat">الطلبات الحالية<strong id="supportStatOrders">0</strong></div>
+    </div>
+    <div class="support-nav">
+      <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم</button>
+      <button class="support-btn" data-support-section="customers" type="button">بيانات العملاء</button>
+      <button class="support-btn" data-support-section="operators" type="button">أصحاب المعدات والمعدات</button>
+      <button class="support-btn" data-support-section="orders" type="button">الطلبات الحالية</button>
+      <button class="support-btn" data-support-section="chats" type="button">محادثات الدعم</button>
+      <button class="support-btn" data-support-section="reports" type="button">البلاغات والمشاكل</button>
+      <button class="support-btn" data-support-section="settings" type="button">إعدادات الموظف</button>
+    </div>
+    <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم</h2><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionCustomers" class="support-section support-panel"><h2>بيانات العملاء</h2><div id="supportCustomersList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionOperators" class="support-section support-panel"><h2>أصحاب المعدات والمعدات</h2><div id="supportOperatorsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionOrders" class="support-section support-panel"><h2>الطلبات الحالية</h2><div id="supportOrdersList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionChats" class="support-section support-panel"><h2>محادثات الدعم</h2><div id="supportChatsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionReports" class="support-section support-panel"><h2>البلاغات والمشاكل</h2><div id="supportReportsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionSettings" class="support-section support-panel"><h2>إعدادات الموظف</h2><p>البريد: <strong id="supportSettingsEmail">—</strong></p><p>الصلاحية: <strong id="supportSettingsRole">موظف دعم</strong></p><p>تُدار صلاحيات الموظفين من مجموعة <code>supportStaff</code> في Firebase.</p></div>
+  </div>
+</section>
 
 <script type="module">
 
