@@ -5098,6 +5098,8 @@ async function openOperatorDashboard(){
  
     const equipment =
       await getOperatorEquipment();
+    const operatorUser =
+      await getOperatorCurrentUser();
  
     if(!equipment){
  
@@ -5291,7 +5293,9 @@ async function loadOperatorNewRequests(){
  
         if(
           data.status === "searching" &&
-          data.equipment === equipment.type
+          (data.equipmentOwnerId
+            ? data.equipmentOwnerId === operatorUser?.uid
+            : data.equipment === equipment.type)
         ){
  
           requests.push({
@@ -10418,336 +10422,184 @@ localStorage.setItem("selectedRole", "contractor");
  
  
   /* =========================================================
-     SUBMIT CONTRACTOR REQUEST
+     CONTRACTOR PROJECT + NEARBY EQUIPMENT FLOW
+     New flow: save a project first, then choose a nearby machine.
+     Requests still use requests/{requestId}; chat path is unchanged.
   ========================================================= */
- 
-  const submitContractorRequestBtn =
-    document.getElementById(
-      "submitContractorRequestBtn"
-    );
- 
-  if (submitContractorRequestBtn) {
- 
-    submitContractorRequestBtn.addEventListener(
-      "click",
-      async function () {
- 
-        const user =
-          getContractorUser();
- 
-        if (!user) {
- 
-          alert(
-            "يجب تسجيل الدخول أولاً."
-          );
- 
-          return;
-        }
- 
- 
-        const profile =
-          contractorGetProfile();
- 
- 
-        const location =
-          document
-            .getElementById(
-              "contractorRequestLocation"
-            )
-            ?.value
-            ?.trim();
- 
-        const equipment =
-          document
-            .getElementById(
-              "contractorEquipmentType"
-            )
-            ?.value;
- 
-        const duration =
-          document
-            .getElementById(
-              "contractorDuration"
-            )
-            ?.value;
- 
-        const operator =
-          document
-            .getElementById(
-              "contractorOperator"
-            )
-            ?.value;
- 
-        const notes =
-          document
-            .getElementById(
-              "contractorNotes"
-            )
-            ?.value
-            ?.trim();
- 
- 
-        if (!location) {
- 
-          alert(
-            "اكتب موقع العمل."
-          );
- 
-          return;
-        }
- 
- 
-        if (!equipment) {
- 
-          alert(
-            "اختر نوع المعدة."
-          );
- 
-          return;
-        }
- 
- 
-        if (!duration) {
- 
-          alert(
-            "اختر مدة العمل."
-          );
- 
-          return;
-        }
- 
- 
-        if (!operator) {
- 
-          alert(
-            "اختر المشغل."
-          );
- 
-          return;
-        }
- 
- 
-        /*
-          الأسعار نفسها المستخدمة
-          في نظام مِعدة الحالي.
-        */
- 
-        const hourlyPrices = {
- 
-          "بوكلين": 250,
-          "شيول": 220,
-          "قلاب": 180,
-          "كرين": 350,
-          "حفار": 250,
-          "بلدوزر": 300
- 
-        };
- 
- 
-        const durationHours = {
- 
-          "ساعة واحدة": 1,
-          "4 ساعات": 4,
-          "8 ساعات": 8,
-          "يوم كامل": 10
- 
-        };
- 
- 
-        const hours =
-          durationHours[duration] ||
-          1;
- 
-        const hourlyPrice =
-          hourlyPrices[equipment] ||
-          0;
- 
-        const price =
-          hourlyPrice * hours;
- 
- 
-        try {
- 
-          submitContractorRequestBtn.disabled =
-            true;
- 
-          submitContractorRequestBtn.textContent =
-            "جاري إرسال الطلب...";
- 
- 
-          const requestData = {
- 
-            location: location,
- 
-            equipment: equipment,
- 
-            duration: duration,
- 
-            durationHours: hours,
- 
-            operator: operator,
- 
-            notes: notes,
- 
-            price: price,
- 
-            customerId: user.uid,
- 
-            customerEmail:
-              user.email || "",
- 
-            requesterId:
-              user.uid,
- 
-            requesterRole:
-              "contractor",
- 
-            requesterType:
-              "contractor",
- 
-            contractorId:
-              user.uid,
- 
-            contractorName:
-              profile?.name || "",
- 
-            contractorPhone:
-              profile?.phone || "",
- 
-            contractorCity:
-              profile?.city || "",
- 
-            contractorCompany:
-              profile?.company || "",
- 
-            status:
-              "searching",
- 
-            createdAt:
-              new Date()
- 
-          };
- 
- 
-          const requestsCollection =
-            window.ma3daCollection(
-              window.ma3daDB,
-              "requests"
-            );
- 
- 
-          const result =
-            await window.ma3daAddDoc(
-              requestsCollection,
-              requestData
-            );
- 
- 
-          contractorCurrentOrderId =
-            result.id;
- 
- 
-          contractorCurrentOrder = {
- 
-            id: result.id,
- 
-            ...requestData
- 
-          };
- 
- 
-          localStorage.setItem(
-            "contractorCurrentOrderId",
-            result.id
-          );
- 
- 
-          localStorage.setItem(
-            "contractorCurrentOrder",
-            JSON.stringify(
-              contractorCurrentOrder
-            )
-          );
- 
- 
-          alert(
-            "تم إرسال طلب المعدة بنجاح."
-          );
- 
- 
-          contractorShowScreen(
-            "contractorCurrentOrdersScreen"
-          );
- 
- 
-          await loadContractorCurrentOrders();
- 
- 
-        } catch (error) {
- 
-          console.error(
-            "Contractor request error:",
-            error
-          );
- 
-          if (
-            error?.code ===
-            "permission-denied"
-          ) {
- 
-            alert(
-              "ليس لديك صلاحية لإرسال الطلب. تحقق من قواعد Firebase."
-            );
- 
-          } else {
- 
-            alert(
-              "تعذر إرسال الطلب حالياً."
-            );
- 
-          }
- 
-        } finally {
- 
-          submitContractorRequestBtn.disabled =
-            false;
- 
-          submitContractorRequestBtn.textContent =
-            "إرسال طلب المعدة";
- 
-        }
- 
-      }
-    );
- 
+  let contractorSelectedProject = null;
+  let contractorProjectMap = null;
+  let contractorProjectMarker = null;
+  let contractorNearbyEquipmentCache = [];
+
+  function contractorLoadLeaflet(){
+    return new Promise((resolve,reject)=>{
+      if(window.L){resolve(window.L);return;}
+      const existing=document.querySelector('script[data-ma3da-leaflet]');
+      if(existing){existing.addEventListener('load',()=>resolve(window.L),{once:true});existing.addEventListener('error',reject,{once:true});return;}
+      const tag=document.createElement('script');tag.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';tag.async=true;tag.dataset.ma3daLeaflet='1';tag.onload=()=>window.L?resolve(window.L):reject(new Error('Leaflet unavailable'));tag.onerror=()=>reject(new Error('Map library failed'));document.head.appendChild(tag);
+    });
   }
- 
- 
-  /* =========================================================
-     CANCEL NEW REQUEST
-  ========================================================= */
- 
-  const cancelContractorRequestBtn =
-    document.getElementById(
-      "cancelContractorRequestBtn"
-    );
- 
-  if (cancelContractorRequestBtn) {
- 
-    cancelContractorRequestBtn.addEventListener(
-      "click",
-      function () {
- 
-        contractorShowScreen(
-          "contractorHomeScreen"
-        );
- 
+
+  async function contractorInitProjectMap(){
+    const mapEl=document.getElementById('contractorProjectMap');
+    if(!mapEl)return;
+    try{
+      const L=await contractorLoadLeaflet();
+      if(!contractorProjectMap){
+        contractorProjectMap=L.map(mapEl).setView([24.7136,46.6753],5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(contractorProjectMap);
+        contractorProjectMap.on('click',event=>contractorSetProjectCoordinates(event.latlng.lat,event.latlng.lng,true));
       }
-    );
- 
+      const lat=Number(document.getElementById('contractorProjectLat')?.value);
+      const lng=Number(document.getElementById('contractorProjectLng')?.value);
+      if(Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0){contractorProjectMap.setView([lat,lng],13);contractorSetProjectCoordinates(lat,lng,false);}
+      setTimeout(()=>contractorProjectMap.invalidateSize(),150);
+    }catch(error){
+      console.warn('Project map unavailable:',error);
+      mapEl.innerHTML='<div style="padding:18px">تعذر تحميل الخريطة. تأكد من الاتصال بالإنترنت، أو استخدم زر تحديد موقعي الحالي.</div>';
+    }
   }
- 
- 
+
+  function contractorSetProjectCoordinates(lat,lng,moveMap){
+    const latInput=document.getElementById('contractorProjectLat');
+    const lngInput=document.getElementById('contractorProjectLng');
+    if(latInput)latInput.value=Number(lat).toFixed(6);
+    if(lngInput)lngInput.value=Number(lng).toFixed(6);
+    if(window.L&&contractorProjectMap){
+      if(contractorProjectMarker)contractorProjectMarker.setLatLng([lat,lng]);
+      else contractorProjectMarker=window.L.marker([lat,lng]).addTo(contractorProjectMap);
+      if(moveMap)contractorProjectMap.setView([lat,lng],14);
+    }
+  }
+
+  const contractorNewProjectStartBtn=document.getElementById('contractorNewRequestBtn');
+  if(contractorNewProjectStartBtn){contractorNewProjectStartBtn.addEventListener('click',async()=>{
+    contractorSelectedProject=null;
+    ['contractorProjectName','contractorProjectCity','contractorProjectLocationText','contractorProjectLat','contractorProjectLng','contractorProjectNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const profile=contractorGetProfile();
+    const cityInput=document.getElementById('contractorProjectCity');if(cityInput&&profile?.city)cityInput.value=profile.city;
+    contractorShowScreen('contractorRequestScreen');
+    await contractorInitProjectMap();
+  });}
+
+  const contractorUseMyLocationBtn=document.getElementById('contractorUseMyLocationBtn');
+  if(contractorUseMyLocationBtn)contractorUseMyLocationBtn.addEventListener('click',()=>{
+    if(!navigator.geolocation){alert('تحديد الموقع غير مدعوم في هذا المتصفح.');return;}
+    contractorUseMyLocationBtn.disabled=true;contractorUseMyLocationBtn.textContent='جارٍ تحديد الموقع…';
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat=pos.coords.latitude,lng=pos.coords.longitude;contractorSetProjectCoordinates(lat,lng,true);
+      if(contractorProjectMap)contractorProjectMap.setView([lat,lng],14);
+      if(window.L&&!contractorProjectMap)contractorInitProjectMap().then(()=>contractorSetProjectCoordinates(lat,lng,true));
+      contractorUseMyLocationBtn.disabled=false;contractorUseMyLocationBtn.textContent='📍 استخدام موقعي الحالي';
+    },err=>{alert('تعذر تحديد الموقع. اسمح للمتصفح باستخدام الموقع أو اختر نقطة على الخريطة.');contractorUseMyLocationBtn.disabled=false;contractorUseMyLocationBtn.textContent='📍 استخدام موقعي الحالي';},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+  });
+
+  const submitContractorRequestBtn=document.getElementById('submitContractorRequestBtn');
+  if(submitContractorRequestBtn)submitContractorRequestBtn.addEventListener('click',async()=>{
+    const user=getContractorUser();if(!user){alert('يجب تسجيل الدخول أولاً.');return;}
+    const name=document.getElementById('contractorProjectName')?.value.trim();
+    const city=document.getElementById('contractorProjectCity')?.value.trim();
+    const address=document.getElementById('contractorProjectLocationText')?.value.trim()||'';
+    const lat=Number(document.getElementById('contractorProjectLat')?.value);
+    const lng=Number(document.getElementById('contractorProjectLng')?.value);
+    const notes=document.getElementById('contractorProjectNotes')?.value.trim()||'';
+    if(!name||!city){alert('اكتب اسم المشروع والمدينة.');return;}
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)||lat===0||lng===0){alert('حدد موقع المشروع على الخريطة أو استخدم موقعك الحالي.');return;}
+    if(!window.ma3daAddDoc||!window.ma3daCollection){alert('قاعدة البيانات غير جاهزة.');return;}
+    submitContractorRequestBtn.disabled=true;submitContractorRequestBtn.textContent='جارٍ حفظ المشروع…';
+    try{
+      const profile=contractorGetProfile()||{};const now=new Date();
+      const projectData={contractorId:user.uid,ownerId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCompany:profile.company||'',name,projectName:name,city,location:address||city,address,latitude:lat,longitude:lng,coordinates:{latitude:lat,longitude:lng},notes,status:'active',createdAt:now,updatedAt:now};
+      const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'projects'),projectData);
+      contractorSelectedProject={id:result.id,...projectData};
+      contractorShowScreen('contractorEquipmentPickerScreen');
+      const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=name;
+      const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${city}${address?' — '+address:''}`;
+      await loadContractorNearbyEquipment();
+    }catch(error){console.error('Create contractor project error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لحفظ المشاريع في Firebase. يلزم السماح للمقاول بحفظ مستنداته في projects.':'تعذر حفظ المشروع. تحقق من الاتصال وقواعد Firebase.');}
+    finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='حفظ المشروع واختيار المعدة';}
+  });
+
+  const cancelContractorRequestBtn=document.getElementById('cancelContractorRequestBtn');
+  if(cancelContractorRequestBtn)cancelContractorRequestBtn.addEventListener('click',()=>contractorShowScreen('contractorHomeScreen'));
+  const contractorPickerBackBtn=document.getElementById('contractorPickerBackBtn');
+  if(contractorPickerBackBtn)contractorPickerBackBtn.addEventListener('click',async()=>{contractorShowScreen('contractorProjectsScreen');await loadContractorProjects();});
+  const contractorRefreshEquipmentBtn=document.getElementById('contractorRefreshEquipmentBtn');
+  if(contractorRefreshEquipmentBtn)contractorRefreshEquipmentBtn.addEventListener('click',loadContractorNearbyEquipment);
+  const contractorEquipmentTypeSelect=document.getElementById('contractorEquipmentType');
+  if(contractorEquipmentTypeSelect)contractorEquipmentTypeSelect.addEventListener('change',renderContractorNearbyEquipment);
+
+  function contractorCoordinatesForEquipment(data){
+    const lat=Number(data.latitude??data.lat??data.locationLatitude??data.coordinates?.latitude??data.location?.latitude);
+    const lng=Number(data.longitude??data.lng??data.lon??data.locationLongitude??data.coordinates?.longitude??data.location?.longitude);
+    return Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0?{lat,lng}:null;
+  }
+  function contractorDistanceKm(a,b){
+    const rad=n=>n*Math.PI/180;const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng);
+    const q=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+    return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
+  }
+  async function loadContractorNearbyEquipment(){
+    const list=document.getElementById('contractorNearbyEquipmentList');if(!list)return;
+    if(!contractorSelectedProject){list.innerHTML='<div class="card">اختر مشروعًا أولاً.</div>';return;}
+    list.innerHTML='<div class="card">جارٍ تحميل المعدات…</div>';
+    try{
+      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment'));
+      const projectPoint={lat:Number(contractorSelectedProject.latitude),lng:Number(contractorSelectedProject.longitude)};
+      contractorNearbyEquipmentCache=[];
+      snap.forEach(docSnap=>{
+        const d=docSnap.data()||{};if(docSnap.id===getContractorUser()?.uid&&!d.ownerId)return;
+        const ownerId=d.ownerId||d.operatorId||d.userId||(docSnap.id!==getContractorUser()?.uid?docSnap.id:'');
+        const type=d.type||d.equipmentType||d.name||'';
+        const availability=d.availability||d.status||'';
+        if(d.equipmentStatus==='cancelled'||availability==='unavailable'||d.isAvailable===false||d.availability===false)return;
+        if(d.verificationStatus&&d.verificationStatus!=='verified'&&d.verificationStatus!=='approved')return;
+        const point=contractorCoordinatesForEquipment(d);
+        const distance=point?contractorDistanceKm(projectPoint,point):null;
+        const sameCity=String(d.city||'').trim().toLowerCase()===String(contractorSelectedProject.city||'').trim().toLowerCase() && !!d.city;
+        contractorNearbyEquipmentCache.push({id:docSnap.id,...d,ownerId,type,_distanceKm:distance,_sameCity:sameCity,_point:point});
+      });
+      contractorNearbyEquipmentCache.sort((a,b)=>{
+        if(a._distanceKm==null&&b._distanceKm!=null)return 1;if(a._distanceKm!=null&&b._distanceKm==null)return -1;
+        if(a._distanceKm==null&&b._distanceKm==null&&a._sameCity!==b._sameCity)return a._sameCity?-1:1;
+        return (a._distanceKm??999999)-(b._distanceKm??999999);
+      });
+      renderContractorNearbyEquipment();
+    }catch(error){console.error('Load nearby contractor equipment error:',error);list.innerHTML='<div class="card">تعذر تحميل المعدات. تحقق من صلاحيات قراءة مجموعة equipment في Firebase.</div>';}
+  }
+  function renderContractorNearbyEquipment(){
+    const list=document.getElementById('contractorNearbyEquipmentList');if(!list)return;
+    const filter=document.getElementById('contractorEquipmentType')?.value||'';
+    const rows=contractorNearbyEquipmentCache.filter(item=>!filter||item.type===filter||item.equipmentType===filter||item.name===filter);
+    if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد معدات مطابقة حالياً</h3><p>جرّب نوعًا آخر أو حدّث قائمة المعدات. تظهر المسافة عندما تكون إحداثيات المعدة محفوظة في ملف صاحبها.</p></div>';return;}
+    list.innerHTML=rows.map(item=>{
+      const distance=item._distanceKm==null?(item._sameCity?'في مدينة المشروع — الإحداثيات غير متاحة':'المسافة غير متاحة'): `${item._distanceKm.toFixed(1)} كم من المشروع`;
+      const title=[item.type||item.equipmentType||item.name||'معدة',item.model].filter(Boolean).join(' — ');
+      const price=Number(item.hourlyPrice||item.price||0);
+      const image=item.image||item.imageUrl||item.photo||'';
+      const location=item.city||item.location||'المدينة غير محددة';
+      return `<div class="contractor-equipment-card">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="main-btn" data-contractor-choose-equipment="${escapeContractorHtml(item.id)}">اختيار هذه المعدة وإرسال الطلب</button></div>`;
+    }).join('');
+  }
+  document.addEventListener('click',async event=>{
+    const button=event.target.closest('[data-contractor-choose-equipment]');if(!button)return;
+    const equipment=contractorNearbyEquipmentCache.find(row=>row.id===button.dataset.contractorChooseEquipment);if(!equipment||!contractorSelectedProject)return;
+    const user=getContractorUser();if(!user){alert('يجب تسجيل الدخول أولاً.');return;}
+    const duration=document.getElementById('contractorDuration')?.value||'ساعة واحدة';
+    const operator=document.getElementById('contractorOperator')?.value||'مع مشغل';
+    const notes=document.getElementById('contractorNotes')?.value.trim()||'';
+    const hoursMap={'ساعة واحدة':1,'4 ساعات':4,'8 ساعات':8,'يوم كامل':10};const hours=hoursMap[duration]||1;
+    const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);const price=hourlyPrice*hours;
+    button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
+    try{
+      const profile=contractorGetProfile()||{};const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name,projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration,durationHours:hours,operator,notes,price,hourlyPrice,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date()};
+      const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
+      contractorCurrentOrderId=result.id;contractorCurrentOrder={id:result.id,...requestData};localStorage.setItem('contractorCurrentOrderId',result.id);localStorage.setItem('contractorCurrentOrder',JSON.stringify(contractorCurrentOrder));
+      alert('تم إرسال طلبك لصاحب المعدة المختارة بنجاح.');contractorShowScreen('contractorCurrentOrdersScreen');await loadContractorCurrentOrders();
+    }catch(error){console.error('Send selected equipment request error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لإرسال الطلب في Firebase.':'تعذر إرسال الطلب حالياً.');}
+    finally{button.disabled=false;button.textContent='اختيار هذه المعدة وإرسال الطلب';}
+  });
+
   /* =========================================================
      LOAD CURRENT ORDERS
   ========================================================= */
@@ -11496,170 +11348,32 @@ localStorage.setItem("selectedRole", "contractor");
  
  
   async function loadContractorProjects() {
- 
-    const list =
-      document.getElementById(
-        "contractorProjectsList"
-      );
- 
-    if (!list) {
-      return;
-    }
- 
- 
-    const user =
-      getContractorUser();
- 
-    if (!user) {
-      return;
-    }
- 
- 
-    list.innerHTML = `
-      <div class="card">
-        <p>جاري تحميل المشاريع...</p>
-      </div>
-    `;
- 
- 
-    try {
- 
-      const requestsRef =
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        );
- 
- 
-      const snapshot =
-        await window.ma3daGetDocs(
-          requestsRef
-        );
- 
- 
-      const orders = [];
- 
- 
-      snapshot.forEach(
-        docSnap => {
- 
-          const data =
-            docSnap.data();
- 
- 
-          const requesterId =
-            data.contractorId ||
-            data.requesterId ||
-            data.customerId;
- 
- 
-          if (
-            requesterId === user.uid &&
-            (
-              data.requesterRole ===
-                "contractor" ||
-              data.requesterType ===
-                "contractor" ||
-              data.contractorId ===
-                user.uid
-            )
-          ) {
- 
-            orders.push({
- 
-              id: docSnap.id,
- 
-              ...data
- 
-            });
- 
-          }
- 
-        }
-      );
- 
- 
-      if (!orders.length) {
- 
-        list.innerHTML = `
-          <div class="card">
-            <h3>🏗️ لا توجد مشاريع</h3>
-            <p>
-              عند إنشاء طلبات معدات ستظهر هنا.
-            </p>
-          </div>
-        `;
- 
-        return;
-      }
- 
- 
-      list.innerHTML =
-        orders
-          .map(
-            order => `
- 
-              <div class="card">
- 
-                <h3>
-                  🏗️ مشروع
-                </h3>
- 
-                <p>
-                  🚜 ${escapeContractorHtml(
-                    order.equipment || "-"
-                  )}
-                </p>
- 
-                <p>
-                  📍 ${escapeContractorHtml(
-                    order.location || "-"
-                  )}
-                </p>
- 
-                <p>
-                  الحالة:
-                  <strong>
-                    ${getContractorStatusText(
-                      order.status
-                    )}
-                  </strong>
-                </p>
- 
-                <button
-                  type="button"
-                  class="main-btn"
-                  data-contractor-order-details="${order.id}"
-                >
-                  عرض الطلب
-                </button>
- 
-              </div>
- 
-            `
-          )
-          .join("");
- 
- 
-    } catch (error) {
- 
-      console.error(
-        "Contractor projects error:",
-        error
-      );
- 
-      list.innerHTML = `
-        <div class="card">
-          <p>تعذر تحميل المشاريع.</p>
-        </div>
-      `;
- 
-    }
- 
+    const list=document.getElementById('contractorProjectsList');if(!list)return;
+    const user=getContractorUser();if(!user)return;
+    list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
+    try{
+      const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));
+      const projects=[];snapshot.forEach(docSnap=>{const data=docSnap.data()||{};if((data.contractorId||data.ownerId||data.userId)===user.uid)projects.push({id:docSnap.id,...data});});
+      projects.sort((a,b)=>{const at=a.createdAt?.seconds??(a.createdAt instanceof Date?a.createdAt.getTime()/1000:Number(a.createdAt)||0);const bt=b.createdAt?.seconds??(b.createdAt instanceof Date?b.createdAt.getTime()/1000:Number(b.createdAt)||0);return bt-at;});
+      if(!projects.length){list.innerHTML='<div class="card"><h3>🏗️ لا توجد مشاريع محفوظة</h3><p>أنشئ مشروعك أولاً، ثم اختر المعدات القريبة من موقعه.</p></div>';return;}
+      list.innerHTML=projects.map(project=>`<div class="card"><h3>🏗️ ${escapeContractorHtml(project.name||project.projectName||'مشروع بدون اسم')}</h3><p>📍 ${escapeContractorHtml([project.city,project.address||project.location].filter(Boolean).join(' — ')||'الموقع غير محدد')}</p><p>الحالة: ${escapeContractorHtml(project.status||'active')}</p><p>${project.latitude&&project.longitude?`<a href="https://www.openstreetmap.org/?mlat=${encodeURIComponent(project.latitude)}&mlon=${encodeURIComponent(project.longitude)}#map=15/${encodeURIComponent(project.latitude)}/${encodeURIComponent(project.longitude)}" target="_blank" rel="noopener">عرض الموقع على الخريطة</a>`:'لا توجد إحداثيات محفوظة'}</p><button type="button" class="main-btn" data-contractor-project-request="${escapeContractorHtml(project.id)}">طلب معدة لهذا المشروع</button></div>`).join('');
+    }catch(error){console.error('Load contractor projects error:',error);list.innerHTML='<div class="card"><p>تعذر تحميل المشاريع. تأكد من صلاحيات قراءة مجموعة projects في Firebase.</p></div>';}
   }
- 
- 
-  /* =========================================================
+
+  const contractorCreateProjectBtn=document.getElementById('contractorCreateProjectBtn');
+  if(contractorCreateProjectBtn)contractorCreateProjectBtn.addEventListener('click',()=>contractorNewRequestBtn?.click());
+  document.addEventListener('click',async event=>{
+    const button=event.target.closest('[data-contractor-project-request]');if(!button)return;
+    try{
+      const user=getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',button.dataset.contractorProjectRequest);const snap=await window.ma3daGetDoc(ref);
+      if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('تعذر فتح المشروع أو لا تملك صلاحية الوصول إليه.');return;}
+      contractorSelectedProject={id:snap.id,...snap.data()};
+      const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=contractorSelectedProject.name||contractorSelectedProject.projectName||'مشروعك';
+      const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${contractorSelectedProject.city||''} ${contractorSelectedProject.address||contractorSelectedProject.location||''}`;
+      contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();
+    }catch(error){console.error('Open project equipment picker error:',error);alert('تعذر فتح المشروع.');}
+  });
+/* =========================================================
      SETTINGS
   ========================================================= */
  
