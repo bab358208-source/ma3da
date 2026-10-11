@@ -5259,249 +5259,122 @@ async function loadOperatorDashboard(){
  
 }
  
-/* OPERATOR NEW REQUESTS */
- 
-async function loadOperatorNewRequests(){
- 
-  const list =
-    document.getElementById("operatorNewRequestsList");
- 
-  if(!list)
-    return;
- 
-  list.innerHTML = `
-    <div class="card center">
-      <p>جاري تحميل الطلبات...</p>
-    </div>
-  `;
- 
-  try{
- 
-    const equipment =
-      await getOperatorEquipment();
- 
-    if(!equipment){
- 
-      list.innerHTML = `
-        <div class="card center">
-          <p>لم يتم العثور على بيانات المعدة.</p>
-        </div>
-      `;
- 
-      return;
- 
-    }
- 
-    const snapshot =
-      await window.ma3daGetDocs(
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        )
-      );
- 
-    const requests = [];
- 
-    snapshot.forEach(
-      docSnap=>{
- 
-        const data =
-          docSnap.data();
- 
-        if(
-          data.status === "searching" &&
-          (data.equipmentOwnerId
-            ? data.equipmentOwnerId === operatorUser?.uid
-            : data.equipment === equipment.type)
-        ){
- 
-          requests.push({
- 
-            id:
-              docSnap.id,
- 
-            ...data
- 
-          });
- 
-        }
- 
-      }
-    );
- 
-    requests.sort(
-      (a,b)=>
-        Number(
-          b.createdAt || 0
-        ) -
-        Number(
-          a.createdAt || 0
-        )
-    );
- 
-    if(!requests.length){
- 
-      list.innerHTML = `
-        <div class="card center">
- 
-          <div class="success-icon">
-            ✓
-          </div>
- 
-          <h3>
-            لا توجد طلبات جديدة
-          </h3>
- 
-          <p>
-            سنعرض هنا الطلبات المناسبة لمعدتك.
-          </p>
- 
-        </div>
-      `;
- 
-      return;
- 
-    }
- 
-    list.innerHTML =
-      "";
- 
-    requests.forEach(
-      request=>{
- 
-        const card =
-          document.createElement(
-            "div"
-          );
- 
-        card.className =
-          "card operator-new-request-card";
- 
-        const price =
-          Number(
-            request.price || 0
-          );
- 
-        card.innerHTML = `
- 
-          <div class="request-title">
- 
-            <span>🚜</span>
- 
-            <div>
- 
-              <h2>
-                ${request.equipment || "-"}
-              </h2>
- 
-              <p>
-                مع مشغل
-              </p>
- 
-            </div>
- 
-          </div>
- 
-          <div class="operator-info">
- 
-            <div class="operator-info-row">
- 
-              <span>
-                📍 موقع العمل
-              </span>
- 
-              <strong>
-                ${request.location || "-"}
-              </strong>
- 
-            </div>
- 
-            <div class="operator-info-row">
- 
-              <span>
-                ⏱️ مدة العمل
-              </span>
- 
-              <strong>
-                ${request.duration || "-"}
-              </strong>
- 
-            </div>
- 
-            <div class="operator-info-row">
- 
-              <span>
-                💰 السعر
-              </span>
- 
-              <strong>
-                ${price.toLocaleString("ar-SA")} ريال
-              </strong>
- 
-            </div>
- 
-          </div>
- 
-          <div class="operator-notes">
- 
-            <span>
-              📝 ملاحظات العميل
-            </span>
- 
-            <p>
-              ${request.notes || "لا توجد ملاحظات"}
-            </p>
- 
-          </div>
- 
-          <div class="operator-buttons">
- 
-            <button
-              class="reject-btn"
-              type="button"
-              data-reject-request="${request.id}"
-            >
-              رفض الطلب
-            </button>
- 
-            <button
-              class="accept-btn"
-              type="button"
-              data-accept-request="${request.id}"
-            >
-              قبول الطلب
-            </button>
- 
-          </div>
- 
-        `;
- 
-        list.appendChild(
-          card
-        );
- 
-      }
-    );
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في تحميل الطلبات الجديدة:",
-      error
-    );
- 
-    list.innerHTML = `
-      <div class="card center">
-        <p>
-          تعذر تحميل الطلبات.
-        </p>
-      </div>
-    `;
- 
-  }
- 
+/* OPERATOR NEW REQUESTS: CUSTOMER + PROJECT REQUESTS */
+let operatorRequestTab = "customers";
+
+function setOperatorRequestTab(tab){
+  operatorRequestTab = tab === "projects" ? "projects" : "customers";
+  const customerTab = document.getElementById("operatorCustomerRequestsTab");
+  const projectTab = document.getElementById("operatorProjectRequestsTab");
+  const customerPanel = document.getElementById("operatorCustomerRequestsPanel");
+  const projectPanel = document.getElementById("operatorProjectRequestsPanel");
+  if(customerTab){customerTab.classList.toggle("is-active",operatorRequestTab === "customers");customerTab.setAttribute("aria-selected",String(operatorRequestTab === "customers"));}
+  if(projectTab){projectTab.classList.toggle("is-active",operatorRequestTab === "projects");projectTab.setAttribute("aria-selected",String(operatorRequestTab === "projects"));}
+  if(customerPanel) customerPanel.hidden = operatorRequestTab !== "customers";
+  if(projectPanel) projectPanel.hidden = operatorRequestTab !== "projects";
 }
- 
+
+function operatorRequestDateValue(value){
+  if(value && typeof value.toMillis === "function") return value.toMillis();
+  if(value && typeof value.seconds === "number") return value.seconds * 1000;
+  if(value instanceof Date) return value.getTime();
+  const parsed = new Date(value || 0).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function renderOperatorRequestCards(list, requests, kind){
+  if(!list) return;
+  if(!requests.length){
+    list.innerHTML = `<div class="card center"><div class="success-icon">✓</div><h3>${kind === "projects" ? "لا توجد طلبات مشاريع جديدة" : "لا توجد طلبات عملاء جديدة"}</h3><p>${kind === "projects" ? "ستظهر هنا طلبات المقاولين وأصحاب المشاريع الموجهة لمعدتك." : "ستظهر هنا طلبات الأفراد المناسبة لمعدتك."}</p></div>`;
+    return;
+  }
+  list.innerHTML = "";
+  requests.forEach(request=>{
+    const card = document.createElement("div");
+    card.className = "card operator-new-request-card";
+    const price = Number(request.price || 0);
+    const projectLine = kind === "projects" ? `<div class="operator-info-row"><span>🏗️ اسم المشروع</span><strong>${request.projectName || "مشروع بدون اسم"}</strong></div>` : "";
+    const requester = kind === "projects" ? (request.contractorName || request.contractorCompany || "مقاول / صاحب مشروع") : (request.customerName || request.requesterName || "عميل");
+    card.innerHTML = `
+      <div class="request-title"><span>${kind === "projects" ? "🏗️" : "🚜"}</span><div><h2>${request.equipment || "معدة"}</h2><p>${kind === "projects" ? "طلب مشروع" : "طلب عميل"}</p></div></div>
+      <div class="operator-info">
+        <div class="operator-info-row"><span>👤 مقدم الطلب</span><strong>${requester}</strong></div>
+        ${projectLine}
+        <div class="operator-info-row"><span>📍 موقع العمل</span><strong>${request.location || request.projectCity || "-"}</strong></div>
+        <div class="operator-info-row"><span>⏱️ مدة العمل</span><strong>${request.duration || "-"}</strong></div>
+        <div class="operator-info-row"><span>💰 السعر</span><strong>${price.toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>بانتظار قبولك</strong></div>
+      </div>
+      <div class="operator-notes"><span>📝 ملاحظات ${kind === "projects" ? "المشروع" : "العميل"}</span><p>${request.notes || "لا توجد ملاحظات"}</p></div>
+      <div class="operator-buttons"><button class="reject-btn" type="button" data-reject-request="${request.id}">رفض الطلب</button><button class="accept-btn" type="button" data-accept-request="${request.id}">قبول الطلب</button></div>`;
+    list.appendChild(card);
+  });
+}
+
+async function loadOperatorNewRequests(){
+  const customerList = document.getElementById("operatorNewRequestsList");
+  const projectList = document.getElementById("operatorProjectRequestsList");
+  const refreshButton = document.getElementById("refreshOperatorRequestsBtn");
+  const updatedLabel = document.getElementById("operatorRequestsLastUpdated");
+  if(!customerList && !projectList) return;
+  if(refreshButton){refreshButton.disabled=true;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> جارٍ التحديث...';}
+  if(customerList) customerList.innerHTML='<div class="card center"><p>جاري تحميل طلبات العملاء...</p></div>';
+  if(projectList) projectList.innerHTML='<div class="card center"><p>جاري تحميل طلبات المشاريع...</p></div>';
+  try{
+    const user = await getOperatorCurrentUser();
+    if(!user || !user.uid){
+      const message='<div class="card center"><p>سجّل الدخول أولاً لعرض الطلبات.</p></div>';
+      if(customerList) customerList.innerHTML=message;
+      if(projectList) projectList.innerHTML=message;
+      return;
+    }
+    const equipment = await getOperatorEquipment();
+    if(!equipment){
+      const message='<div class="card center"><p>لم يتم العثور على بيانات المعدة. تأكد من حفظ بيانات معدتك أولاً.</p></div>';
+      if(customerList) customerList.innerHTML=message;
+      if(projectList) projectList.innerHTML=message;
+      return;
+    }
+    const snapshot = await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const customerRequests=[];
+    const projectRequests=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data() || {};
+      if(data.status !== "searching") return;
+      const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
+      const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name);
+      if(!ownerMatches) return;
+      const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
+      const isProjectRequest = role === "contractor" || role === "project" || !!data.projectId || !!data.contractorId;
+      const request={id:docSnap.id,...data};
+      (isProjectRequest ? projectRequests : customerRequests).push(request);
+    });
+    const sortNewest=(a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt);
+    customerRequests.sort(sortNewest);
+    projectRequests.sort(sortNewest);
+    renderOperatorRequestCards(customerList,customerRequests,"customers");
+    renderOperatorRequestCards(projectList,projectRequests,"projects");
+    if(updatedLabel){
+      updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
+    }
+  }catch(error){
+    console.error("خطأ في تحميل طلبات صاحب المعدة:",error);
+    const message='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال وصلاحيات قراءة الطلبات في Firebase، ثم اضغط تحديث الطلبات.</p></div>';
+    if(customerList) customerList.innerHTML=message;
+    if(projectList) projectList.innerHTML=message;
+    if(updatedLabel) updatedLabel.textContent='لم يكتمل التحديث. حاول مرة أخرى.';
+  }finally{
+    if(refreshButton){refreshButton.disabled=false;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> تحديث الطلبات';}
+  }
+}
+
+/* Tabs and manual refresh update the lists only; the full page is not reloaded. */
+document.addEventListener("click",event=>{
+  const tab=event.target.closest("[data-operator-request-tab]");
+  if(tab){setOperatorRequestTab(tab.dataset.operatorRequestTab);return;}
+  if(event.target.closest("#refreshOperatorRequestsBtn")) loadOperatorNewRequests();
+});
+
 /* ACCEPT */
  
 async function acceptOperatorRequest(
