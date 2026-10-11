@@ -8648,97 +8648,89 @@ async function supportGetCollection(
    ========================================================= */
  
 async function loadSupportTickets(){
-
-  const rows = await supportGetCollection("supportTickets");
-
-  const list = document.getElementById("supportTicketsList");
-  const stat = document.getElementById("supportStatTickets");
-
-  if(stat) stat.textContent = rows.length;
-  if(!list) return;
-
-  if(!rows.length){
-    list.innerHTML = '<div class="support-empty">لا توجد طلبات دعم مسجلة حاليًا.</div>';
+ 
+  const rows =
+    await supportGetCollection(
+      "supportTickets"
+    );
+ 
+ 
+  const list =
+    document.getElementById(
+      "supportTicketsList"
+    );
+ 
+ 
+  const stat =
+    document.getElementById(
+      "supportStatTickets"
+    );
+ 
+ 
+  if(stat)
+    stat.textContent =
+      rows.length;
+ 
+ 
+  if(!list)
     return;
+ 
+ 
+  if(!rows.length){
+ 
+    list.innerHTML =
+      '<div class="support-empty">لا توجد طلبات دعم مسجلة حاليًا.</div>';
+ 
+    return;
+ 
   }
-
-  // عرض النصوص المدخلة من المستخدم كنص آمن، وليس كـ HTML.
-  const escapeSupportText = value => {
-    const el = document.createElement("div");
-    el.textContent = String(value ?? "");
-    return el.innerHTML;
-  };
-
-  const getDateText = value => {
-    try{
-      if(!value) return "غير محدد";
-      const date = typeof value.toDate === "function" ? value.toDate() : new Date(value);
-      if(Number.isNaN(date.getTime())) return "غير محدد";
-      return date.toLocaleString("ar-SA");
-    }catch(error){
-      return "غير محدد";
-    }
-  };
-
-  const roleNames = {
-    customer: "عميل",
-    operator: "صاحب معدة",
-    contractor: "مقاول",
-    support: "موظف دعم"
-  };
-
-  const statusNames = {
-    open: "مفتوح — بانتظار المعالجة",
-    pending: "بانتظار المراجعة",
-    in_progress: "قيد المعالجة",
-    answered: "تم الرد",
-    resolved: "تم الحل",
-    closed: "مغلق"
-  };
-
-  const sortedRows = rows.slice().sort((a,b) => {
-    const timestamp = value => {
-      try{
-        const date = value && typeof value.toDate === "function" ? value.toDate() : new Date(value || 0);
-        return Number.isNaN(date.getTime()) ? 0 : date.getTime();
-      }catch(error){ return 0; }
-    };
-    return timestamp(b.createdAt) - timestamp(a.createdAt);
-  });
-
-  list.innerHTML = sortedRows.slice(0,100).map(row => {
-    const name = row.requesterName || row.customerName || row.name || "مستخدم";
-    const email = row.requesterEmail || row.customerEmail || row.email || "غير متوفر";
-    const role = roleNames[row.requesterRole] || row.requesterRole || "غير محدد";
-    const category = row.category || row.subject || row.title || "طلب دعم";
-    const message = row.message || row.description || row.details || row.problem || "لم يُحفظ نص المشكلة في حقول هذه التذكرة.";
-    const status = statusNames[row.status] || row.status || "مفتوح";
-
-    return `
-      <article class="support-row" style="display:block;text-align:right;padding:16px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
-          <strong>${escapeSupportText(category)}</strong>
-          <span class="support-badge">${escapeSupportText(status)}</span>
+ 
+ 
+  list.innerHTML =
+    rows
+      .slice(0,50)
+      .map(row => `
+ 
+        <div class="support-row">
+ 
+          <div>
+ 
+            <strong>
+              ${
+                row.subject ||
+                row.title ||
+                "طلب دعم"
+              }
+            </strong>
+ 
+            <br>
+ 
+            <small>
+              ${
+                row.customerEmail ||
+                row.email ||
+                row.customerId ||
+                "مستخدم"
+              }
+            </small>
+ 
+          </div>
+ 
+          <span>
+            ${
+              row.status ||
+              "مفتوح"
+            }
+          </span>
+ 
         </div>
-
-        <div style="margin-top:12px">
-          <strong>تفاصيل المشكلة:</strong>
-          <div style="white-space:pre-wrap;overflow-wrap:anywhere;background:#fffdf8;border:1px solid #eadfc5;border-radius:10px;padding:12px;margin-top:6px;line-height:1.8">${escapeSupportText(message)}</div>
-        </div>
-
-        <div style="margin-top:12px;line-height:1.9;overflow-wrap:anywhere">
-          <div><strong>مقدم الشكوى:</strong> ${escapeSupportText(name)}</div>
-          <div><strong>البريد الإلكتروني:</strong> ${escapeSupportText(email)}</div>
-          <div><strong>نوع الحساب:</strong> ${escapeSupportText(role)}</div>
-          <div><strong>تاريخ الإرسال:</strong> ${escapeSupportText(getDateText(row.createdAt))}</div>
-          <div><strong>رقم التذكرة:</strong> ${escapeSupportText(row.id || "غير متوفر")}</div>
-        </div>
-      </article>
-    `;
-  }).join("");
+ 
+      `)
+      .join("");
+ 
 }
-
-
+ 
+ 
 /* =========================================================
    العملاء والمشغلين
    ========================================================= */
