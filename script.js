@@ -12514,3 +12514,413 @@ document.addEventListener("click", function(event){
     }
   });
 })();
+
+/* =========================================================
+   MA3DA — شكاواي وردود الدعم
+   يقرأ شكاوى المستخدم الحالي فقط.
+   لا يغيّر مسار الشات: requests/{requestId}/messages
+========================================================= */
+(function bindMyMa3daSupportTickets() {
+  if (window.__myMa3daSupportTicketsBound) return;
+  window.__myMa3daSupportTicketsBound = true;
+
+  let previousScreenId = null;
+  let loadingTickets = false;
+
+  const byId = (id) => document.getElementById(id);
+
+  function setFeedback(message) {
+    const el = byId("mySupportTicketsFeedback");
+    if (el) el.textContent = message;
+  }
+
+  function formatTicketDate(value) {
+    try {
+      if (!value) return "غير محدد";
+
+      let date = value;
+
+      if (typeof value.toDate === "function") {
+        date = value.toDate();
+      } else if (typeof value === "number") {
+        date = new Date(value);
+      } else if (typeof value === "string") {
+        date = new Date(value);
+      }
+
+      if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+        return "غير محدد";
+      }
+
+      return date.toLocaleString("ar-SA", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (_) {
+      return "غير محدد";
+    }
+  }
+
+  function statusLabel(status) {
+    const value = String(status || "").toLowerCase();
+
+    if (["replied", "answered", "resolved", "closed", "تم الرد"].includes(value)) {
+      return "تم الرد";
+    }
+
+    if (["in-progress", "in_progress", "processing", "قيد المعالجة"].includes(value)) {
+      return "قيد المعالجة";
+    }
+
+    if (["open", "pending", "new", "مفتوحة"].includes(value)) {
+      return "بانتظار رد الدعم";
+    }
+
+    return status || "قيد المتابعة";
+  }
+
+  function addText(parent, tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text == null ? "" : String(text);
+    parent.appendChild(el);
+    return el;
+  }
+
+  function renderTickets(tickets) {
+    const list = byId("mySupportTicketsList");
+    if (!list) return;
+
+    list.replaceChildren();
+
+    if (!tickets.length) {
+      addText(
+        list,
+        "div",
+        "ma3da-ticket-empty",
+        "لا توجد شكاوى مسجلة في حسابك حتى الآن."
+      );
+      return;
+    }
+
+    tickets.forEach((ticket) => {
+      const card = document.createElement("article");
+      card.className = "ma3da-ticket-card";
+
+      addText(
+        card,
+        "h3",
+        "ma3da-ticket-title",
+        ticket.category || "طلب دعم"
+      );
+
+      const status = addText(
+        card,
+        "div",
+        "ma3da-ticket-status",
+        statusLabel(ticket.status)
+      );
+
+      const statusValue = String(ticket.status || "").toLowerCase();
+      if (["replied", "answered", "resolved", "closed"].includes(statusValue)) {
+        status.classList.add("is-replied");
+      }
+
+      addText(
+        card,
+        "p",
+        "ma3da-ticket-date",
+        "تاريخ الإرسال: " + formatTicketDate(ticket.createdAt)
+      );
+
+      addText(
+        card,
+        "p",
+        "ma3da-ticket-message",
+        "تفاصيل الشكوى: " + (ticket.message || "لا توجد تفاصيل")
+      );
+
+      const repliesBox = document.createElement("div");
+      repliesBox.className = "ma3da-ticket-replies";
+
+      addText(repliesBox, "h4", "", "ردود فريق الدعم");
+
+      const replies = Array.isArray(ticket._displayReplies)
+        ? ticket._displayReplies
+        : [];
+
+      if (!replies.length) {
+        addText(
+          repliesBox,
+          "p",
+          "ma3da-ticket-reply",
+          "لم يصل رد من فريق الدعم حتى الآن."
+        );
+      } else {
+        replies.forEach((reply) => {
+          const text = typeof reply === "string"
+            ? reply
+            : (reply?.text || reply?.message || "");
+
+          if (!text) return;
+
+          const replyCard = document.createElement("div");
+          replyCard.className = "ma3da-ticket-reply";
+
+          addText(replyCard, "p", "", text);
+
+          if (reply && typeof reply === "object" && reply.createdAt) {
+            addText(
+              replyCard,
+              "small",
+              "",
+              formatTicketDate(reply.createdAt)
+            );
+          }
+
+          repliesBox.appendChild(replyCard);
+        });
+      }
+
+      card.appendChild(repliesBox);
+      list.appendChild(card);
+    });
+  }
+
+  async function loadMyTickets() {
+    if (loadingTickets) return;
+    loadingTickets = true;
+
+    const list = byId("mySupportTicketsList");
+    if (list) {
+      list.replaceChildren();
+      addText(list, "div", "ma3da-ticket-empty", "جارٍ تحميل شكاواك...");
+    }
+
+    try {
+      await Promise.resolve(window.ma3daFirebaseReady);
+
+      const user = window.ma3daAuth?.currentUser ||
+        (typeof window.ma3daGetCurrentUser === "function"
+          ? await window.ma3daGetCurrentUser()
+          : null);
+
+      if (!user?.uid) {
+        setFeedback("سجّل الدخول أولاً لعرض شكاواك.");
+        return;
+      }
+
+      if (
+        !window.ma3daDB ||
+        typeof window.ma3daCollection !== "function" ||
+        typeof window.ma3daGetDocs !== "function"
+      ) {
+        throw new Error("أدوات Firebase غير جاهزة.");
+      }
+
+      // استخدام إصدار Firebase نفسه المستخدم في المشروع.
+      const firestore = await import(
+        "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"
+      );
+
+      const ticketsCollection = window.ma3daCollection(
+        window.ma3daDB,
+        "supportTickets"
+      );
+
+      // الاستعلام يقتصر على الشكاوى التي تخص المستخدم الحالي.
+      const ownTicketsQuery = firestore.query(
+        ticketsCollection,
+        firestore.where("requesterId", "==", user.uid)
+      );
+
+      const snapshot = await window.ma3daGetDocs(ownTicketsQuery);
+      const tickets = [];
+
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data() || {};
+
+        // تحقق إضافي قبل عرض أي شكوى.
+        if (data.requesterId !== user.uid) continue;
+
+        const ticket = {
+          id: docSnap.id,
+          ...data,
+          _displayReplies: []
+        };
+
+        const replies = [];
+
+        // الردود المخزنة داخل وثيقة الشكوى.
+        if (Array.isArray(data.replies)) {
+          data.replies.forEach((reply) => {
+            if (reply) replies.push(reply);
+          });
+        }
+
+        // آخر رد محفوظ مباشرة على وثيقة الشكوى.
+        if (data.lastReply) {
+          replies.push({
+            text: data.lastReply,
+            createdAt: data.lastReplyAt || null,
+            senderRole: "support"
+          });
+        }
+
+        // قراءة رسائل هذه الشكوى فقط، إن وُجدت.
+        try {
+          const messagesCollection = window.ma3daCollection(
+            window.ma3daDB,
+            "supportTickets",
+            docSnap.id,
+            "messages"
+          );
+
+          const messagesSnapshot = await window.ma3daGetDocs(
+            messagesCollection
+          );
+
+          messagesSnapshot.forEach((messageDoc) => {
+            const message = messageDoc.data() || {};
+
+            if (
+              message.senderRole === "support" &&
+              (message.text || message.message)
+            ) {
+              replies.push({
+                text: message.text || message.message,
+                createdAt: message.createdAt || null,
+                senderRole: "support",
+                _messageId: messageDoc.id
+              });
+            }
+          });
+        } catch (messageError) {
+          // نعرض الردود الموجودة على وثيقة الشكوى حتى لو تعذرت قراءة الرسائل.
+          console.warn(
+            "تعذرت قراءة رسائل الشكوى:",
+            docSnap.id,
+            messageError
+          );
+        }
+
+        // إزالة الردود المكررة لأنها قد تكون محفوظة بأكثر من صيغة.
+        const uniqueReplies = [];
+        const seen = new Set();
+
+        replies.forEach((reply) => {
+          const text = typeof reply === "string"
+            ? reply
+            : (reply?.text || reply?.message || "");
+
+          if (!text) return;
+
+          const key = String(text).trim();
+          if (!key || seen.has(key)) return;
+
+          seen.add(key);
+          uniqueReplies.push(reply);
+        });
+
+        ticket._displayReplies = uniqueReplies;
+        tickets.push(ticket);
+      }
+
+      tickets.sort((a, b) => {
+        const getTime = (value) => {
+          if (value?.toDate) return value.toDate().getTime();
+          if (typeof value === "number") return value;
+          const parsed = new Date(value || 0).getTime();
+          return Number.isNaN(parsed) ? 0 : parsed;
+        };
+
+        return getTime(b.createdAt) - getTime(a.createdAt);
+      });
+
+      renderTickets(tickets);
+      setFeedback("عدد الشكاوى: " + tickets.length);
+    } catch (error) {
+      console.error("تحميل شكاوى المستخدم تعذّر:", error);
+
+      if (error?.code === "permission-denied") {
+        setFeedback(
+          "تعذر عرض الشكاوى بسبب صلاحيات القراءة في Firebase. لم يتم تغيير القواعد."
+        );
+      } else {
+        setFeedback(
+          "تعذر تحميل الشكاوى. تحقق من الاتصال ثم اضغط تحديث الشكاوى."
+        );
+      }
+
+      if (list) {
+        list.replaceChildren();
+        addText(
+          list,
+          "div",
+          "ma3da-ticket-empty",
+          "لم نتمكن من تحميل الشكاوى حالياً."
+        );
+      }
+    } finally {
+      loadingTickets = false;
+    }
+  }
+
+  window.loadMyMa3daSupportTickets = loadMyTickets;
+
+  window.openMyMa3daSupportTickets = async function () {
+    const currentScreen = document.querySelector(".screen.active");
+    if (currentScreen && currentScreen.id !== "mySupportTicketsScreen") {
+      previousScreenId = currentScreen.id;
+    }
+
+    if (typeof window.showScreen === "function") {
+      window.showScreen("mySupportTicketsScreen");
+    } else if (typeof showScreen === "function") {
+      showScreen("mySupportTicketsScreen");
+    } else {
+      console.error("لم يتم العثور على دالة التنقل showScreen.");
+      setFeedback("تعذر فتح الصفحة: تحقق من دالة التنقل في التطبيق.");
+      return;
+    }
+
+    await loadMyTickets();
+  };
+
+  document.addEventListener("click", function (event) {
+    const openButton = event.target.closest(
+      "[data-open-my-support-tickets], " +
+      "#mySupportTicketsBtn, " +
+      "#customerMySupportTicketsBtn, " +
+      "#operatorMySupportTicketsBtn, " +
+      "#contractorMySupportTicketsBtn"
+    );
+
+    if (openButton) {
+      event.preventDefault();
+      window.openMyMa3daSupportTickets();
+      return;
+    }
+
+    if (event.target.closest("#mySupportTicketsRefreshBtn")) {
+      event.preventDefault();
+      loadMyTickets();
+      return;
+    }
+
+    if (event.target.closest("#mySupportTicketsBackBtn")) {
+      event.preventDefault();
+
+      const target = previousScreenId || "roleScreen";
+
+      if (typeof window.showScreen === "function") {
+        window.showScreen(target);
+      } else if (typeof showScreen === "function") {
+        showScreen(target);
+      }
+    }
+  });
+})();
