@@ -12368,4 +12368,79 @@ document.addEventListener("click", function(event){
     }
 
     const prefix = role === "contractor" ? "contractor" : role;
-    const messageEl =
+    const messageEl = document.getElementById(prefix + "SupportMessage");
+    const categoryEl = document.getElementById(prefix + "SupportCategory");
+    const feedback = document.getElementById(prefix + "SupportFeedback");
+    const message = (messageEl?.value || "").trim();
+    if (!message) {
+      if (feedback) feedback.textContent = "اكتب تفاصيل المشكلة أو الاستفسار أولاً.";
+      messageEl?.focus();
+      return;
+    }
+
+    clicked.dataset.ma3daSupportBusy = "true";
+    const originalText = clicked.textContent;
+    clicked.disabled = true;
+    clicked.textContent = "جارٍ الإرسال...";
+    if (feedback) feedback.textContent = "";
+
+    try {
+      await Promise.resolve(window.ma3daFirebaseReady);
+      const user = window.ma3daAuth?.currentUser ||
+        (typeof window.ma3daGetCurrentUser === "function" ? await window.ma3daGetCurrentUser() : null);
+      if (!user?.uid) {
+        if (feedback) feedback.textContent = "انتهت جلسة الدخول أو لم تسجّل الدخول. سجّل الدخول ثم أعد إرسال الطلب.";
+        return;
+      }
+      if (!window.ma3daDB || typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") {
+        throw new Error("خدمة قاعدة البيانات غير جاهزة");
+      }
+
+      let requesterName = "";
+      try {
+        if (role === "contractor") {
+          const profile = JSON.parse(localStorage.getItem("contractorProfile") || "null") || {};
+          requesterName = profile.contractorName || profile.name || profile.companyName || "";
+        } else if (role === "customer") {
+          requesterName = document.getElementById("customerNameInput")?.value?.trim() || "";
+        } else {
+          requesterName = document.getElementById("operatorNameInput")?.value?.trim() || "";
+        }
+      } catch (_) {}
+
+      const payload = {
+        requesterId: user.uid,
+        userId: user.uid,
+        requesterEmail: user.email || "",
+        requesterRole: role,
+        requesterName,
+        category: categoryEl?.value || "استفسار",
+        message,
+        status: "open",
+        createdAt: new Date(),
+        source: role + "-support-screen"
+      };
+      await window.ma3daAddDoc(
+        window.ma3daCollection(window.ma3daDB, "supportTickets"),
+        payload
+      );
+      if (feedback) feedback.textContent = "تم إرسال طلبك بنجاح إلى فريق الدعم. سيظهر الطلب في لوحة موظفي الدعم.";
+      if (messageEl) messageEl.value = "";
+    } catch (error) {
+      console.error("Ma3da support ticket error:", error);
+      if (feedback) {
+        if (error?.code === "permission-denied") {
+          feedback.textContent = "تعذر الإرسال بسبب صلاحيات Firebase لمجموعة supportTickets. راجع قواعد Firestore.";
+        } else if (error?.code === "unavailable" || /network/i.test(error?.message || "")) {
+          feedback.textContent = "تعذر الاتصال بالخدمة. تحقق من الإنترنت ثم حاول مرة أخرى.";
+        } else {
+          feedback.textContent = "تعذر إرسال طلب الدعم حالياً. حاول مرة أخرى.";
+        }
+      }
+    } finally {
+      clicked.disabled = false;
+      clicked.textContent = originalText || "إرسال إلى الدعم";
+      delete clicked.dataset.ma3daSupportBusy;
+    }
+  });
+})();
