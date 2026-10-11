@@ -2562,3 +2562,211 @@ html[data-theme="dark"] .operator-logout-btn {
     min-height: 70px;
   }
 }
+
+/* =========================================================
+   MA3DA — MY SUPPORT TICKETS
+   صفحة شكاواي وردود الدعم
+   إضافة مستقلة وآمنة عن التنسيقات الحالية
+========================================================= */
+
+.ma3da-my-tickets-screen {
+  min-height: 100vh;
+  padding: 24px 16px 40px;
+  background: #f5f5f5;
+  color: #111;
+}
+
+.ma3da-my-tickets-screen .ma3da-my-tickets-header {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 22px;
+}
+
+.ma3da-my-tickets-screen .ma3da-tickets-back {
+  width: auto;
+  min-width: 110px;
+  margin: 0 0 22px;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+.ma3da-my-tickets-screen h1 {
+  margin: 0 0 9px;
+  font-size: 26px;
+  line-height: 1.5;
+  font-weight: 900;
+}
+
+.ma3da-my-tickets-screen .ma3da-my-tickets-header p {
+  margin: 0;
+  color: #737373;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.ma3da-my-tickets-actions,
+.ma3da-tickets-feedback,
+.ma3da-my-tickets-list {
+  width: 100%;
+  max-width: 600px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.ma3da-my-tickets-actions {
+  margin-bottom: 14px;
+}
+
+.ma3da-my-tickets-actions .main-btn {
+  margin-top: 0;
+  min-height: 48px;
+  font-size: 15px;
+}
+
+.ma3da-tickets-feedback {
+  min-height: 22px;
+  margin-top: 12px;
+  margin-bottom: 14px;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.ma3da-ticket-empty {
+  padding: 28px 18px;
+  border: 1px dashed #d5d5d5;
+  border-radius: 18px;
+  background: #fff;
+  color: #777;
+  text-align: center;
+  line-height: 1.9;
+}
+
+.ma3da-ticket-card {
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px solid #e8e8e8;
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .045);
+  overflow-wrap: anywhere;
+}
+
+.ma3da-ticket-card h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.ma3da-ticket-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: #777;
+  font-size: 12px;
+}
+
+.ma3da-ticket-status {
+  display: inline-block;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #f3f3f3;
+  color: #444;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ma3da-ticket-status.is-replied {
+  background: #e8f5e9;
+  color: #23723a;
+}
+
+.ma3da-ticket-status.is-pending {
+  background: #fff4dc;
+  color: #8a5a00;
+}
+
+.ma3da-ticket-message {
+  padding: 14px;
+  border-radius: 13px;
+  background: #f7f7f7;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ma3da-ticket-reply {
+  margin-top: 14px;
+  padding: 15px;
+  border-right: 4px solid #c79b3b;
+  border-radius: 12px;
+  background: #fff9ec;
+  color: #28231a;
+}
+
+.ma3da-ticket-reply h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.ma3da-ticket-reply p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ma3da-ticket-reply time {
+  display: block;
+  margin-top: 9px;
+  color: #777;
+  font-size: 11px;
+}
+
+html[data-theme="dark"] .ma3da-my-tickets-screen {
+  background: #111;
+  color: #f5f5f5;
+}
+
+html[data-theme="dark"] .ma3da-ticket-card,
+html[data-theme="dark"] .ma3da-ticket-empty {
+  background: #1e1e1e;
+  border-color: #333;
+  color: #eee;
+}
+
+html[data-theme="dark"] .ma3da-ticket-message {
+  background: #292929;
+  color: #eee;
+}
+
+html[data-theme="dark"] .ma3da-ticket-reply {
+  background: #30291c;
+  color: #f5e9cf;
+}
+
+html[data-theme="dark"] .ma3da-ticket-meta,
+html[data-theme="dark"] .ma3da-tickets-feedback {
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  .ma3da-my-tickets-screen {
+    padding: 20px 14px 32px;
+  }
+
+  .ma3da-my-tickets-screen h1 {
+    font-size: 23px;
+  }
+
+  .ma3da-ticket-card {
+    padding: 15px;
+    border-radius: 16px;
+  }
+}
