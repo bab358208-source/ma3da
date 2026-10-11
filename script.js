@@ -8644,6 +8644,138 @@ async function supportGetCollection(
  
  
 /* =========================================================
+   تفاصيل شكوى الدعم والرد عليها
+   ========================================================= */
+function supportEscapeHtml(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;"
+  }[char]));
+}
+
+function supportEnsureTicketPanel(listId){
+  const list = document.getElementById(listId);
+  if (!list || document.getElementById("supportTicketReplyPanel")) return;
+  const panel = document.createElement("section");
+  panel.id = "supportTicketReplyPanel";
+  panel.hidden = true;
+  panel.style.cssText = "margin-top:16px;padding:16px;border:1px solid #d6b56b;border-radius:14px;background:#fffdf7;color:#222";
+  panel.innerHTML = `
+    <h3 style="margin:0 0 12px">تفاصيل الشكوى</h3>
+    <div id="supportTicketDetails" style="line-height:1.8;white-space:pre-wrap"></div>
+    <div id="supportTicketConversation" style="margin-top:14px;display:grid;gap:8px"></div>
+    <label for="supportTicketReplyInput" style="display:block;margin-top:14px;font-weight:700">رد موظف الدعم</label>
+    <textarea id="supportTicketReplyInput" rows="3" placeholder="اكتب ردك للعميل هنا..." style="box-sizing:border-box;width:100%;margin-top:6px;padding:11px;border:1px solid #ccc;border-radius:10px;font:inherit"></textarea>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button type="button" id="supportTicketSendReplyBtn" style="border:0;border-radius:10px;padding:10px 16px;background:#c49a45;color:#171717;font-weight:700">إرسال الرد</button>
+      <button type="button" id="supportTicketCloseBtn" style="border:1px solid #bbb;border-radius:10px;padding:10px 16px;background:#fff">إغلاق</button>
+      <span id="supportTicketReplyFeedback" role="status" style="align-self:center"></span>
+    </div>`;
+  list.insertAdjacentElement("afterend", panel);
+}
+
+let activeSupportTicketId = null;
+let activeSupportTicketUnsubscribe = null;
+
+async function supportOpenTicket(ticketId){
+  if (!ticketId || !window.ma3daDB || !window.ma3daDoc || !window.ma3daGetDoc) {
+    alert("تعذر فتح الشكوى: تأكد من اتصال Firebase.");
+    return;
+  }
+  const panel = document.getElementById("supportTicketReplyPanel");
+  if (!panel) {
+    const list = document.getElementById("supportTicketsList") || document.getElementById("supportChatsList");
+    supportEnsureTicketPanel(list?.id || "supportTicketsList");
+  }
+  const currentPanel = document.getElementById("supportTicketReplyPanel");
+  if (!currentPanel) return;
+  currentPanel.hidden = false;
+  currentPanel.scrollIntoView({behavior:"smooth", block:"start"});
+  const feedback = document.getElementById("supportTicketReplyFeedback");
+  const details = document.getElementById("supportTicketDetails");
+  const conversation = document.getElementById("supportTicketConversation");
+  if (feedback) feedback.textContent = "جارٍ تحميل الشكوى...";
+  activeSupportTicketId = ticketId;
+  try {
+    const ref = window.ma3daDoc(window.ma3daDB, "supportTickets", ticketId);
+    const snap = await window.ma3daGetDoc(ref);
+    if (!snap?.exists?.()) throw new Error("لم يتم العثور على الشكوى");
+    const ticket = snap.data() || {};
+    currentPanel.dataset.ticketId = ticketId;
+    details.innerHTML = `
+      <div><strong>رقم الشكوى:</strong> ${supportEscapeHtml(ticketId)}</div>
+      <div><strong>صاحب الشكوى:</strong> ${supportEscapeHtml(ticket.requesterName || "غير مسجل")}</div>
+      <div><strong>البريد:</strong> ${supportEscapeHtml(ticket.requesterEmail || ticket.customerEmail || ticket.email || "غير مسجل")}</div>
+      <div><strong>نوع الحساب:</strong> ${supportEscapeHtml(ticket.requesterRole || "غير محدد")}</div>
+      <div><strong>التصنيف:</strong> ${supportEscapeHtml(ticket.category || "استفسار")}</div>
+      <div><strong>الحالة:</strong> ${supportEscapeHtml(ticket.status || "مفتوح")}</div>
+      <div style="margin-top:8px"><strong>رسالة العميل:</strong><br>${supportEscapeHtml(ticket.message || ticket.description || "لا توجد تفاصيل للشكوى")}</div>`;
+    if (conversation) {
+      const replies = Array.isArray(ticket.replies) ? ticket.replies : [];
+      conversation.innerHTML = replies.length ? replies.map(item => `
+        <div style="padding:10px 12px;border-radius:10px;background:${item.senderRole === "support" ? "#f5e8c9" : "#f1f1f1"};white-space:pre-wrap">
+          <strong>${supportEscapeHtml(item.senderRole === "support" ? "موظف الدعم" : "العميل")}</strong><br>${supportEscapeHtml(item.text || item.message || "")}
+        </div>`).join("") : '<div style="color:#666">لا توجد ردود سابقة على الشكوى.</div>';
+    }
+    if (feedback) feedback.textContent = "تم تحميل تفاصيل الشكوى.";
+    const input = document.getElementById("supportTicketReplyInput");
+    if (input) input.value = "";
+  } catch (error) {
+    console.error("تعذر فتح تفاصيل شكوى الدعم:", error);
+    if (feedback) feedback.textContent = "تعذر تحميل تفاصيل الشكوى. تحقق من صلاحيات قراءة supportTickets.";
+  }
+}
+
+async function supportSendTicketReply(){
+  const panel = document.getElementById("supportTicketReplyPanel");
+  const ticketId = panel?.dataset.ticketId || activeSupportTicketId;
+  const input = document.getElementById("supportTicketReplyInput");
+  const feedback = document.getElementById("supportTicketReplyFeedback");
+  const text = (input?.value || "").trim();
+  if (!ticketId) { if(feedback) feedback.textContent = "افتح شكوى أولاً."; return; }
+  if (!text) { if(feedback) feedback.textContent = "اكتب الرد قبل الإرسال."; input?.focus(); return; }
+  if (!window.ma3daDB || !window.ma3daDoc || !window.ma3daUpdateDoc || !window.ma3daAddDoc || !window.ma3daCollection) {
+    if(feedback) feedback.textContent = "أدوات Firebase اللازمة للرد غير جاهزة.";
+    return;
+  }
+  const button = document.getElementById("supportTicketSendReplyBtn");
+  if(button) button.disabled = true;
+  if(feedback) feedback.textContent = "جارٍ إرسال الرد...";
+  try {
+    const user = window.ma3daAuth?.currentUser || (typeof window.ma3daGetCurrentUser === "function" ? await window.ma3daGetCurrentUser() : null);
+    if (!user?.uid) throw new Error("يجب تسجيل دخول موظف الدعم مجددًا.");
+    const reply = {text, senderId:user.uid, senderRole:"support", senderEmail:user.email || "", createdAt:Date.now()};
+    const ticketRef = window.ma3daDoc(window.ma3daDB, "supportTickets", ticketId);
+    await window.ma3daUpdateDoc(ticketRef, {lastReply:text, lastReplyAt:Date.now(), lastReplyBy:user.uid, status:"replied"});
+    await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB, "supportTickets", ticketId, "messages"), reply);
+    // Keep a readable reply on the ticket document too, so the requester can see the latest answer without changing the existing request-chat path.
+    const snap = await window.ma3daGetDoc(ticketRef);
+    const ticket = snap?.data?.() || {};
+    const replies = Array.isArray(ticket.replies) ? ticket.replies : [];
+    await window.ma3daUpdateDoc(ticketRef, {replies:[...replies, reply]});
+    if(input) input.value = "";
+    await supportOpenTicket(ticketId);
+    if(feedback) feedback.textContent = "تم إرسال الرد وحفظه بنجاح.";
+    await Promise.all([loadSupportTickets(), loadSupportChats()]);
+  } catch(error) {
+    console.error("تعذر إرسال رد الدعم:", error);
+    if(feedback) feedback.textContent = error?.code === "permission-denied" ? "رفضت قواعد Firebase حفظ الرد. راجع صلاحيات supportTickets." : "تعذر إرسال الرد. حاول مرة أخرى.";
+  } finally {
+    if(button) button.disabled = false;
+  }
+}
+
+function initSupportTicketReplies(){
+  if (window.__ma3daSupportReplyHandlersBound) return;
+  window.__ma3daSupportReplyHandlersBound = true;
+  document.addEventListener("click", event => {
+    const openBtn = event.target.closest("[data-support-ticket]");
+    if (openBtn) { event.preventDefault(); supportOpenTicket(openBtn.dataset.supportTicket); return; }
+    if (event.target.closest("#supportTicketSendReplyBtn")) { event.preventDefault(); supportSendTicketReply(); return; }
+    if (event.target.closest("#supportTicketCloseBtn")) { const panel = document.getElementById("supportTicketReplyPanel"); if(panel) panel.hidden = true; }
+  });
+}
+
+/* =========================================================
    الطلبات / التذاكر
    ========================================================= */
  
@@ -8690,44 +8822,20 @@ async function loadSupportTickets(){
     rows
       .slice(0,50)
       .map(row => `
- 
-        <div class="support-row">
- 
-          <div>
- 
-            <strong>
-              ${
-                row.subject ||
-                row.title ||
-                "طلب دعم"
-              }
-            </strong>
- 
+        <div class="support-row" style="align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <strong>${supportEscapeHtml(row.subject || row.title || row.category || "طلب دعم")}</strong>
             <br>
- 
-            <small>
-              ${
-                row.customerEmail ||
-                row.email ||
-                row.customerId ||
-                "مستخدم"
-              }
-            </small>
- 
+            <small>${supportEscapeHtml(row.requesterName || row.requesterEmail || row.customerEmail || row.email || row.requesterId || row.userId || "مستخدم")}</small>
+            <p style="margin:8px 0 0;white-space:pre-wrap">${supportEscapeHtml(row.message || row.description || "لم تُسجّل تفاصيل للشكوى")}</p>
           </div>
- 
-          <span>
-            ${
-              row.status ||
-              "مفتوح"
-            }
-          </span>
- 
+          <span>${supportEscapeHtml(row.status || "مفتوح")}</span>
+          <button type="button" class="support-open-ticket" data-support-ticket="${supportEscapeHtml(row.id)}" style="border:0;border-radius:10px;padding:9px 13px;cursor:pointer;background:#c49a45;color:#171717;font-weight:700">عرض الشكوى والرد</button>
         </div>
- 
       `)
       .join("");
- 
+
+  supportEnsureTicketPanel("supportTicketsList");
 }
  
  
@@ -9090,51 +9198,19 @@ async function loadSupportChats(){
     tickets
       .slice(0,50)
       .map(row => `
- 
-        <div class="support-row">
- 
-          <div>
- 
-            <strong>
- 
-              ${
-                row.subject ||
-                row.title ||
-                "محادثة دعم"
-              }
- 
-            </strong>
- 
-            <br>
- 
-            <small>
- 
-              ${
-                row.customerEmail ||
-                row.email ||
-                row.customerId ||
-                "مستخدم"
-              }
- 
-            </small>
- 
+        <div class="support-row" style="align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <strong>${supportEscapeHtml(row.subject || row.title || row.category || "محادثة دعم")}</strong>
+            <br><small>${supportEscapeHtml(row.requesterName || row.requesterEmail || row.customerEmail || row.email || row.requesterId || row.userId || "مستخدم")}</small>
+            <p style="margin:8px 0 0;white-space:pre-wrap">${supportEscapeHtml(row.message || row.description || "لا توجد تفاصيل مسجلة")}</p>
           </div>
- 
- 
-          <span>
- 
-            ${
-              row.status ||
-              "مفتوح"
-            }
- 
-          </span>
- 
+          <span>${supportEscapeHtml(row.status || "مفتوح")}</span>
+          <button type="button" class="support-open-ticket" data-support-ticket="${supportEscapeHtml(row.id)}" style="border:0;border-radius:10px;padding:9px 13px;cursor:pointer;background:#c49a45;color:#171717;font-weight:700">فتح المحادثة</button>
         </div>
- 
       `)
       .join("");
- 
+
+  supportEnsureTicketPanel("supportChatsList");
 }
  
  
@@ -9403,6 +9479,8 @@ function initSupportRoleButton(){
    ========================================================= */
  
 function initSupportPortal(){
+
+  initSupportTicketReplies();
  
   const loginButton =
     document.getElementById(
@@ -12380,7 +12458,7 @@ document.addEventListener("click", function(event){
       await Promise.resolve(window.ma3daFirebaseReady);
       const user = window.ma3daAuth?.currentUser ||
         (typeof window.ma3daGetCurrentUser === "function" ? await window.ma3daGetCurrentUser() : null);
-      if (!user?.uid) {
+            if (!user?.uid) {
         if (feedback) feedback.textContent = "انتهت جلسة الدخول أو لم تسجّل الدخول. سجّل الدخول ثم أعد إرسال الطلب.";
         return;
       }
