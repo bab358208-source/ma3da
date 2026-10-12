@@ -869,7 +869,7 @@ textarea {
 }
 
 #customerHomeScreen .home-request-card::after {
-  content: "🚜";
+  content: "ð";
   position: absolute;
   left: -12px;
   bottom: -31px;
@@ -985,7 +985,7 @@ textarea {
 }
 
 #customerHomeScreen .home-menu-item::after {
-  content: "←";
+  content: "â";
   position: absolute;
   left: 16px;
   color: #999;
@@ -2564,9 +2564,9 @@ html[data-theme="dark"] .operator-logout-btn {
 }
 
 /* =========================================================
-   MA3DA — MY SUPPORT TICKETS
-   صفحة شكاواي وردود الدعم
-   إضافة مستقلة وآمنة عن التنسيقات الحالية
+   MA3DA â MY SUPPORT TICKETS
+   ØµÙØ­Ø© Ø´ÙØ§ÙØ§Ù ÙØ±Ø¯ÙØ¯ Ø§ÙØ¯Ø¹Ù
+   Ø¥Ø¶Ø§ÙØ© ÙØ³ØªÙÙØ© ÙØ¢ÙÙØ© Ø¹Ù Ø§ÙØªÙØ³ÙÙØ§Øª Ø§ÙØ­Ø§ÙÙØ©
 ========================================================= */
 
 .ma3da-my-tickets-screen {
