@@ -1778,6 +1778,19 @@
 
 
       <button
+        id="operatorFinanceBtn"
+        class="operator-menu-card"
+        type="button"
+      >
+        <div class="operator-menu-icon">🧾</div>
+        <div class="operator-menu-content">
+          <strong>فواتير التأجير ومستحقاتي</strong>
+          <span>إصدار فاتورة لمسؤول المشروع ومتابعة مستحقات معداتي</span>
+        </div>
+        <span class="operator-menu-arrow">←</span>
+      </button>
+
+      <button
         id="operatorRatingsBtn"
         class="operator-menu-card"
         type="button"
@@ -5205,9 +5218,19 @@
   <button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
 <section id="contractorFinanceScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🧾</div><h1>الفواتير والمستحقات</h1><p>أنشئ فواتير مشروعك، وتابع الدفعات المسجلة وعمولة مِعدة البالغة ١٠٪.</p></div>
-  <div class="card">
-    <h3>إنشاء فاتورة مشروع</h3>
+  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وعمولة مِعدة.</p></div>
+  <div class="card" id="ownerIssueInvoiceCard" hidden>
+    <h3>إنهاء الخطوة الأولى وإرسال فاتورة لمسؤول المشروع</h3>
+    <p>اختر طلب معدة مرتبطًا بمشروع مقاول. ستُرسل الفاتورة إلى مسؤول المشروع، ولن تُعتبر مدفوعة حتى يتم التحقق من التحصيل.</p>
+    <label for="ownerInvoiceRequest">طلب المشروع / المعدة *</label>
+    <select id="ownerInvoiceRequest"><option value="">جارٍ تحميل طلبات المشاريع…</option></select>
+    <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
+    <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="مثال: دفعة تأجير المعدة للمرحلة الأولى"></textarea>
+    <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إنهاء الخطوة وإرسال الفاتورة</button>
+    <p id="ownerInvoiceFeedback" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card" id="contractorCreateInvoiceCard" hidden>
+    <h3>إنشاء فاتورة مشروع (إدارة داخلية)</h3>
     <label for="contractorInvoiceProject">المشروع *</label><select id="contractorInvoiceProject"><option value="">جارٍ تحميل المشاريع…</option></select>
     <label for="contractorInvoiceNumber">رقم الفاتورة (اختياري)</label><input id="contractorInvoiceNumber" maxlength="60" placeholder="يُنشأ تلقائيًا إذا تركته فارغًا">
     <label for="contractorInvoiceAmount">قيمة الفاتورة بالريال *</label><input id="contractorInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثال: 25000">
@@ -5216,8 +5239,8 @@
     <button id="contractorCreateInvoiceBtn" class="main-btn" type="button">حفظ الفاتورة</button>
     <p id="contractorInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
-  <div class="card">
-    <h3>تسجيل دفعة للمراجعة</h3>
+  <div class="card" id="contractorSubmitPaymentCard" hidden>
+    <h3>سداد فاتورة المشروع / تسجيل دفعة للمراجعة</h3>
     <label for="contractorPaymentInvoice">الفاتورة *</label><select id="contractorPaymentInvoice"><option value="">حمّل الفواتير أولًا</option></select>
     <label for="contractorPaymentAmount">قيمة الدفعة بالريال *</label><input id="contractorPaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="قيمة الدفعة المستلمة">
     <label for="contractorPaymentReference">مرجع التحويل أو ملاحظة</label><input id="contractorPaymentReference" maxlength="160" placeholder="رقم تحويل أو تفاصيل مختصرة">
