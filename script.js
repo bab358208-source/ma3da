@@ -5449,46 +5449,38 @@ async function acceptOperatorRequest(
     const equipment =
       await getOperatorEquipment();
  
-    const acceptedAt = Date.now();
-    const equipmentId = request.equipmentId || user.uid;
-    const equipmentRef = window.ma3daDoc(window.ma3daDB, "equipment", equipmentId);
-
-    if (!window.ma3daDB || typeof window.ma3daDB.runTransaction !== "function") {
-      throw new Error("يتطلب تأكيد الحجز معاملة Firebase لمنع تداخل الطلبات.");
-    }
-
-    await window.ma3daDB.runTransaction(async transaction => {
-      const freshRequestSnap = await transaction.get(requestRef);
-      const equipmentSnap = await transaction.get(equipmentRef);
-      if (!freshRequestSnap.exists()) throw new Error("الطلب غير موجود.");
-      const freshRequest = freshRequestSnap.data() || {};
-      if (freshRequest.status !== "searching") throw new Error("هذا الطلب لم يعد متاحًا.");
-      const isProjectRequest = freshRequest.requesterRole === "contractor" || freshRequest.requesterType === "contractor" || !!freshRequest.projectId || !!freshRequest.contractorId;
-
-      if (!equipmentSnap.exists()) throw new Error("تعذر العثور على المعدة المسجلة لهذا الطلب.");
+    await window.ma3daUpdateDoc(
+      requestRef,
       {
-        const equipmentData = equipmentSnap.data() || {};
-        if (equipmentData.ownerId && equipmentData.ownerId !== user.uid) throw new Error("هذه المعدة ليست مرتبطة بحسابك.");
-        if (equipmentData.equipmentStatus === "cancelled") throw new Error("هذه المعدة ملغاة.");
-        if (equipmentData.maintenanceActive === true) throw new Error("المعدة متوقفة للصيانة ولا تستقبل حجوزات جديدة.");
-        if (equipmentData.rentalMode === "projects_only" && !isProjectRequest) throw new Error("هذه المعدة مخصصة للمشاريع فقط.");
-        const activeIds = Array.isArray(equipmentData.activeRequestIds) ? equipmentData.activeRequestIds : [];
-        if (activeIds.some(id => id !== requestId)) throw new Error("المعدة مرتبطة بطلب مؤكد آخر ولا يمكن قبول طلب جديد الآن.");
-        const nextIds = activeIds.includes(requestId) ? activeIds : [...activeIds, requestId];
-        transaction.update(equipmentRef, { activeRequestIds: nextIds, availability: "unavailable", updatedAt: acceptedAt });
+ 
+        status:
+          "accepted",
+ 
+        operatorId:
+          user.uid,
+ 
+        operatorName:
+          operatorData.name ||
+          "صاحب المعدة",
+ 
+        operatorPhone:
+          operatorData.phone ||
+          "",
+ 
+        operatorRating:
+          Number(
+            operatorData.rating || 5
+          ),
+ 
+        operatorEquipment:
+          equipment?.model ||
+          "",
+ 
+        acceptedAt:
+          Date.now()
+ 
       }
-
-      transaction.update(requestRef, {
-        status: "accepted",
-        operatorId: user.uid,
-        operatorName: operatorData.name || "صاحب المعدة",
-        operatorPhone: operatorData.phone || "",
-        operatorRating: Number(operatorData.rating || 5),
-        operatorEquipment: equipment?.model || "",
-        equipmentId: freshRequest.equipmentId || equipmentId,
-        acceptedAt
-      });
-    });
+    );
  
     localStorage.setItem("currentRequestId", requestId);
  
@@ -5508,7 +5500,7 @@ async function acceptOperatorRequest(
     );
  
     alert(
-      error?.message || "تعذر قبول الطلب."
+      "تعذر قبول الطلب."
     );
  
   }
@@ -6041,25 +6033,6 @@ function startOperatorTimer(
  
 }
  
-/* Release equipment lock only after the linked request is completed. */
-async function ma3daReleaseEquipmentLock(requestId, requestData){
-  if(!window.ma3daDB || typeof window.ma3daDB.runTransaction !== "function") return false;
-  const equipmentId = requestData?.equipmentId || requestData?.operatorId;
-  if(!equipmentId) return false;
-  const equipmentRef = window.ma3daDoc(window.ma3daDB, "equipment", equipmentId);
-  return window.ma3daDB.runTransaction(async transaction => {
-    const equipmentSnap = await transaction.get(equipmentRef);
-    if(!equipmentSnap.exists()) return false;
-    const data = equipmentSnap.data() || {};
-    const activeIds = Array.isArray(data.activeRequestIds) ? data.activeRequestIds : [];
-    const nextIds = activeIds.filter(id => id !== requestId);
-    const maintenanceActive = data.maintenanceActive === true;
-    const availability = maintenanceActive || nextIds.length > 0 || data.equipmentStatus === "cancelled" ? "unavailable" : "available";
-    transaction.update(equipmentRef, {activeRequestIds: nextIds, availability, updatedAt: Date.now()});
-    return true;
-  });
-}
-
 /* OPERATOR FINISH WORK */
  
 async function operatorFinishWork(){
@@ -6122,17 +6095,14 @@ async function operatorFinishWork(){
     await window.ma3daUpdateDoc(
       requestRef,
       {
-        status: "completed",
+ 
+        status:
+          "completed",
+ 
         completedAt
+ 
       }
     );
-
-    try {
-      await ma3daReleaseEquipmentLock(requestId, request);
-    } catch (releaseError) {
-      console.error("تعذر تحرير حجز المعدة بعد انتهاء الطلب:", releaseError);
-      alert("اكتمل الطلب، لكن تعذر تحديث توفر المعدة تلقائيًا. تحقق من Firebase.");
-    }
  
     clearInterval(
       operatorTimerInterval
@@ -10324,8 +10294,6 @@ localStorage.setItem("selectedRole", "contractor");
   let contractorProjectMap = null;
   let contractorProjectMarker = null;
   let contractorNearbyEquipmentCache = [];
-  let contractorSelectedEquipmentIds = new Set();
-  let contractorBulkRequestSubmitting = false;
 
   function contractorLoadLeaflet(){
     return new Promise((resolve,reject)=>{
@@ -10453,128 +10421,8 @@ localStorage.setItem("selectedRole", "contractor");
     const q=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
     return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
   }
-  function contractorEnsureBulkRequestPanel(){
-    const list=document.getElementById('contractorNearbyEquipmentList');
-    if(!list)return null;
-    let panel=document.getElementById('contractorBulkRequestPanel');
-    if(!panel){
-      panel=document.createElement('section');
-      panel.id='contractorBulkRequestPanel';
-      panel.className='card contractor-bulk-request-panel';
-      panel.style.cssText='margin:12px 0;padding:16px;border:1px solid #d6b45b;border-radius:14px;background:#fffdf7;color:#222;';
-      panel.innerHTML=`
-        <h3 style="margin:0 0 8px">📅 مدة طلب المعدات</h3>
-        <p style="margin:0 0 12px;color:#666;font-size:13px">حدد بداية ونهاية العمل، ثم اختر أكثر من معدة وأرسلها في طلب مشروع واحد. ينشأ رقم طلب مستقل لكل معدة حتى يستطيع صاحبها الرد بشكل مستقل.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
-          <label style="display:grid;gap:6px;font-size:14px">من تاريخ ووقت
-            <input id="contractorBulkStartAt" type="datetime-local" required style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box">
-          </label>
-          <label style="display:grid;gap:6px;font-size:14px">إلى تاريخ ووقت
-            <input id="contractorBulkEndAt" type="datetime-local" required style="width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box">
-          </label>
-        </div>
-        <div id="contractorBulkSelectionSummary" style="margin:12px 0;font-weight:600">لم تختر أي معدة بعد.</div>
-        <div id="contractorBulkPriceSummary" style="margin:8px 0;color:#444">حدد المدة واختر المعدات لحساب التكلفة التقديرية.</div>
-        <button id="contractorBulkSendRequestsBtn" type="button" class="main-btn" style="width:100%;margin-top:8px" disabled>إرسال طلب المعدات المحددة</button>
-      `;
-      list.parentNode.insertBefore(panel,list);
-      const start=panel.querySelector('#contractorBulkStartAt');
-      const end=panel.querySelector('#contractorBulkEndAt');
-      const now=new Date();now.setMinutes(0,0,0);now.setHours(now.getHours()+1);
-      const later=new Date(now.getTime()+8*60*60*1000);
-      const toLocalValue=d=>{const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);return local.toISOString().slice(0,16);};
-      start.value=toLocalValue(now);end.value=toLocalValue(later);
-      start.addEventListener('change',contractorUpdateBulkRequestSummary);
-      end.addEventListener('change',contractorUpdateBulkRequestSummary);
-      panel.querySelector('#contractorBulkSendRequestsBtn').addEventListener('click',contractorSubmitBulkEquipmentRequests);
-    }
-    return panel;
-  }
-
-  function contractorBulkRentalPeriod(){
-    const startValue=document.getElementById('contractorBulkStartAt')?.value;
-    const endValue=document.getElementById('contractorBulkEndAt')?.value;
-    if(!startValue||!endValue)return null;
-    const start=new Date(startValue),end=new Date(endValue);
-    if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start)return null;
-    const hours=Math.ceil((end.getTime()-start.getTime())/3600000);
-    return {start,end,hours,days:Math.ceil(hours/24)};
-  }
-
-  function contractorUpdateBulkRequestSummary(){
-    const selected=contractorNearbyEquipmentCache.filter(item=>contractorSelectedEquipmentIds.has(item.id));
-    const summary=document.getElementById('contractorBulkSelectionSummary');
-    const priceSummary=document.getElementById('contractorBulkPriceSummary');
-    const submit=document.getElementById('contractorBulkSendRequestsBtn');
-    const period=contractorBulkRentalPeriod();
-    if(summary)summary.textContent=selected.length?`تم اختيار ${selected.length} معدة.`:'لم تختر أي معدة بعد.';
-    if(priceSummary){
-      if(!period)priceSummary.textContent='تحقق من تاريخ ووقت البداية والنهاية.';
-      else{
-        const lines=selected.map(item=>{const rate=Number(item.hourlyPrice||item.price||0);return `${item.type||item.equipmentType||item.name||'معدة'}: ${rate?`${(rate*period.hours).toLocaleString('ar-SA')} ريال`:'السعر غير محدد'}`;});
-        const known=selected.reduce((sum,item)=>sum+Number(item.hourlyPrice||item.price||0)*period.hours,0);
-        priceSummary.innerHTML=`المدة: ${period.hours.toLocaleString('ar-SA')} ساعة تقريبًا (${(period.hours/24).toFixed(1)} يوم).<br>${lines.length?lines.map(line=>escapeContractorHtml(line)).join('<br>'):'اختر المعدات لعرض التكلفة.'}<br><strong>الإجمالي التقديري للأسعار المعروفة: ${known.toLocaleString('ar-SA')} ريال</strong><br><small>الحساب تقديري على أساس سعر الساعة × الساعات المحتسبة، ولا يشمل رسومًا إضافية غير مسجلة.</small>`;
-      }
-    }
-    if(submit)submit.disabled=!selected.length||!period||contractorBulkRequestSubmitting;
-    document.querySelectorAll('[data-contractor-toggle-equipment]').forEach(button=>{
-      const chosen=contractorSelectedEquipmentIds.has(button.dataset.contractorToggleEquipment);
-      button.textContent=chosen?'✓ تمت الإضافة — إزالة':'＋ إضافة إلى الطلب';
-      button.setAttribute('aria-pressed',String(chosen));
-    });
-  }
-
-  async function contractorSubmitBulkEquipmentRequests(){
-    if(contractorBulkRequestSubmitting)return;
-    const period=contractorBulkRentalPeriod();
-    const selected=contractorNearbyEquipmentCache.filter(item=>contractorSelectedEquipmentIds.has(item.id));
-    if(!period){alert('حدد تاريخ ووقت بداية ونهاية صحيحين.');return;}
-    if(!selected.length){alert('اختر معدة واحدة على الأقل.');return;}
-    if(!window.ma3daAddDoc||!window.ma3daCollection||!window.ma3daDB){alert('قاعدة البيانات غير جاهزة.');return;}
-    const user=await getContractorUser();if(!user||!user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
-    const profile=contractorGetProfile()||{};
-    const projectOrderId=`PRJ-${Date.now()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
-    const submit=document.getElementById('contractorBulkSendRequestsBtn');
-    contractorBulkRequestSubmitting=true;if(submit){submit.disabled=true;submit.textContent='جارٍ إرسال طلبات المعدات…';}
-    let sent=0;const failures=[];
-    try{
-      for(const equipment of selected){
-        const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);
-        const price=hourlyPrice*period.hours;
-        const requestData={
-          projectOrderId,projectRequestGroupId:projectOrderId,projectId:contractorSelectedProject.id,
-          projectName:contractorSelectedProject.name||contractorSelectedProject.projectName||'',
-          projectCity:contractorSelectedProject.city||'',projectLatitude:contractorSelectedProject.latitude??null,
-          projectLongitude:contractorSelectedProject.longitude??null,projectCoordinates:contractorSelectedProject.coordinates||null,
-          location:contractorSelectedProject.address||contractorSelectedProject.location||contractorSelectedProject.city||'',
-          equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,
-          equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',
-          equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',
-          equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,
-          equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm??null,
-          rentalStartAt:period.start, rentalEndAt:period.end, requestedStartAt:period.start, requestedEndAt:period.end,
-          durationHours:period.hours,durationDays:Number((period.hours/24).toFixed(2)),duration:`${period.hours} ساعة تقريبًا`,
-          hourlyPrice,price,operator:document.getElementById('contractorOperator')?.value||'مع مشغل',
-          notes:document.getElementById('contractorNotes')?.value.trim()||'',
-          customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',
-          contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',
-          status:'searching',bookingStatus:'requested',createdAt:new Date()
-        };
-        try{
-          const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
-          sent++;if(result?.id){contractorCurrentOrderId=result.id;contractorCurrentOrder={id:result.id,...requestData};localStorage.setItem('contractorCurrentOrderId',result.id);localStorage.setItem('contractorCurrentOrder',JSON.stringify(contractorCurrentOrder));}
-        }catch(error){console.error('Send contractor equipment request failed:',equipment.id,error);failures.push(equipment.type||equipment.model||equipment.id);}
-      }
-      if(sent){contractorSelectedEquipmentIds.clear();contractorUpdateBulkRequestSummary();alert(`تم إرسال ${sent} طلب معدة للمشروع برقم المجموعة ${projectOrderId}.${failures.length?`\nتعذر إرسال ${failures.length} طلبات: ${failures.join('، ')}`:''}`);contractorShowScreen('contractorProjectsScreen');contractorProjectFilter='current';contractorSetProjectFilter('current');}
-      else alert('تعذر إرسال الطلبات. تحقق من اتصال Firebase وصلاحيات الطلبات.');
-    }finally{
-      contractorBulkRequestSubmitting=false;if(submit){submit.textContent='إرسال طلب المعدات المحددة';}contractorUpdateBulkRequestSummary();
-    }
-  }
-
   async function loadContractorNearbyEquipment(){
     const list=document.getElementById('contractorNearbyEquipmentList');if(!list)return;
-    contractorEnsureBulkRequestPanel();
     if(!contractorSelectedProject){list.innerHTML='<div class="card">اختر مشروعًا أولاً.</div>';return;}
     list.innerHTML='<div class="card">جارٍ تحميل المعدات…</div>';
     try{
@@ -10586,8 +10434,7 @@ localStorage.setItem("selectedRole", "contractor");
         const ownerId=d.ownerId||d.operatorId||d.userId||(docSnap.id!==getContractorUser()?.uid?docSnap.id:'');
         const type=d.type||d.equipmentType||d.name||'';
         const availability=d.availability||d.status||'';
-        const activeRequestIds=Array.isArray(d.activeRequestIds)?d.activeRequestIds:[];
-        if(d.equipmentStatus==='cancelled'||d.maintenanceActive===true||activeRequestIds.length>0||availability==='unavailable'||d.isAvailable===false||d.availability===false)return;
+        if(d.equipmentStatus==='cancelled'||availability==='unavailable'||d.isAvailable===false||d.availability===false)return;
         if(d.verificationStatus&&d.verificationStatus!=='verified'&&d.verificationStatus!=='approved')return;
         const point=contractorCoordinatesForEquipment(d);
         const distance=point?contractorDistanceKm(projectPoint,point):null;
@@ -10604,28 +10451,35 @@ localStorage.setItem("selectedRole", "contractor");
   }
   function renderContractorNearbyEquipment(){
     const list=document.getElementById('contractorNearbyEquipmentList');if(!list)return;
-    contractorEnsureBulkRequestPanel();
     const filter=document.getElementById('contractorEquipmentType')?.value||'';
     const rows=contractorNearbyEquipmentCache.filter(item=>!filter||item.type===filter||item.equipmentType===filter||item.name===filter);
-    if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد معدات مطابقة حاليًا</h3><p>جرّب نوعًا آخر أو حدّث قائمة المعدات. تظهر المسافة عندما تكون إحداثيات المعدة محفوظة في ملف صاحبها.</p></div>';contractorUpdateBulkRequestSummary();return;}
+    if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد معدات مطابقة حالياً</h3><p>جرّب نوعًا آخر أو حدّث قائمة المعدات. تظهر المسافة عندما تكون إحداثيات المعدة محفوظة في ملف صاحبها.</p></div>';return;}
     list.innerHTML=rows.map(item=>{
       const distance=item._distanceKm==null?(item._sameCity?'في مدينة المشروع — الإحداثيات غير متاحة':'المسافة غير متاحة'): `${item._distanceKm.toFixed(1)} كم من المشروع`;
       const title=[item.type||item.equipmentType||item.name||'معدة',item.model].filter(Boolean).join(' — ');
       const price=Number(item.hourlyPrice||item.price||0);
       const image=item.image||item.imageUrl||item.photo||'';
       const location=item.city||item.location||'المدينة غير محددة';
-      const selected=contractorSelectedEquipmentIds.has(item.id);
-      return `<div class="contractor-equipment-card" style="${selected?'border:2px solid #b99132;background:#fffdf5;':''}">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price.toLocaleString('ar-SA')} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="main-btn" data-contractor-toggle-equipment="${escapeContractorHtml(item.id)}" aria-pressed="${selected}">${selected?'✓ تمت الإضافة — إزالة':'＋ إضافة إلى الطلب'}</button></div>`;
+      return `<div class="contractor-equipment-card">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="main-btn" data-contractor-choose-equipment="${escapeContractorHtml(item.id)}">اختيار هذه المعدة وإرسال الطلب</button></div>`;
     }).join('');
-    contractorUpdateBulkRequestSummary();
   }
-
-  document.addEventListener('click',event=>{
-    const button=event.target.closest('[data-contractor-toggle-equipment]');if(!button)return;
-    const id=button.dataset.contractorToggleEquipment;
-    if(contractorSelectedEquipmentIds.has(id))contractorSelectedEquipmentIds.delete(id);
-    else contractorSelectedEquipmentIds.add(id);
-    renderContractorNearbyEquipment();
+  document.addEventListener('click',async event=>{
+    const button=event.target.closest('[data-contractor-choose-equipment]');if(!button)return;
+    const equipment=contractorNearbyEquipmentCache.find(row=>row.id===button.dataset.contractorChooseEquipment);if(!equipment||!contractorSelectedProject)return;
+    const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
+    const duration=document.getElementById('contractorDuration')?.value||'ساعة واحدة';
+    const operator=document.getElementById('contractorOperator')?.value||'مع مشغل';
+    const notes=document.getElementById('contractorNotes')?.value.trim()||'';
+    const hoursMap={'ساعة واحدة':1,'4 ساعات':4,'8 ساعات':8,'يوم كامل':10};const hours=hoursMap[duration]||1;
+    const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);const price=hourlyPrice*hours;
+    button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
+    try{
+      const profile=contractorGetProfile()||{};const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name,projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration,durationHours:hours,operator,notes,price,hourlyPrice,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date()};
+      const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
+      contractorCurrentOrderId=result.id;contractorCurrentOrder={id:result.id,...requestData};localStorage.setItem('contractorCurrentOrderId',result.id);localStorage.setItem('contractorCurrentOrder',JSON.stringify(contractorCurrentOrder));
+      alert('تم إرسال طلبك لصاحب المعدة المختارة بنجاح.');contractorShowScreen('contractorProjectsScreen');contractorProjectFilter='current';contractorSetProjectFilter('current');
+    }catch(error){console.error('Send selected equipment request error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لإرسال الطلب في Firebase.':'تعذر إرسال الطلب حالياً.');}
+    finally{button.disabled=false;button.textContent='اختيار هذه المعدة وإرسال الطلب';}
   });
 
   /* =========================================================
@@ -11354,62 +11208,6 @@ localStorage.setItem("selectedRole", "contractor");
     }catch(error){console.error('Load contractor projects error:',error);list.innerHTML='<div class="card"><p>تعذر تحميل المشاريع. تأكد من صلاحيات قراءة مجموعة projects في Firebase.</p></div>';}
   }
 
-  // Project request entry: choose a new equipment request or track previous requests.
-  function contractorEnsureProjectRequestChoices(){
-    const screen=document.getElementById('contractorEquipmentPickerScreen');
-    if(!screen)return null;
-    let menu=document.getElementById('contractorProjectRequestChoices');
-    let content=document.getElementById('contractorProjectRequestContent');
-    let tracking=document.getElementById('contractorProjectRequestTracking');
-    if(menu&&content&&tracking)return {screen,menu,content,tracking};
-    menu=document.createElement('section');menu.id='contractorProjectRequestChoices';menu.className='card';
-    menu.style.cssText='padding:18px;margin:12px 0;border:1px solid #d6b45b;border-radius:16px;background:#fffdf7;color:#222;';
-    menu.innerHTML=`<h2 style="margin:0 0 6px">طلبات معدات المشروع</h2><p id="contractorChoicesProjectName" style="margin:0 0 14px;color:#666"></p><div style="display:grid;gap:10px"><button type="button" class="main-btn" id="contractorStartNewProjectRequestBtn">＋ إنشاء طلب معدة جديد</button><button type="button" class="back-btn" id="contractorTrackProjectRequestBtn">◷ تتبّع طلب معدة سابق</button></div>`;
-    content=document.createElement('div');content.id='contractorProjectRequestContent';
-    const oldChildren=Array.from(screen.childNodes);
-    oldChildren.forEach(node=>{if(node!==menu)content.appendChild(node);});
-    tracking=document.createElement('section');tracking.id='contractorProjectRequestTracking';tracking.className='card';
-    tracking.style.cssText='display:none;padding:16px;margin:12px 0;border:1px solid #d6b45b;border-radius:14px;background:#fffdf7;color:#222;';
-    tracking.innerHTML=`<h3 style="margin-top:0">طلبات هذا المشروع</h3><div id="contractorProjectRequestTrackingList"><p>جارٍ تحميل الطلبات…</p></div><button type="button" class="back-btn" id="contractorProjectRequestTrackingBackBtn" style="width:100%;margin-top:12px">العودة إلى خيارات الطلب</button>`;
-    screen.insertBefore(menu,screen.firstChild);screen.appendChild(content);screen.appendChild(tracking);
-    menu.querySelector('#contractorStartNewProjectRequestBtn').addEventListener('click',()=>{menu.style.display='none';tracking.style.display='none';content.style.display='block';loadContractorNearbyEquipment();});
-    menu.querySelector('#contractorTrackProjectRequestBtn').addEventListener('click',async()=>{menu.style.display='none';content.style.display='none';tracking.style.display='block';await contractorLoadProjectRequestHistory();});
-    tracking.querySelector('#contractorProjectRequestTrackingBackBtn').addEventListener('click',()=>{tracking.style.display='none';content.style.display='none';menu.style.display='block';});
-    const originalBack=document.getElementById('contractorPickerBackBtn');
-    if(originalBack&&!originalBack.dataset.choiceBackBound){originalBack.dataset.choiceBackBound='1';originalBack.addEventListener('click',()=>{menu.style.display='block';content.style.display='none';tracking.style.display='none';});}
-    content.style.display='none';tracking.style.display='none';
-    return {screen,menu,content,tracking};
-  }
-
-  function contractorFormatRequestDate(value){
-    if(!value)return 'غير محدد';
-    let date=value;
-    if(value&&typeof value.toDate==='function')date=value.toDate();
-    else if(value&&typeof value==='object'&&typeof value.seconds==='number')date=new Date(value.seconds*1000);
-    else if(!(value instanceof Date))date=new Date(value);
-    return Number.isNaN(date.getTime())?'غير محدد':date.toLocaleString('ar-SA',{dateStyle:'medium',timeStyle:'short'});
-  }
-
-  async function contractorLoadProjectRequestHistory(){
-    const list=document.getElementById('contractorProjectRequestTrackingList');if(!list)return;
-    const project=contractorSelectedProject;const user=await getContractorUser();
-    if(!project?.id||!user?.uid){list.innerHTML='<p>تعذر تحديد المشروع أو حساب المقاول.</p>';return;}
-    list.innerHTML='<p>جارٍ تحميل الطلبات…</p>';
-    try{
-      const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));
-      const rows=[];snapshot.forEach(docSnap=>{const d=docSnap.data()||{};if(d.projectId===project.id&&(d.contractorId===user.uid||d.requesterId===user.uid||d.customerId===user.uid))rows.push({id:docSnap.id,...d});});
-      rows.sort((a,b)=>{const time=x=>x?.seconds?x.seconds*1000:x instanceof Date?x.getTime():new Date(x||0).getTime();return time(b.createdAt)-time(a.createdAt);});
-      if(!rows.length){list.innerHTML='<div style="padding:12px 0"><p>لا توجد طلبات سابقة لهذا المشروع حتى الآن.</p><p style="color:#666;font-size:13px">عند إرسال طلب معدة، ستظهر حالته وتفاصيله هنا.</p></div>';return;}
-      const statusLabels={searching:'بانتظار القبول',requested:'بانتظار الرد',accepted:'مقبول',arrived:'وصلت المعدة',working:'قيد التنفيذ',completed:'مكتمل',rejected:'مرفوض',cancelled:'ملغي',declined:'مرفوض'};
-      list.innerHTML=rows.map(row=>{
-        const status=statusLabels[row.status]||statusLabels[row.bookingStatus]||row.status||row.bookingStatus||'قيد المراجعة';
-        const start=contractorFormatRequestDate(row.rentalStartAt||row.requestedStartAt);const end=contractorFormatRequestDate(row.rentalEndAt||row.requestedEndAt);
-        const price=Number(row.price||0).toLocaleString('ar-SA');
-        return `<article style="padding:12px 0;border-bottom:1px solid #e8dfcb"><strong>${escapeContractorHtml(row.equipment||'معدة')} ${row.equipmentModel?'— '+escapeContractorHtml(row.equipmentModel):''}</strong><p style="margin:6px 0">الحالة: <b>${escapeContractorHtml(status)}</b></p><p style="margin:6px 0">رقم الطلب: <span dir="ltr">${escapeContractorHtml(row.id)}</span></p><p style="margin:6px 0">من: ${escapeContractorHtml(start)}</p><p style="margin:6px 0">إلى: ${escapeContractorHtml(end)}</p><p style="margin:6px 0">التكلفة التقديرية: ${price} ريال</p><small style="color:#777">تاريخ الإرسال: ${escapeContractorHtml(contractorFormatRequestDate(row.createdAt))}</small></article>`;
-      }).join('');
-    }catch(error){console.error('Load contractor project request history error:',error);list.innerHTML='<p>تعذر تحميل الطلبات. تحقق من صلاحيات قراءة مجموعة requests في Firebase.</p>';}
-  }
-
   document.addEventListener('click',async event=>{
     const editButton=event.target.closest('[data-contractor-edit-project]');
     if(editButton){
@@ -11430,9 +11228,7 @@ localStorage.setItem("selectedRole", "contractor");
       contractorSelectedProject=project;
       const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=project.name||project.projectName||'مشروعك';
       const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${project.city||''} ${project.address||project.location||''}`;
-      contractorShowScreen('contractorEquipmentPickerScreen');
-      const choices=contractorEnsureProjectRequestChoices();
-      if(choices){const projectName=document.getElementById('contractorChoicesProjectName');if(projectName)projectName.textContent=project.name||project.projectName||'مشروعك';choices.menu.style.display='block';choices.content.style.display='none';choices.tracking.style.display='none';}
+      contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();
     }catch(error){console.error('Open project equipment picker error:',error);alert('تعذر فتح المشروع.');}
   });
 
@@ -12181,7 +11977,7 @@ document.addEventListener("click", function(event){
     screen.id = "ma3daEquipmentManagerScreen";
     screen.className = "screen";
     screen.innerHTML = `
-      <div class="mam-top"><div><h2>معداتي</h2><div class="mam-muted">الإتاحة تتحدث تلقائيًا حسب رقم الطلب. يمكنك تخصيص المعدة للمشاريع أو إيقاف الحجوزات الجديدة للصيانة.</div></div><button type="button" class="mam-btn mam-secondary" id="mamBackBtn">رجوع</button></div>
+      <div class="mam-top"><div><h2>معداتي</h2><div class="mam-muted">إضافة معداتك وتعديل بياناتها وإيقاف المعدات التي لم تعد ترغب بعرضها.</div></div><button type="button" class="mam-btn mam-secondary" id="mamBackBtn">رجوع</button></div>
       <div class="mam-actions"><button type="button" class="mam-btn mam-primary" id="mamAddBtn">＋ إضافة معدة جديدة</button><button type="button" class="mam-btn mam-secondary" id="mamRefreshBtn">تحديث القائمة</button></div>
       <div id="mamEquipmentList"><div class="mam-empty">جارٍ تحميل المعدات…</div></div>
       <div class="mam-card" id="mamEditorCard" style="display:none">
@@ -12194,9 +11990,8 @@ document.addEventListener("click", function(event){
           <label class="mam-field">المدينة<input id="mamCity" maxlength="80" required placeholder="الرياض"></label>
           <label class="mam-field">رقم المعدة / اللوحة<input id="mamPlate" maxlength="60" placeholder="اختياري"></label>
           <label class="mam-field">السعر بالساعة (ريال)<input id="mamPrice" type="number" min="1" step="1" required placeholder="250"></label>
-          <label class="mam-field">نوع التأجير<select id="mamRentalMode"><option value="all">تأجير عادي ومشاريع</option><option value="projects_only">للمشاريع فقط</option></select></label>
+          <label class="mam-field">حالة التوفر<select id="mamAvailability"><option value="available">متاحة</option><option value="unavailable">غير متاحة</option></select></label>
           <label class="mam-field">صورة المعدة<input id="mamImageFile" type="file" accept="image/*"><img class="mam-preview" id="mamImagePreview" alt="معاينة صورة المعدة"></label>
-          <p class="mam-muted" style="grid-column:1/-1">تتغير الإتاحة تلقائيًا عند قبول الطلب وإنهائه. استخدم زر الصيانة لإيقاف الحجوزات الجديدة فقط.</p>
         </div>
         <div class="mam-actions"><button type="button" class="mam-btn mam-primary" id="mamSaveBtn">حفظ</button><button type="button" class="mam-btn mam-secondary" id="mamCancelEditBtn">إلغاء</button></div>
       </div>`;
@@ -12229,7 +12024,7 @@ document.addEventListener("click", function(event){
       const item = managerEquipmentCache.find(row=>row.id===id);
       if(!item) return;
       if(button.dataset.mamAction === "edit") managerOpenEditor(item);
-      if(button.dataset.mamAction === "maintenance") await managerToggleMaintenance(item);
+      if(button.dataset.mamAction === "toggle") await managerToggleAvailability(item);
       if(button.dataset.mamAction === "cancel") await managerCancelEquipment(item);
     });
     return screen;
@@ -12270,14 +12065,10 @@ document.addEventListener("click", function(event){
       if(!rows.length){list.innerHTML='<div class="mam-card mam-empty">لا توجد معدات مسجلة حتى الآن. اضغط «إضافة معدة جديدة» للبدء.</div>';return;}
       list.innerHTML=rows.map(item=>{
         const cancelled=item.equipmentStatus==="cancelled";
-        const activeIds=Array.isArray(item.activeRequestIds)?item.activeRequestIds:[];
-        const maintenance=item.maintenanceActive===true;
-        const availability=!cancelled&&!maintenance&&activeIds.length===0;
+        const availability=item.availability==="available"&&!cancelled;
         const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.verificationStatus==="verified"?"موثقة":"قيد المراجعة");
-        const rentalMode=item.rentalMode==="projects_only"?"للمشاريع فقط":"تأجير عادي ومشاريع";
         const photo=item.image?`<img class="mam-photo" src="${managerEscape(item.image)}" alt="صورة المعدة">`:'<div class="mam-photo" style="display:flex;align-items:center;justify-content:center">🚜</div>';
-        const availabilityLabel=cancelled?"ملغاة":maintenance?"متوقفة للصيانة":activeIds.length?`محجوزة — الطلب ${activeIds.map(managerEscape).join("، ")}`:"متاحة للحجز";
-        return `<article class="mam-card"><div class="mam-equipment">${photo}<div><h3>${managerEscape(item.type||"معدة")}${item.model?" — "+managerEscape(item.model):""}</h3><div class="mam-muted">السنة: ${managerEscape(item.year||"—")} · المدينة: ${managerEscape(item.city||"—")}</div><div class="mam-muted">رقم المعدة: ${managerEscape(item.plateNumber||item.equipmentNumber||"غير مسجل")}</div><div class="mam-muted">السعر: ${managerEscape(item.hourlyPrice||0)} ريال/ساعة · ${managerEscape(rentalMode)}</div><span class="mam-status">${availabilityLabel}</span> <span class="mam-status">${managerEscape(review)}</span></div></div><div class="mam-actions"><button type="button" class="mam-btn mam-secondary" data-mam-action="edit" data-id="${managerEscape(item.id)}">تعديل</button>${cancelled?"":`<button type="button" class="mam-btn mam-secondary" data-mam-action="maintenance" data-id="${managerEscape(item.id)}">${maintenance?"إنهاء الصيانة":"إيقاف للصيانة"}</button><button type="button" class="mam-btn mam-danger" data-mam-action="cancel" data-id="${managerEscape(item.id)}">إلغاء المعدة</button>`}</div></article>`;
+        return `<article class="mam-card"><div class="mam-equipment">${photo}<div><h3>${managerEscape(item.type||"معدة")}${item.model?" — "+managerEscape(item.model):""}</h3><div class="mam-muted">السنة: ${managerEscape(item.year||"—")} · المدينة: ${managerEscape(item.city||"—")}</div><div class="mam-muted">رقم المعدة: ${managerEscape(item.plateNumber||item.equipmentNumber||"غير مسجل")}</div><div class="mam-muted">السعر: ${managerEscape(item.hourlyPrice||0)} ريال/ساعة</div><span class="mam-status">${cancelled?"ملغاة":(availability?"متاحة":"غير متاحة")}</span> <span class="mam-status">${managerEscape(review)}</span></div></div><div class="mam-actions"><button type="button" class="mam-btn mam-secondary" data-mam-action="edit" data-id="${managerEscape(item.id)}">تعديل</button>${cancelled?"":`<button type="button" class="mam-btn mam-secondary" data-mam-action="toggle" data-id="${managerEscape(item.id)}">${availability?"جعلها غير متاحة":"جعلها متاحة"}</button><button type="button" class="mam-btn mam-danger" data-mam-action="cancel" data-id="${managerEscape(item.id)}">إلغاء المعدة</button>`}</div></article>`;
       }).join("");
     }catch(error){
       console.error("تعذر تحميل قائمة المعدات:",error);
@@ -12292,7 +12083,7 @@ document.addEventListener("click", function(event){
     managerImageData=item?.image||"";
     screen.querySelector("#mamEditorTitle").textContent=item?"تعديل بيانات المعدة":"إضافة معدة جديدة";
     screen.querySelector("#mamEditorNote").textContent=item?"سيُرسل التعديل إلى موظفي الدعم للمراجعة، ولن تُستبدل البيانات الحالية قبل الموافقة.":"ستُضاف المعدة بحالة قيد المراجعة حتى يتم التحقق منها.";
-    const values={mamType:item?.type||"",mamModel:item?.model||"",mamYear:item?.year||"",mamCity:item?.city||"",mamPlate:item?.plateNumber||item?.equipmentNumber||"",mamPrice:item?.hourlyPrice||"",mamRentalMode:item?.rentalMode||"all"};
+    const values={mamType:item?.type||"",mamModel:item?.model||"",mamYear:item?.year||"",mamCity:item?.city||"",mamPlate:item?.plateNumber||item?.equipmentNumber||"",mamPrice:item?.hourlyPrice||"",mamAvailability:item?.availability||"available"};
     Object.entries(values).forEach(([id,value])=>{const field=screen.querySelector("#"+id);if(field)field.value=value;});
     const preview=screen.querySelector("#mamImagePreview");
     if(managerImageData){preview.src=managerImageData;preview.style.display="block";}else{preview.removeAttribute("src");preview.style.display="none";}
@@ -12310,7 +12101,7 @@ document.addEventListener("click", function(event){
     const city=screen.querySelector("#mamCity").value.trim();
     const plateNumber=screen.querySelector("#mamPlate").value.trim();
     const hourlyPrice=Number(screen.querySelector("#mamPrice").value||0);
-    const rentalMode=screen.querySelector("#mamRentalMode").value;
+    const availability=screen.querySelector("#mamAvailability").value;
     if(!type||!model||!year||!city||hourlyPrice<=0){alert("أكمل نوع المعدة والموديل والسنة والمدينة والسعر الصحيح.");return;}
     if(!window.ma3daAddDoc||!window.ma3daCollection||!window.ma3daSetDoc){alert("أدوات حفظ المعدات غير جاهزة. أعد تحميل الصفحة.");return;}
     button.disabled=true;button.textContent="جارٍ الحفظ…";
@@ -12318,9 +12109,9 @@ document.addEventListener("click", function(event){
       const user=await managerCurrentUser();
       if(!user)throw new Error("يجب تسجيل الدخول أولًا.");
       const now=Date.now();
-      const existing=managerSelectedEquipmentData||{};
-      const base={type,model,year,city,plateNumber,hourlyPrice,rentalMode,availability:existing.availability||"available",maintenanceActive:existing.maintenanceActive===true,activeRequestIds:Array.isArray(existing.activeRequestIds)?existing.activeRequestIds:[],image:managerImageData||"",ownerId:user.uid,ownerEmail:user.email||existing.ownerEmail||"",updatedAt:now};
+      const base={type,model,year,city,plateNumber,hourlyPrice,availability,image:managerImageData||"",ownerId:user.uid,ownerEmail:user.email||"",updatedAt:now};
       if(managerSelectedEquipmentId){
+        const existing=managerSelectedEquipmentData||{};
         const pendingChanges={...base,requestedAt:now,requestedBy:user.uid};
         const ref=window.ma3daDoc(window.ma3daDB,"equipment",managerSelectedEquipmentId);
         await window.ma3daSetDoc(ref,{...existing,ownerId:user.uid,ownerEmail:user.email||existing.ownerEmail||"",pendingChanges,editStatus:"pending",editRequestedAt:now},{merge:true});
@@ -12338,19 +12129,15 @@ document.addEventListener("click", function(event){
     }finally{button.disabled=false;button.textContent="حفظ";}
   }
 
-  async function managerToggleMaintenance(item){
+  async function managerToggleAvailability(item){
     try{
       const user=await managerCurrentUser();
       if(!user)throw new Error("يجب تسجيل الدخول أولًا.");
       const ref=window.ma3daDoc(window.ma3daDB,"equipment",item.id);
-      const maintenanceActive=item.maintenanceActive!==true;
-      const activeIds=Array.isArray(item.activeRequestIds)?item.activeRequestIds:[];
-      const availability=maintenanceActive||activeIds.length>0?"unavailable":"available";
-      await window.ma3daUpdateDoc(ref,{maintenanceActive,availability,updatedAt:Date.now(),ownerId:user.uid});
+      await window.ma3daUpdateDoc(ref,{availability:item.availability==="available"?"unavailable":"available",updatedAt:Date.now(),ownerId:user.uid});
       await managerLoadEquipment();
       if(typeof displayMyEquipment==="function") await displayMyEquipment();
-      alert(maintenanceActive?"تم إيقاف استقبال الحجوزات الجديدة للصيانة. الحجوزات المؤكدة باقية كما هي.":(activeIds.length?"انتهت الصيانة، لكن المعدة تبقى محجوزة للطلب الحالي.":"انتهت الصيانة وأصبحت المعدة متاحة للحجز."));
-    }catch(error){console.error("تعذر تحديث الصيانة:",error);alert("تعذر تحديث حالة الصيانة. تحقق من صلاحيات Firebase.");}
+    }catch(error){console.error("تعذر تغيير توفر المعدة:",error);alert("تعذر تغيير حالة المعدة.");}
   }
 
   async function managerCancelEquipment(item){
@@ -12673,4 +12460,144 @@ document.addEventListener("click", function(event){
 
   // Keep old submit buttons inert so users cannot create duplicate tickets through the retired form.
   document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
+})();
+
+
+/* =========================================================
+   MA3DA CONTRACTOR INVOICES + PAYMENT LEDGER (INITIAL PHASE)
+   Commission: 10% of each verified received payment.
+   Payment records entered by contractor remain pending until
+   a finance-authorized workflow verifies them. This module does
+   not collect money or claim that a gateway payment occurred.
+========================================================= */
+(function ma3daContractorFinanceModule(){
+  'use strict';
+  const COMMISSION_RATE = 0.10;
+  const $f = id => document.getElementById(id);
+  let cachedInvoices = [];
+  let cachedPayments = [];
+  let cachedProjects = [];
+  const money = n => (Number(n)||0).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ر.س';
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const say = (id, message, error=false) => { const el=$f(id); if(el){el.textContent=message;el.style.color=error?'#a12622':'#356b37';} };
+  const getUser = async () => {
+    if(typeof window.ma3daGetCurrentUser === 'function') return await window.ma3daGetCurrentUser();
+    return window.ma3daAuth?.currentUser || null;
+  };
+  const col = name => window.ma3daCollection(window.ma3daDB,name);
+  const readAll = async name => {
+    const snap=await window.ma3daGetDocs(col(name)); const rows=[];
+    snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})})); return rows;
+  };
+  const when = v => {
+    try { const d=v?.toDate?v.toDate():(v instanceof Date?v:new Date(v)); return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('ar-SA'); }
+    catch(_){return '—';}
+  };
+  function statusLabel(status){
+    return ({issued:'صادرة — بانتظار الدفعات',partial:'مدفوعة جزئيًا',paid:'مسددة بالكامل',pending_verification:'بانتظار التحقق',verified:'تم التحقق',rejected:'مرفوضة بعد المراجعة'})[status] || status || 'غير محددة';
+  }
+  function openFinance(){
+    if(typeof window.showScreen==='function') window.showScreen('contractorFinanceScreen');
+    else { document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active')); $f('contractorFinanceScreen')?.classList.add('active'); }
+    loadFinance().catch(err=>{console.error('Load contractor finance failed:',err);say('contractorInvoiceFeedback','تعذر تحميل الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);});
+  }
+  async function loadFinance(){
+    const user=await getUser();
+    if(!user?.uid){say('contractorInvoiceFeedback','سجّل الدخول أولًا لعرض الفواتير.',true);return;}
+    if(!window.ma3daDB || typeof window.ma3daGetDocs!=='function' || typeof window.ma3daCollection!=='function') throw new Error('Firebase is not ready');
+    const [projects, invoices, payments] = await Promise.all([readAll('projects'),readAll('projectInvoices'),readAll('projectInvoicePayments')]);
+    cachedProjects=projects.filter(p=>(p.contractorId||p.ownerId||p.userId)===user.uid);
+    cachedInvoices=invoices.filter(i=>i.contractorId===user.uid);
+    const ownedIds=new Set(cachedInvoices.map(i=>i.id));
+    cachedPayments=payments.filter(p=>p.contractorId===user.uid && ownedIds.has(p.invoiceId));
+    renderProjectOptions(); renderInvoiceOptions(); renderInvoiceCards();
+  }
+  function renderProjectOptions(){
+    const el=$f('contractorInvoiceProject');if(!el)return;
+    el.innerHTML='<option value="">اختر المشروع</option>'+cachedProjects.filter(p=>!['completed','previous','closed'].includes(String(p.status||'').toLowerCase())).map(p=>`<option value="${esc(p.id)}">${esc(p.name||p.projectName||'مشروع')}</option>`).join('');
+  }
+  function renderInvoiceOptions(){
+    const el=$f('contractorPaymentInvoice');if(!el)return;
+    el.innerHTML='<option value="">اختر الفاتورة</option>'+cachedInvoices.map(i=>`<option value="${esc(i.id)}">${esc(i.invoiceNumber||i.id)} — ${esc(i.projectName||'مشروع')} — ${money(i.invoiceAmount)}</option>`).join('');
+  }
+  function paymentSummary(invoice){
+    const rows=cachedPayments.filter(p=>p.invoiceId===invoice.id);
+    const verified=rows.filter(p=>p.status==='verified');
+    const paid=verified.reduce((sum,p)=>sum+Number(p.amount||0),0);
+    const pending=rows.filter(p=>p.status==='pending_verification').reduce((sum,p)=>sum+Number(p.amount||0),0);
+    const commission=verified.reduce((sum,p)=>sum+Number(p.commissionAmount ?? (Number(p.amount||0)*COMMISSION_RATE),0),0);
+    return {paid,pending,commission,remaining:Math.max(0,Number(invoice.invoiceAmount||0)-paid)};
+  }
+  function renderInvoiceCards(){
+    const list=$f('contractorInvoicesList');if(!list)return;
+    if(!cachedInvoices.length){list.innerHTML='<div class="card"><h3>لا توجد فواتير حتى الآن</h3><p>اختر مشروعًا وأنشئ أول فاتورة له.</p></div>';return;}
+    list.innerHTML='<div class="card"><h3>فواتير مشاريعي</h3><p>العمولة تُحسب بنسبة ١٠٪ على الدفعات التي تم التحقق منها فقط.</p>'+cachedInvoices.sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).map(inv=>{
+      const s=paymentSummary(inv); const st=s.remaining<=0?'paid':s.paid>0?'partial':'issued';
+      const payRows=cachedPayments.filter(p=>p.invoiceId===inv.id).map(p=>`<div class="ma3da-finance-row"><strong>دفعة: ${money(p.amount)}</strong><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p><p>المرجع: ${esc(p.reference||'—')}</p><p>العمولة: ${p.status==='verified'?money(p.commissionAmount??Number(p.amount||0)*COMMISSION_RATE):'تُحسب بعد التحقق'}</p></div>`).join('');
+      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3><p><strong>المشروع:</strong> ${esc(inv.projectName||'—')}</p><p><strong>تاريخ الإنشاء:</strong> ${when(inv.createdAt)}</p><p><strong>الوصف:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p><p><strong>عمولة مِعدة على الدفعات المؤكدة:</strong> ${money(s.commission)}</p><p>الحالة: <span class="ma3da-finance-status">${statusLabel(st)}</span></p>${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
+    }).join('')+'</div>';
+  }
+  async function createInvoice(){
+    const btn=$f('contractorCreateInvoiceBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const projectId=$f('contractorInvoiceProject')?.value;
+      const project=cachedProjects.find(p=>p.id===projectId);
+      const amount=Number($f('contractorInvoiceAmount')?.value);
+      const description=($f('contractorInvoiceDescription')?.value||'').trim();
+      if(!project)throw new Error('اختر مشروعًا تملكه أولًا.');
+      if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل قيمة فاتورة صحيحة.');
+      if(!description)throw new Error('اكتب وصف الفاتورة.');
+      const customNo=($f('contractorInvoiceNumber')?.value||'').trim();
+      const invoiceNumber=customNo||`M3-${Date.now()}`;
+      await window.ma3daAddDoc(col('projectInvoices'),{
+        contractorId:user.uid, contractorEmail:user.email||'', projectId,
+        projectName:project.name||project.projectName||'مشروع', invoiceNumber,
+        invoiceAmount:Math.round(amount*100)/100, description,
+        currency:'SAR', commissionRate:COMMISSION_RATE, status:'issued',
+        createdAt:new Date(), updatedAt:new Date(), schemaVersion:1
+      });
+      $f('contractorInvoiceNumber').value='';$f('contractorInvoiceAmount').value='';$f('contractorInvoiceDescription').value='';
+      say('contractorInvoiceFeedback','تم حفظ سجل الفاتورة. يلزم اعتماد المتطلبات المحاسبية قبل اعتبارها فاتورة ضريبية رسمية.');
+      await loadFinance();
+    }catch(err){console.error('Create project invoice failed:',err);say('contractorInvoiceFeedback',err.message||'تعذر حفظ الفاتورة. قد تحتاج قواعد Firebase إلى صلاحية مخصصة لمجموعة projectInvoices.',true);}
+    finally{if(btn)btn.disabled=false;}
+  }
+  async function submitPayment(){
+    const btn=$f('contractorSubmitPaymentBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const invoiceId=$f('contractorPaymentInvoice')?.value;
+      const invoice=cachedInvoices.find(i=>i.id===invoiceId);
+      const amount=Number($f('contractorPaymentAmount')?.value);
+      const reference=($f('contractorPaymentReference')?.value||'').trim();
+      if(!invoice)throw new Error('اختر فاتورة تخص أحد مشاريعك.');
+      if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل قيمة دفعة صحيحة.');
+      const summary=paymentSummary(invoice);
+      if(amount>summary.remaining)throw new Error('قيمة الدفعة أكبر من المتبقي على الفاتورة.');
+      await window.ma3daAddDoc(col('projectInvoicePayments'),{
+        invoiceId, contractorId:user.uid, projectId:invoice.projectId,
+        projectName:invoice.projectName||'', invoiceNumber:invoice.invoiceNumber||'',
+        amount:Math.round(amount*100)/100, currency:'SAR', reference,
+        status:'pending_verification', commissionRate:COMMISSION_RATE,
+        commissionAmount:null, submittedBy:user.uid, submittedAt:new Date(),
+        note:'إفادة مقدم الطلب غير مؤكدة؛ تتطلب مراجعة الجهة المخوّلة.', schemaVersion:1
+      });
+      $f('contractorPaymentAmount').value='';$f('contractorPaymentReference').value='';
+      say('contractorPaymentFeedback','تم إرسال سجل الدفعة للمراجعة. لم تُحتسب كدفعة مؤكدة حتى الآن.');
+      await loadFinance();
+    }catch(err){console.error('Submit payment record failed:',err);say('contractorPaymentFeedback',err.message||'تعذر تسجيل الدفعة. تحقق من صلاحيات Firebase.',true);}
+    finally{if(btn)btn.disabled=false;}
+  }
+  document.addEventListener('click',event=>{
+    const target=event.target.closest('button');if(!target)return;
+    if(target.id==='contractorFinanceBtn'){openFinance();return;}
+    if(target.id==='contractorFinanceBackBtn'){
+      if(typeof window.showScreen==='function')window.showScreen('contractorHomeScreen');
+      else {document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));$f('contractorHomeScreen')?.classList.add('active');}
+      return;
+    }
+    if(target.id==='contractorCreateInvoiceBtn'){createInvoice();return;}
+    if(target.id==='contractorSubmitPaymentBtn'){submitPayment();return;}
+  });
 })();
