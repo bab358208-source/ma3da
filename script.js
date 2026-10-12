@@ -12461,3 +12461,415 @@ document.addEventListener("click", function(event){
   // Keep old submit buttons inert so users cannot create duplicate tickets through the retired form.
   document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
 })();
+
+/* =====================================================
+   MA3DA — EQUIPMENT AVAILABILITY
+   تأجير المشاريع + الحجوزات + الصيانة
+   لا توجد خصومات
+===================================================== */
+
+
+/* =====================================================
+   1) إعدادات التأجير
+===================================================== */
+
+const MA3DA_RENTAL_MODES = {
+  ALL: "all",
+  PROJECTS_ONLY: "projects_only"
+};
+
+
+/* =====================================================
+   2) تحويل التاريخ إلى Date
+===================================================== */
+
+function ma3daAvailabilityDate(value) {
+  if (!value) {
+    throw new Error("تاريخ الحجز غير مكتمل.");
+  }
+
+  if (value.toDate && typeof value.toDate === "function") {
+    return value.toDate();
+  }
+
+  const date = value instanceof Date
+    ? value
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("تاريخ الحجز غير صحيح.");
+  }
+
+  return date;
+}
+
+
+/* =====================================================
+   3) التحقق من تداخل المواعيد
+===================================================== */
+
+function ma3daHasTimeConflict(
+  startA,
+  endA,
+  startB,
+  endB
+) {
+  return (
+    startA.getTime() < endB.getTime() &&
+    endA.getTime() > startB.getTime()
+  );
+}
+
+
+/* =====================================================
+   4) تحديد نوع التأجير للمعدة
+   all = تأجير عادي ومشاريع
+   projects_only = للمشاريع فقط
+===================================================== */
+
+async function ma3daSetRentalMode(
+  equipmentId,
+  rentalMode
+) {
+  if (!window.ma3daDB) {
+    throw new Error("Firebase غير جاهز.");
+  }
+
+  if (
+    ![
+      MA3DA_RENTAL_MODES.ALL,
+      MA3DA_RENTAL_MODES.PROJECTS_ONLY
+    ].includes(rentalMode)
+  ) {
+    throw new Error("نوع التأجير غير صحيح.");
+  }
+
+  const equipmentRef = window.ma3daDB
+    .collection("equipment")
+    .doc(equipmentId);
+
+  await equipmentRef.update({
+    rentalMode: rentalMode,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  return true;
+}
+
+
+/* =====================================================
+   5) إيقاف استقبال الحجوزات للصيانة
+   لا يلغي الحجوزات المؤكدة
+===================================================== */
+
+async function ma3daSetMaintenance(
+  equipmentId,
+  maintenanceEnabled
+) {
+  if (!window.ma3daDB) {
+    throw new Error("Firebase غير جاهز.");
+  }
+
+  const equipmentRef = window.ma3daDB
+    .collection("equipment")
+    .doc(equipmentId);
+
+  await equipmentRef.update({
+    maintenanceActive: Boolean(maintenanceEnabled),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  return true;
+}
+
+
+/* =====================================================
+   6) التحقق من أهلية المعدة للطلب
+===================================================== */
+
+async function ma3daCanRequestEquipment({
+  equipmentId,
+  requestType,
+  startAt,
+  endAt
+}) {
+  if (!window.ma3daDB) {
+    throw new Error("Firebase غير جاهز.");
+  }
+
+  const start = ma3daAvailabilityDate(startAt);
+  const end = ma3daAvailabilityDate(endAt);
+
+  if (end <= start) {
+    throw new Error("وقت نهاية الحجز يجب أن يكون بعد بدايته.");
+  }
+
+  const equipmentRef = window.ma3daDB
+    .collection("equipment")
+    .doc(equipmentId);
+
+  const equipmentSnap = await equipmentRef.get();
+
+  if (!equipmentSnap.exists) {
+    throw new Error("المعدة غير موجودة.");
+  }
+
+  const equipment = equipmentSnap.data();
+
+  if (equipment.maintenanceActive === true) {
+    throw new Error("المعدة متوقفة للصيانة ولا تستقبل حجوزات جديدة.");
+  }
+
+  if (
+    equipment.rentalMode === MA3DA_RENTAL_MODES.PROJECTS_ONLY &&
+    requestType !== "project"
+  ) {
+    throw new Error("هذه المعدة مخصصة للمشاريع فقط.");
+  }
+
+  const bookings = Array.isArray(equipment.confirmedBookings)
+    ? equipment.confirmedBookings
+    : [];
+
+  const now = new Date();
+
+  const conflict = bookings.some(booking => {
+    if (booking.status !== "confirmed") {
+      return false;
+    }
+
+    const bookingEnd = ma3daAvailabilityDate(
+      booking.endAt
+    );
+
+    if (bookingEnd <= now) {
+      return false;
+    }
+
+    return ma3daHasTimeConflict(
+      start,
+      end,
+      ma3daAvailabilityDate(booking.startAt),
+      bookingEnd
+    );
+  });
+
+  if (conflict) {
+    throw new Error("المعدة محجوزة في هذا الموعد.");
+  }
+
+  return true;
+}
+
+
+/* =====================================================
+   7) تأكيد الحجز وربطه برقم الطلب
+   تحديث المعدة والطلب في معاملة واحدة
+===================================================== */
+
+async function ma3daConfirmEquipmentBooking({
+  requestId,
+  equipmentId,
+  startAt,
+  endAt
+}) {
+  if (!window.ma3daDB) {
+    throw new Error("Firebase غير جاهز.");
+  }
+
+  const start = ma3daAvailabilityDate(startAt);
+  const end = ma3daAvailabilityDate(endAt);
+
+  if (end <= start) {
+    throw new Error("وقت نهاية الحجز غير صحيح.");
+  }
+
+  const db = window.ma3daDB;
+
+  const equipmentRef = db
+    .collection("equipment")
+    .doc(equipmentId);
+
+  const requestRef = db
+    .collection("requests")
+    .doc(requestId);
+
+  return db.runTransaction(async transaction => {
+    // يجب قراءة المستندين قبل أي كتابة.
+    const equipmentSnap = await transaction.get(equipmentRef);
+    const requestSnap = await transaction.get(requestRef);
+
+    if (!equipmentSnap.exists) {
+      throw new Error("المعدة غير موجودة.");
+    }
+
+    if (!requestSnap.exists) {
+      throw new Error("الطلب غير موجود.");
+    }
+
+    const equipment = equipmentSnap.data();
+    const request = requestSnap.data();
+
+    if (equipment.maintenanceActive === true) {
+      throw new Error("لا يمكن حجز المعدة أثناء الصيانة.");
+    }
+
+    if (request.equipmentId !== equipmentId) {
+      throw new Error("المعدة لا تطابق المعدة المحددة في الطلب.");
+    }
+
+    const bookings = Array.isArray(equipment.confirmedBookings)
+      ? equipment.confirmedBookings
+      : [];
+
+    const now = new Date();
+
+    const existingBooking = bookings.find(
+      booking => booking.requestId === requestId
+    );
+
+    if (existingBooking?.status === "confirmed") {
+      throw new Error("هذا الطلب مرتبط بحجز مؤكد بالفعل.");
+    }
+
+    const conflict = bookings.some(booking => {
+      if (
+        booking.status !== "confirmed" ||
+        booking.requestId === requestId
+      ) {
+        return false;
+      }
+
+      const otherEnd = ma3daAvailabilityDate(
+        booking.endAt
+      );
+
+      if (otherEnd <= now) {
+        return false;
+      }
+
+      return ma3daHasTimeConflict(
+        start,
+        end,
+        ma3daAvailabilityDate(booking.startAt),
+        otherEnd
+      );
+    });
+
+    if (conflict) {
+      throw new Error("لا يمكن التأكيد؛ يوجد حجز متداخل.");
+    }
+
+    // لا نسمح بتأكيد طلب ملغى أو مكتمل.
+    const status = String(request.status || "").toLowerCase();
+
+    if (
+      [
+        "cancelled",
+        "canceled",
+        "rejected",
+        "completed"
+      ].includes(status)
+    ) {
+      throw new Error("حالة الطلب لا تسمح بتأكيد الحجز.");
+    }
+
+    const nextBookings = bookings.filter(
+      booking => booking.requestId !== requestId
+    );
+
+    nextBookings.push({
+      requestId: requestId,
+      startAt: firebase.firestore.Timestamp.fromDate(start),
+      endAt: firebase.firestore.Timestamp.fromDate(end),
+      status: "confirmed"
+    });
+
+    transaction.update(equipmentRef, {
+      confirmedBookings: nextBookings,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    transaction.update(requestRef, {
+      bookingStatus: "confirmed",
+      bookingStartAt: firebase.firestore.Timestamp.fromDate(start),
+      bookingEndAt: firebase.firestore.Timestamp.fromDate(end),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    return {
+      success: true,
+      requestId: requestId,
+      equipmentId: equipmentId
+    };
+  });
+}
+
+
+/* =====================================================
+   8) إنهاء الحجز عند انتهاء وقته
+   لا يوقف الحجوزات الأخرى ولا يتجاوز الصيانة
+===================================================== */
+
+async function ma3daFinishEquipmentBooking({
+  requestId,
+  equipmentId
+}) {
+  if (!window.ma3daDB) {
+    throw new Error("Firebase غير جاهز.");
+  }
+
+  const db = window.ma3daDB;
+
+  const equipmentRef = db
+    .collection("equipment")
+    .doc(equipmentId);
+
+  const requestRef = db
+    .collection("requests")
+    .doc(requestId);
+
+  return db.runTransaction(async transaction => {
+    const equipmentSnap = await transaction.get(equipmentRef);
+    const requestSnap = await transaction.get(requestRef);
+
+    if (!equipmentSnap.exists || !requestSnap.exists) {
+      throw new Error("المعدة أو الطلب غير موجود.");
+    }
+
+    const equipment = equipmentSnap.data();
+    const bookings = Array.isArray(equipment.confirmedBookings)
+      ? equipment.confirmedBookings
+      : [];
+
+    const booking = bookings.find(
+      item => item.requestId === requestId
+    );
+
+    if (!booking) {
+      throw new Error("لم يتم العثور على حجز مرتبط بهذا الطلب.");
+    }
+
+    if (ma3daAvailabilityDate(booking.endAt) > new Date()) {
+      throw new Error("لم ينتهِ وقت الحجز بعد.");
+    }
+
+    const updatedBookings = bookings.map(item =>
+      item.requestId === requestId
+        ? { ...item, status: "completed" }
+        : item
+    );
+
+    transaction.update(equipmentRef, {
+      confirmedBookings: updatedBookings,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    transaction.update(requestRef, {
+      bookingStatus: "completed",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    return true;
+  });
+}
