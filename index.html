@@ -40,27 +40,18 @@
 .contractor-project-tabs button{margin:0}
 .contractor-project-tabs button[aria-pressed="true"]{background:#f5e8c8;border-color:#d9bd78;color:#171717}
 .contractor-project-tabs button[aria-pressed="false"]{background:#fffdf8;border:1px solid #eadfc5;color:#171717}
+
+#contractorFinanceScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
+#contractorFinanceScreen .card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+#contractorFinanceScreen label{display:block;font-weight:600;margin:12px 0 6px}
+#contractorFinanceScreen input,#contractorFinanceScreen select,#contractorFinanceScreen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}
+#contractorFinanceScreen button{font:inherit;cursor:pointer}
+#contractorFinanceScreen .main-btn{width:100%;margin-top:12px}
+.ma3da-finance-status{display:inline-block;border-radius:999px;padding:4px 9px;background:#f3ead4;font-size:.88em}
+.ma3da-finance-row{border:1px solid #eadfc5;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
-<style id="ma3da-operator-request-tabs-styles">
-#operatorNewRequestsScreen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
-.operator-requests-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 18px;padding:16px;background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;box-shadow:0 3px 12px #00000008}
-.operator-requests-heading{display:flex;align-items:center;gap:12px;min-width:0}
-.operator-requests-icon{width:48px;height:48px;flex:0 0 48px;border-radius:14px;background:#f5e8c8;display:grid;place-items:center;font-size:25px}
-.operator-requests-heading h1{font-size:21px;margin:0 0 5px}.operator-requests-heading p{margin:0;color:#68645b;font-size:13px;line-height:1.6}
-.operator-refresh-requests-btn{flex:0 0 auto;border:1px solid #d9bd78;background:#f5e8c8;color:#171717;border-radius:11px;padding:11px 13px;font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
-.operator-refresh-requests-btn:disabled{opacity:.6;cursor:wait}.operator-refresh-requests-btn span{font-size:18px;margin-left:4px}
-.operator-request-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
-.operator-request-tab{display:flex;align-items:center;justify-content:center;gap:8px;min-height:60px;border:1px solid #eadfc5;border-radius:13px;background:#fffdf8;color:#171717;font:inherit;cursor:pointer;padding:12px}
-.operator-request-tab.is-active{background:#b58a3a;border-color:#b58a3a;color:#fff;box-shadow:0 3px 10px #b58a3a2b}
-.operator-request-tab span{font-size:21px}.operator-requests-updated{margin:7px 2px 12px;color:#777064;font-size:12px}
-.operator-request-panel[hidden]{display:none!important}.operator-request-panel .card{background:#fffdf8;border:1px solid #eadfc5;border-radius:14px;padding:15px;margin:12px 0}
-.operator-request-panel .operator-new-request-card{border:1px solid #eadfc5;border-radius:16px;background:#fffdf8;padding:16px;margin:12px 0;box-shadow:0 3px 12px #00000008}
-@media(max-width:520px){.operator-requests-header{align-items:stretch;flex-direction:column}.operator-refresh-requests-btn{width:100%}.operator-request-tab{padding:10px 6px;font-size:14px}}
-</style>
-
 </head>
 
 
@@ -2096,38 +2087,38 @@
     ← الرجوع
   </button>
 
-  <div class="operator-requests-header">
-    <div class="operator-requests-heading">
-      <div class="operator-requests-icon">📋</div>
-      <div>
-        <h1>طلبات المعدة</h1>
-        <p>تحديث الطلبات دون إعادة تحميل الصفحة</p>
-      </div>
+
+  <div class="hero">
+
+
+    <div class="hero-icon">
+      📋
     </div>
-    <button id="refreshOperatorRequestsBtn" type="button" class="operator-refresh-requests-btn">
-      <span aria-hidden="true">⟳</span> تحديث الطلبات
-    </button>
+
+
+    <h1>
+      الطلبات الجديدة
+    </h1>
+
+
+    <p>
+      طلبات العملاء التي تنتظر قبولك
+    </p>
+
+
   </div>
 
-  <div class="operator-request-tabs" role="tablist" aria-label="نوع الطلبات">
-    <button id="operatorCustomerRequestsTab" class="operator-request-tab is-active" type="button" role="tab" aria-selected="true" data-operator-request-tab="customers">
-      <span>👤</span><strong>طلبات العملاء</strong>
-    </button>
-    <button id="operatorProjectRequestsTab" class="operator-request-tab" type="button" role="tab" aria-selected="false" data-operator-request-tab="projects">
-      <span>🏗️</span><strong>طلبات المشاريع</strong>
-    </button>
-  </div>
 
-  <p id="operatorRequestsLastUpdated" class="operator-requests-updated" aria-live="polite">تظهر الطلبات عند تحديث القائمة.</p>
+  <div id="operatorNewRequestsList">
 
-  <div id="operatorCustomerRequestsPanel" class="operator-request-panel">
-    <div class="card center"><p>تظهر هنا طلبات الأفراد المناسبة لنوع معدات صاحب المعدة، مع تفاصيل المعدة والموقع والمدة وحالة الطلب.</p></div>
-    <div id="operatorNewRequestsList"></div>
-  </div>
+    <div class="card center">
 
-  <div id="operatorProjectRequestsPanel" class="operator-request-panel" hidden>
-    <div class="card center"><p>تظهر هنا طلبات المقاولين وأصحاب المشاريع المرتبطة بالمعدة المختارة، مع اسم المشروع والموقع والمدة وحالة الطلب.</p></div>
-    <div id="operatorProjectRequestsList"></div>
+      <p>
+        جاري تحميل الطلبات...
+      </p>
+
+    </div>
+
   </div>
 
 
@@ -2729,12 +2720,36 @@
 
 
     <p>
-      إذا واجهت مشكلة أو لديك استفسار حول مِعدة، تواصل معنا وسنساعدك.
+      إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة،
+      تواصل معنا وسنساعدك.
     </p>
+
+
+    <button
+      id="operatorSupportWhatsAppBtn"
+      class="main-btn"
+      type="button"
+    >
+      💬 التواصل مع الدعم
+    </button>
 
   </div>
 
-  <button id="operatorSupportCenterBtn" class="main-btn" type="button" data-open-ma3da-support>إدارة الشكاوى</button>
+  <div class="card" id="operatorSupportTicketForm">
+    <h2>إرسال طلب إلى فريق الدعم</h2>
+    <label for="operatorSupportCategory">نوع الطلب</label>
+    <select id="operatorSupportCategory" class="form-control">
+      <option value="مشكلة في المعدة">مشكلة في المعدة</option>
+      <option value="مشكلة في الطلبات">مشكلة في الطلبات</option>
+      <option value="مشكلة في الحساب">مشكلة في الحساب</option>
+      <option value="استفسار">استفسار</option>
+      <option value="بلاغ">بلاغ</option>
+    </select>
+    <label for="operatorSupportMessage">تفاصيل المشكلة</label>
+    <textarea id="operatorSupportMessage" rows="4" placeholder="اكتب تفاصيل المشكلة أو استفسارك هنا" style="width:100%;margin:8px 0;padding:12px;border-radius:10px;box-sizing:border-box"></textarea>
+    <button type="button" id="operatorSupportSubmitBtn" class="main-btn" data-ma3da-support-submit="operator">إرسال إلى الدعم</button>
+    <p id="operatorSupportFeedback" role="status" aria-live="polite"></p>
+  </div>
 
 </section>
 
@@ -3658,7 +3673,56 @@
 
 
 
-  <button id="customerSupportCenterBtn" class="main-btn" type="button" data-open-ma3da-support>إدارة الشكاوى</button>
+  <div class="card">
+
+
+    <button
+      id="supportWhatsAppBtn"
+      class="home-menu-item"
+      type="button"
+    >
+
+      <div class="home-menu-icon">
+        💬
+      </div>
+
+
+      <div class="home-menu-text">
+
+        <strong>
+          التواصل مع الدعم
+        </strong>
+
+        <span>
+          تواصل معنا مباشرة
+        </span>
+
+      </div>
+
+
+      <span class="home-arrow">
+        ←
+      </span>
+
+    </button>
+
+
+  </div>
+
+  <div class="card" id="customerSupportTicketForm">
+    <h2>إرسال طلب إلى فريق الدعم</h2>
+    <label for="customerSupportCategory">نوع الطلب</label>
+    <select id="customerSupportCategory" class="form-control">
+      <option value="مشكلة في الطلب">مشكلة في الطلب</option>
+      <option value="مشكلة في الحساب">مشكلة في الحساب</option>
+      <option value="استفسار">استفسار</option>
+      <option value="بلاغ">بلاغ</option>
+    </select>
+    <label for="customerSupportMessage">تفاصيل المشكلة</label>
+    <textarea id="customerSupportMessage" rows="4" placeholder="اكتب تفاصيل المشكلة أو استفسارك هنا" style="width:100%;margin:8px 0;padding:12px;border-radius:10px;box-sizing:border-box"></textarea>
+    <button type="button" id="customerSupportSubmitBtn" class="main-btn" data-ma3da-support-submit="customer">إرسال إلى الدعم</button>
+    <p id="customerSupportFeedback" role="status" aria-live="polite"></p>
+  </div>
 
 </section>
 
@@ -5095,6 +5159,7 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
+    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
     <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
@@ -5139,73 +5204,40 @@
   <div id="contractorProjectsList"></div>
   <button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
+<section id="contractorFinanceScreen" class="screen">
+  <div class="hero"><div class="hero-icon">🧾</div><h1>الفواتير والمستحقات</h1><p>أنشئ فواتير مشروعك، وتابع الدفعات المسجلة وعمولة مِعدة البالغة ١٠٪.</p></div>
+  <div class="card">
+    <h3>إنشاء فاتورة مشروع</h3>
+    <label for="contractorInvoiceProject">المشروع *</label><select id="contractorInvoiceProject"><option value="">جارٍ تحميل المشاريع…</option></select>
+    <label for="contractorInvoiceNumber">رقم الفاتورة (اختياري)</label><input id="contractorInvoiceNumber" maxlength="60" placeholder="يُنشأ تلقائيًا إذا تركته فارغًا">
+    <label for="contractorInvoiceAmount">قيمة الفاتورة بالريال *</label><input id="contractorInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثال: 25000">
+    <label for="contractorInvoiceDescription">وصف الفاتورة *</label><textarea id="contractorInvoiceDescription" rows="2" maxlength="500" placeholder="مثال: دفعة تأجير معدات لشهر أكتوبر"></textarea>
+    <p class="muted">يُسجّل إنشاء الفاتورة كبيان مالي داخل مِعدة، ولا يعني بحد ذاته تحصيل المبلغ أو إصدار فاتورة ضريبية معتمدة.</p>
+    <button id="contractorCreateInvoiceBtn" class="main-btn" type="button">حفظ الفاتورة</button>
+    <p id="contractorInvoiceFeedback" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card">
+    <h3>تسجيل دفعة للمراجعة</h3>
+    <label for="contractorPaymentInvoice">الفاتورة *</label><select id="contractorPaymentInvoice"><option value="">حمّل الفواتير أولًا</option></select>
+    <label for="contractorPaymentAmount">قيمة الدفعة بالريال *</label><input id="contractorPaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="قيمة الدفعة المستلمة">
+    <label for="contractorPaymentReference">مرجع التحويل أو ملاحظة</label><input id="contractorPaymentReference" maxlength="160" placeholder="رقم تحويل أو تفاصيل مختصرة">
+    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة ولا تُحتسب العمولة نهائيًا قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
+    <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال الدفعة للمراجعة</button>
+    <p id="contractorPaymentFeedback" role="status" aria-live="polite"></p>
+  </div>
+  <div id="contractorInvoicesList"><div class="card">ستظهر فواتير مشاريعك هنا.</div></div>
+  <button id="contractorFinanceBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
+</section>
 <section id="contractorOrderDetailsScreen" class="screen"><div class="hero"><div class="hero-icon">📄</div><h1>تفاصيل الطلب</h1></div><div class="card"><p>المعدة: <strong id="contractorOrderEquipment">—</strong></p><p>الموقع: <strong id="contractorOrderLocation">—</strong></p><p>المدة: <strong id="contractorOrderDuration">—</strong></p><p>المشغل: <strong id="contractorOrderOperator">—</strong></p><p>التكلفة التقديرية: <strong id="contractorOrderPrice">—</strong></p><p>الحالة: <strong id="contractorOrderStatus">—</strong></p><button id="contractorOrderChatBtn" class="main-btn" type="button">فتح المحادثة</button><button id="contractorOrderBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <section id="contractorSettingsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الحساب والإعدادات</h1><p>تحديث بيانات المقاول</p></div><div class="card"><label for="contractorSettingsName">الاسم *</label><input id="contractorSettingsName" placeholder="الاسم الكامل"><label for="contractorSettingsPhone">رقم الجوال</label><input id="contractorSettingsPhone" type="tel" placeholder="05xxxxxxxx"><label for="contractorSettingsCity">المدينة</label><input id="contractorSettingsCity" placeholder="المدينة"><label for="contractorSettingsCompany">المؤسسة أو الشركة</label><input id="contractorSettingsCompany" placeholder="اسم المؤسسة أو الشركة"><button id="saveContractorSettingsBtn" class="main-btn" type="button">حفظ التعديلات</button><button id="contractorChangePasswordBtn" class="back-btn" type="button">تغيير كلمة المرور</button><button id="contractorSettingsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 <section id="contractorAccountScreen" class="screen"><div class="hero"><div class="hero-icon">👤</div><h1>الحساب</h1><p>إدارة حساب الدخول في مِعدة</p></div><div class="card"><p>البريد الإلكتروني: <strong id="contractorAccountEmail">—</strong></p><button id="contractorAccountChangePasswordBtn" class="main-btn" type="button">تغيير كلمة المرور</button><button id="contractorAccountLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button><button id="contractorAccountBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <section id="contractorSettingsPrefsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الإعدادات</h1><p>تفضيلات استخدام التطبيق</p></div><div class="card"><label><input id="contractorNotificationsSetting" type="checkbox" checked> تفعيل تنبيهات الطلبات داخل التطبيق</label><p class="muted">يمكن تعديل تفضيل التنبيهات لاحقًا عند تفعيل نظام الإشعارات.</p><button id="contractorSettingsPrefsBackBtn" class="back-btn" type="button">العودة</button></div></section>
-<section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم مِعدة</p><button id="contractorSupportCenterBtn" class="main-btn" type="button" data-open-ma3da-support>إدارة الشكاوى</button></div><div class="card ma3da-legacy-support-form"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
+<section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم مِعدة</p></div><div class="card"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 
 
 
 
 
-
-<style id="ma3da-complaints-styles">
-.ma3da-legacy-support-form{display:none!important}
-.ma3da-support-screen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}
-.ma3da-support-screen .hero,.ma3da-support-card{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 3px 12px #00000008}
-.ma3da-support-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
-.ma3da-support-choice{width:100%;min-height:116px;border:1px solid #e5d7b8;border-radius:14px;background:#fffdf8;padding:18px;text-align:right;font:inherit;cursor:pointer}
-.ma3da-support-choice strong{display:block;font-size:1.05rem;margin-bottom:7px}.ma3da-support-choice span{color:#716753;font-size:.92rem}
-.ma3da-support-screen label{display:block;font-weight:700;margin:12px 0 6px}
-.ma3da-support-screen input,.ma3da-support-screen select,.ma3da-support-screen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
-.ma3da-support-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.ma3da-support-actions button,.ma3da-support-screen button.main-btn,.ma3da-support-screen button.back-btn{font:inherit;cursor:pointer}
-.ma3da-ticket-row{background:#fff;border:1px solid #eadfc5;border-radius:12px;padding:14px;margin:10px 0;overflow-wrap:anywhere}
-.ma3da-ticket-row h3{margin:0 0 8px}.ma3da-ticket-meta{color:#746b5b;font-size:.9rem;display:flex;gap:10px;flex-wrap:wrap}
-.ma3da-ticket-pill{display:inline-block;border-radius:20px;background:#f3e8cc;padding:4px 9px;font-size:.85rem}
-.ma3da-ticket-thread{background:#fff;border:1px solid #eee4d0;border-radius:12px;padding:12px;max-height:48vh;overflow:auto}
-.ma3da-ticket-message{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
-.ma3da-ticket-message.requester{background:#f5eddc;margin-right:auto}.ma3da-ticket-message.support{background:#e9f3ed;margin-left:auto}
-.ma3da-ticket-message small{display:block;color:#716753;margin-top:5px}
-.ma3da-ticket-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}
-.ma3da-ticket-feedback{font-weight:600;min-height:1.4em}
-</style>
-<section id="ma3daSupportHomeScreen" class="screen ma3da-support-screen">
-  <button type="button" class="back-btn" data-ma3da-support-back>← رجوع</button>
-  <div class="hero"><div class="hero-icon">🛟</div><h1>مركز دعم مِعدة</h1><p>قدّم شكوى، تابع الشكاوى الحالية، أو راجع الشكاوى السابقة.</p></div>
-  <div class="ma3da-support-grid">
-    <button class="ma3da-support-choice" type="button" id="ma3daNewComplaintOpenBtn"><strong>＋ شكوى جديدة</strong><span>إرسال شكوى جديدة مع رقم الطلب ونوع المشكلة والتفاصيل.</span></button>
-    <button class="ma3da-support-choice" type="button" data-open-ma3da-complaints="current"><strong>◷ الشكاوى الحالية</strong><span>تابع الشكاوى التي ما زالت قيد المعالجة وتواصل مع الدعم.</span></button>
-    <button class="ma3da-support-choice" type="button" data-open-ma3da-complaints="previous"><strong>✓ الشكاوى السابقة</strong><span>راجع الشكاوى التي أغلقها فريق الدعم والمحادثات السابقة.</span></button>
-  </div>
-  <p id="ma3daSupportHomeFeedback" class="ma3da-ticket-feedback" role="status" aria-live="polite"></p>
-</section>
-<section id="ma3daNewComplaintScreen" class="screen ma3da-support-screen">
-  <button type="button" class="back-btn" data-ma3da-support-home>← العودة لمركز الدعم</button>
-  <div class="hero"><div class="hero-icon">📝</div><h1>شكوى جديدة</h1><p>أدخل التفاصيل حتى يتمكن فريق الدعم من مساعدتك.</p></div>
-  <div class="ma3da-support-card">
-    <label for="ma3daComplaintOrderNumber">رقم الطلب (اختياري)</label><input id="ma3daComplaintOrderNumber" type="text" placeholder="مثال: رقم الطلب أو معرّفه">
-    <label for="ma3daComplaintCategory">نوع الشكوى *</label><select id="ma3daComplaintCategory"><option value="مشكلة في الطلب">مشكلة في الطلب</option><option value="مشكلة في الحساب">مشكلة في الحساب</option><option value="مشكلة في المعدة">مشكلة في المعدة</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="بلاغ">بلاغ</option><option value="استفسار">استفسار</option><option value="اقتراح">اقتراح</option><option value="أخرى">أخرى</option></select>
-    <label for="ma3daComplaintSubject">عنوان الشكوى *</label><input id="ma3daComplaintSubject" type="text" maxlength="120" placeholder="اكتب عنوانًا مختصرًا للشكوى">
-    <label for="ma3daComplaintMessage">تفاصيل الشكوى *</label><textarea id="ma3daComplaintMessage" rows="5" maxlength="5000" placeholder="اشرح المشكلة بالتفصيل..."></textarea>
-    <p id="ma3daNewComplaintFeedback" class="ma3da-ticket-feedback" role="status" aria-live="polite"></p>
-    <div class="ma3da-support-actions"><button id="ma3daSubmitComplaintBtn" class="main-btn" type="button">إرسال الشكوى</button><button class="back-btn" type="button" data-ma3da-support-home>إلغاء</button></div>
-  </div>
-</section>
-<section id="ma3daComplaintListScreen" class="screen ma3da-support-screen">
-  <button type="button" class="back-btn" data-ma3da-support-home>← مركز الدعم</button>
-  <div class="hero"><div class="hero-icon">📋</div><h1 id="ma3daComplaintListTitle">الشكاوى الحالية</h1><p>افتح أي شكوى للاطلاع على تفاصيلها ومحادثتها.</p></div>
-  <div class="ma3da-support-actions"><button id="ma3daCurrentComplaintsTab" class="main-btn" type="button" data-ma3da-complaints-tab="current">الشكاوى الحالية</button><button id="ma3daPreviousComplaintsTab" class="back-btn" type="button" data-ma3da-complaints-tab="previous">الشكاوى السابقة</button><button id="ma3daRefreshComplaintsBtn" class="back-btn" type="button">تحديث</button></div>
-  <p id="ma3daComplaintListFeedback" class="ma3da-ticket-feedback" role="status" aria-live="polite"></p><div id="ma3daComplaintList" aria-live="polite"><div class="ma3da-ticket-empty">جارٍ تحميل الشكاوى...</div></div>
-</section>
-<section id="ma3daComplaintChatScreen" class="screen ma3da-support-screen">
-  <button type="button" class="back-btn" id="ma3daComplaintChatBackBtn">← العودة إلى الشكاوى</button>
-  <div class="hero"><div class="hero-icon">💬</div><h1 id="ma3daComplaintChatTitle">محادثة الشكوى</h1><p id="ma3daComplaintChatMeta">جارٍ تحميل التفاصيل...</p></div>
-  <div class="ma3da-support-card"><h3 id="ma3daComplaintChatSubject">تفاصيل الشكوى</h3><p id="ma3daComplaintChatDescription"></p><div id="ma3daComplaintMessages" class="ma3da-ticket-thread" aria-live="polite"></div>
-    <label for="ma3daComplaintReplyInput">اكتب ردك</label><textarea id="ma3daComplaintReplyInput" rows="3" maxlength="4000" placeholder="اكتب رسالتك لفريق الدعم..."></textarea><p id="ma3daComplaintChatFeedback" class="ma3da-ticket-feedback" role="status" aria-live="polite"></p><button id="ma3daComplaintSendReplyBtn" class="main-btn" type="button">إرسال الرسالة</button>
-  </div>
-</section>
 
 <!-- =====================================================
      Firebase
@@ -5277,7 +5309,7 @@
     <div id="supportSectionCustomers" class="support-section support-panel"><h2>بيانات العملاء</h2><div id="supportCustomersList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionOperators" class="support-section support-panel"><h2>أصحاب المعدات والمعدات</h2><div id="supportOperatorsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionOrders" class="support-section support-panel"><h2>الطلبات الحالية</h2><div id="supportOrdersList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionChats" class="support-section support-panel"><h2>محادثات الدعم</h2><div id="supportChatsList" class="support-list">جارٍ التحميل...</div><div id="supportTicketConversation" class="support-panel" hidden><h3 id="supportTicketConversationTitle">محادثة الشكوى</h3><p id="supportTicketConversationMeta"></p><div id="supportTicketConversationDescription"></div><div id="supportTicketConversationMessages" class="ma3da-ticket-thread" aria-live="polite"></div><label for="supportTicketReplyInput">رد موظف الدعم</label><textarea id="supportTicketReplyInput" class="support-input" rows="3" maxlength="4000" placeholder="اكتب ردك لصاحب الشكوى"></textarea><p id="supportTicketReplyFeedback" role="status" aria-live="polite"></p><button id="supportTicketSendReplyBtn" class="support-btn support-primary" type="button">إرسال الرد</button><button id="supportTicketCloseBtn" class="support-btn support-danger" type="button">إغلاق الشكوى</button></div></div>
+    <div id="supportSectionChats" class="support-section support-panel"><h2>محادثات الدعم</h2><div id="supportChatsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionReports" class="support-section support-panel"><h2>البلاغات والمشاكل</h2><div id="supportReportsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionSettings" class="support-section support-panel"><h2>إعدادات الموظف</h2><p>البريد: <strong id="supportSettingsEmail">—</strong></p><p>الصلاحية: <strong id="supportSettingsRole">موظف دعم</strong></p><p>تُدار صلاحيات الموظفين من مجموعة <code>supportStaff</code> في Firebase.</p></div>
   </div>
@@ -5305,8 +5337,7 @@
   collection,
   onSnapshot,
   query,
-  orderBy,
-  where
+  orderBy
 }
   from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -5393,24 +5424,50 @@
 
 
 
-  // Firebase readiness means initialization is complete, not that the
-  // current user is permanently the user observed on the first page load.
-  window.ma3daFirebaseReady = authReady.then(() => true);
+  window.ma3daFirebaseReady =
+    authReady.then(() => {
 
-  // Always return the live Auth user. The old implementation returned the
-  // initial onAuthStateChanged result forever (often null), breaking all roles.
-  window.ma3daGetCurrentUser = async () => {
-    await authReady;
-    if (auth.currentUser) return auth.currentUser;
+      return new Promise(resolve => {
 
-    return await new Promise(resolve => {
-      let unsubscribe = null;
-      unsubscribe = onAuthStateChanged(auth, user => {
-        if (unsubscribe) unsubscribe();
-        resolve(user || null);
+
+        const unsubscribe =
+          onAuthStateChanged(
+            auth,
+            user => {
+
+
+              unsubscribe();
+
+
+              console.log(
+                "Firebase Auth جاهز:",
+                user
+                  ? user.uid
+                  : "لا يوجد مستخدم"
+              );
+
+
+              resolve(user);
+
+
+            }
+          );
+
+
       });
+
+
     });
-  };
+
+
+
+  window.ma3daGetCurrentUser =
+    async () => {
+
+      return await
+        window.ma3daFirebaseReady;
+
+    };
 
 
 
@@ -5465,8 +5522,6 @@ window.ma3daQuery =
 
 window.ma3daOrderBy =
   orderBy;
-
-window.ma3daWhere = where;
 
   /*
     إنشاء حساب جديد
@@ -5784,20 +5839,24 @@ window.ma3daWhere = where;
 
 
 
-        const authMessages = {
-          "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-          "auth/wrong-password": "كلمة المرور غير صحيحة.",
-          "auth/user-not-found": "لا يوجد حساب بهذا البريد الإلكتروني.",
-          "auth/invalid-email": "صيغة البريد الإلكتروني غير صحيحة.",
-          "auth/too-many-requests": "تمت محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.",
-          "auth/network-request-failed": "تحقق من اتصال الإنترنت ثم حاول مرة أخرى.",
-          "auth/user-disabled": "هذا الحساب معطّل. تواصل مع الدعم.",
-          "auth/operation-not-allowed": "تسجيل الدخول بالبريد وكلمة المرور غير مفعّل في Firebase Authentication."
-        };
         alert(
+
           "تعذر تسجيل الدخول.\n\n" +
-          (authMessages[error.code] || error.message || "حدث خطأ غير معروف.") +
-          "\n\nرمز الخطأ: " + (error.code || "غير معروف")
+
+          "رمز الخطأ: " +
+
+          (
+            error.code
+            ||
+            "غير معروف"
+          ) +
+
+          "\n\n" +
+
+          "رسالة الخطأ:\n" +
+
+          error.message
+
         );
 
 
