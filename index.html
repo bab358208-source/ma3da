@@ -6041,7 +6041,72 @@ window.ma3daWhere = where;
   <div id="projectStagesList"></div>
 </section>
 
+/* =====================================================
+   ربط صفحات الفواتير والمستحقات — مِعدة
+===================================================== */
 
+window.showIncomeTab = function (tab) {
+  const customers = document.getElementById("ownerCustomerInvoices");
+  const projects = document.getElementById("ownerProjectInvoices");
+
+  if (customers) customers.hidden = tab !== "customer";
+  if (projects) projects.hidden = tab !== "projects";
+};
+
+window.showContractorTab = function (tab) {
+  const payments = document.getElementById("contractorPaymentsList");
+  const invoices = document.getElementById("contractorInvoicesList");
+
+  if (payments) payments.hidden = tab !== "payments";
+  if (invoices) invoices.hidden = tab !== "invoices";
+};
+
+window.calculateMa3daCommission = function (amount) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error("مبلغ غير صالح");
+  }
+
+  return Math.round(value * 10) / 100;
+};
+
+window.calculateOwnerNet = function (amount) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error("مبلغ غير صالح");
+  }
+
+  return Math.round((value - window.calculateMa3daCommission(value)) * 100) / 100;
+};
+
+window.calculateProjectStageCommission = function (amount) {
+  return window.calculateMa3daCommission(amount);
+};
+
+window.canCloseRequestAfterInvoice = async function (requestId) {
+  if (!requestId || !window.ma3daDB) return false;
+
+  try {
+    const { doc, getDoc } = await import(
+      "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+    );
+
+    const snapshot = await getDoc(doc(window.ma3daDB, "requests", requestId));
+
+    if (!snapshot.exists()) return false;
+
+    const request = snapshot.data();
+
+    return request.paymentStatus === "paid" &&
+      request.invoiceStatus === "issued" &&
+      Boolean(request.invoiceId);
+  } catch (error) {
+    console.error("تعذر التحقق من الفاتورة:", error);
+    return false;
+  }
+};
 
 </body>
 
