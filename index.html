@@ -2136,32 +2136,25 @@
 
 
     <p>
-      استقبل طلبات الأفراد والمقاولين المرتبطة بمعداتك
+      طلبات العملاء التي تنتظر قبولك
     </p>
 
 
   </div>
 
-  <div class="operator-request-toolbar">
-    <div class="operator-request-tabs" role="tablist" aria-label="نوع الطلبات">
-      <button id="operatorCustomerRequestsTab" class="operator-request-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="operatorCustomerRequestsPanel" data-operator-request-tab="customers">طلبات العملاء</button>
-      <button id="operatorProjectRequestsTab" class="operator-request-tab" type="button" role="tab" aria-selected="false" aria-controls="operatorProjectRequestsPanel" data-operator-request-tab="projects">طلبات المشاريع</button>
+
+  <div id="operatorNewRequestsList">
+
+    <div class="card center">
+
+      <p>
+        جاري تحميل الطلبات...
+      </p>
+
     </div>
-    <button id="refreshOperatorRequestsBtn" class="secondary-btn" type="button">⟳ تحديث الطلبات</button>
-    <p id="operatorRequestsLastUpdated" class="muted" aria-live="polite">لم يتم التحديث بعد</p>
+
   </div>
 
-  <div id="operatorCustomerRequestsPanel" role="tabpanel" aria-labelledby="operatorCustomerRequestsTab">
-    <div id="operatorNewRequestsList">
-      <div class="card center"><p>جاري تحميل طلبات العملاء...</p></div>
-    </div>
-  </div>
-
-  <div id="operatorProjectRequestsPanel" role="tabpanel" aria-labelledby="operatorProjectRequestsTab" hidden>
-    <div id="operatorProjectRequestsList">
-      <div class="card center"><p>جاري تحميل طلبات المشاريع...</p></div>
-    </div>
-  </div>
 
 </section>
 
@@ -5133,7 +5126,7 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
-    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وحالة السداد.</span><br><u>فتح الفواتير</u></button>
+    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
     <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
@@ -5193,7 +5186,7 @@
   <button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
 <section id="contractorFinanceScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وحالة السداد.</p></div>
+  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وعمولة مِعدة.</p></div>
   <div class="card" id="contractorStageManagerCard" hidden>
     <h3>إعلان انتهاء مرحلة من المشروع</h3>
     <p>يختار مسؤول المشروع المشروع وطلب المعدة والمرحلة المنتهية. يظهر إشعار داخل حساب صاحب المعدة، ليصدر فاتورة المرحلة.</p>
@@ -5243,7 +5236,7 @@
     <label for="contractorPaymentInvoice">الفاتورة *</label><select id="contractorPaymentInvoice"><option value="">حمّل الفواتير أولًا</option></select>
     <label for="contractorPaymentAmount">قيمة الدفعة بالريال *</label><input id="contractorPaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="قيمة الدفعة المستلمة">
     <label for="contractorPaymentReference">مرجع التحويل أو ملاحظة</label><input id="contractorPaymentReference" maxlength="160" placeholder="رقم تحويل أو تفاصيل مختصرة">
-    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
+    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة ولا تُحتسب العمولة نهائيًا قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
     <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال الدفعة للمراجعة</button>
     <p id="contractorPaymentFeedback" role="status" aria-live="polite"></p>
   </div>
