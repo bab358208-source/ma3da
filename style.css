@@ -2770,9 +2770,3 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
     border-radius: 16px;
   }
 }
-
-
-/* ÙØ±Ø§Ø¬Ø¹Ø© ÙØ±Ø§Ø­Ù Ø§ÙÙØ´Ø§Ø±ÙØ¹ ÙØ§ÙÙÙØ§ØªÙØ± */
-.owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
-#ownerInvoiceIssueFields{margin-top:16px}
-#ownerInvoiceIssueFields[hidden]{display:none}
