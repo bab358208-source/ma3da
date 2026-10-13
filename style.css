@@ -2770,3 +2770,39 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
     border-radius: 16px;
   }
 }
+
+
+/* ÙØ±Ø§Ø¬Ø¹Ø© ÙØ±Ø§Ø­Ù Ø§ÙÙØ´Ø§Ø±ÙØ¹ ÙØ§ÙÙÙØ§ØªÙØ± */
+.owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+#ownerInvoiceIssueFields{margin-top:16px}
+#ownerInvoiceIssueFields[hidden]{display:none}
+
+/* Project equipment tracking - additive styles */
+#contractorEquipmentPickerScreen .contractor-project-overview-card,
+#contractorEquipmentPickerScreen .contractor-equipment-tracking-card{border:1px solid #dfd0a8;background:linear-gradient(135deg,#fffdf8,#f8f0dc);border-radius:16px;padding:16px;margin:12px 0}
+#contractorEquipmentPickerScreen .contractor-project-overview-card h2,
+#contractorEquipmentPickerScreen .contractor-equipment-tracking-card h2{font-size:1.08rem;margin:0 0 10px;color:#3a2d12}
+#contractorProjectEquipmentTracking .contractor-tracking-item{border:1px solid #eadfc5;background:#fff;border-radius:14px;padding:14px;margin:10px 0;overflow-wrap:anywhere}
+#contractorProjectEquipmentTracking .contractor-tracking-item h3{margin:0 0 10px;font-size:1rem}
+#contractorProjectEquipmentTracking .contractor-tracking-item p{margin:8px 0;line-height:1.6}
+#contractorProjectEquipmentTracking .contractor-tracking-item a,
+.operator-new-request-card a{color:#775716;font-weight:700;text-decoration:underline}
+#contractorScheduledStartAt{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit;margin:8px 0 12px}
+
+/* Owner incoming requests: customer/project tabs */
+.operator-request-toolbar{margin:12px 0 16px;}
+.operator-request-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+.operator-request-tab{font:inherit;font-weight:700;padding:12px 10px;border:1px solid #dfd0a8;border-radius:12px;background:#fffdf8;color:#3a2d12;cursor:pointer;}
+.operator-request-tab.is-active{background:#3a2d12;color:#fff;border-color:#3a2d12;}
+#refreshOperatorRequestsBtn{font:inherit;padding:10px 14px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;cursor:pointer;}
+#operatorRequestsLastUpdated{font-size:12px;margin:8px 0;color:#6b665b;}
+#operatorCustomerRequestsPanel[hidden],#operatorProjectRequestsPanel[hidden]{display:none!important;}
+
+/* Owner incoming request tabs: customer requests and project requests */
+.operator-request-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 12px}
+.operator-request-tab{min-height:48px;padding:12px 10px;border:1px solid #d7c6a0;border-radius:12px;background:#fffaf0;color:#27231d;font:inherit;font-weight:700;cursor:pointer}
+.operator-request-tab.is-active{background:#c89b3c;color:#17130b;border-color:#b88a2e;box-shadow:0 2px 8px #00000012}
+.operator-requests-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.operator-requests-toolbar span{font-size:.85rem;color:#6d6557}
+#operatorProjectRequestsPanel[hidden],#operatorCustomerRequestsPanel[hidden]{display:none!important}
+@media(max-width:420px){.operator-request-tabs{gap:7px}.operator-request-tab{font-size:.88rem;padding:10px 6px}}
