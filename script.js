@@ -12589,4 +12589,265 @@ document.addEventListener("click", function(event){
       }).join('');}
     }
     const select=$f('ownerBookingInvoiceRequest');
-    if(select){const eligible=rows.filter(r=>!r.invoiceNumber&&(r.status==='invoice_pending'||r.status==='completed'));select.innerHTML='<option value="">اختر طلبًا انتهى العمل فيه</option>'+eligible.map(r=>`<option value="${esc(r.id)}">${esc(r.equipment||'معدة')} — ${esc(r.location||'الموقع غير محدد')} — ${money(r.price||0)}</option>`).join('');if(!eligible.length)select.innerHTML='<option value="">لا توجد طلبات بانتظار
+    if(select){const eligible=rows.filter(r=>!r.invoiceNumber&&(r.status==='invoice_pending'||r.status==='completed'));select.innerHTML='<option value="">اختر طلبًا انتهى العمل فيه</option>'+eligible.map(r=>`<option value="${esc(r.id)}">${esc(r.equipment||'معدة')} — ${esc(r.location||'الموقع غير محدد')} — ${money(r.price||0)}</option>`).join('');if(!eligible.length)select.innerHTML='<option value="">لا توجد طلبات بانتظار إصدار فاتورة</option>';}
+  }
+  async function issueBookingInvoice(requestIdFromButton){
+    const btn=$f('ownerIssueBookingInvoiceBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const requestId=requestIdFromButton||$f('ownerBookingInvoiceRequest')?.value;if(!requestId)throw new Error('اختر الطلب أولًا.');
+      const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+      const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';if(ownerId!==user.uid)throw new Error('لا تملك صلاحية إصدار فاتورة لهذا الطلب.');
+      if(r.invoiceNumber)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
+      const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');
+      const invoiceNumber=`M3-B-${Date.now()}`,now=new Date();
+      await window.ma3daUpdateDoc(ref,{invoiceNumber,invoiceAmount:Math.round(amount*100)/100,invoiceDescription:($f('ownerBookingInvoiceDescription')?.value||'').trim()||`فاتورة تأجير ${r.equipment||'معدة'}`,invoiceStatus:'issued',paymentStatus:'unpaid',invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false});
+      say('ownerBookingInvoiceFeedback',`صدرت الفاتورة ${invoiceNumber} وحُفظت على الطلب لتظهر للطرفين. لم يُحصّل أي مبلغ إلكتروني حتى الآن.`);if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
+    }catch(err){console.error('Issue booking invoice failed:',err);say('ownerBookingInvoiceFeedback',err.message||'تعذر إصدار الفاتورة.',true);}finally{if(btn)btn.disabled=false;}
+  }
+  function renderOwnerRequestOptions(){
+    const el=$f('ownerInvoiceRequest');if(!el)return;
+    el.innerHTML='<option value="">اختر طلب المشروع</option>'+cachedRequests.map(r=>`<option value="${esc(r.id)}">${esc(r.projectName||'مشروع')} — ${esc(r.equipment||'معدة')} — ${money(r.price||0)}</option>`).join('');
+    if(!cachedRequests.length)el.innerHTML='<option value="">لا توجد طلبات مشروع مؤهلة لإصدار فاتورة</option>';
+  }
+  function stageName(n){return ({1:'المرحلة الأولى',2:'المرحلة الثانية',3:'المرحلة الثالثة',4:'المرحلة الرابعة'})[Number(n)]||'مرحلة غير محددة';}
+  function renderStageOptions(){
+    const projects=$f('contractorStageProject');
+    if(projects){const current=projects.value;projects.innerHTML='<option value="">اختر المشروع</option>'+cachedProjects.map(p=>`<option value="${esc(p.id)}">${esc(p.name||p.projectName||'مشروع بدون اسم')}</option>`).join('');if(cachedProjects.some(p=>p.id===current))projects.value=current;}
+    renderManagerRequestOptions();
+  }
+  function renderManagerRequestOptions(){
+    const projectId=$f('contractorStageProject')?.value||'';const el=$f('contractorStageRequest');if(!el)return;
+    const rows=cachedManagerRequests.filter(r=>!projectId||r.projectId===projectId);
+    el.innerHTML='<option value="">اختر طلب المعدة</option>'+rows.map(r=>`<option value="${esc(r.id)}">${esc(r.projectName||'مشروع')} — ${esc(r.equipment||'معدة')} — ${esc(r.equipmentOwnerName||r.ownerName||'صاحب المعدة')}</option>`).join('');
+    if(!rows.length)el.innerHTML='<option value="">لا توجد طلبات معدات مرتبطة بالمشروع</option>';
+  }
+  function renderOwnerPhaseOptions(){
+    const el=$f('ownerPhaseTask');if(!el)return;
+    const rows=cachedPhases.filter(p=>['completion_requested','completion_announced','disputed','approved_for_invoice'].includes(p.status)&&!p.invoiceId);
+    el.innerHTML='<option value="">اختر المرحلة</option>'+rows.map(p=>`<option value="${esc(p.id)}">${esc(p.projectName||'مشروع')} — ${esc(p.stageName||stageName(p.stageNumber))} — ${esc(statusLabel(p.status))}</option>`).join('');
+    if(!rows.length)el.innerHTML='<option value="">لا توجد مراحل بانتظار المراجعة أو الفاتورة</option>';
+    syncOwnerInvoiceFields();
+  }
+  function renderProjectStageCards(){
+    const el=$f('contractorProjectStagesList');if(!el)return;
+    if(!cachedPhases.length){el.innerHTML='<div class="ma3da-finance-row"><p>ستظهر هنا طلبات اعتماد انتهاء المراحل، وقرارات المراجعة، والفواتير وحالة السداد.</p></div>';return;}
+    el.innerHTML='<h3>سجل مراحل المشروع</h3>'+[...cachedPhases].sort((a,b)=>Number(b.stageNumber||0)-Number(a.stageNumber||0)).map(p=>`<div class="ma3da-finance-row"><strong>${esc(p.projectName||'مشروع')} — ${esc(p.stageName||stageName(p.stageNumber))}</strong><p>المعدة: ${esc(p.equipment||'معدة')}</p><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p>${p.invoiceNumber?`<p>الفاتورة: ${esc(p.invoiceNumber)}</p>`:''}</div>`).join('');
+  }
+  async function announceStageCompletion(){
+    const btn=$f('contractorAnnounceStageBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const projectId=$f('contractorStageProject')?.value;const requestId=$f('contractorStageRequest')?.value;const stageNumber=Number($f('contractorStageNumber')?.value);
+      const project=cachedProjects.find(p=>p.id===projectId);const request=cachedManagerRequests.find(r=>r.id===requestId);
+      if(!project)throw new Error('اختر مشروعًا تملكه أو تديره.');
+      if(!request||request.projectId!==projectId)throw new Error('اختر طلب معدة تابعًا للمشروع المحدد.');
+      const contractorId=request.contractorId||request.requesterId||request.customerId;
+      if(contractorId!==user.uid)throw new Error('لا تملك صلاحية إعلان انتهاء هذه المرحلة.');
+      const ownerId=request.equipmentOwnerId||request.ownerId||request.operatorId||'';if(!ownerId)throw new Error('طلب المعدة لا يحتوي على معرّف صاحب المعدة.');
+      if(![1,2,3,4].includes(stageNumber))throw new Error('اختر مرحلة من المراحل الأربع.');
+      if(stageNumber>1){
+        const previous=cachedPhases.find(p=>p.requestId===request.id&&Number(p.stageNumber)===stageNumber-1);
+        if(!previous||previous.status!=='payment_confirmed')throw new Error(`لا يمكن إنهاء ${stageName(stageNumber)} قبل تأكيد سداد ${stageName(stageNumber-1)} لهذا الطلب.`);
+      }
+      if(cachedPhases.some(p=>p.requestId===request.id&&Number(p.stageNumber)===stageNumber&&p.status!=='cancelled'))throw new Error('سبق تسجيل هذه المرحلة لهذا الطلب.');
+      await window.ma3daAddDoc(col('projectPhaseTasks'),{
+        projectId,projectName:project.name||project.projectName||request.projectName||'مشروع',
+        contractorId:user.uid,contractorName:project.contractorName||request.contractorName||'',
+        ownerId,requestId:request.id,equipment:request.equipment||'معدة',equipmentId:request.equipmentId||'',
+        stageNumber,stageName:stageName(stageNumber),status:'completion_requested',
+        announcedBy:user.uid,announcedAt:new Date(),ownerNotifiedAt:new Date(),invoiceId:null,invoiceNumber:null,
+        schemaVersion:1,createdAt:new Date(),updatedAt:new Date()
+      });
+      say('contractorStageFeedback',`تم إرسال طلب اعتماد انتهاء ${stageName(stageNumber)} لصاحب المعدة. لن تصدر الفاتورة حتى يراجع الأعمال ويعتمد المرحلة.`);
+      await loadFinance();
+    }catch(err){console.error('Announce project stage failed:',err);say('contractorStageFeedback',err.message||'تعذر إعلان انتهاء المرحلة. تحقق من صلاحيات Firebase.',true);}
+    finally{if(btn)btn.disabled=false;}
+  }
+  function renderInvoiceOptions(){
+    const el=$f('contractorPaymentInvoice');if(!el)return;
+    el.innerHTML='<option value="">اختر الفاتورة</option>'+cachedInvoices.filter(i=>i.contractorId).map(i=>`<option value="${esc(i.id)}">${esc(i.invoiceNumber||i.id)} — ${esc(i.projectName||'مشروع')} — ${money(i.invoiceAmount)}</option>`).join('');
+    if(!cachedInvoices.some(i=>i.contractorId))el.innerHTML='<option value="">لا توجد فواتير مستحقة مرتبطة بحسابك</option>';
+  }
+  function paymentSummary(invoice){
+    const rows=cachedPayments.filter(p=>p.invoiceId===invoice.id);
+    const verified=rows.filter(p=>p.status==='verified');
+    const paid=verified.reduce((sum,p)=>sum+Number(p.amount||0),0);
+    const pending=rows.filter(p=>p.status==='pending_verification').reduce((sum,p)=>sum+Number(p.amount||0),0);
+    return {paid,pending,remaining:Math.max(0,Number(invoice.invoiceAmount||0)-paid)};
+  }
+  function renderInvoiceCards(){
+    const list=$f('contractorInvoicesList');if(!list)return;
+    if(!cachedInvoices.length){list.innerHTML=`<div class="card"><h3>${financeMode==='owner'?'لا توجد فواتير تأجير حتى الآن':'لا توجد فواتير واردة حتى الآن'}</h3><p>${financeMode==='owner'?'عندما يعلن مسؤول المشروع انتهاء مرحلة، ستظهر هنا لإصدار فاتورتها.':'ستظهر هنا فواتير المراحل التي يصدرها أصحاب المعدات لمشاريعك.'}</p></div>`;return;}
+    const sorted=[...cachedInvoices].sort((a,b)=>{
+      const toTime=v=>{try{return (v?.toDate?v.toDate():new Date(v||0)).getTime()||0}catch(_){return 0}};
+      return toTime(b.createdAt)-toTime(a.createdAt);
+    });
+    list.innerHTML='<div class="card"><h3>'+(financeMode==='owner'?'فواتير معداتي ومستحقاتي':'الفواتير المطلوب سدادها')+'</h3><p>راجع قيمة الفاتورة والدفعات وحالة السداد من هنا.</p>'+sorted.map(inv=>{
+      const s=paymentSummary(inv); const st=s.remaining<=0?'paid':s.paid>0?'partial':(s.pending>0?'pending_verification':'issued');
+      const payRows=cachedPayments.filter(p=>p.invoiceId===inv.id).map(p=>`<div class="ma3da-finance-row"><strong>دفعة: ${money(p.amount)}</strong><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p><p>المرجع: ${esc(p.reference||'—')}</p>${financeMode==='owner'&&p.status==='pending_verification'?`<button type="button" class="main-btn" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button>`:''}</div>`).join('');
+      const counterparty=financeMode==='owner'?`<p><strong>مسؤول المشروع:</strong> ${esc(inv.contractorName||inv.contractorEmail||'المقاول')}</p>`:`<p><strong>صاحب المعدة:</strong> ${esc(inv.ownerName||inv.ownerEmail||'صاحب المعدة')}</p>`;
+      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3>${counterparty}<p><strong>المشروع:</strong> ${esc(inv.projectName||'—')}</p>${inv.stageNumber?`<p><strong>المرحلة:</strong> ${esc(inv.stageName||stageName(inv.stageNumber))}</p>`:''}<p><strong>المعدة:</strong> ${esc(inv.equipment||'—')}</p><p><strong>تاريخ الإصدار:</strong> ${when(inv.createdAt)}</p><p><strong>التفاصيل:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p>${financeMode==='owner'?`<p><strong>حالة التسوية:</strong> ${esc(statusLabel(inv.settlementStatus||'settlement_pending'))}</p>`:''}<p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(st))}</span></p>${financeMode==='contractor'&&s.remaining>0?`<button type="button" class="main-btn" data-finance-pay-invoice="${esc(inv.id)}">تسجيل دفعة لهذه الفاتورة</button>`:''}${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
+    }).join('')+'</div>';
+  }
+  async function reviewOwnerPhase(decision){
+    const approveBtn=$f('ownerApprovePhaseBtn');const disputeBtn=$f('ownerDisputePhaseBtn');
+    if(approveBtn)approveBtn.disabled=true;if(disputeBtn)disputeBtn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const phaseId=$f('ownerPhaseTask')?.value;
+      const phase=cachedPhases.find(p=>p.id===phaseId);
+      if(!phase||phase.invoiceId)throw new Error('اختر مرحلة موجودة ولم تصدر فاتورتها.');
+      if(phase.ownerId!==user.uid)throw new Error('هذه المرحلة ليست مرتبطة بحسابك.');
+      if(!['completion_requested','completion_announced','disputed'].includes(phase.status))throw new Error('هذه المرحلة ليست بانتظار المراجعة؛ تحقق من حالتها.');
+      const note=($f('ownerPhaseReviewNote')?.value||'').trim();
+      if(decision==='disputed'&&!note)throw new Error('اكتب الملاحظة أو سبب الخلاف قبل تسجيله.');
+      const nextStatus=decision==='approve'?'approved_for_invoice':'disputed';
+      const patch={status:nextStatus,reviewedBy:user.uid,reviewedAt:new Date(),reviewNote:note,updatedAt:new Date()};
+      if(decision==='disputed'){patch.disputeNote=note;patch.disputedAt=new Date();}
+      else {patch.approvedForInvoiceAt=new Date();patch.disputeNote='';}
+      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',phase.id),patch);
+      say('ownerInvoiceFeedback',decision==='approve'?'تم اعتماد انتهاء المرحلة. يمكنك الآن إصدار الفاتورة من قسم إصدار فاتورة المرحلة المعتمدة.':'تم تسجيل الملاحظة/الخلاف. بقيت المرحلة قيد المراجعة ولن تصدر لها فاتورة حتى تُعتمد.');
+      await loadFinance();
+      const issueFields=$f('ownerInvoiceIssueFields');if(issueFields)issueFields.hidden=decision!=='approve';
+    }catch(err){console.error('Owner phase review failed:',err);say('ownerInvoiceFeedback',err.message||'تعذرت مراجعة المرحلة. تحقق من صلاحيات Firebase.',true);}
+    finally{if(approveBtn)approveBtn.disabled=false;if(disputeBtn)disputeBtn.disabled=false;}
+  }
+  function syncOwnerInvoiceFields(){
+    const phaseId=$f('ownerPhaseTask')?.value;
+    const phase=cachedPhases.find(p=>p.id===phaseId);
+    const fields=$f('ownerInvoiceIssueFields');
+    if(fields)fields.hidden=!(phase&&phase.status==='approved_for_invoice'&&!phase.invoiceId);
+    const note=$f('ownerPhaseReviewNote');
+    if(note&&phase?.status==='disputed'&&!note.value)note.value=phase.disputeNote||phase.reviewNote||'';
+  }
+  async function issueOwnerInvoice(){
+    const btn=$f('ownerIssueInvoiceBtn');if(btn)btn.disabled=true;
+    let invoiceCreated=false;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const phaseId=$f('ownerPhaseTask')?.value;
+      const phase=cachedPhases.find(p=>p.id===phaseId);
+      if(!phase||phase.status!=='approved_for_invoice'||phase.invoiceId)throw new Error('لا يمكن إصدار الفاتورة قبل اعتماد انتهاء المرحلة من صاحب المعدة.');
+      if(phase.ownerId!==user.uid)throw new Error('هذه المرحلة ليست مرتبطة بحسابك.');
+      const request=cachedAllRequests.find(r=>r.id===phase.requestId);
+      if(!request)throw new Error('تعذر العثور على طلب المعدة المرتبط بهذه المرحلة.');
+      const amount=Number($f('ownerPhaseInvoiceAmount')?.value);
+      if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');
+      const description=($f('ownerInvoiceDescription')?.value||'').trim()||`فاتورة ${phase.stageName||stageName(phase.stageNumber)} — ${phase.projectName||'مشروع'}`;
+      const invoiceNumber=`M3-${Date.now()}`;
+      const invoiceRef=await window.ma3daAddDoc(col('projectInvoices'),{
+        phaseTaskId:phase.id,stageNumber:Number(phase.stageNumber),stageName:phase.stageName||stageName(phase.stageNumber),
+        requestId:request.id,projectId:phase.projectId,projectName:phase.projectName||request.projectName||'مشروع',
+        contractorId:phase.contractorId,contractorName:phase.contractorName||request.contractorName||'',contractorEmail:request.contractorEmail||'',
+        ownerId:user.uid,ownerEmail:user.email||'',ownerName:request.ownerName||'',equipmentOwnerId:user.uid,
+        equipment:phase.equipment||request.equipment||'معدة',equipmentId:phase.equipmentId||request.equipmentId||'',
+        invoiceNumber,invoiceAmount:Math.round(amount*100)/100,description,currency:'SAR',
+status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pending',
+        createdBy:user.uid,createdAt:new Date(),updatedAt:new Date(),schemaVersion:3
+      });
+      invoiceCreated=true;
+      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',phase.id),{
+        status:'invoice_issued',invoiceId:invoiceRef.id,invoiceNumber,invoiceAmount:Math.round(amount*100)/100,
+        invoiceIssuedAt:new Date(),updatedAt:new Date()
+      });
+      $f('ownerPhaseInvoiceAmount').value='';$f('ownerInvoiceDescription').value='';
+      say('ownerInvoiceFeedback',`تم إرسال فاتورة ${phase.stageName||stageName(phase.stageNumber)} لمسؤول المشروع وحفظها في سجل الطرفين. لم يتم تحصيل أي مبلغ بعد.`);
+      await loadFinance();
+    }catch(err){console.error('Issue phase invoice failed:',err);say('ownerInvoiceFeedback',(invoiceCreated?'أُنشئت الفاتورة لكن تعذر تحديث حالة المرحلة. ':'')+(err.message||'تعذر إصدار الفاتورة. تحقق من صلاحيات Firebase.'),true);}
+    finally{if(btn)btn.disabled=false;}
+  }
+  async function confirmPaymentReceived(paymentId){
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const payment=cachedPayments.find(p=>p.id===paymentId);if(!payment)throw new Error('تعذر العثور على الدفعة.');
+      if(financeMode!=='owner'||(payment.ownerId!==user.uid))throw new Error('تأكيد الاستلام متاح لصاحب المعدة المرتبط بالفاتورة فقط.');
+      if(payment.status!=='pending_verification')throw new Error('هذه الدفعة ليست بانتظار تأكيد الاستلام.');
+      const invoice=cachedInvoices.find(i=>i.id===payment.invoiceId);if(!invoice)throw new Error('تعذر العثور على الفاتورة.');
+      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoicePayments',payment.id),{
+        status:'verified',verifiedBy:user.uid,verifiedAt:new Date(),
+        verificationMethod:'owner_confirmed_receipt',updatedAt:new Date()
+      });
+      const totalBefore=cachedPayments.filter(p=>p.invoiceId===invoice.id&&p.status==='verified').reduce((sum,p)=>sum+Number(p.amount||0),0);
+      const totalAfter=totalBefore+Number(payment.amount||0);
+      if(invoice.phaseTaskId){
+        const phase=cachedPhases.find(p=>p.id===invoice.phaseTaskId);
+        const complete=totalAfter>=Number(invoice.invoiceAmount||0);
+        await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',invoice.phaseTaskId),{
+          status:complete?'payment_confirmed':'partial_payment_confirmed',paymentConfirmedAt:new Date(),updatedAt:new Date()
+        });
+      }
+      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',invoice.id),{
+        paymentStatus:totalAfter>=Number(invoice.invoiceAmount||0)?'paid':'partially_paid',lastPaymentConfirmedAt:new Date(),updatedAt:new Date()
+      });
+      say('ownerInvoiceFeedback','تم تسجيل تأكيد استلام الدفعة. تم تحديث حالة الفاتورة عند الطرفين بعد إعادة تحميلها.');
+      await loadFinance();
+    }catch(err){console.error('Confirm payment receipt failed:',err);say('ownerInvoiceFeedback',err.message||'تعذر تأكيد استلام الدفعة. تحقق من صلاحيات Firebase.',true);}
+  }
+  async function submitPayment(invoiceIdFromButton){
+    const btn=$f('contractorSubmitPaymentBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const invoiceId=invoiceIdFromButton||$f('contractorPaymentInvoice')?.value;
+      const invoice=cachedInvoices.find(i=>i.id===invoiceId);
+      const amount=Number($f('contractorPaymentAmount')?.value);
+      const reference=($f('contractorPaymentReference')?.value||'').trim();
+      if(!invoice)throw new Error('اختر فاتورة واردة تخص أحد مشاريعك.');
+      if(invoice.contractorId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');
+      if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل قيمة دفعة صحيحة.');
+      const summary=paymentSummary(invoice);
+      if(amount>summary.remaining)throw new Error('قيمة الدفعة أكبر من المتبقي على الفاتورة.');
+      const paymentRef=await window.ma3daAddDoc(col('projectInvoicePayments'),{
+        invoiceId, contractorId:user.uid, ownerId:invoice.ownerId||invoice.equipmentOwnerId||'', projectId:invoice.projectId,
+        requestId:invoice.requestId||'', projectName:invoice.projectName||'', invoiceNumber:invoice.invoiceNumber||'',
+        stageNumber:invoice.stageNumber||null,stageName:invoice.stageName||'',phaseTaskId:invoice.phaseTaskId||'',
+        amount:Math.round(amount*100)/100, currency:'SAR', reference,
+        status:'pending_verification', submittedBy:user.uid, submittedAt:new Date(),
+        note:'إفادة مقدم الطلب غير مؤكدة؛ يلزم تأكيد صاحب المعدة لاستلام التحويل أو ربط مزود دفع موثوق.', schemaVersion:3
+      });
+      try{
+        await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',invoice.id),{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:new Date(),updatedAt:new Date()});
+        if(invoice.phaseTaskId)await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',invoice.phaseTaskId),{status:'payment_submitted',lastPaymentId:paymentRef?.id||'',lastPaymentSubmittedAt:new Date(),updatedAt:new Date()});
+      }catch(updateError){console.warn('Payment recorded but stage status update failed:',updateError);}
+      $f('contractorPaymentAmount').value='';$f('contractorPaymentReference').value='';
+      say('contractorPaymentFeedback','تم تسجيل الدفعة للمراجعة فقط. لم يتم تنفيذ دفع إلكتروني أو تأكيد وصول المال.');
+      await loadFinance();
+    }catch(err){console.error('Submit payment record failed:',err);say('contractorPaymentFeedback',err.message||'تعذر تسجيل الدفعة. تحقق من صلاحيات Firebase.',true);}
+    finally{if(btn)btn.disabled=false;}
+  }
+  document.addEventListener('click',event=>{
+    const target=event.target.closest('button');if(!target)return;
+    if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
+    if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
+    if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
+    if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
+    const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
+    if(target.id==='contractorFinanceBackBtn'){
+      showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
+    }
+    if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
+    if(target.id==='ownerApprovePhaseBtn'){reviewOwnerPhase('approve');return;}
+    if(target.id==='ownerDisputePhaseBtn'){reviewOwnerPhase('disputed');return;}
+    if(target.id==='contractorAnnounceStageBtn'){announceStageCompletion();return;}
+    const confirmPaymentButton=target.closest('[data-owner-confirm-payment]');
+    if(confirmPaymentButton){confirmPaymentReceived(confirmPaymentButton.getAttribute('data-owner-confirm-payment'));return;}
+    if(target.id==='contractorCreateInvoiceBtn'){return;}
+    if(target.id==='contractorSubmitPaymentBtn'){submitPayment();return;}
+    const payInvoiceButton=target.closest('[data-finance-pay-invoice]');
+    if(payInvoiceButton){
+      const invoiceId=payInvoiceButton.getAttribute('data-finance-pay-invoice');
+      const select=$f('contractorPaymentInvoice');if(select)select.value=invoiceId;
+      const amount=$f('contractorPaymentAmount');
+      const invoice=cachedInvoices.find(i=>i.id===invoiceId);const summary=invoice?paymentSummary(invoice):null;
+      if(amount&&summary)amount.value=String(summary.remaining.toFixed(2));
+      $f('contractorPaymentCard')?.scrollIntoView?.({behavior:'smooth',block:'start'});
+      if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=false;
+      say('contractorPaymentFeedback','أدخل مرجع التحويل إن وجد، ثم أرسل الدفعة للمراجعة. هذا لا ينفذ دفعًا إلكترونيًا.');
+      return;
+    }
+  });
+  $f('contractorStageProject')?.addEventListener('change',renderManagerRequestOptions);
+  $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
+})();
+
+       
