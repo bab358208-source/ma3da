@@ -12461,3 +12461,74 @@ document.addEventListener("click", function(event){
   // Keep old submit buttons inert so users cannot create duplicate tickets through the retired form.
   document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
 })();
+
+/* Ma3da: invoice and income helpers */
+
+function showIncomeTab(tab) {
+  document.getElementById("ownerCustomerInvoices").hidden =
+    tab !== "customer";
+
+  document.getElementById("ownerProjectInvoices").hidden =
+    tab !== "projects";
+}
+
+function showContractorTab(tab) {
+  document.getElementById("contractorPaymentsList").hidden =
+    tab !== "payments";
+
+  document.getElementById("contractorInvoicesList").hidden =
+    tab !== "invoices";
+}
+
+function calculateMa3daCommission(amount) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error("قيمة المبلغ غير صحيحة");
+  }
+
+  return Math.round(value * 0.10 * 100) / 100;
+}
+
+function calculateOwnerNet(amount) {
+  const value = Number(amount);
+  const commission = calculateMa3daCommission(value);
+
+  return Math.round((value - commission) * 100) / 100;
+}
+
+function calculateProjectStageCommission(stageAmount) {
+  return calculateMa3daCommission(stageAmount);
+}
+
+/*
+  لا يُعتمد إغلاق الطلب إلا بعد التحقق من:
+  1. تأكيد الدفع من مزود الدفع.
+  2. إنشاء الفاتورة وحفظها في قاعدة البيانات.
+  3. ظهور الفاتورة في قائمة فواتير صاحبها.
+
+  يجب تنفيذ التحقق الفعلي داخل الخادم أو Cloud Functions
+  مع قواعد Firestore مناسبة، وليس اعتمادًا على الواجهة فقط.
+*/
+async function canCloseRequestAfterInvoice(requestId) {
+  if (!requestId || !window.ma3daDB || !window.ma3daFirebaseReady) {
+    return false;
+  }
+
+  try {
+    const requestRef = window.ma3daDB.collection("requests").doc(requestId);
+    const requestSnap = await requestRef.get();
+
+    if (!requestSnap.exists) return false;
+
+    const requestData = requestSnap.data();
+
+    return requestData.paymentStatus === "paid" &&
+      requestData.invoiceStatus === "issued" &&
+      !!requestData.invoiceId;
+  } catch (error) {
+    console.error("تعذر التحقق من الفاتورة:", error);
+    return false;
+  }
+}
+
