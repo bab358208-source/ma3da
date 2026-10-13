@@ -1784,14 +1784,11 @@ if(acceptRequestBtn){
  
         }
  
-        const acceptingOwner = window.ma3daGetCurrentUser ? await window.ma3daGetCurrentUser() : window.ma3daAuth?.currentUser;
         await window.ma3daUpdateDoc(
           requestRef,
           {
             status: "accepted",
-            equipmentOwnerId: acceptingOwner?.uid || "",
-            ownerId: acceptingOwner?.uid || "",
-            operatorName: acceptingOwner?.displayName || "صاحب المعدة",
+            operatorName: "فهد القحطاني",
             operatorRating: "4.8"
           }
         );
@@ -2946,22 +2943,54 @@ document
     }
   );
  
-const paymentBtn = document.getElementById("paymentBtn");
+const paymentBtn =
+  document.getElementById("paymentBtn");
+ 
 if(paymentBtn){
-  paymentBtn.addEventListener("click",()=>{
-    if(typeof window.ma3daOpenCustomerFinance === "function") window.ma3daOpenCustomerFinance();
-    else showScreen("paymentScreen");
-  });
+ 
+  paymentBtn.addEventListener(
+    "click",
+    ()=>{
+ 
+      if(
+        typeof stopAcceptanceWatcher ===
+        "function"
+      ){
+ 
+        stopAcceptanceWatcher();
+ 
+      }
+ 
+      showScreen(
+        "paymentScreen"
+      );
+ 
+    }
+  );
+ 
 }
-
-const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+ 
+const confirmPaymentBtn =
+  document.getElementById("confirmPaymentBtn");
+ 
 if(confirmPaymentBtn){
-  confirmPaymentBtn.addEventListener("click",()=>{
-    if(typeof window.ma3daOpenCustomerFinance === "function") window.ma3daOpenCustomerFinance();
-    else alert("تعذر فتح صفحة الفواتير. أعد تحميل التطبيق.");
-  });
+ 
+  confirmPaymentBtn.addEventListener(
+    "click",
+    ()=>{
+ 
+      if(!selectedPayment)
+        return;
+ 
+      showScreen(
+        "ratingScreen"
+      );
+ 
+    }
+  );
+ 
 }
-
+ 
 /* RATING */
  
 document
@@ -3980,11 +4009,16 @@ async function loadCustomerOrders(
       );
  
     const currentStatuses = [
-      "searching", "accepted", "arrived", "working",
-      "invoice_pending", "invoice_issued", "payment_pending"
+      "searching",
+      "accepted",
+      "arrived",
+      "working"
     ];
-
-    const previousStatuses = ["paid", "completed", "rejected"];
+ 
+    const previousStatuses = [
+      "completed",
+      "rejected"
+    ];
  
     const wantedStatuses =
       type === "current"
@@ -5248,10 +5282,6 @@ function operatorRequestDateValue(value){
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function operatorSafeText(value){
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-}
-
 function renderOperatorRequestCards(list, requests, kind){
   if(!list) return;
   if(!requests.length){
@@ -5263,17 +5293,14 @@ function renderOperatorRequestCards(list, requests, kind){
     const card = document.createElement("div");
     card.className = "card operator-new-request-card";
     const price = Number(request.price || 0);
-    const projectLine = kind === "projects" ? `<div class="operator-info-row"><span>🏗️ اسم المشروع</span><strong>${operatorSafeText(request.projectName || "مشروع بدون اسم")}</strong></div>` : "";
+    const projectLine = kind === "projects" ? `<div class="operator-info-row"><span>🏗️ اسم المشروع</span><strong>${request.projectName || "مشروع بدون اسم"}</strong></div>` : "";
     const requester = kind === "projects" ? (request.contractorName || request.contractorCompany || "مقاول / صاحب مشروع") : (request.customerName || request.requesterName || "عميل");
-    const projectMapLink = kind === "projects" && Number.isFinite(Number(request.projectLatitude)) && Number.isFinite(Number(request.projectLongitude)) && Number(request.projectLatitude)!==0 && Number(request.projectLongitude)!==0 ? `<a href="https://www.openstreetmap.org/?mlat=${encodeURIComponent(request.projectLatitude)}&mlon=${encodeURIComponent(request.projectLongitude)}#map=15/${encodeURIComponent(request.projectLatitude)}/${encodeURIComponent(request.projectLongitude)}" target="_blank" rel="noopener">فتح موقع المشروع على الخريطة</a>` : "";
     card.innerHTML = `
       <div class="request-title"><span>${kind === "projects" ? "🏗️" : "🚜"}</span><div><h2>${request.equipment || "معدة"}</h2><p>${kind === "projects" ? "طلب مشروع" : "طلب عميل"}</p></div></div>
       <div class="operator-info">
-        <div class="operator-info-row"><span>👤 مسؤول المشروع</span><strong>${operatorSafeText(requester)}</strong></div>
+        <div class="operator-info-row"><span>👤 مقدم الطلب</span><strong>${requester}</strong></div>
         ${projectLine}
-        <div class="operator-info-row"><span>📍 موقع المشروع</span><strong>${operatorSafeText(request.location || request.projectCity || "-")}</strong></div>
-        ${projectMapLink ? `<div class="operator-info-row">${projectMapLink}</div>` : ""}
-        ${request.contractorPhone ? `<div class="operator-info-row"><span>📞 هاتف المسؤول</span><strong>${operatorSafeText(request.contractorPhone)}</strong></div>` : ""}
+        <div class="operator-info-row"><span>📍 موقع العمل</span><strong>${request.location || request.projectCity || "-"}</strong></div>
         <div class="operator-info-row"><span>⏱️ مدة العمل</span><strong>${request.duration || "-"}</strong></div>
         <div class="operator-info-row"><span>💰 السعر</span><strong>${price.toLocaleString("ar-SA")} ريال</strong></div>
         <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>بانتظار قبولك</strong></div>
@@ -6069,12 +6096,10 @@ async function operatorFinishWork(){
       requestRef,
       {
  
-        status: "invoice_pending",
-        workCompletedAt: completedAt,
-        completedAt,
-        invoiceStatus: request.invoiceStatus || "awaiting_issue",
-        paymentStatus: request.paymentStatus || "unpaid",
-        requestClosed: false
+        status:
+          "completed",
+ 
+        completedAt
  
       }
     );
@@ -6111,11 +6136,6 @@ async function operatorFinishWork(){
       showScreen(
         "operatorCompletedScreen"
       );
-      const financeHint = document.getElementById("operatorFinalPrice");
-      if(financeHint && !document.getElementById("operatorInvoicePendingHint")){
-        const hint=document.createElement("p"); hint.id="operatorInvoicePendingHint"; hint.className="muted";
-        hint.textContent="الطلب لم يُغلق ماليًا بعد. افتح «فواتير التأجير ومستحقاتي» لإصدار الفاتورة للعميل."; financeHint.insertAdjacentElement("afterend",hint);
-      }
  
     }else{
  
@@ -10388,50 +10408,8 @@ localStorage.setItem("selectedRole", "contractor");
   if(contractorPickerBackBtn)contractorPickerBackBtn.addEventListener('click',async()=>{contractorShowScreen('contractorProjectsScreen');await loadContractorProjects();});
   const contractorRefreshEquipmentBtn=document.getElementById('contractorRefreshEquipmentBtn');
   if(contractorRefreshEquipmentBtn)contractorRefreshEquipmentBtn.addEventListener('click',loadContractorNearbyEquipment);
-  const contractorRefreshTrackingBtn=document.getElementById('contractorRefreshTrackingBtn');
-  if(contractorRefreshTrackingBtn)contractorRefreshTrackingBtn.addEventListener('click',loadContractorProjectEquipmentTracking);
   const contractorEquipmentTypeSelect=document.getElementById('contractorEquipmentType');
   if(contractorEquipmentTypeSelect)contractorEquipmentTypeSelect.addEventListener('change',renderContractorNearbyEquipment);
-
-  function contractorTrackingStatusLabel(status){
-    const labels={searching:'بانتظار قبول صاحب المعدة',accepted:'تم قبول الطلب',arrived:'وصلت المعدة للمشروع',working:'المعدة تعمل',completed:'انتهى العمل',complete:'انتهى العمل',rejected:'تم رفض الطلب',cancelled:'تم إلغاء الطلب',canceled:'تم إلغاء الطلب'};
-    return labels[String(status||'').toLowerCase()]||'الحالة: '+String(status||'غير محددة');
-  }
-  function contractorTrackingDate(value){
-    if(!value)return 'غير محدد';
-    let date=value;
-    if(value&&typeof value.toDate==='function')date=value.toDate();
-    else if(value&&typeof value.seconds==='number')date=new Date(value.seconds*1000);
-    else date=new Date(value);
-    return Number.isNaN(date.getTime())?'غير محدد':date.toLocaleString('ar-SA',{dateStyle:'medium',timeStyle:'short'});
-  }
-  async function loadContractorProjectEquipmentTracking(){
-    const box=document.getElementById('contractorProjectEquipmentTracking');if(!box)return;
-    if(!contractorSelectedProject){box.innerHTML='<div class="card">اختر مشروعًا أولًا.</div>';return;}
-    box.innerHTML='<div class="card">جارٍ تحديث بيانات معدات المشروع…</div>';
-    try{
-      const user=await getContractorUser();if(!user?.uid)throw new Error('سجّل الدخول لعرض معدات المشروع.');
-      const [requestsSnap,equipmentSnap]=await Promise.all([
-        window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests')),
-        window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment')).catch(()=>null)
-      ]);
-      const equipmentById=new Map();if(equipmentSnap)equipmentSnap.forEach(d=>equipmentById.set(d.id,{id:d.id,...(d.data()||{})}));
-      const rows=[];requestsSnap.forEach(docSnap=>{const d=docSnap.data()||{};if(d.projectId!==contractorSelectedProject.id)return;if((d.contractorId||d.requesterId||d.customerId)!==user.uid)return;if(['cancelled','canceled','rejected'].includes(String(d.status||'').toLowerCase()))return;rows.push({id:docSnap.id,...d});});
-      rows.sort((a,b)=>{const toMs=v=>v?.seconds? v.seconds*1000 : new Date(v||0).getTime();return toMs(b.createdAt)-toMs(a.createdAt);});
-      if(!rows.length){box.innerHTML='<div class="card"><h3>لا توجد معدات مطلوبة أو مرتبطة بالمشروع حتى الآن</h3><p>يمكنك استعراض المعدات المتاحة أدناه وإرسال طلب جديد مرتبط بهذا المشروع.</p></div>';return;}
-      box.innerHTML=rows.map(r=>{
-        const latest=equipmentById.get(r.equipmentId)||{};
-        const lat=Number(latest.currentLatitude??latest.latitude??latest.lat??r.equipmentLatitude);
-        const lng=Number(latest.currentLongitude??latest.longitude??latest.lng??r.equipmentLongitude);
-        const hasPoint=Number.isFinite(lat)&&Number.isFinite(lng)&&lat!==0&&lng!==0;
-        const map=hasPoint?`<a href="https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lng)}#map=16/${encodeURIComponent(lat)}/${encodeURIComponent(lng)}" target="_blank" rel="noopener">عرض آخر موقع محفوظ للمعدة</a>`:'<span>لا توجد إحداثيات حالية محفوظة للمعدة</span>';
-        const status=contractorTrackingStatusLabel(r.status);
-        const scheduled=contractorTrackingDate(r.scheduledStartAt||r.agreedStartAt);
-        const title=[r.equipment||'معدة',r.equipmentModel].filter(Boolean).join(' — ');
-        return `<div class="contractor-tracking-item"><h3>🚜 ${escapeContractorHtml(title)}</h3><p><strong>حالة العمل:</strong> ${escapeContractorHtml(status)}</p><p><strong>موعد بدء العمل:</strong> ${escapeContractorHtml(scheduled)}</p><p><strong>المدة:</strong> ${escapeContractorHtml(r.duration||'غير محددة')}</p><p><strong>صاحب المعدة:</strong> ${escapeContractorHtml(r.ownerName||r.equipmentOwnerName||'حسب بيانات الطلب')}</p><p>${map}</p><p class="muted">آخر موقع محفوظ ليس تتبعًا مباشرًا؛ التتبع الحي يتطلب مشاركة موقع فعلية من جهاز المعدة.</p></div>`;
-      }).join('');
-    }catch(error){console.error('Load project equipment tracking failed:',error);box.innerHTML=`<div class="card">${escapeContractorHtml(error.message||'تعذر تحديث حالة معدات المشروع.')}</div>`;}
-  }
 
   function contractorCoordinatesForEquipment(data){
     const lat=Number(data.latitude??data.lat??data.locationLatitude??data.coordinates?.latitude??data.location?.latitude);
@@ -10492,15 +10470,13 @@ localStorage.setItem("selectedRole", "contractor");
     const duration=document.getElementById('contractorDuration')?.value||'ساعة واحدة';
     const operator=document.getElementById('contractorOperator')?.value||'مع مشغل';
     const notes=document.getElementById('contractorNotes')?.value.trim()||'';
-    const scheduledStartAt=document.getElementById('contractorScheduledStartAt')?.value||'';
     const hoursMap={'ساعة واحدة':1,'4 ساعات':4,'8 ساعات':8,'يوم كامل':10};const hours=hoursMap[duration]||1;
     const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);const price=hourlyPrice*hours;
     button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
     try{
-      const profile=contractorGetProfile()||{};const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name,projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration,durationHours:hours,scheduledStartAt:scheduledStartAt||null,operator,notes,price,hourlyPrice,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date()};
+      const profile=contractorGetProfile()||{};const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name,projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration,durationHours:hours,operator,notes,price,hourlyPrice,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date()};
       const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
       contractorCurrentOrderId=result.id;contractorCurrentOrder={id:result.id,...requestData};localStorage.setItem('contractorCurrentOrderId',result.id);localStorage.setItem('contractorCurrentOrder',JSON.stringify(contractorCurrentOrder));
-      const startInput=document.getElementById('contractorScheduledStartAt');if(startInput)startInput.value='';
       alert('تم إرسال طلبك لصاحب المعدة المختارة بنجاح.');contractorShowScreen('contractorProjectsScreen');contractorProjectFilter='current';contractorSetProjectFilter('current');
     }catch(error){console.error('Send selected equipment request error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لإرسال الطلب في Firebase.':'تعذر إرسال الطلب حالياً.');}
     finally{button.disabled=false;button.textContent='اختيار هذه المعدة وإرسال الطلب';}
@@ -11252,8 +11228,7 @@ localStorage.setItem("selectedRole", "contractor");
       contractorSelectedProject=project;
       const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=project.name||project.projectName||'مشروعك';
       const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${project.city||''} ${project.address||project.location||''}`;
-      const manager=document.getElementById('contractorPickerProjectManager');if(manager)manager.textContent=`👤 مسؤول المشروع: ${project.contractorName||contractorGetProfile()?.name||'مسؤول المشروع'}${project.contractorPhone?' — '+project.contractorPhone:''}`;
-      contractorShowScreen('contractorEquipmentPickerScreen');await Promise.all([loadContractorNearbyEquipment(),loadContractorProjectEquipmentTracking()]);
+      contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();
     }catch(error){console.error('Open project equipment picker error:',error);alert('تعذر فتح المشروع.');}
   });
 
@@ -12490,12 +12465,14 @@ document.addEventListener("click", function(event){
 
 /* =========================================================
    MA3DA CONTRACTOR INVOICES + PAYMENT LEDGER (INITIAL PHASE)
+   Commission: 10% of each verified received payment.
    Payment records entered by contractor remain pending until
    a finance-authorized workflow verifies them. This module does
    not collect money or claim that a gateway payment occurred.
 ========================================================= */
 (function ma3daContractorFinanceModule(){
   'use strict';
+  const COMMISSION_RATE = 0.10;
   const $f = id => document.getElementById(id);
   let financeMode = 'contractor';
   let cachedInvoices = [];
@@ -12528,21 +12505,16 @@ document.addEventListener("click", function(event){
     if(typeof window.showScreen==='function') window.showScreen(id);
     else { document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active')); $f(id)?.classList.add('active'); }
   }
-  window.ma3daOpenCustomerFinance = () => openFinance('customer');
   function openFinance(mode){
-    financeMode=['owner','customer'].includes(mode)?mode:'contractor';
+    financeMode=mode==='owner'?'owner':'contractor';
     showScreen('contractorFinanceScreen');
-    const owner=financeMode==='owner'; const customer=financeMode==='customer';
-    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
+    const owner=financeMode==='owner';
+    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':'فواتير المشروع والسداد';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أكمل خطوة التأجير وأرسل الفاتورة لمسؤول المشروع، ثم تابع التحصيل ومستحقاتك.':'استعرض فواتير المشروع، وسدّد المستحق أو سجّل الدفعة للتحقق.';
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!owner;
-    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
-    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
-    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!(customer||owner);
-    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
-    if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=owner||customer;
+    if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=owner;
     if($f('contractorCreateInvoiceCard'))$f('contractorCreateInvoiceCard').hidden=true;
-    if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner||customer;
+    if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner;
     loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);});
   }
   async function loadFinance(){
@@ -12555,18 +12527,11 @@ document.addEventListener("click", function(event){
     ]);
     cachedProjects=projects.filter(p=>(p.contractorId||p.ownerId||p.userId)===user.uid);
     cachedAllRequests=requests;
-    const bookingRows=requests.filter(r=>{
-      const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';
-      if(financeMode==='customer') return r.customerId===user.uid && !!r.invoiceNumber;
-      if(financeMode==='owner') return ownerId===user.uid && ['invoice_pending','invoice_issued','payment_pending','paid','completed'].includes(String(r.status||'')) && (r.invoiceNumber || ['invoice_pending','completed'].includes(String(r.status||'')));
-      return false;
-    });
-    renderBookingInvoices(bookingRows);
     cachedManagerRequests=requests.filter(r=>!!r.projectId && (r.contractorId===user.uid || r.requesterId===user.uid || r.customerId===user.uid) && (r.requesterRole==='contractor'||r.requesterType==='contractor'||!!r.contractorId) && !['rejected','cancelled','مرفوض','ملغي'].includes(String(r.status||'').toLowerCase()));
     cachedRequests=requests.filter(r=>{
       const isProject=!!(r.projectId && (r.requesterRole==='contractor'||r.requesterType==='contractor'||r.contractorId));
       const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';
-      const accepted=['accepted','arrived','working','completed','complete','invoice_pending','invoice_issued','payment_pending','paid','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
+      const accepted=['accepted','arrived','working','completed','complete','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
       return isProject && ownerId===user.uid && accepted;
     });
     cachedInvoices=invoices.filter(i=>financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid));
@@ -12574,36 +12539,6 @@ document.addEventListener("click", function(event){
     const invoiceIds=new Set(cachedInvoices.map(i=>i.id));
     cachedPayments=payments.filter(p=>invoiceIds.has(p.invoiceId));
     renderOwnerRequestOptions(); renderInvoiceOptions(); renderInvoiceCards(); renderStageOptions(); renderOwnerPhaseOptions(); renderProjectStageCards();
-  }
-  function renderBookingInvoices(rows){
-    const list=$f('bookingInvoicesList');
-    if(list){
-      if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد فواتير طلبات حتى الآن</h3><p>ستظهر الفاتورة هنا بعد إصدارها. الطلب المنتهي يبقى مفتوحًا ماليًا حتى تأكيد السداد من بوابة دفع موثوقة.</p></div>';}
-      else {list.innerHTML='<h3>فواتير طلبات التأجير</h3>'+rows.sort((a,b)=>Number(b.invoiceIssuedAt||b.workCompletedAt||b.completedAt||0)-Number(a.invoiceIssuedAt||a.workCompletedAt||a.completedAt||0)).map(r=>{
-        const amount=Number(r.invoiceAmount||r.finalAmount||r.price||0);
-        const state=r.paymentStatus==='paid'?'مسددة ومؤكدة':r.invoiceStatus==='issued'?'الفاتورة صادرة — بانتظار الدفع':r.status==='invoice_pending'?'بانتظار إصدار الفاتورة':'بانتظار التسوية';
-        const ownerDetails='';
-        const issueButton=financeMode==='owner'&&!r.invoiceNumber?`<button class="main-btn" type="button" data-issue-booking-invoice="${esc(r.id)}">إصدار فاتورة لهذا الطلب</button>`:'';
-        const payNotice=financeMode==='customer'&&r.paymentStatus!=='paid'?'<p class="muted">الدفع الإلكتروني غير مفعّل حتى ربط بوابة دفع معتمدة. لا تعتبر التحويل خارج مِعدة دفعًا داخل التطبيق.</p>':'';
-        return `<div class="ma3da-finance-row"><h3>${esc(r.invoiceNumber||'فاتورة لم تصدر بعد')}</h3><p><strong>رقم الطلب:</strong> ${esc(r.id)}</p><p><strong>المعدة:</strong> ${esc(r.equipment||'معدة')}</p><p><strong>الموقع:</strong> ${esc(r.location||'—')}</p><p><strong>تاريخ الفاتورة:</strong> ${when(r.invoiceIssuedAt||r.workCompletedAt||r.completedAt)}</p><p><strong>قيمة الفاتورة:</strong> ${money(amount)}</p>${ownerDetails}<p><strong>حالة الفاتورة والسداد:</strong> <span class="ma3da-finance-status">${esc(state)}</span></p><p><strong>حالة الطلب:</strong> ${esc(r.requestClosed?'مغلق ماليًا':'مفتوح حتى تأكيد السداد')}</p>${issueButton}${payNotice}</div>`;
-      }).join('');}
-    }
-    const select=$f('ownerBookingInvoiceRequest');
-    if(select){const eligible=rows.filter(r=>!r.invoiceNumber&&(r.status==='invoice_pending'||r.status==='completed'));select.innerHTML='<option value="">اختر طلبًا انتهى العمل فيه</option>'+eligible.map(r=>`<option value="${esc(r.id)}">${esc(r.equipment||'معدة')} — ${esc(r.location||'الموقع غير محدد')} — ${money(r.price||0)}</option>`).join('');if(!eligible.length)select.innerHTML='<option value="">لا توجد طلبات بانتظار إصدار فاتورة</option>';}
-  }
-  async function issueBookingInvoice(requestIdFromButton){
-    const btn=$f('ownerIssueBookingInvoiceBtn');if(btn)btn.disabled=true;
-    try{
-      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
-      const requestId=requestIdFromButton||$f('ownerBookingInvoiceRequest')?.value;if(!requestId)throw new Error('اختر الطلب أولًا.');
-      const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
-      const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';if(ownerId!==user.uid)throw new Error('لا تملك صلاحية إصدار فاتورة لهذا الطلب.');
-      if(r.invoiceNumber)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
-      const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');
-      const invoiceNumber=`M3-B-${Date.now()}`,now=new Date();
-      await window.ma3daUpdateDoc(ref,{invoiceNumber,invoiceAmount:Math.round(amount*100)/100,invoiceDescription:($f('ownerBookingInvoiceDescription')?.value||'').trim()||`فاتورة تأجير ${r.equipment||'معدة'}`,invoiceStatus:'issued',paymentStatus:'unpaid',invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false});
-      say('ownerBookingInvoiceFeedback',`صدرت الفاتورة ${invoiceNumber} وحُفظت على الطلب لتظهر للطرفين. لم يُحصّل أي مبلغ إلكتروني حتى الآن.`);if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
-    }catch(err){console.error('Issue booking invoice failed:',err);say('ownerBookingInvoiceFeedback',err.message||'تعذر إصدار الفاتورة.',true);}finally{if(btn)btn.disabled=false;}
   }
   function renderOwnerRequestOptions(){
     const el=$f('ownerInvoiceRequest');if(!el)return;
@@ -12674,7 +12609,8 @@ document.addEventListener("click", function(event){
     const verified=rows.filter(p=>p.status==='verified');
     const paid=verified.reduce((sum,p)=>sum+Number(p.amount||0),0);
     const pending=rows.filter(p=>p.status==='pending_verification').reduce((sum,p)=>sum+Number(p.amount||0),0);
-    return {paid,pending,remaining:Math.max(0,Number(invoice.invoiceAmount||0)-paid)};
+    const commission=verified.reduce((sum,p)=>sum+Number(p.commissionAmount ?? (Number(p.amount||0)*Number(p.commissionRate??COMMISSION_RATE)),0),0);
+    return {paid,pending,commission,remaining:Math.max(0,Number(invoice.invoiceAmount||0)-paid)};
   }
   function renderInvoiceCards(){
     const list=$f('contractorInvoicesList');if(!list)return;
@@ -12683,11 +12619,12 @@ document.addEventListener("click", function(event){
       const toTime=v=>{try{return (v?.toDate?v.toDate():new Date(v||0)).getTime()||0}catch(_){return 0}};
       return toTime(b.createdAt)-toTime(a.createdAt);
     });
-    list.innerHTML='<div class="card"><h3>'+(financeMode==='owner'?'فواتير معداتي ومستحقاتي':'الفواتير المطلوب سدادها')+'</h3><p>راجع قيمة الفاتورة والدفعات وحالة السداد من هنا.</p>'+sorted.map(inv=>{
+    list.innerHTML='<div class="card"><h3>'+(financeMode==='owner'?'فواتير معداتي ومستحقاتي':'الفواتير المطلوب سدادها')+'</h3><p>عمولة مِعدة الافتراضية ١٠٪ على الدفعات التي تم التحقق من تحصيلها، وفق الاتفاق.</p>'+sorted.map(inv=>{
       const s=paymentSummary(inv); const st=s.remaining<=0?'paid':s.paid>0?'partial':(s.pending>0?'pending_verification':'issued');
-      const payRows=cachedPayments.filter(p=>p.invoiceId===inv.id).map(p=>`<div class="ma3da-finance-row"><strong>دفعة: ${money(p.amount)}</strong><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p><p>المرجع: ${esc(p.reference||'—')}</p>${financeMode==='owner'&&p.status==='pending_verification'?`<button type="button" class="main-btn" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button>`:''}</div>`).join('');
+      const payRows=cachedPayments.filter(p=>p.invoiceId===inv.id).map(p=>`<div class="ma3da-finance-row"><strong>دفعة: ${money(p.amount)}</strong><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p><p>المرجع: ${esc(p.reference||'—')}</p><p>العمولة: ${p.status==='verified'?money(p.commissionAmount??Number(p.amount||0)*Number(p.commissionRate??COMMISSION_RATE)):'تُحسب بعد التحقق'}</p>${financeMode==='owner'&&p.status==='pending_verification'?`<button type="button" class="main-btn" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button>`:''}</div>`).join('');
+      const net=Math.max(0,s.paid-s.commission);
       const counterparty=financeMode==='owner'?`<p><strong>مسؤول المشروع:</strong> ${esc(inv.contractorName||inv.contractorEmail||'المقاول')}</p>`:`<p><strong>صاحب المعدة:</strong> ${esc(inv.ownerName||inv.ownerEmail||'صاحب المعدة')}</p>`;
-      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3>${counterparty}<p><strong>المشروع:</strong> ${esc(inv.projectName||'—')}</p>${inv.stageNumber?`<p><strong>المرحلة:</strong> ${esc(inv.stageName||stageName(inv.stageNumber))}</p>`:''}<p><strong>المعدة:</strong> ${esc(inv.equipment||'—')}</p><p><strong>تاريخ الإصدار:</strong> ${when(inv.createdAt)}</p><p><strong>التفاصيل:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p>${financeMode==='owner'?`<p><strong>حالة التسوية:</strong> ${esc(statusLabel(inv.settlementStatus||'settlement_pending'))}</p>`:''}<p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(st))}</span></p>${financeMode==='contractor'&&s.remaining>0?`<button type="button" class="main-btn" data-finance-pay-invoice="${esc(inv.id)}">تسجيل دفعة لهذه الفاتورة</button>`:''}${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
+      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3>${counterparty}<p><strong>المشروع:</strong> ${esc(inv.projectName||'—')}</p>${inv.stageNumber?`<p><strong>المرحلة:</strong> ${esc(inv.stageName||stageName(inv.stageNumber))}</p>`:''}<p><strong>المعدة:</strong> ${esc(inv.equipment||'—')}</p><p><strong>تاريخ الإصدار:</strong> ${when(inv.createdAt)}</p><p><strong>التفاصيل:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p>${financeMode==='owner'?`<p><strong>عمولة مِعدة على الدفعات المؤكدة:</strong> ${money(s.commission)}</p><p><strong>صافي المبلغ المحصل بعد العمولة:</strong> ${money(net)}</p><p><strong>حالة التسوية:</strong> ${esc(statusLabel(inv.settlementStatus||'settlement_pending'))}</p>`:`<p><strong>العمولة المقدرة على المبلغ المؤكد:</strong> ${money(s.commission)}</p>`}<p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(st))}</span></p>${financeMode==='contractor'&&s.remaining>0?`<button type="button" class="main-btn" data-finance-pay-invoice="${esc(inv.id)}">تسجيل دفعة لهذه الفاتورة</button>`:''}${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
     }).join('')+'</div>';
   }
   async function reviewOwnerPhase(decision){
@@ -12742,8 +12679,8 @@ document.addEventListener("click", function(event){
         contractorId:phase.contractorId,contractorName:phase.contractorName||request.contractorName||'',contractorEmail:request.contractorEmail||'',
         ownerId:user.uid,ownerEmail:user.email||'',ownerName:request.ownerName||'',equipmentOwnerId:user.uid,
         equipment:phase.equipment||request.equipment||'معدة',equipmentId:phase.equipmentId||request.equipmentId||'',
-        invoiceNumber,invoiceAmount:Math.round(amount*100)/100,description,currency:'SAR',
-status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pending',
+        invoiceNumber,invoiceAmount:Math.round(amount*100)/100,description,currency:'SAR',commissionRate:COMMISSION_RATE,
+        status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pending',
         createdBy:user.uid,createdAt:new Date(),updatedAt:new Date(),schemaVersion:3
       });
       invoiceCreated=true;
@@ -12765,7 +12702,8 @@ status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pe
       if(payment.status!=='pending_verification')throw new Error('هذه الدفعة ليست بانتظار تأكيد الاستلام.');
       const invoice=cachedInvoices.find(i=>i.id===payment.invoiceId);if(!invoice)throw new Error('تعذر العثور على الفاتورة.');
       await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoicePayments',payment.id),{
-        status:'verified',verifiedBy:user.uid,verifiedAt:new Date(),
+        status:'verified',verifiedBy:user.uid,verifiedAt:new Date(),commissionRate:Number(payment.commissionRate??COMMISSION_RATE),
+        commissionAmount:Math.round(Number(payment.amount||0)*Number(payment.commissionRate??COMMISSION_RATE)*100)/100,
         verificationMethod:'owner_confirmed_receipt',updatedAt:new Date()
       });
       const totalBefore=cachedPayments.filter(p=>p.invoiceId===invoice.id&&p.status==='verified').reduce((sum,p)=>sum+Number(p.amount||0),0);
@@ -12802,7 +12740,8 @@ status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pe
         requestId:invoice.requestId||'', projectName:invoice.projectName||'', invoiceNumber:invoice.invoiceNumber||'',
         stageNumber:invoice.stageNumber||null,stageName:invoice.stageName||'',phaseTaskId:invoice.phaseTaskId||'',
         amount:Math.round(amount*100)/100, currency:'SAR', reference,
-        status:'pending_verification', submittedBy:user.uid, submittedAt:new Date(),
+        status:'pending_verification', commissionRate:COMMISSION_RATE,
+        commissionAmount:null, submittedBy:user.uid, submittedAt:new Date(),
         note:'إفادة مقدم الطلب غير مؤكدة؛ يلزم تأكيد صاحب المعدة لاستلام التحويل أو ربط مزود دفع موثوق.', schemaVersion:3
       });
       try{
@@ -12819,11 +12758,8 @@ status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pe
     const target=event.target.closest('button');if(!target)return;
     if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
-    if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
-    if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
-    const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
     if(target.id==='contractorFinanceBackBtn'){
-      showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
+      showScreen(financeMode==='owner'?'operatorHomeScreen':'contractorHomeScreen');return;
     }
     if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
     if(target.id==='ownerApprovePhaseBtn'){reviewOwnerPhase('approve');return;}
@@ -12849,5 +12785,3 @@ status:'issued',paymentStatus:'awaiting_payment',settlementStatus:'settlement_pe
   $f('contractorStageProject')?.addEventListener('change',renderManagerRequestOptions);
   $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
 })();
-
-       
