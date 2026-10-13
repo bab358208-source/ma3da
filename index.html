@@ -5210,7 +5210,6 @@
 <section id="contractorProjectsScreen" class="screen">
   <div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.</p></div>
   <button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروعك</button>
-  <button id="contractorProjectStageBtn" class="back-btn" type="button">📣 إعلان انتهاء مرحلة وإصدار فاتورتها</button>
   <div class="contractor-project-tabs" role="tablist" aria-label="تصنيف المشاريع">
     <button type="button" class="main-btn" data-contractor-project-filter="current" aria-pressed="true">المشاريع الحالية</button>
     <button type="button" class="back-btn" data-contractor-project-filter="previous" aria-pressed="false">المشاريع السابقة</button>
@@ -5220,38 +5219,14 @@
 </section>
 <section id="contractorFinanceScreen" class="screen">
   <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وعمولة مِعدة.</p></div>
-  <div class="card" id="contractorStageManagerCard" hidden>
-    <h3>إعلان انتهاء مرحلة من المشروع</h3>
-    <p>يختار مسؤول المشروع المشروع وطلب المعدة والمرحلة المنتهية. يظهر إشعار داخل حساب صاحب المعدة، ليصدر فاتورة المرحلة.</p>
-    <label for="contractorStageProject">المشروع *</label>
-    <select id="contractorStageProject"><option value="">جارٍ تحميل المشاريع…</option></select>
-    <label for="contractorStageRequest">طلب المعدة داخل المشروع *</label>
-    <select id="contractorStageRequest"><option value="">اختر المشروع أولًا</option></select>
-    <label for="contractorStageNumber">المرحلة المنتهية *</label>
-    <select id="contractorStageNumber"><option value="1">المرحلة الأولى</option><option value="2">المرحلة الثانية</option><option value="3">المرحلة الثالثة</option><option value="4">المرحلة الرابعة</option></select>
-    <button id="contractorAnnounceStageBtn" class="main-btn" type="button">إعلان انتهاء المرحلة وإشعار صاحب المعدة</button>
-    <p id="contractorStageFeedback" role="status" aria-live="polite"></p>
-    <div id="contractorProjectStagesList"></div>
-  </div>
   <div class="card" id="ownerIssueInvoiceCard" hidden>
-    <h3>مراجعة انتهاء المرحلة وإصدار الفاتورة</h3>
-    <p>راجع الأعمال أولًا. اعتمد الانتهاء إذا كانت الأعمال مطابقة، أو سجّل ملاحظة/خلاف؛ لن تصدر الفاتورة قبل اعتماد المرحلة.</p>
-    <label for="ownerPhaseTask">المشروع والمرحلة *</label>
-    <select id="ownerPhaseTask"><option value="">جارٍ تحميل المراحل…</option></select>
-    <label for="ownerPhaseReviewNote">ملاحظات المراجعة أو سبب الخلاف</label>
-    <textarea id="ownerPhaseReviewNote" rows="2" maxlength="700" placeholder="اكتب ملاحظاتك على الأعمال، خصوصًا عند وجود خلاف"></textarea>
-    <div class="owner-phase-review-actions">
-      <button id="ownerApprovePhaseBtn" class="main-btn" type="button">اعتماد انتهاء المرحلة والسماح بالفاتورة</button>
-      <button id="ownerDisputePhaseBtn" class="back-btn" type="button">تسجيل ملاحظة أو خلاف</button>
-    </div>
-    <div class="ma3da-finance-row" id="ownerInvoiceIssueFields">
-      <h3>إصدار فاتورة المرحلة المعتمدة</h3>
-      <label for="ownerPhaseInvoiceAmount">مبلغ الفاتورة بالريال *</label>
-      <input id="ownerPhaseInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل مبلغ المرحلة المتفق عليه">
-      <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
-      <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="تفاصيل تأجير المعدة لهذه المرحلة"></textarea>
-      <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إرسال فاتورة المرحلة لمسؤول المشروع</button>
-    </div>
+    <h3>إنهاء الخطوة الأولى وإرسال فاتورة لمسؤول المشروع</h3>
+    <p>اختر طلب معدة مرتبطًا بمشروع مقاول. ستُرسل الفاتورة إلى مسؤول المشروع، ولن تُعتبر مدفوعة حتى يتم التحقق من التحصيل.</p>
+    <label for="ownerInvoiceRequest">طلب المشروع / المعدة *</label>
+    <select id="ownerInvoiceRequest"><option value="">جارٍ تحميل طلبات المشاريع…</option></select>
+    <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
+    <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="مثال: دفعة تأجير المعدة للمرحلة الأولى"></textarea>
+    <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إنهاء الخطوة وإرسال الفاتورة</button>
     <p id="ownerInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="contractorCreateInvoiceCard" hidden>
