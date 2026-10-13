@@ -5991,6 +5991,56 @@ window.ma3daWhere = where;
 </div>
 
 
+<!-- فواتير العميل -->
+<section id="customerInvoicesScreen" class="screen" hidden>
+  <h2>فواتيري</h2>
+  <div id="customerInvoicesList"></div>
+  <button type="button" onclick="showScreen('customerHomeScreen')">
+    رجوع
+  </button>
+</section>
+
+<!-- دخل صاحب المعدة -->
+<section id="incomeDetailsScreen" class="screen" hidden>
+  <h2>الدخل</h2>
+  <div class="income-summary">
+    <p>إجمالي المستحقات: <strong id="incomeTotal">0.00 ر.س</strong></p>
+    <p>المبالغ المحصلة: <strong id="incomePaid">0.00 ر.س</strong></p>
+    <p>عمولة مِعدة: <strong id="incomeCommission">0.00 ر.س</strong></p>
+  </div>
+
+  <button type="button" onclick="showIncomeTab('customer')">
+    فواتير العملاء
+  </button>
+  <button type="button" onclick="showIncomeTab('projects')">
+    فواتير ودفعات المشاريع
+  </button>
+
+  <div id="ownerCustomerInvoices"></div>
+  <div id="ownerProjectInvoices" hidden></div>
+</section>
+
+<!-- دفعات وفواتير المقاول -->
+<section id="contractorInvoicesScreen" class="screen" hidden>
+  <h2>الدفعات والفواتير</h2>
+
+  <button type="button" onclick="showContractorTab('payments')">
+    الدفعات
+  </button>
+  <button type="button" onclick="showContractorTab('invoices')">
+    الفواتير
+  </button>
+
+  <div id="contractorPaymentsList"></div>
+  <div id="contractorInvoicesList" hidden></div>
+</section>
+
+<!-- مراحل المشروع -->
+<section id="projectStagesScreen" class="screen" hidden>
+  <h2>مراحل المشروع</h2>
+  <div id="projectStagesList"></div>
+</section>
+
 
 
 </body>
