@@ -2776,24 +2776,3 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 .owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 #ownerInvoiceIssueFields{margin-top:16px}
 #ownerInvoiceIssueFields[hidden]{display:none}
-
-/* Project equipment tracking - additive styles */
-#contractorEquipmentPickerScreen .contractor-project-overview-card,
-#contractorEquipmentPickerScreen .contractor-equipment-tracking-card{border:1px solid #dfd0a8;background:linear-gradient(135deg,#fffdf8,#f8f0dc);border-radius:16px;padding:16px;margin:12px 0}
-#contractorEquipmentPickerScreen .contractor-project-overview-card h2,
-#contractorEquipmentPickerScreen .contractor-equipment-tracking-card h2{font-size:1.08rem;margin:0 0 10px;color:#3a2d12}
-#contractorProjectEquipmentTracking .contractor-tracking-item{border:1px solid #eadfc5;background:#fff;border-radius:14px;padding:14px;margin:10px 0;overflow-wrap:anywhere}
-#contractorProjectEquipmentTracking .contractor-tracking-item h3{margin:0 0 10px;font-size:1rem}
-#contractorProjectEquipmentTracking .contractor-tracking-item p{margin:8px 0;line-height:1.6}
-#contractorProjectEquipmentTracking .contractor-tracking-item a,
-.operator-new-request-card a{color:#775716;font-weight:700;text-decoration:underline}
-#contractorScheduledStartAt{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit;margin:8px 0 12px}
-
-/* Owner incoming requests: customer/project tabs */
-.operator-request-toolbar{margin:12px 0 16px;}
-.operator-request-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
-.operator-request-tab{font:inherit;font-weight:700;padding:12px 10px;border:1px solid #dfd0a8;border-radius:12px;background:#fffdf8;color:#3a2d12;cursor:pointer;}
-.operator-request-tab.is-active{background:#3a2d12;color:#fff;border-color:#3a2d12;}
-#refreshOperatorRequestsBtn{font:inherit;padding:10px 14px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;cursor:pointer;}
-#operatorRequestsLastUpdated{font-size:12px;margin:8px 0;color:#6b665b;}
-#operatorCustomerRequestsPanel[hidden],#operatorProjectRequestsPanel[hidden]{display:none!important;}
