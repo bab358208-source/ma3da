@@ -49,6 +49,18 @@
 #contractorFinanceScreen .main-btn{width:100%;margin-top:12px}
 .ma3da-finance-status{display:inline-block;border-radius:999px;padding:4px 9px;background:#f3ead4;font-size:.88em}
 .ma3da-finance-row{border:1px solid #eadfc5;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
+/* Project equipment tracking - additive styles */
+#contractorEquipmentPickerScreen .contractor-project-overview-card,
+#contractorEquipmentPickerScreen .contractor-equipment-tracking-card{border:1px solid #dfd0a8;background:linear-gradient(135deg,#fffdf8,#f8f0dc);border-radius:16px;padding:16px;margin:12px 0}
+#contractorEquipmentPickerScreen .contractor-project-overview-card h2,
+#contractorEquipmentPickerScreen .contractor-equipment-tracking-card h2{font-size:1.08rem;margin:0 0 10px;color:#3a2d12}
+#contractorProjectEquipmentTracking .contractor-tracking-item{border:1px solid #eadfc5;background:#fff;border-radius:14px;padding:14px;margin:10px 0;overflow-wrap:anywhere}
+#contractorProjectEquipmentTracking .contractor-tracking-item h3{margin:0 0 10px;font-size:1rem}
+#contractorProjectEquipmentTracking .contractor-tracking-item p{margin:8px 0;line-height:1.6}
+#contractorProjectEquipmentTracking .contractor-tracking-item a,
+.operator-new-request-card a{color:#775716;font-weight:700;text-decoration:underline}
+#contractorScheduledStartAt{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit;margin:8px 0 12px}
+
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -1195,6 +1207,15 @@
     </div>
 
 
+
+    <button id="customerFinanceBtn" class="home-menu-item" type="button">
+      <div class="home-menu-icon">🧾</div>
+      <div class="home-menu-text">
+        <strong>فواتيري والمدفوعات</strong>
+        <span>عرض فواتير الطلبات وحالة السداد</span>
+      </div>
+      <span class="home-arrow">←</span>
+    </button>
 
     <div class="home-section">
 
@@ -4467,79 +4488,12 @@
   id="paymentScreen"
   class="screen"
 >
-
-
   <div class="card">
-
-
-    <h2>
-      اختر طريقة الدفع
-    </h2>
-
-
-    <div class="payment-options">
-
-
-      <button
-        class="payment-option"
-        data-payment="بطاقة"
-        type="button"
-      >
-        💳
-
-        <span>
-          بطاقة بنكية
-        </span>
-
-      </button>
-
-
-      <button
-        class="payment-option"
-        data-payment="Apple Pay"
-        type="button"
-      >
-        
-
-        <span>
-          Apple Pay
-        </span>
-
-      </button>
-
-
-      <button
-        class="payment-option"
-        data-payment="نقدًا"
-        type="button"
-      >
-        💵
-
-        <span>
-          نقدًا
-        </span>
-
-      </button>
-
-
-    </div>
-
-
-    <button
-      id="confirmPaymentBtn"
-      class="main-btn"
-      type="button"
-      disabled
-    >
-      تأكيد الدفع
-    </button>
-
-
+    <h2>الفاتورة والسداد</h2>
+    <p>تُعرض الفاتورة وحالة السداد في صفحة «فواتيري والمدفوعات». لن نعرض طريقة دفع غير مربوطة ببوابة معتمدة، ولن يُغلق الطلب قبل تأكيد السداد من مزود الدفع.</p>
+    <button id="confirmPaymentBtn" class="main-btn" type="button">فتح فواتيري والمدفوعات</button>
   </div>
-
-
 </section>
-
 
 
 <!-- =====================================================
@@ -5172,7 +5126,7 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
-    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
+    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وحالة السداد.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
     <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
@@ -5196,8 +5150,21 @@
 </section>
 <section id="contractorEquipmentPickerScreen" class="screen">
   <div class="hero"><div class="hero-icon">🚜</div><h1>اختر المعدة المناسبة</h1><p id="contractorPickerProjectName">المعدات المتاحة بالقرب من مشروعك</p></div>
-  <div class="card">
+  <div class="card contractor-project-overview-card">
+    <h2>ملخص المشروع</h2>
     <p id="contractorPickerProjectLocation"></p>
+    <p id="contractorPickerProjectManager"></p>
+    <p class="muted">راجع المعدات المرتبطة بالمشروع وحالة تشغيلها قبل طلب معدة إضافية.</p>
+  </div>
+  <div class="card contractor-equipment-tracking-card">
+    <h2>متابعة معدات المشروع الحالية</h2>
+    <p class="muted">تعرض هذه القائمة الطلبات المرتبطة بالمشروع ومواعيدها وحالة العمل وآخر موقع محفوظ للمعدة إن توفر.</p>
+    <div id="contractorProjectEquipmentTracking"><div class="card">اختر مشروعًا لعرض معداته وطلباته الحالية.</div></div>
+    <button id="contractorRefreshTrackingBtn" class="back-btn" type="button">تحديث حالة المعدات</button>
+  </div>
+  <div class="card">
+    <h2>طلب معدة جديدة</h2>
+    <label for="contractorScheduledStartAt">موعد بدء العمل المطلوب (اختياري)</label><input id="contractorScheduledStartAt" type="datetime-local">
     <label for="contractorEquipmentType">نوع المعدة *</label><select id="contractorEquipmentType"><option value="">كل أنواع المعدات</option><option value="بوكلين">بوكلين</option><option value="شيول">شيول</option><option value="قلاب">قلاب</option><option value="كرين">كرين</option><option value="حفار">حفار</option><option value="بلدوزر">بلدوزر</option></select>
     <label for="contractorDuration">مدة العمل *</label><select id="contractorDuration"><option value="ساعة واحدة">ساعة واحدة</option><option value="4 ساعات">4 ساعات</option><option value="8 ساعات">8 ساعات</option><option value="يوم كامل">يوم كامل</option></select>
     <label for="contractorOperator">المشغل *</label><select id="contractorOperator"><option value="مع مشغل">مع مشغل</option><option value="بدون مشغل">بدون مشغل</option></select>
@@ -5210,6 +5177,7 @@
 <section id="contractorProjectsScreen" class="screen">
   <div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.</p></div>
   <button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروعك</button>
+  <button id="contractorProjectStageBtn" class="back-btn" type="button">📣 إعلان انتهاء مرحلة وإصدار فاتورتها</button>
   <div class="contractor-project-tabs" role="tablist" aria-label="تصنيف المشاريع">
     <button type="button" class="main-btn" data-contractor-project-filter="current" aria-pressed="true">المشاريع الحالية</button>
     <button type="button" class="back-btn" data-contractor-project-filter="previous" aria-pressed="false">المشاريع السابقة</button>
@@ -5218,15 +5186,39 @@
   <button id="contractorProjectsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
 <section id="contractorFinanceScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وعمولة مِعدة.</p></div>
+  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وحالة السداد.</p></div>
+  <div class="card" id="contractorStageManagerCard" hidden>
+    <h3>إعلان انتهاء مرحلة من المشروع</h3>
+    <p>يختار مسؤول المشروع المشروع وطلب المعدة والمرحلة المنتهية. يظهر إشعار داخل حساب صاحب المعدة، ليصدر فاتورة المرحلة.</p>
+    <label for="contractorStageProject">المشروع *</label>
+    <select id="contractorStageProject"><option value="">جارٍ تحميل المشاريع…</option></select>
+    <label for="contractorStageRequest">طلب المعدة داخل المشروع *</label>
+    <select id="contractorStageRequest"><option value="">اختر المشروع أولًا</option></select>
+    <label for="contractorStageNumber">المرحلة المنتهية *</label>
+    <select id="contractorStageNumber"><option value="1">المرحلة الأولى</option><option value="2">المرحلة الثانية</option><option value="3">المرحلة الثالثة</option><option value="4">المرحلة الرابعة</option></select>
+    <button id="contractorAnnounceStageBtn" class="main-btn" type="button">إعلان انتهاء المرحلة وإشعار صاحب المعدة</button>
+    <p id="contractorStageFeedback" role="status" aria-live="polite"></p>
+    <div id="contractorProjectStagesList"></div>
+  </div>
   <div class="card" id="ownerIssueInvoiceCard" hidden>
-    <h3>إنهاء الخطوة الأولى وإرسال فاتورة لمسؤول المشروع</h3>
-    <p>اختر طلب معدة مرتبطًا بمشروع مقاول. ستُرسل الفاتورة إلى مسؤول المشروع، ولن تُعتبر مدفوعة حتى يتم التحقق من التحصيل.</p>
-    <label for="ownerInvoiceRequest">طلب المشروع / المعدة *</label>
-    <select id="ownerInvoiceRequest"><option value="">جارٍ تحميل طلبات المشاريع…</option></select>
-    <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
-    <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="مثال: دفعة تأجير المعدة للمرحلة الأولى"></textarea>
-    <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إنهاء الخطوة وإرسال الفاتورة</button>
+    <h3>مراجعة انتهاء المرحلة وإصدار الفاتورة</h3>
+    <p>راجع الأعمال أولًا. اعتمد الانتهاء إذا كانت الأعمال مطابقة، أو سجّل ملاحظة/خلاف؛ لن تصدر الفاتورة قبل اعتماد المرحلة.</p>
+    <label for="ownerPhaseTask">المشروع والمرحلة *</label>
+    <select id="ownerPhaseTask"><option value="">جارٍ تحميل المراحل…</option></select>
+    <label for="ownerPhaseReviewNote">ملاحظات المراجعة أو سبب الخلاف</label>
+    <textarea id="ownerPhaseReviewNote" rows="2" maxlength="700" placeholder="اكتب ملاحظاتك على الأعمال، خصوصًا عند وجود خلاف"></textarea>
+    <div class="owner-phase-review-actions">
+      <button id="ownerApprovePhaseBtn" class="main-btn" type="button">اعتماد انتهاء المرحلة والسماح بالفاتورة</button>
+      <button id="ownerDisputePhaseBtn" class="back-btn" type="button">تسجيل ملاحظة أو خلاف</button>
+    </div>
+    <div class="ma3da-finance-row" id="ownerInvoiceIssueFields">
+      <h3>إصدار فاتورة المرحلة المعتمدة</h3>
+      <label for="ownerPhaseInvoiceAmount">مبلغ الفاتورة بالريال *</label>
+      <input id="ownerPhaseInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل مبلغ المرحلة المتفق عليه">
+      <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
+      <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="تفاصيل تأجير المعدة لهذه المرحلة"></textarea>
+      <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إرسال فاتورة المرحلة لمسؤول المشروع</button>
+    </div>
     <p id="ownerInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="contractorCreateInvoiceCard" hidden>
@@ -5244,10 +5236,27 @@
     <label for="contractorPaymentInvoice">الفاتورة *</label><select id="contractorPaymentInvoice"><option value="">حمّل الفواتير أولًا</option></select>
     <label for="contractorPaymentAmount">قيمة الدفعة بالريال *</label><input id="contractorPaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="قيمة الدفعة المستلمة">
     <label for="contractorPaymentReference">مرجع التحويل أو ملاحظة</label><input id="contractorPaymentReference" maxlength="160" placeholder="رقم تحويل أو تفاصيل مختصرة">
-    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة ولا تُحتسب العمولة نهائيًا قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
+    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
     <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال الدفعة للمراجعة</button>
     <p id="contractorPaymentFeedback" role="status" aria-live="polite"></p>
   </div>
+  <div class="card" id="ownerBookingInvoiceCard" hidden>
+    <h3>إصدار فاتورة طلب عميل</h3>
+    <p>لا يُغلق الطلب عند انتهاء العمل. اختر الطلب المنتهي، راجع القيمة، ثم أرسل الفاتورة لتظهر لدى العميل وصاحب المعدة.</p>
+    <label for="ownerBookingInvoiceRequest">الطلب المنتهي *</label>
+    <select id="ownerBookingInvoiceRequest"><option value="">جارٍ تحميل الطلبات…</option></select>
+    <label for="ownerBookingInvoiceAmount">المبلغ النهائي بالريال *</label>
+    <input id="ownerBookingInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="المبلغ المتفق عليه">
+    <label for="ownerBookingInvoiceDescription">تفاصيل الفاتورة</label>
+    <textarea id="ownerBookingInvoiceDescription" rows="2" maxlength="500" placeholder="مدة التشغيل وأي تفاصيل متفق عليها"></textarea>
+    <button id="ownerIssueBookingInvoiceBtn" class="main-btn" type="button">إصدار الفاتورة للطرفين</button>
+    <p id="ownerBookingInvoiceFeedback" role="status" aria-live="polite"></p>
+  </div>
+  <div class="card" id="bookingInvoiceGatewayNotice" hidden>
+    <h3>الدفع عبر مِعدة</h3>
+    <p>تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.</p>
+  </div>
+  <div id="bookingInvoicesList" hidden><div class="card">ستظهر فواتير طلباتك هنا.</div></div>
   <div id="contractorInvoicesList"><div class="card">ستظهر فواتير مشاريعك هنا.</div></div>
   <button id="contractorFinanceBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
