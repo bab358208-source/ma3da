@@ -2136,25 +2136,32 @@
 
 
     <p>
-      طلبات العملاء التي تنتظر قبولك
+      استقبل طلبات الأفراد والمقاولين المرتبطة بمعداتك
     </p>
 
 
   </div>
 
-
-  <div id="operatorNewRequestsList">
-
-    <div class="card center">
-
-      <p>
-        جاري تحميل الطلبات...
-      </p>
-
+  <div class="operator-request-toolbar">
+    <div class="operator-request-tabs" role="tablist" aria-label="نوع الطلبات">
+      <button id="operatorCustomerRequestsTab" class="operator-request-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="operatorCustomerRequestsPanel" data-operator-request-tab="customers">طلبات العملاء</button>
+      <button id="operatorProjectRequestsTab" class="operator-request-tab" type="button" role="tab" aria-selected="false" aria-controls="operatorProjectRequestsPanel" data-operator-request-tab="projects">طلبات المشاريع</button>
     </div>
-
+    <button id="refreshOperatorRequestsBtn" class="secondary-btn" type="button">⟳ تحديث الطلبات</button>
+    <p id="operatorRequestsLastUpdated" class="muted" aria-live="polite">لم يتم التحديث بعد</p>
   </div>
 
+  <div id="operatorCustomerRequestsPanel" role="tabpanel" aria-labelledby="operatorCustomerRequestsTab">
+    <div id="operatorNewRequestsList">
+      <div class="card center"><p>جاري تحميل طلبات العملاء...</p></div>
+    </div>
+  </div>
+
+  <div id="operatorProjectRequestsPanel" role="tabpanel" aria-labelledby="operatorProjectRequestsTab" hidden>
+    <div id="operatorProjectRequestsList">
+      <div class="card center"><p>جاري تحميل طلبات المشاريع...</p></div>
+    </div>
+  </div>
 
 </section>
 
