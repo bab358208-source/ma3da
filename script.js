@@ -1,4 +1,4 @@
-console.log("MA3DA SCRIPT LOADED");
+ console.log("MA3DA SCRIPT LOADED");
  
 const screens =
   document.querySelectorAll(".screen");
