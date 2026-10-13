@@ -12465,19 +12465,19 @@ document.addEventListener("click", function(event){
 /* Ma3da: invoice and income helpers */
 
 function showIncomeTab(tab) {
-  document.getElementById("ownerCustomerInvoices").hidden =
-    tab !== "customer";
+  const customers = document.getElementById("ownerCustomerInvoices");
+  const projects = document.getElementById("ownerProjectInvoices");
 
-  document.getElementById("ownerProjectInvoices").hidden =
-    tab !== "projects";
+  if (customers) customers.hidden = tab !== "customer";
+  if (projects) projects.hidden = tab !== "projects";
 }
 
 function showContractorTab(tab) {
-  document.getElementById("contractorPaymentsList").hidden =
-    tab !== "payments";
+  const payments = document.getElementById("contractorPaymentsList");
+  const invoices = document.getElementById("contractorInvoicesList");
 
-  document.getElementById("contractorInvoicesList").hidden =
-    tab !== "invoices";
+  if (payments) payments.hidden = tab !== "payments";
+  if (invoices) invoices.hidden = tab !== "invoices";
 }
 
 function calculateMa3daCommission(amount) {
@@ -12492,659 +12492,51 @@ function calculateMa3daCommission(amount) {
 
 function calculateOwnerNet(amount) {
   const value = Number(amount);
-  const commission = calculateMa3daCommission(value);
 
-  return Math.round((value - commission) * 100) / 100;
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error("قيمة المبلغ غير صحيحة");
+  }
+
+  return Math.round((value - calculateMa3daCommission(value)) * 100) / 100;
 }
 
 function calculateProjectStageCommission(stageAmount) {
   return calculateMa3daCommission(stageAmount);
 }
 
-/*
-  لا يُعتمد إغلاق الطلب إلا بعد التحقق من:
-  1. تأكيد الدفع من مزود الدفع.
-  2. إنشاء الفاتورة وحفظها في قاعدة البيانات.
-  3. ظهور الفاتورة في قائمة فواتير صاحبها.
-
-  يجب تنفيذ التحقق الفعلي داخل الخادم أو Cloud Functions
-  مع قواعد Firestore مناسبة، وليس اعتمادًا على الواجهة فقط.
-*/
 async function canCloseRequestAfterInvoice(requestId) {
-  if (!requestId || !window.ma3daDB || !window.ma3daFirebaseReady) {
+  if (
+    !requestId ||
+    !window.ma3daDB ||
+    !window.ma3daFirebaseReady ||
+    !window.ma3daDoc ||
+    !window.ma3daGetDoc
+  ) {
     return false;
   }
 
   try {
-    const requestRef = window.ma3daDB.collection("requests").doc(requestId);
-    const requestSnap = await requestRef.get();
+    await Promise.resolve(window.ma3daFirebaseReady);
 
-    if (!requestSnap.exists) return false;
+    const requestRef = window.ma3daDoc(
+      window.ma3daDB,
+      "requests",
+      requestId
+    );
 
-    const requestData = requestSnap.data();
+    const snapshot = await window.ma3daGetDoc(requestRef);
 
-    return requestData.paymentStatus === "paid" &&
-      requestData.invoiceStatus === "issued" &&
-      !!requestData.invoiceId;
+    if (!snapshot.exists()) return false;
+
+    const data = snapshot.data();
+
+    return (
+      data.paymentStatus === "paid" &&
+      data.invoiceStatus === "issued" &&
+      Boolean(data.invoiceId)
+    );
   } catch (error) {
     console.error("تعذر التحقق من الفاتورة:", error);
     return false;
   }
 }
-/* =========================================================
-   مِعدة — استكمال صفحات الفواتير الأصلية الأربع
-   يضاف في نهاية script (11).js
-========================================================= */
-
-(function ma3daLegacyFinanceContinue() {
-  'use strict';
-
-  const $ = id => document.getElementById(id);
-
-  const money = n =>
-    (Number(n) || 0).toLocaleString('ar-SA', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }) + ' ر.س';
-
-  const esc = v =>
-    String(v ?? '').replace(/[&<>"']/g, c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[c]));
-
-  const dateText = v => {
-    try {
-      const d = v?.toDate
-        ? v.toDate()
-        : (v instanceof Date ? v : new Date(v));
-
-      return Number.isNaN(d.getTime())
-        ? '—'
-        : d.toLocaleDateString('ar-SA');
-    } catch (_) {
-      return '—';
-    }
-  };
-
-  async function currentUser() {
-    if (typeof window.ma3daGetCurrentUser === 'function') {
-      return await window.ma3daGetCurrentUser();
-    }
-
-    return window.ma3daAuth?.currentUser || null;
-  }
-
-  async function readRows(name) {
-    if (
-      !window.ma3daDB ||
-      typeof window.ma3daCollection !== 'function' ||
-      typeof window.ma3daGetDocs !== 'function'
-    ) {
-      throw new Error('Firebase غير جاهز');
-    }
-
-    const snap = await window.ma3daGetDocs(
-      window.ma3daCollection(window.ma3daDB, name)
-    );
-
-    const out = [];
-
-    snap.forEach(doc => {
-      out.push({
-        id: doc.id,
-        ...(doc.data() || {})
-      });
-    });
-
-    return out;
-  }
-
-  function show(id) {
-    if (typeof window.showScreen === 'function') {
-      window.showScreen(id);
-    } else {
-      document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-      });
-
-      $(id)?.classList.add('active');
-    }
-
-    const target = $(id);
-
-    if (target) {
-      target.removeAttribute('hidden');
-    }
-  }
-
-  function statusLabel(row) {
-    if (
-      row.paymentStatus === 'paid' ||
-      row.status === 'paid'
-    ) {
-      return 'مسددة';
-    }
-
-    if (row.paymentStatus === 'pending_verification') {
-      return 'بانتظار التحقق من الدفع';
-    }
-
-    if (
-      row.invoiceStatus === 'issued' ||
-      row.invoiceNumber
-    ) {
-      return 'فاتورة صادرة — بانتظار السداد';
-    }
-
-    return 'لم تصدر الفاتورة';
-  }
-
-  function renderCards(rows, kind) {
-    if (!rows.length) {
-      return `
-        <div class="invoice-card">
-          <p>لا توجد سجلات لعرضها حتى الآن.</p>
-        </div>
-      `;
-    }
-
-    return rows.map(row => {
-      const amount = Number(
-        row.invoiceAmount ??
-        row.finalAmount ??
-        row.price ??
-        row.amount ??
-        0
-      );
-
-      const label =
-        row.invoiceNumber ||
-        (row.id ? 'رقم السجل: ' + row.id : 'فاتورة');
-
-      const equipment =
-        row.equipment ||
-        row.equipmentType ||
-        'معدة';
-
-      const project =
-        row.projectName ||
-        row.projectTitle ||
-        '—';
-
-      const stage =
-        row.stageName ||
-        (row.stageNumber
-          ? 'المرحلة ' + row.stageNumber
-          : '—');
-
-      const isPaid =
-        row.paymentStatus === 'paid' ||
-        row.status === 'paid';
-
-      return `
-        <article class="invoice-card">
-          <h3>${esc(label)}</h3>
-
-          <p>
-            <strong>المعدة:</strong>
-            ${esc(equipment)}
-          </p>
-
-          ${
-            kind === 'project'
-              ? `
-                <p>
-                  <strong>المشروع:</strong>
-                  ${esc(project)}
-                </p>
-
-                <p>
-                  <strong>المرحلة:</strong>
-                  ${esc(stage)}
-                </p>
-              `
-              : ''
-          }
-
-          <p>
-            <strong>المبلغ:</strong>
-            ${money(amount)}
-          </p>
-
-          <p>
-            <strong>التاريخ:</strong>
-            ${dateText(
-              row.invoiceIssuedAt ||
-              row.createdAt ||
-              row.submittedAt ||
-              row.updatedAt
-            )}
-          </p>
-
-          <p>
-            <strong>الحالة:</strong>
-            <span class="invoice-status ${isPaid ? 'paid' : 'pending'}">
-              ${esc(statusLabel(row))}
-            </span>
-          </p>
-
-          ${
-            row.reference
-              ? `
-                <p>
-                  <strong>مرجع الدفع:</strong>
-                  ${esc(row.reference)}
-                </p>
-              `
-              : ''
-          }
-        </article>
-      `;
-    }).join('');
-  }
-
-  function belongsToCustomer(row, uid) {
-    return [
-      row.customerId,
-      row.userId,
-      row.requesterId,
-      row.createdBy
-    ].some(id => id === uid);
-  }
-
-  function belongsToOwner(row, uid) {
-    return [
-      row.equipmentOwnerId,
-      row.ownerId,
-      row.operatorId
-    ].some(id => id === uid);
-  }
-
-  function belongsToContractor(row, uid) {
-    return [
-      row.contractorId,
-      row.requesterId,
-      row.customerId,
-      row.userId
-    ].some(id => id === uid);
-  }
-
-  /* =========================================
-     1. فواتير العميل
-  ========================================= */
-
-  async function loadCustomerInvoices() {
-    const user = await currentUser();
-
-    if (!user?.uid) {
-      throw new Error('سجّل الدخول أولًا.');
-    }
-
-    const requests = await readRows('requests');
-
-    const rows = requests.filter(row =>
-      belongsToCustomer(row, user.uid) &&
-      (
-        row.invoiceNumber ||
-        row.invoiceId ||
-        row.invoiceStatus ||
-        row.invoiceAmount != null
-      )
-    );
-
-    const list = $('customerInvoicesList');
-
-    if (list) {
-      list.innerHTML = renderCards(rows, 'booking');
-    }
-  }
-
-  /* =========================================
-     2. دخل صاحب المعدة
-  ========================================= */
-
-  async function loadOwnerIncome() {
-    const user = await currentUser();
-
-    if (!user?.uid) {
-      throw new Error('سجّل الدخول أولًا.');
-    }
-
-    const [
-      requests,
-      invoices,
-      payments
-    ] = await Promise.all([
-      readRows('requests'),
-      readRows('projectInvoices').catch(() => []),
-      readRows('projectInvoicePayments').catch(() => [])
-    ]);
-
-    const bookingRows = requests.filter(row =>
-      belongsToOwner(row, user.uid) &&
-      (
-        row.invoiceNumber ||
-        row.invoiceId ||
-        row.invoiceStatus ||
-        row.invoiceAmount != null
-      )
-    );
-
-    const projectRows = invoices.filter(invoice =>
-      belongsToOwner(invoice, user.uid)
-    );
-
-    const grossBooking = bookingRows.reduce(
-      (sum, row) =>
-        sum + Number(
-          row.invoiceAmount ??
-          row.finalAmount ??
-          row.price ??
-          0
-        ),
-      0
-    );
-
-    const grossProjects = projectRows.reduce(
-      (sum, invoice) =>
-        sum + Number(invoice.invoiceAmount ?? 0),
-      0
-    );
-
-    const allGross = grossBooking + grossProjects;
-
-    const paidBooking = bookingRows
-      .filter(row =>
-        row.paymentStatus === 'paid' ||
-        row.status === 'paid'
-      )
-      .reduce(
-        (sum, row) =>
-          sum + Number(
-            row.invoiceAmount ??
-            row.finalAmount ??
-            row.price ??
-            0
-          ),
-        0
-      );
-
-    const verifiedInvoiceIds = new Set(
-      payments
-        .filter(payment => payment.status === 'verified')
-        .map(payment => payment.invoiceId)
-    );
-
-    const paidProjects = projectRows
-      .filter(invoice =>
-        invoice.paymentStatus === 'paid' ||
-        verifiedInvoiceIds.has(invoice.id)
-      )
-      .reduce(
-        (sum, invoice) =>
-          sum + Number(invoice.invoiceAmount ?? 0),
-        0
-      );
-
-    if ($('incomeTotal')) {
-      $('incomeTotal').textContent = money(allGross);
-    }
-
-    if ($('incomePaid')) {
-      $('incomePaid').textContent = money(
-        paidBooking + paidProjects
-      );
-    }
-
-    if ($('incomeCommission')) {
-      $('incomeCommission').textContent = money(
-        calculateMa3daCommission(allGross)
-      );
-    }
-
-    if ($('ownerCustomerInvoices')) {
-      $('ownerCustomerInvoices').innerHTML =
-        renderCards(bookingRows, 'booking');
-    }
-
-    if ($('ownerProjectInvoices')) {
-      $('ownerProjectInvoices').innerHTML =
-        renderCards(projectRows, 'project') +
-        renderCards(
-          payments.filter(payment =>
-            payment.ownerId === user.uid &&
-            payment.status === 'verified'
-          ),
-          'project'
-        );
-    }
-  }
-
-  /* =========================================
-     3. فواتير ودفعات المقاول
-  ========================================= */
-
-  async function loadContractorFinance() {
-    const user = await currentUser();
-
-    if (!user?.uid) {
-      throw new Error('سجّل الدخول أولًا.');
-    }
-
-    const [
-      invoices,
-      payments,
-      phases
-    ] = await Promise.all([
-      readRows('projectInvoices').catch(() => []),
-      readRows('projectInvoicePayments').catch(() => []),
-      readRows('projectPhaseTasks').catch(() => [])
-    ]);
-
-    const ownInvoices = invoices.filter(invoice =>
-      belongsToContractor(invoice, user.uid)
-    );
-
-    const ownInvoiceIds = new Set(
-      ownInvoices.map(invoice => invoice.id)
-    );
-
-    const ownPayments = payments.filter(payment =>
-      payment.contractorId === user.uid ||
-      ownInvoiceIds.has(payment.invoiceId)
-    );
-
-    const ownPhases = phases.filter(phase =>
-      phase.contractorId === user.uid
-    );
-
-    if ($('contractorInvoicesList')) {
-      $('contractorInvoicesList').innerHTML =
-        renderCards(ownInvoices, 'project');
-    }
-
-    if ($('contractorPaymentsList')) {
-      $('contractorPaymentsList').innerHTML =
-        renderCards(ownPayments, 'project');
-    }
-
-    if ($('projectStagesList')) {
-      $('projectStagesList').innerHTML =
-        ownPhases.length
-          ? ownPhases.map(phase => `
-              <article class="project-stage-card">
-                <h3>
-                  ${esc(phase.projectName || 'مشروع')}
-                  —
-                  ${esc(
-                    phase.stageName ||
-                    ('المرحلة ' + (phase.stageNumber || ''))
-                  )}
-                </h3>
-
-                <p>
-                  المعدة:
-                  ${esc(phase.equipment || '—')}
-                </p>
-
-                <p>
-                  الحالة:
-                  ${esc(phase.status || 'قيد المتابعة')}
-                </p>
-
-                <p>
-                  قيمة المرحلة:
-                  ${money(
-                    phase.amount ||
-                    phase.invoiceAmount ||
-                    0
-                  )}
-                </p>
-              </article>
-            `).join('')
-          : `
-              <div class="project-stage-card">
-                <p>لا توجد مراحل مسجلة حتى الآن.</p>
-              </div>
-            `;
-    }
-  }
-
-  /* =========================================
-     معالجة أخطاء التحميل
-  ========================================= */
-
-  async function safeLoad(loader, targetIds) {
-    try {
-      await loader();
-    } catch (error) {
-      console.error(
-        'Ma3da legacy finance load failed:',
-        error
-      );
-
-      targetIds.forEach(id => {
-        const element = $(id);
-
-        if (element) {
-          element.innerHTML = `
-            <div class="invoice-card">
-              <p>
-                تعذر تحميل البيانات. تأكد من تسجيل الدخول
-                واتصال Firebase وصلاحيات القراءة.
-              </p>
-            </div>
-          `;
-        }
-      });
-    }
-  }
-
-  /* =========================================
-     ربط الصفحات الأربع
-  ========================================= */
-
-  window.openCustomerInvoicesScreen = function () {
-    show('customerInvoicesScreen');
-
-    return safeLoad(
-      loadCustomerInvoices,
-      ['customerInvoicesList']
-    );
-  };
-
-  window.openIncomeDetailsScreen = function () {
-    show('incomeDetailsScreen');
-
-    return safeLoad(
-      loadOwnerIncome,
-      [
-        'ownerCustomerInvoices',
-        'ownerProjectInvoices'
-      ]
-    );
-  };
-
-  window.openContractorInvoicesScreen = function () {
-    show('contractorInvoicesScreen');
-
-    return safeLoad(
-      loadContractorFinance,
-      [
-        'contractorPaymentsList',
-        'contractorInvoicesList'
-      ]
-    );
-  };
-
-  window.openProjectStagesScreen = function () {
-    show('projectStagesScreen');
-
-    return safeLoad(
-      loadContractorFinance,
-      ['projectStagesList']
-    );
-  };
-
-  /*
-    إعادة تحميل البيانات عند فتح الصفحة
-    عن طريق showScreen أو أزرار التنقل.
-  */
-
-  const observer = new MutationObserver(() => {
-    if (
-      $('customerInvoicesScreen')?.classList.contains('active')
-    ) {
-      safeLoad(
-        loadCustomerInvoices,
-        ['customerInvoicesList']
-      );
-    }
-
-    if (
-      $('incomeDetailsScreen')?.classList.contains('active')
-    ) {
-      safeLoad(
-        loadOwnerIncome,
-        [
-          'ownerCustomerInvoices',
-          'ownerProjectInvoices'
-        ]
-      );
-    }
-
-    if (
-      $('contractorInvoicesScreen')?.classList.contains('active')
-    ) {
-      safeLoad(
-        loadContractorFinance,
-        [
-          'contractorPaymentsList',
-          'contractorInvoicesList'
-        ]
-      );
-    }
-
-    if (
-      $('projectStagesScreen')?.classList.contains('active')
-    ) {
-      safeLoad(
-        loadContractorFinance,
-        ['projectStagesList']
-      );
-    }
-  });
-
-  if (document.body) {
-    observer.observe(document.body, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-  }
-
-})();
