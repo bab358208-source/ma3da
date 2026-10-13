@@ -2788,3 +2788,12 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 #contractorProjectEquipmentTracking .contractor-tracking-item a,
 .operator-new-request-card a{color:#775716;font-weight:700;text-decoration:underline}
 #contractorScheduledStartAt{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit;margin:8px 0 12px}
+
+/* Owner incoming requests: customer/project tabs */
+.operator-request-toolbar{margin:12px 0 16px;}
+.operator-request-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+.operator-request-tab{font:inherit;font-weight:700;padding:12px 10px;border:1px solid #dfd0a8;border-radius:12px;background:#fffdf8;color:#3a2d12;cursor:pointer;}
+.operator-request-tab.is-active{background:#3a2d12;color:#fff;border-color:#3a2d12;}
+#refreshOperatorRequestsBtn{font:inherit;padding:10px 14px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;cursor:pointer;}
+#operatorRequestsLastUpdated{font-size:12px;margin:8px 0;color:#6b665b;}
+#operatorCustomerRequestsPanel[hidden],#operatorProjectRequestsPanel[hidden]{display:none!important;}
