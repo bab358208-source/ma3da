@@ -12976,7 +12976,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
 
 /* =========================================================
-   MA3DA — Unified large Back + data-only Refresh toolbar
+   MA3DA — Context-aware Back + Refresh toolbar
    Additive enhancement: preserves existing page-specific back handlers.
 ========================================================= */
 (function initMa3daUniversalPageToolbar(){
@@ -12989,17 +12989,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const style = document.createElement('style');
   style.id = 'ma3da-universal-toolbar-styles';
   style.textContent = `
-    .ma3da-page-toolbar{direction:rtl;display:flex;gap:12px;align-items:stretch;width:100%;box-sizing:border-box;margin:0 auto 16px;padding:0 0 4px;}
-    .ma3da-page-toolbar button{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;flex:1 1 0!important;min-width:0!important;min-height:54px!important;padding:13px 14px!important;border-radius:13px!important;border:1px solid #b58a35!important;font-family:inherit!important;font-size:17px!important;font-weight:750!important;line-height:1.35!important;white-space:normal!important;cursor:pointer!important;box-shadow:0 2px 5px #0000000d!important;}
+    .ma3da-page-toolbar{direction:rtl;display:flex;gap:9px;align-items:center;width:100%;box-sizing:border-box;margin:0 auto 12px;padding:0 0 2px;}
+    .ma3da-page-toolbar button{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;flex:0 1 auto!important;min-width:112px!important;min-height:42px!important;padding:9px 13px!important;border-radius:10px!important;border:1px solid #b58a35!important;font-family:inherit!important;font-size:15px!important;font-weight:700!important;line-height:1.25!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:0 1px 3px #0000000d!important;}
     .ma3da-page-toolbar .ma3da-page-back{background:#171717!important;color:#fff!important;border-color:#171717!important;}
     .ma3da-page-toolbar .ma3da-page-refresh{background:#b58a35!important;color:#fff!important;border-color:#a57b2b!important;}
     .ma3da-page-toolbar button:focus-visible{outline:3px solid #d9bd78!important;outline-offset:3px!important;}
     .ma3da-page-toolbar button:disabled{opacity:.7!important;cursor:wait!important;}
-    .ma3da-page-toolbar .ma3da-toolbar-icon{font-size:22px;line-height:1;flex:0 0 auto;}
+    .ma3da-page-toolbar .ma3da-toolbar-icon{font-size:18px;line-height:1;flex:0 0 auto;}
     .ma3da-page-toolbar .ma3da-toolbar-label{display:inline-block;}
     .ma3da-page-refresh-status{direction:rtl;margin:0 0 12px;font-size:13px;line-height:1.5;color:#716753;min-height:0;}
     .ma3da-page-refresh-status:empty{display:none;}
-    @media(max-width:380px){.ma3da-page-toolbar{gap:8px}.ma3da-page-toolbar button{min-height:52px!important;padding:11px 8px!important;font-size:15px!important;gap:7px!important}.ma3da-page-toolbar .ma3da-toolbar-icon{font-size:20px}}
+    @media(max-width:380px){.ma3da-page-toolbar{gap:7px}.ma3da-page-toolbar button{min-width:0!important;min-height:40px!important;padding:8px 10px!important;font-size:14px!important;gap:6px!important}.ma3da-page-toolbar .ma3da-toolbar-icon{font-size:17px}}
   `;
   document.head.appendChild(style);
 
@@ -13132,13 +13132,32 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
   }
 
+  const noToolbarScreenIds = new Set([
+    // Introductory / authentication screens
+    'introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen',
+    'roleScreen','phoneScreen','otpScreen',
+    // Main home pages for each marketplace role
+    'customerHomeScreen','contractorHomeScreen','operatorHomeScreen'
+  ]);
+  function hasOwnRefreshControl(screen){
+    return [...screen.querySelectorAll('button,[role="button"]')].some(b=>{
+      if(!visibleInScreen(b,screen)) return false;
+      const id=(b.id||'').toLowerCase();
+      const label=(b.innerText||b.textContent||'').replace(/\s+/g,' ').trim();
+      return id.includes('refresh') || id.includes('reload') || id.includes('update') ||
+        /^(تحديث|تحديث القائمة|إعادة تحميل|اعادة تحميل)(\s|$)/.test(label) || /refresh|reload|update/i.test(label);
+    });
+  }
   function addToolbar(screen){
     if(!screen || screen.dataset.ma3daToolbarReady==='true') return;
     screen.dataset.ma3daToolbarReady='true';
+    if(noToolbarScreenIds.has(screen.id)) return;
+
+    const hasRefresh=hasOwnRefreshControl(screen);
     const toolbar=document.createElement('div');
     toolbar.className='ma3da-page-toolbar';
     toolbar.setAttribute('role','group');
-    toolbar.setAttribute('aria-label','التنقل وتحديث الصفحة');
+    toolbar.setAttribute('aria-label',hasRefresh?'الرجوع':'الرجوع وتحديث بيانات الصفحة');
 
     let back=findExistingBack(screen);
     if(back){
@@ -13154,20 +13173,23 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       toolbar.appendChild(back);
     }
 
-    const refresh=document.createElement('button');
-    refresh.type='button';
-    refresh.className='ma3da-page-refresh';
-    refresh.dataset.ma3daGlobalRefresh='true';
-    refresh.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">⟳</span><span class="ma3da-toolbar-label">تحديث</span>';
-    refresh.setAttribute('aria-label','تحديث بيانات الصفحة');
-    const status=document.createElement('p');
-    status.className='ma3da-page-refresh-status';
-    status.setAttribute('role','status');
-    status.setAttribute('aria-live','polite');
-    refresh.addEventListener('click',()=>refreshScreen(screen,refresh,status));
-    toolbar.appendChild(refresh);
+    let status=null;
+    if(!hasRefresh){
+      const refresh=document.createElement('button');
+      refresh.type='button';
+      refresh.className='ma3da-page-refresh';
+      refresh.dataset.ma3daGlobalRefresh='true';
+      refresh.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">⟳</span><span class="ma3da-toolbar-label">تحديث</span>';
+      refresh.setAttribute('aria-label','تحديث بيانات الصفحة');
+      status=document.createElement('p');
+      status.className='ma3da-page-refresh-status';
+      status.setAttribute('role','status');
+      status.setAttribute('aria-live','polite');
+      refresh.addEventListener('click',()=>refreshScreen(screen,refresh,status));
+      toolbar.appendChild(refresh);
+    }
     screen.insertBefore(toolbar,screen.firstChild);
-    screen.insertBefore(status,toolbar.nextSibling);
+    if(status) screen.insertBefore(status,toolbar.nextSibling);
   }
 
   function processScreens(root=document){
