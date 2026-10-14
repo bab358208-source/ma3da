@@ -11899,7 +11899,10 @@ localStorage.setItem("selectedRole", "contractor");
  
   window.loadContractorProjects =
     loadContractorProjects;
- 
+
+  window.loadContractorNearbyEquipment =
+    loadContractorNearbyEquipment;
+
   window.openContractorOrderDetails =
     openContractorOrderDetails;
  
@@ -12504,6 +12507,13 @@ document.addEventListener("click", function(event){
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
   });
 
+  // Page-level refresh hooks: refresh only the currently displayed support data.
+  window.ma3daRefreshSupportCenter = async function(screenId){
+    if(screenId==='ma3daComplaintListScreen') return loadOwnTickets(activeListKind);
+    if(screenId==='ma3daComplaintChatScreen' && activeTicket?.id) return openUserTicket(activeTicket.id);
+    if(screenId==='ma3daSupportHomeScreen' || screenId==='ma3daSupportLandingScreen') return;
+  };
+
   // Keep old submit buttons inert so users cannot create duplicate tickets through the retired form.
   document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
 })();
@@ -12960,4 +12970,220 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   });
   $f('contractorStageProject')?.addEventListener('change',renderManagerRequestOptions);
   $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
+  window.ma3daRefreshFinance = () => loadFinance();
+})();
+
+
+
+/* =========================================================
+   MA3DA — Unified large Back + data-only Refresh toolbar
+   Additive enhancement: preserves existing page-specific back handlers.
+========================================================= */
+(function initMa3daUniversalPageToolbar(){
+  if (window.__ma3daUniversalPageToolbarV1) return;
+  window.__ma3daUniversalPageToolbarV1 = true;
+
+  const history = window.__ma3daScreenHistory || (window.__ma3daScreenHistory = []);
+  let lastActive = document.querySelector('.screen.active');
+
+  const style = document.createElement('style');
+  style.id = 'ma3da-universal-toolbar-styles';
+  style.textContent = `
+    .ma3da-page-toolbar{direction:rtl;display:flex;gap:12px;align-items:stretch;width:100%;box-sizing:border-box;margin:0 auto 16px;padding:0 0 4px;}
+    .ma3da-page-toolbar button{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;flex:1 1 0!important;min-width:0!important;min-height:54px!important;padding:13px 14px!important;border-radius:13px!important;border:1px solid #b58a35!important;font-family:inherit!important;font-size:17px!important;font-weight:750!important;line-height:1.35!important;white-space:normal!important;cursor:pointer!important;box-shadow:0 2px 5px #0000000d!important;}
+    .ma3da-page-toolbar .ma3da-page-back{background:#171717!important;color:#fff!important;border-color:#171717!important;}
+    .ma3da-page-toolbar .ma3da-page-refresh{background:#b58a35!important;color:#fff!important;border-color:#a57b2b!important;}
+    .ma3da-page-toolbar button:focus-visible{outline:3px solid #d9bd78!important;outline-offset:3px!important;}
+    .ma3da-page-toolbar button:disabled{opacity:.7!important;cursor:wait!important;}
+    .ma3da-page-toolbar .ma3da-toolbar-icon{font-size:22px;line-height:1;flex:0 0 auto;}
+    .ma3da-page-toolbar .ma3da-toolbar-label{display:inline-block;}
+    .ma3da-page-refresh-status{direction:rtl;margin:0 0 12px;font-size:13px;line-height:1.5;color:#716753;min-height:0;}
+    .ma3da-page-refresh-status:empty{display:none;}
+    @media(max-width:380px){.ma3da-page-toolbar{gap:8px}.ma3da-page-toolbar button{min-height:52px!important;padding:11px 8px!important;font-size:15px!important;gap:7px!important}.ma3da-page-toolbar .ma3da-toolbar-icon{font-size:20px}}
+  `;
+  document.head.appendChild(style);
+
+  function getActiveScreen(){ return document.querySelector('.screen.active'); }
+  function isBackButton(button){
+    if(!button || button.dataset.ma3daGlobalRefresh) return false;
+    const label=(button.innerText||button.textContent||'').replace(/\s+/g,' ').trim();
+    const id=(button.id||'').toLowerCase();
+    const dataBack=button.hasAttribute('data-ma3da-support-back') || button.hasAttribute('data-ma3da-support-home') || button.hasAttribute('data-ma3da-support-landing-back');
+    return dataBack || /^back/.test(id) || /رجوع|الرجوع|عودة|العودة|مركز الدعم|العودة للرئيسية|العودة للصفحة السابقة/.test(label);
+  }
+  function visibleInScreen(button, screen){
+    if(!button || !screen.contains(button) || button.hidden || button.closest('[hidden]')) return false;
+    return true;
+  }
+  function findExistingBack(screen){
+    const buttons=[...screen.querySelectorAll('button')];
+    return buttons.find(b=>visibleInScreen(b,screen)&&isBackButton(b)) || null;
+  }
+  function backFallback(currentId){
+    const groups={
+      customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
+      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
+      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorOrderDetailsScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
+      support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
+    };
+    for(const ids of Object.values(groups)) if(ids.includes(currentId)){
+      if(currentId==='supportForgotScreen') return 'supportLoginScreen';
+      if(currentId==='contractorEquipmentPickerScreen'||currentId==='contractorOrderDetailsScreen') return 'contractorProjectsScreen';
+      if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
+      if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
+      if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
+      if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
+      if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
+      if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
+      if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
+      return ids[1] || 'roleScreen';
+    }
+    if(currentId==='whyMa3daScreen') return 'introScreen';
+    if(currentId==='howMa3daScreen') return 'whyMa3daScreen';
+    if(currentId==='howWorksScreen') return 'howMa3daScreen';
+    if(currentId==='roleScreen') return 'introScreen';
+    if(currentId==='phoneScreen'||currentId==='otpScreen') return 'roleScreen';
+    if(currentId==='ma3daSupportHomeScreen') return 'ma3daSupportLandingScreen';
+    if(currentId==='ma3daNewComplaintScreen'||currentId==='ma3daComplaintListScreen') return 'ma3daSupportHomeScreen';
+    if(currentId==='ma3daComplaintChatScreen') return 'ma3daComplaintListScreen';
+    return 'roleScreen';
+  }
+  function showScreenWithoutHistory(id){
+    const target=document.getElementById(id);
+    if(!target || !target.classList.contains('screen')) return false;
+    document.querySelectorAll('.screen.active').forEach(s=>s.classList.remove('active'));
+    target.classList.add('active');
+    lastActive=target;
+    window.scrollTo({top:0,behavior:'auto'});
+    return true;
+  }
+  function universalBack(){
+    const current=getActiveScreen();
+    if(!current) return;
+    let targetId='';
+    while(history.length && !targetId){
+      const candidate=history.pop();
+      if(candidate && candidate!==current.id && document.getElementById(candidate)?.classList.contains('screen')) targetId=candidate;
+    }
+    if(!targetId) targetId=backFallback(current.id);
+    if(targetId) showScreenWithoutHistory(targetId);
+  }
+
+  const refreshMap={
+    customerHomeScreen:()=>typeof window.loadLatestCustomerRequest==='function'?window.loadLatestCustomerRequest():null,
+    currentOrdersScreen:()=>typeof window.loadCustomerOrders==='function'?window.loadCustomerOrders('current'):null,
+    previousOrdersScreen:()=>typeof window.loadCustomerOrders==='function'?window.loadCustomerOrders('previous'):null,
+    customerSettingsScreen:()=>typeof window.loadCustomerSettings==='function'?window.loadCustomerSettings():null,
+    operatorDataScreen:()=>typeof window.loadOperatorData==='function'?window.loadOperatorData():null,
+    operatorHomeScreen:()=>typeof window.loadOperatorHome==='function'?window.loadOperatorHome():null,
+    operatorNewRequestsScreen:()=>typeof window.loadOperatorNewRequests==='function'?window.loadOperatorNewRequests():null,
+    operatorCurrentOrderScreen:()=>typeof window.loadOperatorCurrentOrder==='function'?window.loadOperatorCurrentOrder():null,
+    operatorPreviousOrdersScreen:()=>typeof window.loadOperatorPreviousOrders==='function'?window.loadOperatorPreviousOrders():null,
+    operatorIncomeScreen:()=>typeof window.loadOperatorIncome==='function'?window.loadOperatorIncome():null,
+    operatorRatingsScreen:()=>typeof window.loadOperatorRatings==='function'?window.loadOperatorRatings():null,
+    operatorEquipmentScreen:()=>typeof window.loadOperatorEquipmentEditor==='function'?window.loadOperatorEquipmentEditor():null,
+    operatorSettingsScreen:()=>typeof window.loadOperatorSettings==='function'?window.loadOperatorSettings():null,
+    contractorDataScreen:()=>typeof window.loadContractorProfile==='function'?window.loadContractorProfile():null,
+    contractorHomeScreen:async()=>{if(typeof window.loadContractorProfile==='function')await window.loadContractorProfile();if(typeof window.loadContractorCurrentOrders==='function')await window.loadContractorCurrentOrders();},
+    contractorProjectsScreen:()=>typeof window.loadContractorProjects==='function'?window.loadContractorProjects():null,
+    contractorCurrentOrdersScreen:()=>typeof window.loadContractorCurrentOrders==='function'?window.loadContractorCurrentOrders():null,
+    contractorPreviousOrdersScreen:()=>typeof window.loadContractorPreviousOrders==='function'?window.loadContractorPreviousOrders():null,
+    contractorEquipmentPickerScreen:()=>typeof window.loadContractorNearbyEquipment==='function'?window.loadContractorNearbyEquipment():null,
+    contractorFinanceScreen:()=>typeof window.ma3daRefreshFinance==='function'?window.ma3daRefreshFinance():null,
+    ma3daComplaintListScreen:()=>typeof window.ma3daRefreshSupportCenter==='function'?window.ma3daRefreshSupportCenter('ma3daComplaintListScreen'):null,
+    ma3daComplaintChatScreen:()=>typeof window.ma3daRefreshSupportCenter==='function'?window.ma3daRefreshSupportCenter('ma3daComplaintChatScreen'):null
+  };
+
+  async function refreshScreen(screen, button, status){
+    if(!screen || button.disabled) return;
+    const oldLabel=button.querySelector('.ma3da-toolbar-label')?.textContent || 'تحديث';
+    button.disabled=true;
+    button.querySelector('.ma3da-toolbar-icon').textContent='⟳';
+    button.querySelector('.ma3da-toolbar-label').textContent='جارٍ التحديث…';
+    status.textContent='جارٍ تحديث بيانات هذه الصفحة…';
+    try{
+      const existing=[...screen.querySelectorAll('button')].find(b=>{
+        if(b===button || b.dataset.ma3daGlobalRefresh || b.disabled || !visibleInScreen(b,screen)) return false;
+        const id=(b.id||'').toLowerCase();
+        const label=(b.innerText||b.textContent||'').replace(/\s+/g,' ').trim();
+        return id.includes('refresh') || id.includes('reload') || id.includes('update') || /^تحديث(\s|$|ال|\s)/.test(label) || /^تحديث القائمة$/.test(label);
+      });
+      if(existing){
+        existing.click();
+        status.textContent='تم إرسال طلب تحديث بيانات الصفحة.';
+      }else{
+        const refresh=refreshMap[screen.id];
+        if(typeof refresh==='function'){
+          await refresh();
+          status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorOrderDetailsScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+          status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
+        }else{
+          status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
+        }
+      }
+    }catch(error){
+      console.error('Ma3da page refresh failed:',screen.id,error);
+      status.textContent='تعذر تحديث البيانات. تحقق من الاتصال ثم حاول مرة أخرى.';
+    }finally{
+      button.disabled=false;
+      button.querySelector('.ma3da-toolbar-icon').textContent='⟳';
+      button.querySelector('.ma3da-toolbar-label').textContent=oldLabel==='جارٍ التحديث…'?'تحديث':oldLabel;
+    }
+  }
+
+  function addToolbar(screen){
+    if(!screen || screen.dataset.ma3daToolbarReady==='true') return;
+    screen.dataset.ma3daToolbarReady='true';
+    const toolbar=document.createElement('div');
+    toolbar.className='ma3da-page-toolbar';
+    toolbar.setAttribute('role','group');
+    toolbar.setAttribute('aria-label','التنقل وتحديث الصفحة');
+
+    let back=findExistingBack(screen);
+    if(back){
+      back.classList.add('ma3da-page-back');
+      back.setAttribute('aria-label',back.textContent.trim()||'رجوع');
+      toolbar.appendChild(back);
+    }else{
+      back=document.createElement('button');
+      back.type='button';
+      back.className='ma3da-page-back';
+      back.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">➜</span><span class="ma3da-toolbar-label">رجوع</span>';
+      back.addEventListener('click',universalBack);
+      toolbar.appendChild(back);
+    }
+
+    const refresh=document.createElement('button');
+    refresh.type='button';
+    refresh.className='ma3da-page-refresh';
+    refresh.dataset.ma3daGlobalRefresh='true';
+    refresh.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">⟳</span><span class="ma3da-toolbar-label">تحديث</span>';
+    refresh.setAttribute('aria-label','تحديث بيانات الصفحة');
+    const status=document.createElement('p');
+    status.className='ma3da-page-refresh-status';
+    status.setAttribute('role','status');
+    status.setAttribute('aria-live','polite');
+    refresh.addEventListener('click',()=>refreshScreen(screen,refresh,status));
+    toolbar.appendChild(refresh);
+    screen.insertBefore(toolbar,screen.firstChild);
+    screen.insertBefore(status,toolbar.nextSibling);
+  }
+
+  function processScreens(root=document){
+    if(root.matches?.('.screen')) addToolbar(root);
+    root.querySelectorAll?.('.screen').forEach(addToolbar);
+  }
+  processScreens();
+  const observer=new MutationObserver(records=>{
+    for(const record of records){
+      if(record.type==='childList') record.addedNodes.forEach(node=>{if(node.nodeType===1)processScreens(node);});
+    }
+    const active=getActiveScreen();
+    if(active && active!==lastActive){
+      if(lastActive?.id && lastActive.id!==active.id){history.push(lastActive.id);if(history.length>80)history.splice(0,history.length-80);}
+      lastActive=active;
+    }
+  });
+  observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 })();
