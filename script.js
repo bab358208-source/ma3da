@@ -12272,6 +12272,23 @@ document.addEventListener("click", function(event){
   function stopUserListener(){ if(activeUserMessagesUnsub){try{activeUserMessagesUnsub();}catch(_){} activeUserMessagesUnsub=null;} }
   function stopStaffListener(){ if(activeTicketMessagesUnsub){try{activeTicketMessagesUnsub();}catch(_){} activeTicketMessagesUnsub=null;} }
   function show(id){ if(typeof showScreen==='function') showScreen(id); else { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id)?.classList.add('active'); window.scrollTo(0,0); } }
+  function ensureSupportLandingScreen(){
+    let screen=$('ma3daSupportLandingScreen');
+    if(screen) return screen;
+    screen=document.createElement('section');
+    screen.id='ma3daSupportLandingScreen';
+    screen.className='screen ma3da-support-screen';
+    screen.innerHTML='<button type="button" class="back-btn" data-ma3da-support-landing-back>← رجوع</button>'+
+      '<div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>نحن هنا لمساعدتك، لا تتردد بالتواصل معنا.</p></div>'+
+      '<div class="ma3da-support-grid"><button type="button" class="ma3da-support-choice" data-open-ma3da-complaint-center>'+
+      '<strong>📋 إدارة الشكاوى</strong><span>قدّم شكوى جديدة، وتابع الشكاوى الحالية، وراجع الشكاوى السابقة.</span></button></div>';
+    const host=document.querySelector('main')||document.body;
+    host.appendChild(screen);
+    return screen;
+  }
+  function roleHomeScreen(){
+    return currentUserRole==='operator'?'operatorHomeScreen':currentUserRole==='contractor'?'contractorHomeScreen':'customerHomeScreen';
+  }
   function ticketMessagesPath(ticketId){ return window.ma3daCollection(window.ma3daDB,'supportTickets',ticketId,'messages'); }
   function renderMessages(targetId, messages, readOnly){
     const target=$(targetId); if(!target) return;
@@ -12462,15 +12479,17 @@ document.addEventListener("click", function(event){
     if(el.id==='technicalSupportBtn' || el.id==='operatorSupportBtn' || el.id==='contractorSupportBtn'){
       event.preventDefault();
       currentUserRole = el.id==='operatorSupportBtn' ? 'operator' : (el.id==='contractorSupportBtn' ? 'contractor' : 'customer');
-      show('ma3daSupportHomeScreen');
-      setFeedback('ma3daSupportHomeFeedback','');
+      ensureSupportLandingScreen();
+      show('ma3daSupportLandingScreen');
       return;
     }
     if(el.matches('[data-open-ma3da-support]')){
       event.preventDefault();currentUserRole=el.id.includes('operator')?'operator':el.id.includes('contractor')?'contractor':detectRole();
-      show('ma3daSupportHomeScreen');setFeedback('ma3daSupportHomeFeedback','');return;
+      ensureSupportLandingScreen();show('ma3daSupportLandingScreen');return;
     }
-    if(el.matches('[data-ma3da-support-back]')){show(currentUserRole==='operator'?'operatorSupportScreen':currentUserRole==='contractor'?'contractorSupportScreen':'technicalSupportScreen');return;}
+    if(el.matches('[data-ma3da-support-landing-back]')){show(roleHomeScreen());return;}
+    if(el.matches('[data-open-ma3da-complaint-center]')){show('ma3daSupportHomeScreen');setFeedback('ma3daSupportHomeFeedback','');return;}
+    if(el.matches('[data-ma3da-support-back]')){show('ma3daSupportLandingScreen');return;}
     if(el.id==='ma3daNewComplaintOpenBtn'){show('ma3daNewComplaintScreen');return;}
     if(el.matches('[data-ma3da-support-home]')){show('ma3daSupportHomeScreen');return;}
     if(el.matches('[data-open-ma3da-complaints]')){await loadOwnTickets(el.dataset.openMa3daComplaints);show('ma3daComplaintListScreen');return;}
