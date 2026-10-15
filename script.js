@@ -12620,6 +12620,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   'use strict';
   const $f = id => document.getElementById(id);
   let financeMode = 'contractor';
+  let ownerFinanceSubpage = 'menu';
   let cachedInvoices = [];
   let cachedPayments = [];
   let cachedProjects = [];
@@ -12651,6 +12652,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     else { document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active')); $f(id)?.classList.add('active'); }
   }
   window.ma3daOpenCustomerFinance = () => openFinance('customer');
+  function setOwnerFinanceSubpage(page){
+    ownerFinanceSubpage=page||'menu';
+    const menu=$f('ownerFinancePagesNav'), toolbar=$f('ownerFinancePageToolbar');
+    const customer=ownerFinanceSubpage==='customers', projects=ownerFinanceSubpage==='contractors';
+    if(menu)menu.hidden=ownerFinanceSubpage!=='menu';
+    if(toolbar)toolbar.hidden=ownerFinanceSubpage==='menu';
+    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!projects;
+    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
+    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
+  }
   function openFinance(mode){
     financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
@@ -12665,6 +12680,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=owner||customer;
     if($f('contractorCreateInvoiceCard'))$f('contractorCreateInvoiceCard').hidden=true;
     if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner||customer;
+    if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=!owner;
+    if($f('ownerFinancePageToolbar'))$f('ownerFinancePageToolbar').hidden=true;
+    if(owner){
+      setOwnerFinanceSubpage('menu');
+    }else{
+      ownerFinanceSubpage='';
+      if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=true;
+      if($f('ownerFinancePageToolbar'))$f('ownerFinancePageToolbar').hidden=true;
+      if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true;
+      if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+      if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+      if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+      if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
+    }
     loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);});
   }
   async function loadFinance(){
@@ -12941,10 +12970,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const target=event.target.closest('button');if(!target)return;
     if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
+    if(target.id==='openOwnerCustomerInvoicesBtn'){setOwnerFinanceSubpage('customers');return;}
+    if(target.id==='openOwnerContractorInvoicesBtn'){setOwnerFinanceSubpage('contractors');return;}
+    if(target.id==='ownerFinanceMenuBackBtn'){showScreen('operatorHomeScreen');return;}
+    if(target.id==='ownerFinanceSubpageBackBtn'){setOwnerFinanceSubpage('menu');return;}
+    if(target.id==='ownerFinanceMenuRefreshBtn'||target.id==='ownerFinanceSubpageRefreshBtn'){loadFinance().catch(err=>{console.error('Refresh Ma3da finance failed:',err);say('ownerInvoiceFeedback','تعذر تحديث الفواتير. تحقق من الاتصال.',true);});return;}
     if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
     if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
     const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
     if(target.id==='contractorFinanceBackBtn'){
+      if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
     }
     if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
