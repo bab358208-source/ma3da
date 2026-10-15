@@ -1211,8 +1211,8 @@
     <button id="customerFinanceBtn" class="home-menu-item" type="button">
       <div class="home-menu-icon">🧾</div>
       <div class="home-menu-text">
-        <strong>فواتيري والمدفوعات</strong>
-        <span>عرض فواتير الطلبات وحالة السداد</span>
+        <strong>فواتيري ومدفوعاتي</strong>
+        <span>راجع فواتيرك وحالة السداد</span>
       </div>
       <span class="home-arrow">←</span>
     </button>
@@ -5251,7 +5251,7 @@
     <h3>الدفع عبر مِعدة</h3>
     <p>تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.</p>
   </div>
-  <div id="bookingInvoicesList" hidden><div class="card">ستظهر فواتير طلباتك هنا.</div></div>
+  <div id="bookingInvoicesList" hidden><div class="card">لا توجد فواتير لطلباتك حتى الآن.</div></div>
   <div id="contractorInvoicesList"><div class="card">ستظهر فواتير مشاريعك هنا.</div></div>
   <button id="contractorFinanceBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
@@ -5364,7 +5364,8 @@
   collection,
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  where
 }
   from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -5488,11 +5489,17 @@
 
 
 
+  /*
+    انتظر تهيئة Firebase مرة واحدة، ثم اقرأ المستخدم الحالي مباشرةً.
+    لا نُرجع المستخدم الذي كان موجودًا عند أول تحميل للصفحة، لأن ذلك
+    قد يكون null ويبقى قديمًا بعد تسجيل الدخول.
+  */
   window.ma3daGetCurrentUser =
     async () => {
 
-      return await
-        window.ma3daFirebaseReady;
+      await window.ma3daFirebaseReady;
+
+      return auth.currentUser || null;
 
     };
 
@@ -5546,6 +5553,9 @@ window.ma3daOnSnapshot =
 
 window.ma3daQuery =
   query;
+
+window.ma3daWhere =
+  where;
 
 window.ma3daOrderBy =
   orderBy;
