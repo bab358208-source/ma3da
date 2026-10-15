@@ -869,7 +869,7 @@ textarea {
 }
 
 #customerHomeScreen .home-request-card::after {
-  content: "ð";
+  content: "Ã°ÂÂÂ";
   position: absolute;
   left: -12px;
   bottom: -31px;
@@ -985,7 +985,7 @@ textarea {
 }
 
 #customerHomeScreen .home-menu-item::after {
-  content: "â";
+  content: "Ã¢ÂÂ";
   position: absolute;
   left: 16px;
   color: #999;
@@ -2564,9 +2564,9 @@ html[data-theme="dark"] .operator-logout-btn {
 }
 
 /* =========================================================
-   MA3DA â MY SUPPORT TICKETS
-   ØµÙØ­Ø© Ø´ÙØ§ÙØ§Ù ÙØ±Ø¯ÙØ¯ Ø§ÙØ¯Ø¹Ù
-   Ø¥Ø¶Ø§ÙØ© ÙØ³ØªÙÙØ© ÙØ¢ÙÙØ© Ø¹Ù Ø§ÙØªÙØ³ÙÙØ§Øª Ø§ÙØ­Ø§ÙÙØ©
+   MA3DA Ã¢ÂÂ MY SUPPORT TICKETS
+   ÃÂµÃÂÃÂ­ÃÂ© ÃÂ´ÃÂÃÂ§ÃÂÃÂ§ÃÂ ÃÂÃÂ±ÃÂ¯ÃÂÃÂ¯ ÃÂ§ÃÂÃÂ¯ÃÂ¹ÃÂ
+   ÃÂ¥ÃÂ¶ÃÂ§ÃÂÃÂ© ÃÂÃÂ³ÃÂªÃÂÃÂÃÂ© ÃÂÃÂ¢ÃÂÃÂÃÂ© ÃÂ¹ÃÂ ÃÂ§ÃÂÃÂªÃÂÃÂ³ÃÂÃÂÃÂ§ÃÂª ÃÂ§ÃÂÃÂ­ÃÂ§ÃÂÃÂÃÂ©
 ========================================================= */
 
 .ma3da-my-tickets-screen {
@@ -2772,7 +2772,7 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 }
 
 
-/* ÙØ±Ø§Ø¬Ø¹Ø© ÙØ±Ø§Ø­Ù Ø§ÙÙØ´Ø§Ø±ÙØ¹ ÙØ§ÙÙÙØ§ØªÙØ± */
+/* ÃÂÃÂ±ÃÂ§ÃÂ¬ÃÂ¹ÃÂ© ÃÂÃÂ±ÃÂ§ÃÂ­ÃÂ ÃÂ§ÃÂÃÂÃÂ´ÃÂ§ÃÂ±ÃÂÃÂ¹ ÃÂÃÂ§ÃÂÃÂÃÂÃÂ§ÃÂªÃÂÃÂ± */
 .owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 #ownerInvoiceIssueFields{margin-top:16px}
 #ownerInvoiceIssueFields[hidden]{display:none}
@@ -2807,24 +2807,46 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 #operatorProjectRequestsPanel[hidden],#operatorCustomerRequestsPanel[hidden]{display:none!important}
 @media(max-width:420px){.operator-request-tabs{gap:7px}.operator-request-tab{font-size:.88rem;padding:10px 6px}}
 
-
-/* Ma3da focused visual fixes: customer Arabic rendering, support heading, and split owner invoices */
-#customerHomeScreen{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-#customerHomeScreen h1,#customerHomeScreen h2,#customerHomeScreen strong,#customerHomeScreen p,#customerHomeScreen span{font-family:Tahoma,Arial,sans-serif;unicode-bidi:plaintext}
-#technicalSupportScreen .hero,#ma3daSupportHomeScreen .hero{max-width:760px;text-align:center;margin:20px auto 26px}
-#technicalSupportScreen .hero h1,#ma3daSupportHomeScreen .hero h1{font-size:clamp(34px,6vw,44px);font-weight:800;line-height:1.35;text-align:center;color:#171717;margin:12px auto}
-#technicalSupportScreen .hero p,#ma3daSupportHomeScreen .hero p{font-size:clamp(18px,3.8vw,22px);font-weight:600;line-height:1.9;text-align:center;color:#514a3f;max-width:680px;margin:12px auto}
-.ma3da-finance-nav{max-width:720px;margin:16px auto 22px;direction:rtl}
-.ma3da-finance-nav-head{text-align:center;background:#fffaf0;border:1px solid #e5d4aa;border-radius:20px;padding:18px;margin-bottom:14px}
-.ma3da-finance-nav-head h2{font-size:clamp(24px,5vw,30px);margin:0 0 8px;color:#171717}
-.ma3da-finance-nav-head p{font-size:16px;color:#655b49;margin:0;line-height:1.8}
-.ma3da-finance-page-card{display:flex;align-items:center;gap:14px;width:100%;padding:18px;margin:12px 0;border:1px solid #e2d2ad;border-radius:18px;background:linear-gradient(135deg,#fffdf8,#f7edd7);color:#171717;text-align:right;box-shadow:0 5px 16px #0000000a;font:inherit}
-.ma3da-finance-page-card>span:nth-child(2){flex:1;min-width:0}
-.ma3da-finance-page-card strong,.ma3da-finance-page-card small{display:block}
-.ma3da-finance-page-card strong{font-size:20px;font-weight:800;margin-bottom:6px}
-.ma3da-finance-page-card small{font-size:14px;line-height:1.8;color:#665b49}
-.ma3da-finance-page-icon{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;border-radius:15px;background:#ead8ad;font-size:27px}
-.ma3da-finance-page-arrow{font-size:24px;color:#8b6a20}
-.ma3da-finance-toolbar{display:flex;gap:10px;margin:14px 0 20px}
-.ma3da-finance-toolbar button{flex:1;min-height:46px;font-weight:700}
-@media(max-width:480px){.ma3da-finance-page-card{padding:14px;gap:10px}.ma3da-finance-page-icon{flex-basis:44px;width:44px;height:44px}.ma3da-finance-page-card strong{font-size:18px}.ma3da-finance-toolbar{gap:8px}}
+/* MA3DA premium client identity â charcoal, gold and warm ivory */
+:root{--ma3da-gold:#bd8a2d;--ma3da-gold-light:#e7c77f;--ma3da-ink:#191919;--ma3da-cream:#fbf6eb;--ma3da-sand:#f2e7d3;--ma3da-line:#e8dac0}
+body{background:linear-gradient(145deg,#fbf8f1 0%,#f4ead8 100%);color:var(--ma3da-ink)}
+.screen{color:var(--ma3da-ink)}
+.hero,.home-header{background:linear-gradient(120deg,#171717 0%,#292723 72%,#51402a 100%);color:#fff;border-radius:0 0 24px 24px;padding:24px 20px;box-shadow:0 8px 22px #24190f18}
+.hero h1,.home-header h1{color:#fff;font-weight:850;letter-spacing:-.3px}
+.hero p{color:#f2e3c5}
+.hero-icon{color:var(--ma3da-gold-light)}
+.card,.home-menu-item,.home-feature,.home-request-card,.home-request-content,.home-section{border-radius:18px}
+.card{border:1px solid var(--ma3da-line);box-shadow:0 7px 20px #4a35100b;background:linear-gradient(145deg,#fffdf8,#fbf4e7)}
+.home-page{background:transparent;padding:12px 14px 28px}
+.home-header{margin:0 -14px 18px;padding:24px 20px;display:flex;align-items:center;justify-content:space-between}
+.home-greeting{color:var(--ma3da-gold-light);font-weight:700}
+.home-avatar{background:linear-gradient(145deg,#f6dfaa,#b78327);border:2px solid #f5dfab;color:#20180c}
+.home-request-card{background:linear-gradient(125deg,#1a1a1a,#3b3020);color:#fff;border:1px solid #b88a38;padding:18px;box-shadow:0 10px 22px #38260d20}
+.home-request-card h2,.home-request-card p{color:#fff}
+.home-request-icon{color:var(--ma3da-gold-light)}
+.home-request-btn,.main-btn{background:linear-gradient(110deg,#b78025,#dfbd70)!important;color:#17130c!important;border:0!important;border-radius:13px!important;font-weight:800;box-shadow:0 5px 14px #ad7d2724}
+.home-section{margin-top:20px}
+.home-section>h2,.card h2{color:var(--ma3da-ink);font-weight:850}
+.home-menu-item{background:linear-gradient(120deg,#fffdf8,#f7edda);border:1px solid var(--ma3da-line);box-shadow:0 4px 12px #4b351008;margin:9px 0;padding:14px;transition:transform .18s,border-color .18s}
+.home-menu-item:active{transform:scale(.99)}
+.home-menu-icon{background:#f4e5c5;color:#9b6b1d;border-radius:13px}
+.home-menu-text strong{color:#201d18;font-weight:800}
+.home-menu-text span{color:#766d60}
+/* Keep one simple navigation arrow; hide any decorative question/help mark beside it. */
+.home-arrow{color:#a87927;font-size:20px;font-weight:800;line-height:1}
+.home-menu-item .fa-circle-question,.home-menu-item .question-mark,.home-menu-item [aria-label*="ÙØ³Ø§Ø¹Ø¯Ø©"]{display:none!important}
+.home-features{gap:10px}
+.home-feature{background:#fffaf0;border:1px solid var(--ma3da-line);padding:13px 8px}
+.home-feature-icon{color:var(--ma3da-gold)}
+.home-logout-btn,.back-btn{border-radius:12px;border:1px solid #d7bc81;background:#fff9ed;color:#77551d;font-weight:750}
+input,select,textarea,.form-control{border:1px solid #e0d1b3!important;border-radius:12px!important;background:#fffdf8!important;color:#211e19}
+input:focus,select:focus,textarea:focus{outline:2px solid #d4aa55!important;outline-offset:1px}
+button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
+/* Consistent premium panels throughout customer-facing screens */
+#customerHomeScreen,#customerSettingsScreen,#technicalSupportScreen{background:transparent}
+#customerSettingsScreen .hero,#technicalSupportScreen .hero{margin-bottom:18px;text-align:center}
+#technicalSupportScreen .hero h1{font-size:clamp(30px,7vw,40px);color:#d5a23e}
+#technicalSupportScreen .hero p{font-size:clamp(17px,4.2vw,21px);font-weight:750;color:#d5a23e;white-space:normal}
+#customerSupportTicketForm h2{text-align:center;font-size:23px;color:#171717}
+#customerSupportTicketForm{border-top:3px solid #c99a3e}
+@media(max-width:480px){.home-page{padding-left:10px;padding-right:10px}.home-header{margin-left:-10px;margin-right:-10px}.home-menu-item{padding:12px;gap:10px}.home-menu-text strong{font-size:15px}.home-menu-text span{font-size:12px}}
