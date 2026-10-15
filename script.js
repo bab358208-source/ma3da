@@ -4000,31 +4000,12 @@ async function loadCustomerOrders(
  
     }
  
-    const requestsCollection =
-      window.ma3daCollection(
-        window.ma3daDB,
-        "requests"
-      );
-
-    /*
-      اجلب طلبات العميل الحالي فقط، بدل قراءة مجموعة الطلبات كاملة
-      ثم تصفيتها محليًا.
-    */
-    const customerRequestsQuery =
-      window.ma3daQuery && window.ma3daWhere
-        ? window.ma3daQuery(
-            requestsCollection,
-            window.ma3daWhere(
-              "customerId",
-              "==",
-              user.uid
-            )
-          )
-        : requestsCollection;
-
     const snapshot =
       await window.ma3daGetDocs(
-        customerRequestsQuery
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
       );
  
     const currentStatuses = [
@@ -12233,15 +12214,6 @@ document.addEventListener("click", function(event){
   const style = document.createElement("style");
   style.id = "ma3da-support-restored-styles";
   style.textContent = "\n.ma3da-support-screen{direction:rtl;text-align:right;max-width:820px;margin:0 auto;padding:16px;color:#171717}\n.ma3da-support-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}\n.ma3da-support-choice,.ma3da-support-card{display:block;width:100%;box-sizing:border-box;background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:16px;margin:10px 0;color:#171717;font:inherit}\n.ma3da-support-choice{text-align:right;cursor:pointer}.ma3da-support-choice strong,.ma3da-support-choice span{display:block}.ma3da-support-choice span{margin-top:6px;color:#6b6254}\n.ma3da-support-screen label{display:block;font-weight:600;margin:12px 0 6px}\n.ma3da-support-screen input,.ma3da-support-screen select,.ma3da-support-screen textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit}\n.ma3da-support-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.ma3da-support-actions button{flex:1;min-width:120px}\n.ma3da-ticket-feedback{font-weight:600;min-height:1.4em}.ma3da-ticket-thread{max-height:48vh;overflow:auto}\n.ma3da-ticket-message{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}\n.ma3da-ticket-message.requester{background:#f5eddc;margin-right:auto}.ma3da-ticket-message.support{background:#e9f3ed;margin-left:auto}\n.ma3da-ticket-message small{display:block;color:#716753;margin-top:5px}.ma3da-ticket-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}\n";
-  style.textContent += `\n.ma3da-support-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-16px -16px 0;padding:16px 18px;background:linear-gradient(110deg,#17191d,#292a2d);color:#fff;border-radius:18px 18px 0 0}
-.ma3da-support-brand{font-size:23px;font-weight:900;white-space:nowrap}.ma3da-support-brand b{color:#e3b64f;font-size:18px}
-.ma3da-support-homeback{border:0;background:transparent;color:#fff;font:inherit;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer}.ma3da-support-homeback span{font-size:26px;line-height:1}
-.ma3da-support-screen{background:linear-gradient(180deg,#fffdf8 0%,#fff 78%,#fbf0d8 100%);border-radius:22px;overflow:hidden;min-height:calc(100vh - 36px);box-shadow:0 12px 36px rgba(23,23,23,.06)}
-.ma3da-support-screen [data-ma3da-support-landing-back]{margin:8px 0 0}
-.ma3da-support-landing-hero{text-align:center;margin:22px auto 44px;padding:26px 12px 0;position:relative}
-.ma3da-support-landing-hero:before{content:'🎧';display:flex;align-items:center;justify-content:center;margin:0 auto 18px;width:112px;height:112px;border-radius:50%;font-size:62px;background:radial-gradient(circle at 35% 25%,#fff8df,#f4d27c 68%,#d6a13a);box-shadow:0 0 0 10px rgba(222,174,72,.12),0 12px 26px rgba(181,138,42,.16)}\n.ma3da-support-landing-hero h1{font-size:clamp(38px,7vw,58px);font-weight:900;margin:0 0 16px;color:#c18b20;letter-spacing:-1px}\n.ma3da-support-landing-hero p{display:table;color:#fff;font-size:clamp(14px,3.5vw,22px);font-weight:800;white-space:nowrap;text-align:center;margin:0 auto;line-height:1.7;padding:10px 24px;border-radius:40px;background:linear-gradient(110deg,#dba83d,#b98217);box-shadow:0 8px 20px rgba(181,138,42,.18)}\n.ma3da-support-manage-section{text-align:center;margin:54px auto 20px;padding:0 8px 40px;position:relative}
-.ma3da-support-manage-section:before{content:'☷';display:block;margin:0 auto 12px;color:#151922;font-size:52px;font-weight:900;line-height:1.2;text-shadow:3px 3px 0 #f1ce80}\n.ma3da-support-manage-section h2{font-size:clamp(27px,4.5vw,36px);font-weight:800;color:#111;margin:0 0 12px}\n.ma3da-support-manage-section>p{font-size:clamp(15px,2.7vw,18px);line-height:1.9;text-align:center;margin:0 auto 18px;color:#333}\n.ma3da-support-manage-choice{text-align:center!important;background:rgba(255,255,255,.82);border:1px solid #ead8ae;box-shadow:0 8px 24px rgba(31,25,13,.06);border-radius:18px;padding:18px 14px;max-width:520px;margin:20px auto 0}\n.ma3da-support-manage-choice strong,.ma3da-support-manage-choice span{text-align:center}\n.ma3da-customer-invoices-empty{text-align:center;padding:30px 18px;border:1px solid #f0dfb8;background:linear-gradient(135deg,#fffdf8,#fff);border-radius:18px}.ma3da-customer-invoices-empty>div{font-size:40px;margin-bottom:8px}.ma3da-customer-invoices-empty h3{margin:4px 0 8px;font-size:21px}.ma3da-customer-invoices-empty p{margin:0;color:#665f53}
-@media(max-width:390px){.ma3da-support-landing-hero p{font-size:12px;letter-spacing:-.35px;padding:9px 12px}.ma3da-support-landing-hero:before{width:88px;height:88px;font-size:48px}.ma3da-support-manage-section{margin-top:42px}}`;
   document.head.appendChild(style);
   const host = document.querySelector("main") || document.body;
   const wrapper = document.createElement("div");
@@ -12309,10 +12281,10 @@ document.addEventListener("click", function(event){
     screen=document.createElement('section');
     screen.id='ma3daSupportLandingScreen';
     screen.className='screen ma3da-support-screen';
-    screen.innerHTML='<div class="ma3da-support-topbar"><span class="ma3da-support-brand">مِعدة <b>▲</b></span><button type="button" class="ma3da-support-homeback" data-ma3da-support-landing-back><span aria-hidden="true">⌂</span> العودة إلى الصفحة الرئيسية</button></div>'+
-      '<div class="ma3da-support-landing-hero"><h1>الدعم الفني</h1><p>نقدر اهتمامكم ونسعى لحل مشاكلكم</p></div>'+
-      '<div class="ma3da-support-manage-section"><h2>إدارة الشكاوي</h2><p>من هنا يمكنك إنشاء شكوى ومتابعة شكوى حالية ومراجعة شكوى سابقة</p>'+
-      '<button type="button" class="ma3da-support-choice ma3da-support-manage-choice" data-open-ma3da-complaint-center><strong>📋 إدارة الشكاوي</strong><span>إنشاء شكوى ومتابعة الشكاوى الحالية والسابقة.</span></button></div>';
+    screen.innerHTML='<button type="button" class="back-btn" data-ma3da-support-landing-back>← رجوع</button>'+
+      '<div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>نحن هنا لمساعدتك، لا تتردد بالتواصل معنا.</p></div>'+
+      '<div class="ma3da-support-grid"><button type="button" class="ma3da-support-choice" data-open-ma3da-complaint-center>'+
+      '<strong>📋 إدارة الشكاوى</strong><span>قدّم شكوى جديدة، وتابع الشكاوى الحالية، وراجع الشكاوى السابقة.</span></button></div>';
     const host=document.querySelector('main')||document.body;
     host.appendChild(screen);
     return screen;
@@ -12683,10 +12655,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
     const owner=financeMode==='owner'; const customer=financeMode==='customer';
-    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري ومدفوعاتي':'فواتير المشروع والسداد';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'تابع فواتير طلباتك والمبالغ وحالة السداد بسهولة.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
-    if($f('contractorFinanceBackBtn'))$f('contractorFinanceBackBtn').textContent=customer?'العودة إلى الصفحة الرئيسية':owner?'العودة إلى الصفحة الرئيسية للمشغل':'العودة للوحة المقاول';
-    if($f('bookingInvoiceGatewayNotice')){const heading=$f('bookingInvoiceGatewayNotice').querySelector('h3');const paragraph=$f('bookingInvoiceGatewayNotice').querySelector('p');if(customer&&heading)heading.textContent='الدفع عبر مِعدة';if(customer&&paragraph)paragraph.textContent='تظهر فواتير طلباتك وحالة السداد هنا. يتاح الدفع الإلكتروني بعد ربط بوابة دفع معتمدة والتحقق من تأكيدها.';}
+    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!owner;
     if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
     if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
@@ -12730,7 +12700,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function renderBookingInvoices(rows){
     const list=$f('bookingInvoicesList');
     if(list){
-      if(!rows.length){list.innerHTML='<div class="card ma3da-customer-invoices-empty"><div aria-hidden="true">🧾</div><h3>لا توجد فواتير حاليًا</h3><p>ستظهر فواتير طلباتك هنا عند إصدارها.</p></div>';}
+      if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد فواتير طلبات حتى الآن</h3><p>ستظهر الفاتورة هنا بعد إصدارها. الطلب المنتهي يبقى مفتوحًا ماليًا حتى تأكيد السداد من بوابة دفع موثوقة.</p></div>';}
       else {list.innerHTML='<h3>فواتير طلبات التأجير</h3>'+rows.sort((a,b)=>Number(b.invoiceIssuedAt||b.workCompletedAt||b.completedAt||0)-Number(a.invoiceIssuedAt||a.workCompletedAt||a.completedAt||0)).map(r=>{
         const amount=Number(r.invoiceAmount||r.finalAmount||r.price||0);
         const state=r.paymentStatus==='paid'?'مسددة ومؤكدة':r.invoiceStatus==='issued'?'الفاتورة صادرة — بانتظار الدفع':r.status==='invoice_pending'?'بانتظار إصدار الفاتورة':'بانتظار التسوية';
