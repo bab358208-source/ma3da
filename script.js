@@ -1,4 +1,18 @@
+/*
+============================================================
+دليل تنظيم ملف script.js — مِعدة
+01 — الصفحات التعريفية: وظائف المقدمة والتنقل التعريفي
+02 — تسجيل الدخول والحسابات: اختيار الدور، الدخول، إنشاء الحساب، استعادة كلمة المرور
+03 — وظائف العميل: الطلبات، الحساب، الإعدادات، دعم العميل
+04 — وظائف صاحب المعدة: المعدات، الطلبات، الدخل، الإعدادات، دعم صاحب المعدة
+05 — وظائف المقاول: البيانات، المشاريع، طلبات المعدات، الفواتير والدفعات
+06 — وظائف الدعم الفني: حسابات الموظفين، لوحة الشكاوى، الردود وإغلاق الشكاوى
+ملاحظة مهمة: العناوين توثيقية فقط؛ لم ننقل أي دالة أو نغيّر ترتيب التنفيذ أو منطق الوظائف.
+============================================================
+*/
 console.log("MA3DA SCRIPT LOADED");
+
+/* 00 — بداية الملف: تهيئة عامة مشتركة للتطبيق */
  
 const screens =
   document.querySelectorAll(".screen");
@@ -433,6 +447,7 @@ function updateOperatorScreen(){
  
 }
  
+/* 03 — وظائف العميل: نموذج طلب المعدة وإرسال الطلب */
 /* CUSTOMER REQUEST */
  
 const requestBtn =
@@ -557,6 +572,7 @@ if(requestBtn){
  
 }
  
+/* 03/04 — متابعة قبول الطلب: ربط حالة الطلب بين العميل وصاحب المعدة */
 /* ACCEPTANCE WATCHER */
  
 function stopAcceptanceWatcher(){
@@ -872,6 +888,7 @@ if(
     );
  
 }
+/* 02 — تسجيل الدخول والحسابات: اختيار نوع المستخدم */
 /* ROLE */
  
 const customerRoleBtn =
@@ -936,6 +953,7 @@ if(operatorRoleBtn){
  
 }
  
+/* 02 — تسجيل الدخول والحسابات: تسجيل الدخول بالبريد وكلمة المرور */
 /* EMAIL LOGIN */
  
 const emailLoginBtn =
@@ -1368,6 +1386,7 @@ if(emailLoginBtn){
  
 }
  
+/* 02 — تسجيل الدخول والحسابات: إنشاء حساب جديد والتحقق */
 /* CREATE ACCOUNT */
  
 if(createAccountBtn){
@@ -1482,6 +1501,7 @@ if(createAccountBtn){
  
 }
  
+/* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
 /* OPERATOR */
  
 async function openOperatorScreen(){
@@ -1495,6 +1515,7 @@ async function openOperatorScreen(){
   );
  
 }
+/* 04 — وظائف صاحب المعدة: تحميل طلبات العملاء */
 /* LOAD CUSTOMER REQUEST FOR OPERATOR */
  
 async function loadLatestCustomerRequest(){
@@ -1918,6 +1939,7 @@ if(rejectRequestBtn){
  
 }
  
+/* 04 — وظائف صاحب المعدة: حفظ بيانات المعدات والتحقق منها */
 /* EQUIPMENT */
 const saveEquipmentBtn =
   document.getElementById("saveEquipmentBtn");
@@ -2454,6 +2476,7 @@ if(trackingBtn){
  
 }
  
+/* وظائف المحادثة المشتركة: العميل وصاحب المعدة — أبقيناها مشتركة لتجنب كسر الربط */
 /* CHAT: CUSTOMER + EQUIPMENT OWNER */
 let chatMessagesUnsubscribe = null;
 let chatSending = false;
@@ -2899,6 +2922,7 @@ if(customerStartWorkButton){
  
 }
  
+/* 03/04 — وظائف مالية مشتركة: الدفع وإغلاق الطلب */
 /* PAYMENT */
  
 document
@@ -3470,6 +3494,7 @@ if(backFromRequestBtn){
  
 })();
  
+/* 01 — الصفحات التعريفية: مقدمة مِعدة والتنقل بين الشرائح */
 /* INTRO */
  
 const introNextBtn =
@@ -3710,6 +3735,7 @@ introScreens.forEach(
   }
 );
  
+/* 03 — وظائف العميل: بيانات الحساب */
 /* CUSTOMER DATA */
  
 const saveCustomerDataBtn =
@@ -3918,6 +3944,7 @@ if(getLocationBtn){
  
 }
  
+/* 03 — وظائف العميل: الصفحة الرئيسية وطلبات العميل */
 /* CUSTOMER HOME */
  
 const currentOrderBtn =
@@ -4287,6 +4314,7 @@ if(backFromPreviousOrdersBtn){
  
 }
  
+/* 03 — وظائف العميل: الإعدادات */
 /* CUSTOMER SETTINGS */
  
 const customerSettingsBtn =
@@ -4792,6 +4820,7 @@ if(darkAppearanceBtn){
  
 }
  
+/* 03-A — وظائف العميل: الدعم الفني الخاص بالعميل */
 /* TECHNICAL SUPPORT */
  
 const technicalSupportBtn =
@@ -4826,6 +4855,7 @@ if(backFromTechnicalSupportBtn){
  
 }
  
+/* 04 — وظائف صاحب المعدة: البيانات الشخصية */
 /* OPERATOR DATA */
  
 async function loadOperatorData(){
@@ -5011,6 +5041,7 @@ if(saveOperatorDataBtn){
  
 }
  
+/* 04 — وظائف صاحب المعدة: الصفحة الرئيسية */
 /* OPERATOR HOME */
  
 async function loadOperatorHome(){
@@ -5149,6 +5180,7 @@ async function openOperatorDashboard(){
  
 }
  
+/* 04 — وظائف صاحب المعدة: لوحة التحكم والطلبات الحالية */
 /* OPERATOR DASHBOARD */
  
 async function loadOperatorDashboard(){
@@ -5303,10 +5335,11 @@ function renderOperatorRequestCards(list, requests, kind){
         <div class="operator-info-row"><span>📍 موقع العمل</span><strong>${request.location || request.projectCity || "-"}</strong></div>
         <div class="operator-info-row"><span>⏱️ مدة العمل</span><strong>${request.duration || "-"}</strong></div>
         <div class="operator-info-row"><span>💰 السعر</span><strong>${price.toLocaleString("ar-SA")} ريال</strong></div>
-        <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>بانتظار قبولك</strong></div>
+        <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>${request.status === "extension_requested" ? "طلب تمديد بانتظار موافقتك" : "بانتظار قبولك"}</strong></div>
+        ${kind === "projects" && request.paymentPlan ? `<div class="operator-info-row"><span>💳 طريقة الدفع</span><strong>${({four_stages:"أربع مراحل",deposit_30:"عربون 30% والباقي دفعات",full_upfront:"كامل المبلغ مقدمًا",full_end:"كامل المبلغ في النهاية"})[request.paymentPlan] || request.paymentPlan}</strong></div><div class="operator-info-row"><span>🗓️ جدول العمل</span><strong>${request.dailyStartTime || "—"} - ${request.dailyEndTime || "—"} · أيام التشغيل: ${(request.workDays || []).map(Number).join("، ") || "—"}</strong></div><div class="operator-info-row"><span>📅 البداية والنهاية</span><strong>${request.scheduledStartAt?new Date(operatorRequestDateValue(request.scheduledStartAt)).toLocaleString("ar-SA"):"—"} — ${request.scheduledEndAt?new Date(operatorRequestDateValue(request.scheduledEndAt)).toLocaleString("ar-SA"):"—"}</strong></div><div class="operator-info-row"><span>🧾 شروط التسوية</span><strong>${request.paymentTerms || "—"}</strong></div>` : ""}
       </div>
       <div class="operator-notes"><span>📝 ملاحظات ${kind === "projects" ? "المشروع" : "العميل"}</span><p>${request.notes || "لا توجد ملاحظات"}</p></div>
-      <div class="operator-buttons"><button class="reject-btn" type="button" data-reject-request="${request.id}">رفض الطلب</button><button class="accept-btn" type="button" data-accept-request="${request.id}">قبول الطلب</button></div>`;
+      <div class="operator-buttons">${request.status === "extension_requested" ? `<button class="reject-btn" type="button" data-reject-extension="${request.id}">رفض التمديد</button><button class="accept-btn" type="button" data-approve-extension="${request.id}">الموافقة على التمديد</button>` : `<button class="reject-btn" type="button" data-reject-request="${request.id}">رفض الطلب</button><button class="accept-btn" type="button" data-accept-request="${request.id}">قبول الطلب</button>`}</div>`;
     list.appendChild(card);
   });
 }
@@ -5340,12 +5373,15 @@ async function loadOperatorNewRequests(){
     const projectRequests=[];
     snapshot.forEach(docSnap=>{
       const data=docSnap.data() || {};
-      if(data.status !== "searching") return;
+      const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
+      if(!eligibleStatus) return;
       const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
       const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name);
       if(!ownerMatches) return;
       const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
-      const isProjectRequest = role === "contractor" || role === "project" || !!data.projectId || !!data.contractorId;
+      const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
+      if(legacyContractorRequest)return;
+      const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
       const request={id:docSnap.id,...data};
       (isProjectRequest ? projectRequests : customerRequests).push(request);
     });
@@ -5354,6 +5390,10 @@ async function loadOperatorNewRequests(){
     projectRequests.sort(sortNewest);
     renderOperatorRequestCards(customerList,customerRequests,"customers");
     renderOperatorRequestCards(projectList,projectRequests,"projects");
+    if(projectList){
+      const activeProjectRows=[];snapshot.forEach(docSnap=>{const d=docSnap.data()||{};const target=d.equipmentOwnerId||d.ownerId||d.operatorId||'';if(d.projectId&&target===user.uid&&['accepted','working','duration_expired','completed'].includes(String(d.status||'')))activeProjectRows.push({id:docSnap.id,...d});});
+      if(activeProjectRows.length){const review=document.createElement('div');review.className='card';review.innerHTML='<h2>إدارة طلبات المشاريع المقبولة</h2>'+activeProjectRows.map(r=>{const pending=(r.paymentLedger||[]).filter(x=>x.status==='pending_owner_review');const lifecycle=r.status==='accepted'&&['scheduled','awaiting_acceptance'].includes(String(r.workStatus||''))?`<button type="button" class="accept-btn" data-owner-project-start="${r.id}">بدء تشغيل المعدة</button>`:(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))?`<button type="button" class="accept-btn" data-owner-project-complete="${r.id}">تأكيد انتهاء العمل</button>`:'';const stageAction=r.paymentPlan==='four_stages'&&r.status!=='completed'?`<button type="button" class="back-btn" data-owner-project-stage-due="${r.id}">اعتماد إنجاز المرحلة التالية</button>`:'';return `<div class="operator-info" style="border-top:1px solid #eadfc5;padding-top:10px;margin-top:10px"><h3>${String(r.projectName||'مشروع').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))} — ${String(r.equipment||'معدة').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</h3><p>الحالة: ${r.status} · القيمة: ${Number(r.price||0).toLocaleString('ar-SA')} ريال · المتبقي: ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p>${lifecycle}${stageAction}${pending.map(x=>`<p>إثبات دفعة: ${Number(x.amount||0).toLocaleString('ar-SA')} ريال · المرجع: ${String(x.reference||'—').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</p><button type="button" class="accept-btn" data-owner-approve-project-payment="${r.id}" data-ledger-id="${x.id}">تأكيد استلام الدفعة</button> <button type="button" class="reject-btn" data-owner-reject-project-payment="${r.id}" data-ledger-id="${x.id}">رفض الإثبات</button>`).join('')}</div>`;}).join('');projectList.appendChild(review);}
+    }
     if(updatedLabel){
       updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
     }
@@ -5367,6 +5407,52 @@ async function loadOperatorNewRequests(){
     if(refreshButton){refreshButton.disabled=false;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> تحديث الطلبات';}
   }
 }
+
+async function operatorDecideProjectWorkState(requestId, action){
+  const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');
+  const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+  if(!r.projectId)throw new Error('هذا الإجراء مخصص لطلبات المشاريع.');
+  if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية إدارة هذا الطلب.');
+  const now=new Date();
+  if(action==='start'){
+    if(r.status!=='accepted'||!['scheduled','awaiting_acceptance'].includes(String(r.workStatus||'')))throw new Error('لا يمكن بدء التشغيل في حالة الطلب الحالية.');
+    await window.ma3daUpdateDoc(ref,{status:'working',workStatus:'working',workStartedAt:now,workStartedBy:user.uid,updatedAt:now});return;
+  }
+  if(action==='complete'){
+    if(!['working','duration_expired'].includes(String(r.status||''))&&!['working','duration_expired'].includes(String(r.workStatus||'')))throw new Error('لا يمكن إنهاء العمل قبل بدء التشغيل.');
+    const plannedEnd=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():new Date(r.scheduledEndAt||0);
+    if(r.status!=='duration_expired'&&r.workStatus!=='duration_expired'&&Number.isFinite(plannedEnd.getTime())&&plannedEnd.getTime()>Date.now())throw new Error('لم تنتهِ المدة المتفق عليها. الإنهاء المبكر يحتاج مراجعة موظف الدعم.');
+    const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.map(x=>({...x})):[];
+    if(r.paymentPlan==='full_end'&&schedule[0]&&schedule[0].status!=='paid')schedule[0]={...schedule[0],status:'due',dueAt:now};
+    if(r.paymentPlan==='four_stages'){const next=schedule.findIndex(x=>x.status==='not_due');if(next>=0&&schedule.slice(0,next).every(x=>x.status==='paid'))schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};}
+    await window.ma3daUpdateDoc(ref,{status:'completed',workStatus:'completed',workCompletedAt:now,workCompletedBy:user.uid,paymentSchedule:schedule,settlementStatus:Number(r.remainingBalance??r.price??0)>0?'needs_settlement':(r.settlementStatus||'settled'),updatedAt:now});return;
+  }
+  if(action==='stage'){
+    if(r.paymentPlan!=='four_stages')throw new Error('الدفعات المرحلية غير مفعلة لهذا الاتفاق.');
+    const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.map(x=>({...x})):[];const next=schedule.findIndex(x=>x.status==='not_due');if(next<0)throw new Error('لا توجد مرحلة تالية لاستحقاقها.');if(schedule.slice(0,next).some(x=>x.status!=='paid'))throw new Error('لا يمكن استحقاق المرحلة التالية قبل تأكيد سداد المرحلة السابقة.');
+    if(!confirm(`تأكيد إنجاز ${schedule[next].label||'المرحلة التالية'} وجعل دفعتها مستحقة للمقاول؟`))return;
+    schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};await window.ma3daUpdateDoc(ref,{paymentSchedule:schedule,updatedAt:now});return;
+  }
+}
+document.addEventListener('click',async event=>{
+  const start=event.target.closest('[data-owner-project-start]');const finish=event.target.closest('[data-owner-project-complete]');const stage=event.target.closest('[data-owner-project-stage-due]');if(!start&&!finish&&!stage)return;
+  const button=start||finish||stage;button.disabled=true;try{await operatorDecideProjectWorkState(button.dataset.ownerProjectStart||button.dataset.ownerProjectComplete||button.dataset.ownerProjectStageDue,start?'start':finish?'complete':'stage');alert(start?'تم تسجيل بدء التشغيل.':finish?'تم إنهاء العمل وتحديث حالة التسوية.':'تم تحديث استحقاق المرحلة.');await loadOperatorNewRequests();}catch(error){console.error('Project work lifecycle:',error);alert(error.message||'تعذر تحديث حالة العمل.');}finally{button.disabled=false;}
+});
+
+async function operatorDecideProjectPayment(requestId, ledgerId, approve){
+  const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');
+  const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+  if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية مراجعة هذه الدفعة.');
+  const ledger=Array.isArray(r.paymentLedger)?r.paymentLedger.slice():[];const index=ledger.findIndex(x=>x.id===ledgerId);if(index<0||ledger[index].status!=='pending_owner_review')throw new Error('لا توجد دفعة معلقة بهذه البيانات.');
+  const entry={...ledger[index],status:approve?'confirmed':'rejected',reviewedBy:user.uid,reviewedAt:new Date()};ledger[index]=entry;
+  const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.slice():[];const installmentIndex=Number(entry.installmentIndex);const installment=schedule[installmentIndex];let paidTotal=Number(r.paidTotal||0);
+  if(approve&&installment){paidTotal=Math.round((paidTotal+Number(entry.amount||0))*100)/100;const dueRemaining=Math.max(0,Math.round((Number(installment.amount||0)-Number(installment.paidAmount||0)-Number(entry.amount||0))*100)/100);schedule[installmentIndex]={...installment,status:dueRemaining<=0?'paid':'due',paidAmount:Math.round((Number(installment.paidAmount||0)+Number(entry.amount||0))*100)/100,paidAt:new Date(),reviewStatus:'confirmed'};}
+  else if(installment){schedule[installmentIndex]={...installment,status:'due',reviewStatus:'rejected'};}
+  if(approve&&r.paymentPlan==='deposit_30'&&schedule[installmentIndex]?.status==='paid'){const next=schedule.findIndex((x,i)=>i>installmentIndex&&x.status==='not_due');if(next>=0)schedule[next]={...schedule[next],status:'due',dueAt:new Date()};}
+  const total=Number(r.price||0);const remaining=Math.max(0,Math.round((total-paidTotal)*100)/100);
+  await window.ma3daUpdateDoc(ref,{paymentLedger:ledger,paymentSchedule:schedule,paidTotal,remainingBalance:remaining,paymentStatus:remaining<=0?'paid':(paidTotal>0?'partially_paid':'unpaid'),updatedAt:new Date()});
+}
+document.addEventListener('click',async event=>{const approve=event.target.closest('[data-owner-approve-project-payment]');const reject=event.target.closest('[data-owner-reject-project-payment]');if(!approve&&!reject)return;const button=approve||reject;button.disabled=true;try{await operatorDecideProjectPayment(button.dataset.ownerApproveProjectPayment||button.dataset.ownerRejectProjectPayment,button.dataset.ledgerId,!!approve);alert(approve?'تم تأكيد الدفعة وتحديث الرصيد.':'تم رفض إثبات الدفعة وإعادتها للمقاول.');await loadOperatorNewRequests();}catch(error){console.error('Project payment review:',error);alert(error.message||'تعذر مراجعة الدفعة.');}finally{button.disabled=false;}});
 
 /* Tabs and manual refresh update the lists only; the full page is not reloaded. */
 document.addEventListener("click",event=>{
@@ -5449,12 +5535,21 @@ async function acceptOperatorRequest(
     const equipment =
       await getOperatorEquipment();
  
+    const isProjectRequest = !!request.projectId && (request.requesterRole === 'contractor' || request.requesterType === 'contractor' || !!request.contractorId);
+    if(isProjectRequest && (!request.scheduledStartAt || !request.scheduledEndAt || !Array.isArray(request.workDays) || !request.workDays.length || !request.dailyStartTime || !request.dailyEndTime || !request.paymentTerms || !Array.isArray(request.paymentSchedule) || !request.paymentSchedule.length)){
+      alert('لا يمكن قبول الطلب: بيانات الجدول أو شروط الدفع أو خطة الدفعات غير مكتملة.');return;
+    }
+    if(isProjectRequest && (!request.equipmentOwnerId || request.equipmentOwnerId !== user.uid)){
+      alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
+    }
+    const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_stages'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
     await window.ma3daUpdateDoc(
       requestRef,
       {
  
         status:
           "accepted",
+        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
  
         operatorId:
           user.uid,
@@ -5477,7 +5572,13 @@ async function acceptOperatorRequest(
           "",
  
         acceptedAt:
-          Date.now()
+          Date.now(),
+        agreedDuration: request.duration || "",
+        agreedPrice: Number(request.price || 0),
+        agreedHourlyPrice: Number(request.hourlyPrice || 0),
+        agreementVersion: 1,
+        extensionStatus: "none",
+        workStatus: "scheduled"
  
       }
     );
@@ -5514,7 +5615,8 @@ async function rejectOperatorRequest(
 ){
  
   try{
- 
+    const user=await getOperatorCurrentUser();
+    if(!user?.uid){alert('سجّل الدخول بحساب صاحب المعدة.');return;}
     const requestRef =
       window.ma3daDoc(
         window.ma3daDB,
@@ -5522,19 +5624,17 @@ async function rejectOperatorRequest(
         requestId
       );
  
+    const snap=await window.ma3daGetDoc(requestRef);
+    if(!snap.exists()){alert('الطلب غير موجود.');return;}
+    const data=snap.data()||{};
+    const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
+    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
+    if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
     await window.ma3daUpdateDoc(
       requestRef,
       {
- 
-        status:
-          "rejected",
- 
-        rejectedBy:
-          "operator",
- 
-        rejectedAt:
-          Date.now()
- 
+        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
+        rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
       }
     );
  
@@ -6347,6 +6447,7 @@ async function loadOperatorPreviousOrders(){
  
 }
  
+/* 04 — وظائف صاحب المعدة: الدخل والفواتير */
 /* OPERATOR INCOME */
  
 async function loadOperatorIncome(){
@@ -6977,6 +7078,7 @@ function resizeOperatorImage(
  
 }
  
+/* 04 — وظائف صاحب المعدة: الإعدادات */
 /* OPERATOR SETTINGS */
  
 async function loadOperatorSettings(){
@@ -7394,6 +7496,7 @@ if(operatorChangePasswordBtn){
  
 }
  
+/* 04-A — وظائف صاحب المعدة: الدعم الفني الخاص بصاحب المعدة */
 /* OPERATOR SUPPORT */
  
 const operatorSupportBtn =
@@ -7754,6 +7857,7 @@ function openSupportScreen(id){
    الحصول على حساب موظف الدعم
    ========================================================= */
  
+/* 06 — وظائف الدعم الفني: بوابة موظفي الدعم وإدارة الشكاوى */
 async function getSupportEmployee(){
  
   const user =
@@ -9095,6 +9199,57 @@ async function loadSupportReports(){
  
  
 /* =========================================================
+   PROJECT EARLY-CLOSE REVIEW — support employee only
+========================================================= */
+async function loadSupportProjectClosures(){
+  const target=document.getElementById('supportProjectClosuresList');if(!target)return;
+  target.innerHTML='<div class="support-card">جارٍ تحميل طلبات الإنهاء المبكر…</div>';
+  try{
+    const employee=await requireSupportEmployee();if(!employee){target.innerHTML='<div class="support-card">سجّل الدخول بحساب موظف الدعم.</div>';return;}
+    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));
+    const rows=[];const disputes=[];snapshot.forEach(doc=>{const r=doc.data()||{};if(!r.projectId)return;const row={id:doc.id,...r};if(r.earlyFinishStatus==='pending_support')rows.push(row);(Array.isArray(r.paymentDisputes)?r.paymentDisputes:[]).forEach(d=>{if(d.status==='pending_support')disputes.push({...row,dispute:d});});});
+    if(!rows.length&&!disputes.length){target.innerHTML='<div class="support-card">لا توجد طلبات إنهاء مبكر أو نزاعات دفعات معلقة.</div>';return;}
+    const closures=rows.map(r=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(r.projectName||'مشروع')} — ${supportEscapeHtml(r.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> إنهاء مبكر</p><p><strong>المقاول:</strong> ${supportEscapeHtml(r.contractorName||r.contractorCompany||r.contractorId||'—')}</p><p><strong>صاحب المعدة:</strong> ${supportEscapeHtml(r.operatorName||r.equipmentOwnerId||'—')}</p><p><strong>السبب:</strong> ${supportEscapeHtml(r.earlyFinishRequest?.reason||'—')}</p><p><strong>القيمة المتفق عليها:</strong> ${Number(r.price||0).toLocaleString('ar-SA')} ريال</p><p><strong>المدفوع المسجل:</strong> ${Number(r.paidTotal||0).toLocaleString('ar-SA')} ريال — <strong>المتبقي:</strong> ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p><p><strong>شروط التسوية المتفق عليها:</strong> ${supportEscapeHtml(r.settlementPolicy||r.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-approve-early-finish="${r.id}">اعتماد إنهاء العمل ومراجعة التسوية</button><button class="support-btn support-danger" type="button" data-support-reject-early-finish="${r.id}">رفض الإنهاء واستمرار الطلب</button></div>`).join('');
+    const disputeHtml=disputes.map(row=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(row.projectName||'مشروع')} — ${supportEscapeHtml(row.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> نزاع دفعة</p><p><strong>الدفعة:</strong> ${supportEscapeHtml(row.dispute.label||('دفعة '+(Number(row.dispute.installmentIndex)+1)))}</p><p><strong>المبلغ محل النزاع:</strong> ${Number(row.dispute.amount||0).toLocaleString('ar-SA')} ريال</p><p><strong>السبب:</strong> ${supportEscapeHtml(row.dispute.reason||'—')}</p><p><strong>شروط التسوية:</strong> ${supportEscapeHtml(row.settlementPolicy||row.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-uphold-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تثبيت الاستحقاق حسب الاتفاق</button><button class="support-btn support-danger" type="button" data-support-settle-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تسجيل مبلغ تسوية متفق عليه</button></div>`).join('');
+    target.innerHTML=(closures?'<h3>طلبات الإنهاء المبكر</h3>'+closures:'')+(disputeHtml?'<h3>نزاعات الدفعات</h3>'+disputeHtml:'');
+  }catch(error){console.error('Load support project closures:',error);target.innerHTML='<div class="support-card">تعذر تحميل طلبات الإنهاء المبكر. تحقق من صلاحيات قراءة requests.</div>';}
+}
+function supportEscapeHtml(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+async function decideSupportProjectEarlyFinish(requestId,approve){
+  const employee=await requireSupportEmployee();if(!employee?.user?.uid)throw new Error('يجب تسجيل الدخول بصفة موظف دعم.');
+  const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب المشروع غير موجود.');
+  const r=snap.data()||{};if(!r.projectId||r.earlyFinishStatus!=='pending_support')throw new Error('هذا الطلب ليس بانتظار مراجعة الدعم.');
+  const now=new Date();
+  if(approve){await window.ma3daUpdateDoc(ref,{status:'completed',workStatus:'completed_early',earlyFinishStatus:'approved',earlyFinishDecision:{decidedBy:employee.user.uid,decidedByEmail:employee.user.email||'',decidedAt:now,decision:'approved'},settlementStatus:'needs_settlement',settlementReviewRequired:true,updatedAt:now});}
+  else{const restoredStatus=['duration_expired','working'].includes(String(r.earlyFinishRequest?.previousStatus||''))?r.earlyFinishRequest.previousStatus:'working';await window.ma3daUpdateDoc(ref,{status:restoredStatus,workStatus:restoredStatus==='duration_expired'?'duration_expired':'working',earlyFinishStatus:'rejected',earlyFinishDecision:{decidedBy:employee.user.uid,decidedByEmail:employee.user.email||'',decidedAt:now,decision:'rejected'},settlementReviewRequired:false,updatedAt:now});}
+}
+async function decideSupportProjectPaymentDispute(requestId,disputeId,action){
+  const employee=await requireSupportEmployee();if(!employee?.user?.uid)throw new Error('يجب تسجيل الدخول بصفة موظف دعم.');
+  const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب المشروع غير موجود.');const r=snap.data()||{};
+  const disputes=Array.isArray(r.paymentDisputes)?r.paymentDisputes.slice():[];const di=disputes.findIndex(d=>d.id===disputeId&&d.status==='pending_support');if(di<0)throw new Error('النزاع غير موجود أو سبق البت فيه.');
+  const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.map(x=>({...x})):[];const index=Number(disputes[di].installmentIndex);const item=schedule[index];if(!item)throw new Error('الدفعة المرتبطة بالنزاع غير موجودة.');const now=new Date();let price=Number(r.price||0);let remaining=Number(r.remainingBalance??price-Number(r.paidTotal||0));
+  if(action==='settle'){
+    const minimum=Number(item.paidAmount||0);const agreed=Number(prompt(`أدخل قيمة الدفعة النهائية المتفق عليها من الطرفين (لا تقل عن المدفوع ${minimum.toFixed(2)} ريال):`,String(item.amount||minimum)));if(!Number.isFinite(agreed)||agreed<minimum||agreed>Number(item.amount||0))throw new Error('قيمة التسوية غير صحيحة؛ لا يمكن تسجيل استرداد تلقائي من هذا المسار.');
+    price=Math.round((price+agreed-Number(item.amount||0))*100)/100;schedule[index]={...item,amount:agreed,status:agreed<=minimum?'paid':'due',settlementAgreedAmount:agreed,settlementAgreedAt:now,reviewStatus:'settled_by_support_agreement'};disputes[di]={...disputes[di],status:'resolved',decision:'settled_by_agreement',agreedAmount:agreed,decidedBy:employee.user.uid,decidedAt:now};
+  }else{
+    schedule[index]={...item,status:Number(item.amount||0)>Number(item.paidAmount||0)?'due':'paid',reviewStatus:'upheld_after_dispute'};disputes[di]={...disputes[di],status:'resolved',decision:'upheld',decidedBy:employee.user.uid,decidedAt:now};
+  }
+  remaining=Math.max(0,Math.round((price-Number(r.paidTotal||0))*100)/100);const hasOpenDispute=disputes.some(d=>d.status==='pending_support');
+  await window.ma3daUpdateDoc(ref,{paymentDisputes:disputes,paymentSchedule:schedule,price,remainingBalance:remaining,settlementStatus:hasOpenDispute?'disputed':(remaining>0?'needs_settlement':'settled'),settlementReviewRequired:hasOpenDispute||r.earlyFinishStatus==='pending_support',updatedAt:now});
+}
+document.addEventListener('click',async event=>{
+  const uphold=event.target.closest('[data-support-uphold-payment-dispute]');const settle=event.target.closest('[data-support-settle-payment-dispute]');if(!uphold&&!settle)return;const button=uphold||settle;
+  if(!confirm(uphold?'تثبيت استحقاق الدفعة وفق الاتفاق؟':'تسجيل قيمة تسوية اتفق عليها الطرفان؟'))return;button.disabled=true;
+  try{await decideSupportProjectPaymentDispute(button.dataset.supportUpholdPaymentDispute||button.dataset.supportSettlePaymentDispute,button.dataset.disputeId,uphold?'uphold':'settle');alert('تم تسجيل قرار مراجعة النزاع. لم يُنفذ أي استرداد إلكتروني.');await loadSupportProjectClosures();}catch(error){console.error('Support payment dispute decision:',error);alert(error.message||'تعذر حفظ قرار النزاع.');}finally{button.disabled=false;}
+});
+
+document.addEventListener('click',async event=>{
+  const approve=event.target.closest('[data-support-approve-early-finish]');const reject=event.target.closest('[data-support-reject-early-finish]');if(!approve&&!reject)return;
+  const button=approve||reject;if(!confirm(approve?'اعتماد إنهاء العمل المبكر؟ سيُغلق العمل وتبقى التسوية المالية للمراجعة؛ لن يُنفذ استرداد تلقائي.':'رفض الإنهاء المبكر وإبقاء العمل مستمرًا؟'))return;
+  button.disabled=true;try{await decideSupportProjectEarlyFinish(button.dataset.supportApproveEarlyFinish||button.dataset.supportRejectEarlyFinish,!!approve);alert(approve?'تم اعتماد الإنهاء، وتم إبقاء التسوية بحالة تحتاج مراجعة.':'تم رفض الإنهاء، والطلب مستمر.');await loadSupportProjectClosures();await loadSupportOrders();}catch(error){console.error('Support early finish decision:',error);alert(error.message||'تعذر حفظ القرار.');}finally{button.disabled=false;}
+});
+
+/* =========================================================
    فتح لوحة موظف الدعم
    ========================================================= */
  
@@ -9183,7 +9338,8 @@ async function openSupportDashboard(){
  
     loadSupportChats(),
  
-    loadSupportReports()
+    loadSupportReports(),
+    loadSupportProjectClosures()
  
   ]);
  
@@ -9520,6 +9676,9 @@ function initSupportPortal(){
             await loadSupportReports();
  
           }
+          if(section === "projectClosures"){
+            await loadSupportProjectClosures();
+          }
  
         }
       );
@@ -9713,14 +9872,6 @@ setTimeout(
      CONTRACTOR STATE
   ========================================================= */
  
-  let contractorCurrentOrderId =
-    localStorage.getItem("contractorCurrentOrderId") || null;
- 
-  let contractorCurrentOrder =
-    JSON.parse(
-      localStorage.getItem("contractorCurrentOrder") || "null"
-    );
- 
   let contractorProfile =
     JSON.parse(
       localStorage.getItem("contractorProfile") || "null"
@@ -9872,7 +10023,8 @@ localStorage.setItem("selectedRole", "contractor");
      LOAD CONTRACTOR PROFILE
   ========================================================= */
  
-  async function loadContractorProfile() {
+  /* 05 — وظائف المقاول: تحميل بيانات المقاول وحسابه */
+async function loadContractorProfile() {
  
     const user =
       getContractorUser();
@@ -10234,7 +10386,8 @@ localStorage.setItem("selectedRole", "contractor");
      OPEN CONTRACTOR HOME
   ========================================================= */
  
-  async function openContractorHome() {
+  /* 05 — وظائف المقاول: الصفحة الرئيسية والتنقل */
+async function openContractorHome() {
  
     contractorSetRole();
  
@@ -10406,7 +10559,8 @@ localStorage.setItem("selectedRole", "contractor");
   if(cancelContractorRequestBtn)cancelContractorRequestBtn.addEventListener('click',async()=>{contractorEditingProjectId=null;contractorShowScreen('contractorProjectsScreen');await loadContractorProjects();});
   const contractorPickerBackBtn=document.getElementById('contractorPickerBackBtn');
   if(contractorPickerBackBtn)contractorPickerBackBtn.addEventListener('click',async()=>{contractorShowScreen('contractorProjectsScreen');await loadContractorProjects();});
-  const contractorRefreshEquipmentBtn=document.getElementById('contractorRefreshEquipmentBtn');
+  const contractorRefreshTrackingBtn=document.getElementById('contractorRefreshTrackingBtn');if(contractorRefreshTrackingBtn)contractorRefreshTrackingBtn.addEventListener('click',loadContractorProjectRequestTracking);
+    const contractorRefreshEquipmentBtn=document.getElementById('contractorRefreshEquipmentBtn');
   if(contractorRefreshEquipmentBtn)contractorRefreshEquipmentBtn.addEventListener('click',loadContractorNearbyEquipment);
   const contractorEquipmentTypeSelect=document.getElementById('contractorEquipmentType');
   if(contractorEquipmentTypeSelect)contractorEquipmentTypeSelect.addEventListener('change',renderContractorNearbyEquipment);
@@ -10463,691 +10617,185 @@ localStorage.setItem("selectedRole", "contractor");
       return `<div class="contractor-equipment-card">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="main-btn" data-contractor-choose-equipment="${escapeContractorHtml(item.id)}">اختيار هذه المعدة وإرسال الطلب</button></div>`;
     }).join('');
   }
+  // New project workflow helpers: cent-safe totals and calendar/work-day calculations.
+  function ma3daProjectCents(value){return Math.round((Number(value)||0)*100);}
+  function ma3daProjectMoney(cents){return Math.round(Number(cents)||0)/100;}
+  function ma3daProjectEndDate(start, count, unit){
+    const end=new Date(start);
+    if(unit==='weeks')end.setDate(end.getDate()+count*7);
+    else if(unit==='months'){const day=end.getDate();end.setDate(1);end.setMonth(end.getMonth()+count);const lastDay=new Date(end.getFullYear(),end.getMonth()+1,0).getDate();end.setDate(Math.min(day,lastDay));}
+    else end.setDate(end.getDate()+count);
+    return end;
+  }
+  function ma3daCountProjectWorkDays(start, end, workDays){
+    const active=new Set((Array.isArray(workDays)?workDays:[]).map(Number));
+    let total=0;const cursor=new Date(start);cursor.setHours(0,0,0,0);
+    const limit=new Date(end);limit.setHours(0,0,0,0);
+    for(;cursor<limit;cursor.setDate(cursor.getDate()+1)){if(active.has(cursor.getDay()))total++;}
+    return total;
+  }
+  function ma3daBuildProjectPaymentSchedule(total, plan, installmentCount){
+    const totalCents=ma3daProjectCents(total);const count=Math.max(1,Math.min(12,Number(installmentCount)||3));
+    let amounts=[];let labels=[];
+    if(plan==='four_stages'){
+      const base=Math.floor(totalCents/4);amounts=[base,base,base,totalCents-base*3];labels=['المرحلة الأولى','المرحلة الثانية','المرحلة الثالثة','المرحلة الرابعة'];
+    }else if(plan==='deposit_30'){
+      const deposit=Math.round(totalCents*0.30);const remainder=totalCents-deposit;const base=Math.floor(remainder/count);
+      amounts=[deposit];labels=['عربون 30%'];for(let i=0;i<count;i++){amounts.push(i===count-1?remainder-base*(count-1):base);labels.push(`دفعة المتبقي ${i+1}`);}
+    }else{amounts=[totalCents];labels=[plan==='full_upfront'?'كامل المبلغ مقدمًا':'كامل المبلغ في نهاية العمل'];}
+    return amounts.map((cents,index)=>({installment:index+1,label:labels[index],amount:ma3daProjectMoney(cents),amountCents:cents,status:(plan==='full_upfront'||(plan==='deposit_30'&&index===0))?'due':'not_due',dueRule:(plan==='full_upfront'||(plan==='deposit_30'&&index===0))?'on_acceptance':plan==='four_stages'?'stage_approval':plan==='full_end'?'work_completion':'after_deposit',paidAmount:0,paidAt:null,receiptReference:'',reviewStatus:'unpaid'}));
+  }
+
   document.addEventListener('click',async event=>{
     const button=event.target.closest('[data-contractor-choose-equipment]');if(!button)return;
     const equipment=contractorNearbyEquipmentCache.find(row=>row.id===button.dataset.contractorChooseEquipment);if(!equipment||!contractorSelectedProject)return;
     const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
-    const duration=document.getElementById('contractorDuration')?.value||'ساعة واحدة';
+    const startValue=document.getElementById('contractorScheduledStartAt')?.value||'';
+    const startAt=startValue?new Date(startValue):null;
+    const durationUnit=document.getElementById('contractorDurationUnit')?.value||'days';
+    const durationCount=Math.max(1,Math.min(365,Number(document.getElementById('contractorDurationCount')?.value||1)));
+    const dailyStartTime=document.getElementById('contractorDailyStartTime')?.value||'';
+    const dailyEndTime=document.getElementById('contractorDailyEndTime')?.value||'';
+    const workDays=[...document.querySelectorAll('input[name="contractorWorkday"]:checked')].map(el=>Number(el.value)).sort((a,b)=>a-b);
+    const paymentPlan=document.getElementById('contractorPaymentPlan')?.value||'';
+    const installmentCount=Math.max(1,Math.min(12,Number(document.getElementById('contractorInstallmentCount')?.value||3)));
+    const paymentTerms=document.getElementById('contractorPaymentTerms')?.value.trim()||'';
     const operator=document.getElementById('contractorOperator')?.value||'مع مشغل';
     const notes=document.getElementById('contractorNotes')?.value.trim()||'';
-    const hoursMap={'ساعة واحدة':1,'4 ساعات':4,'8 ساعات':8,'يوم كامل':10};const hours=hoursMap[duration]||1;
-    const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);const price=hourlyPrice*hours;
+    if(!startAt||Number.isNaN(startAt.getTime())){alert('حدد تاريخ ووقت بداية العمل بشكل صحيح.');return;}
+    if(!dailyStartTime||!dailyEndTime||dailyEndTime<=dailyStartTime){alert('وقت نهاية التشغيل اليومي يجب أن يكون بعد وقت البداية.');return;}
+    if(!workDays.length){alert('حدد يوم تشغيل واحدًا على الأقل.');return;}
+    if(!paymentPlan||!paymentTerms){alert('اختر طريقة الدفع واكتب شروط الدفع والتسوية قبل إرسال الطلب.');return;}
+    const hoursPerWorkday=(()=>{const [sh,sm]=dailyStartTime.split(':').map(Number);const [eh,em]=dailyEndTime.split(':').map(Number);return (eh*60+em-sh*60-sm)/60;})();
+    const hourlyPrice=Number(equipment.hourlyPrice||equipment.price||0);
+    const durationLabel=durationUnit==='weeks'?`${durationCount} أسبوع`:durationUnit==='months'?`${durationCount} شهر`:`${durationCount} يوم`;
+    if(!Number.isInteger(durationCount)||durationCount<1||durationCount>365){alert('أدخل مدة من يوم إلى 365 يومًا/أسبوعًا/شهرًا.');return;}
+    const exclusiveEnd=ma3daProjectEndDate(startAt,durationCount,durationUnit);exclusiveEnd.setHours(0,0,0,0);
+    const scheduleEnd=new Date(exclusiveEnd);scheduleEnd.setDate(scheduleEnd.getDate()-1);const [endHour,endMinute]=dailyEndTime.split(':').map(Number);scheduleEnd.setHours(endHour,endMinute,0,0);
+    const startDay=new Date(startAt);startDay.setHours(0,0,0,0);
+    const scheduledWorkDays=ma3daCountProjectWorkDays(startDay,exclusiveEnd,workDays);
+    if(scheduledWorkDays<=0){alert('المدة المختارة لا تحتوي أي يوم تشغيل حسب جدولك. عدّل تاريخ البداية أو مدة المشروع أو أيام التشغيل.');return;}
+    const hours=hoursPerWorkday*scheduledWorkDays;const price=ma3daProjectMoney(ma3daProjectCents(hourlyPrice*hours));
+    if(!Number.isFinite(price)||price<=0){alert('تعذر احتساب القيمة. تحقق من سعر الساعة وجدول التشغيل.');return;}
     button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
     try{
-      const profile=contractorGetProfile()||{};const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name,projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration,durationHours:hours,operator,notes,price,hourlyPrice,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date()};
+      const profile=contractorGetProfile()||{};const paymentSchedule=ma3daBuildProjectPaymentSchedule(price,paymentPlan,installmentCount);const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name||contractorSelectedProject.projectName||'',projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration:durationLabel,durationUnit,durationCount,durationHours:hours,scheduledStartAt:startAt,scheduledEndAt:scheduleEnd,dailyStartTime,dailyEndTime,workDays,scheduledWorkDays,restDays:[0,1,2,3,4,5,6].filter(day=>!workDays.includes(day)),hoursPerWorkday,operator,notes,price,originalPrice:price,hourlyPrice,paymentPlan,installmentCount,paymentTerms,paymentStatus:'unpaid',paymentSchedule,paymentLedger:[],paidTotal:0,remainingBalance:price,agreementVersion:1,agreementStatus:'awaiting_owner_decision',extensionStatus:'none',extensionHistory:[],workStatus:'awaiting_acceptance',earlyFinishStatus:'none',earlyFinishHistory:[],settlementPolicy:paymentTerms,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date(),updatedAt:new Date()};
       const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
-      contractorCurrentOrderId=result.id;contractorCurrentOrder={id:result.id,...requestData};localStorage.setItem('contractorCurrentOrderId',result.id);localStorage.setItem('contractorCurrentOrder',JSON.stringify(contractorCurrentOrder));
       alert('تم إرسال طلبك لصاحب المعدة المختارة بنجاح.');contractorShowScreen('contractorProjectsScreen');contractorProjectFilter='current';contractorSetProjectFilter('current');
     }catch(error){console.error('Send selected equipment request error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لإرسال الطلب في Firebase.':'تعذر إرسال الطلب حالياً.');}
     finally{button.disabled=false;button.textContent='اختيار هذه المعدة وإرسال الطلب';}
   });
 
   /* =========================================================
-     LOAD CURRENT ORDERS
+     PROJECT REQUEST LIFECYCLE: EXTENSIONS + AGREEMENT AUDIT
+     This replaces the old implicit hourly-only project request behavior.
   ========================================================= */
- 
-  async function loadContractorCurrentOrders() {
- 
-    const list =
-      document.getElementById(
-        "contractorCurrentOrdersList"
-      );
- 
-    if (!list) {
-      return;
+  async function contractorRequestProjectExtension(requestId, extraCount, extraUnit, reason){
+    const user=await getContractorUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+    const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);
+    if(!snap.exists())throw new Error('طلب المعدة غير موجود.');const r=snap.data()||{};
+    if((r.contractorId||r.requesterId||r.customerId)!==user.uid)throw new Error('لا تملك صلاحية طلب تمديد هذا الطلب.');
+    if(!r.projectId)throw new Error('التمديد متاح لطلبات المشاريع فقط.');
+    if(!(['working','duration_expired'].includes(String(r.status||'')) || ['working','duration_expired'].includes(String(r.workStatus||''))))throw new Error('لا يمكن طلب التمديد إلا بعد بدء التشغيل أو انتهاء المدة مع استمرار العمل.');
+    if(r.extensionStatus==='pending')throw new Error('يوجد طلب تمديد بانتظار رد صاحب المعدة.');
+    const count=Math.max(1,Math.min(365,Number(extraCount||1)));const unit=['days','weeks','months'].includes(extraUnit)?extraUnit:'days';
+    const originalEnd=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():new Date(r.scheduledEndAt||Date.now());const end=ma3daProjectEndDate(originalEnd,count,unit);
+    const workDays=Array.isArray(r.workDays)?r.workDays.map(Number):[0,1,2,3,4];const startDay=new Date(originalEnd);startDay.setDate(startDay.getDate()+1);startDay.setHours(0,0,0,0);const endExclusive=new Date(end);endExclusive.setDate(endExclusive.getDate()+1);endExclusive.setHours(0,0,0,0);let addedDays=0;for(let d=new Date(startDay);d<endExclusive;d.setDate(d.getDate()+1)){if(workDays.includes(d.getDay()))addedDays++;}
+    if(addedDays<=0)throw new Error('مدة التمديد لا تشمل أيام تشغيل وفق الجدول المسجل. اختر مدة أخرى.');
+    const extensionHours=addedDays*Number(r.hoursPerWorkday||10);const extensionAmount=Math.round(extensionHours*Number(r.agreedHourlyPrice??r.hourlyPrice??0)*100)/100;
+    await window.ma3daUpdateDoc(ref,{status:'extension_requested',extensionStatus:'pending',extensionRequest:{requestedBy:user.uid,requestedAt:new Date(),count,unit,reason:String(reason||'').slice(0,500),fromEndAt:originalEnd,toEndAt:end,addedWorkDays:addedDays,addedHours:extensionHours,proposedAmount:extensionAmount,priceBasis:'original_hourly_price'},updatedAt:new Date()});
+  }
+  async function operatorDecideProjectExtension(requestId, approve){
+    const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');
+    const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب المعدة غير موجود.');const r=snap.data()||{};
+    if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية الرد على هذا التمديد.');
+    if(r.extensionStatus!=='pending'||!r.extensionRequest)throw new Error('لا يوجد طلب تمديد معلق.');
+    const now=new Date();const ext=r.extensionRequest;
+    if(approve){
+      const oldEnd=ext.fromEndAt?.toDate?ext.fromEndAt.toDate():new Date(ext.fromEndAt);const newEnd=ext.toEndAt?.toDate?ext.toEndAt.toDate():new Date(ext.toEndAt);
+      const baseEnd=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():new Date(r.scheduledEndAt||oldEnd);
+      const agreedPrice=Math.round(Number(r.agreedPrice??r.price??0)*100)/100;const added=Math.round(Number(ext.proposedAmount||0)*100)/100;
+      const updatedTotal=ma3daProjectMoney(ma3daProjectCents(r.price||0)+ma3daProjectCents(added));const updatedRemaining=ma3daProjectMoney(ma3daProjectCents(r.remainingBalance??Math.max(0,Number(r.price||0)-Number(r.paidTotal||0)))+ma3daProjectCents(added));const paymentSchedule=[...(Array.isArray(r.paymentSchedule)?r.paymentSchedule:[]),{installment:(Array.isArray(r.paymentSchedule)?r.paymentSchedule.length:0)+1,label:'قيمة التمديد',amount:added,amountCents:ma3daProjectCents(added),status:r.paymentPlan==='full_upfront'?'due':'not_due',dueRule:'extension_completion',paidAmount:0,paidAt:null,reviewStatus:'unpaid'}];
+      await window.ma3daUpdateDoc(ref,{status:'accepted',extensionStatus:'approved',scheduledEndAt:newEnd,extensionHistory:[...(Array.isArray(r.extensionHistory)?r.extensionHistory:[]),{...ext,approvedBy:user.uid,approvedAt:now,approvedAmount:added,previousEndAt:baseEnd}],paymentSchedule,price:updatedTotal,remainingBalance:updatedRemaining,expectedTotalAfterExtension:updatedTotal,extensionApprovedAt:now,extensionApprovedBy:user.uid,workStatus:'working',agreementVersion:Number(r.agreementVersion||1)+1,updatedAt:now});
+    }else{
+      await window.ma3daUpdateDoc(ref,{status:(r.status==='duration_expired'||r.workStatus==='duration_expired'?'duration_expired':r.workStatus==='working'?'working':'accepted'),extensionStatus:'rejected',extensionDecision:{decidedBy:user.uid,decidedAt:now,reason:'رفض صاحب المعدة للتمديد'},supportReviewRequired:false,updatedAt:now});
     }
- 
- 
-    const user =
-      getContractorUser();
- 
-    if (!user) {
-      return;
-    }
- 
- 
-    list.innerHTML = `
-      <div class="card">
-        <p>جاري تحميل الطلبات...</p>
-      </div>
-    `;
- 
- 
-    try {
- 
-      const requestsRef =
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        );
- 
- 
-      const snapshot =
-        await window.ma3daGetDocs(
-          requestsRef
-        );
- 
- 
-      const orders = [];
- 
- 
-      snapshot.forEach(
-        docSnap => {
- 
-          const data =
-            docSnap.data();
- 
-          const requesterId =
-            data.contractorId ||
-            data.requesterId ||
-            data.customerId;
- 
- 
-          const role =
-            data.requesterRole ||
-            data.requesterType;
- 
- 
-          if (
-            requesterId === user.uid &&
-            (
-              role === "contractor" ||
-              data.contractorId === user.uid
-            )
-          ) {
- 
-            const status =
-              data.status || "";
- 
- 
-            if (
-              status !== "completed" &&
-              status !== "cancelled" &&
-              status !== "rejected"
-            ) {
- 
-              orders.push({
- 
-                id: docSnap.id,
- 
-                ...data
- 
-              });
- 
-            }
- 
-          }
- 
+  }
+  document.addEventListener('click',async event=>{
+    const approve=event.target.closest('[data-approve-extension]');const reject=event.target.closest('[data-reject-extension]');if(!approve&&!reject)return;
+    const btn=approve||reject;btn.disabled=true;
+    try{await operatorDecideProjectExtension(btn.dataset.approveExtension||btn.dataset.rejectExtension,!!approve);alert(approve?'تمت الموافقة على التمديد وتحديث نهاية المدة والقيمة.':'تم رفض التمديد وتسجيل الحالة لمراجعة الدعم.');await loadOperatorNewRequests();}
+    catch(err){console.error('Project extension decision failed:',err);alert(err.message||'تعذر حفظ قرار التمديد.');}
+    finally{btn.disabled=false;}
+  });
+
+  async function loadContractorProjectRequestTracking(){
+    const target=document.getElementById('contractorProjectEquipmentTracking');if(!target||!contractorSelectedProject)return;
+    try{
+      const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المشروع.</div>';return;}
+      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));const rows=[];
+      snap.forEach(doc=>{const r=doc.data()||{};if(r.projectId===contractorSelectedProject.id&&(r.contractorId||r.requesterId||r.customerId)===user.uid)rows.push({id:doc.id,...r});});
+      if(!rows.length){target.innerHTML='<div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div>';return;}
+      const now=Date.now();
+      for(const r of rows){
+        const endMs=operatorRequestDateValue(r.scheduledEndAt);
+        if(r.status==='accepted'&&r.projectId&&r.workStatus==='working'&&endMs&&endMs<now&&r.extensionStatus!=='pending'&&r.workStatus!=='completed_early'){
+          // Mark expiry as a reviewable state only; never auto-complete or extend a contract.
+          try{await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'requests',r.id),{status:'duration_expired',durationExpiredAt:new Date(),workStatus:'duration_expired',updatedAt:new Date()});r.status='duration_expired';r.workStatus='duration_expired';}catch(expiryError){console.warn('Could not mark project duration expiry:',expiryError);}
         }
-      );
- 
- 
-      orders.sort(
-        (a, b) => {
- 
-          const aTime =
-            a.createdAt?.seconds ||
-            0;
- 
-          const bTime =
-            b.createdAt?.seconds ||
-            0;
- 
-          return bTime - aTime;
- 
-        }
-      );
- 
- 
-      if (!orders.length) {
- 
-        list.innerHTML = `
-          <div class="card">
-            <p>لا توجد طلبات حالية.</p>
-          </div>
-        `;
- 
-        return;
       }
- 
- 
-      list.innerHTML =
-        orders
-          .map(
-            order =>
-              createContractorOrderCard(
-                order
-              )
-          )
-          .join("");
- 
- 
-    } catch (error) {
- 
-      console.error(
-        "Load contractor orders error:",
-        error
-      );
- 
-      list.innerHTML = `
-        <div class="card">
-          <p>تعذر تحميل الطلبات.</p>
-        </div>
-      `;
- 
-    }
- 
+      const money=n=>`${Number(n||0).toLocaleString('ar-SA',{maximumFractionDigits:2})} ريال`;
+      target.innerHTML=rows.sort((a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt)).map(r=>{
+        const endDate=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():r.scheduledEndAt?new Date(r.scheduledEndAt):null;
+        const paid=Number(r.paidTotal||0);const remaining=Number(r.remainingBalance??Math.max(0,Number(r.price||0)-paid));
+        const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule:[];
+        const paymentHtml=schedule.length?'<h4>خطة الدفعات</h4>'+schedule.map((p,i)=>{const statusText=({due:'مستحقة',not_due:'غير مستحقة',pending_review:'بانتظار مراجعة صاحب المعدة',paid:'مدفوعة',disputed:'متنازع عليها'})[p.status]||p.status||'—';const dueAmount=Math.max(0,Number(p.amount||0)-Number(p.paidAmount||0));return `<div class="ma3da-payment-line"><strong>${escapeContractorHtml(p.label||('الدفعة '+(i+1)))}</strong><p>${money(dueAmount)} — ${escapeContractorHtml(statusText)}</p>${p.status==='due'?`<button type="button" class="back-btn" data-project-payment-submit="${escapeContractorHtml(r.id)}" data-installment-index="${i}">إرسال إثبات الدفعة للمراجعة</button>`:''}${['due','pending_review','paid'].includes(p.status)?`<button type="button" class="back-btn" data-project-payment-dispute="${escapeContractorHtml(r.id)}" data-installment-index="${i}">اعتراض على هذه الدفعة</button>`:''}</div>`;}).join(''):'<p>لا توجد خطة دفعات مسجلة.</p>';
+        const canExtend=(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))&&r.extensionStatus!=='pending'&&!['approved','pending_support'].includes(r.earlyFinishStatus);
+        const canEarlyFinish=(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))&&!['pending_support','approved'].includes(r.earlyFinishStatus);
+        return `<div class="contractor-tracking-item"><h3>${escapeContractorHtml(r.equipment||'معدة')} — ${escapeContractorHtml(r.equipmentModel||'')}</h3><p><strong>الحالة:</strong> ${escapeContractorHtml(({searching:'بانتظار صاحب المعدة',accepted:'مقبول — بانتظار التشغيل/مستمر',working:'قيد التشغيل',duration_expired:'انتهت المدة — بانتظار قرار الأطراف',extension_requested:'طلب تمديد معلّق',rejected:'مرفوض',completed:'منتهٍ',cancelled:'ملغى'})[r.status]||r.status||'—')}</p><p><strong>المدة:</strong> ${escapeContractorHtml(r.duration||'—')} · ${escapeContractorHtml(r.dailyStartTime||'—')}–${escapeContractorHtml(r.dailyEndTime||'—')}</p><p><strong>أيام التشغيل:</strong> ${escapeContractorHtml((r.workDays||[]).map(d=>['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][Number(d)]||'').filter(Boolean).join('، ')||'—')}</p><p><strong>نهاية المدة:</strong> ${endDate&&!Number.isNaN(endDate.getTime())?escapeContractorHtml(endDate.toLocaleString('ar-SA')):'—'}</p><p><strong>القيمة المتفق عليها:</strong> ${money(r.price)} · <strong>المدفوع:</strong> ${money(paid)} · <strong>المتبقي:</strong> ${money(remaining)}</p><p><strong>طريقة الدفع:</strong> ${escapeContractorHtml(({four_stages:'أربع مراحل',deposit_30:'عربون 30% والباقي دفعات',full_upfront:'كامل المبلغ مقدمًا',full_end:'كامل المبلغ في النهاية'})[r.paymentPlan]||r.paymentPlan||'—')}</p><p><strong>شروط التسوية:</strong> ${escapeContractorHtml(r.settlementPolicy||r.paymentTerms||'—')}</p>${paymentHtml}${r.extensionStatus==='pending'?'<p>طلب التمديد بانتظار صاحب المعدة. لا تتغير المدة أو القيمة قبل الموافقة.</p>':r.extensionStatus==='rejected'?'<p>رُفض التمديد. تواصل مع صاحب المعدة والدعم إذا استمر العمل.</p>':''}${r.earlyFinishStatus==='pending_support'?'<p>طلب الإنهاء المبكر بانتظار قرار موظف الدعم.</p>':''}${r.earlyFinishStatus==='approved'?'<p>اعتمد الدعم إنهاء العمل؛ التسوية المالية ما زالت بحاجة إلى مراجعة.</p>':''}${canExtend?`<button type="button" class="main-btn" data-contractor-extend="${escapeContractorHtml(r.id)}">طلب تمديد المدة</button>`:''}${canEarlyFinish?`<button type="button" class="back-btn" data-contractor-early-finish="${escapeContractorHtml(r.id)}">طلب إنهاء مبكر عبر الدعم</button>`:''}</div>`;
+      }).join('');
+    }catch(err){console.error('Project request tracking failed:',err);target.innerHTML='<div class="card">تعذر تحميل طلبات المشروع.</div>';}
   }
- 
- 
-  /* =========================================================
-     LOAD PREVIOUS ORDERS
-  ========================================================= */
- 
-  async function loadContractorPreviousOrders() {
- 
-    const list =
-      document.getElementById(
-        "contractorPreviousOrdersList"
-      );
- 
-    if (!list) {
-      return;
-    }
- 
- 
-    const user =
-      getContractorUser();
- 
-    if (!user) {
-      return;
-    }
- 
- 
-    list.innerHTML = `
-      <div class="card">
-        <p>جاري تحميل الطلبات...</p>
-      </div>
-    `;
- 
- 
-    try {
- 
-      const requestsRef =
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        );
- 
- 
-      const snapshot =
-        await window.ma3daGetDocs(
-          requestsRef
-        );
- 
- 
-      const orders = [];
- 
- 
-      snapshot.forEach(
-        docSnap => {
- 
-          const data =
-            docSnap.data();
- 
-          const requesterId =
-            data.contractorId ||
-            data.requesterId ||
-            data.customerId;
- 
- 
-          const role =
-            data.requesterRole ||
-            data.requesterType;
- 
- 
-          if (
-            requesterId === user.uid &&
-            (
-              role === "contractor" ||
-              data.contractorId === user.uid
-            )
-          ) {
- 
-            const status =
-              data.status || "";
- 
- 
-            if (
-              status === "completed" ||
-              status === "cancelled" ||
-              status === "rejected"
-            ) {
- 
-              orders.push({
- 
-                id: docSnap.id,
- 
-                ...data
- 
-              });
- 
-            }
- 
-          }
- 
-        }
-      );
- 
- 
-      orders.sort(
-        (a, b) => {
- 
-          const aTime =
-            a.createdAt?.seconds ||
-            0;
- 
-          const bTime =
-            b.createdAt?.seconds ||
-            0;
- 
-          return bTime - aTime;
- 
-        }
-      );
- 
- 
-      if (!orders.length) {
- 
-        list.innerHTML = `
-          <div class="card">
-            <p>لا توجد طلبات سابقة.</p>
-          </div>
-        `;
- 
-        return;
+
+  document.addEventListener('click',async event=>{
+    const pay=event.target.closest('[data-project-payment-submit]');const early=event.target.closest('[data-contractor-early-finish]');const dispute=event.target.closest('[data-project-payment-dispute]');if(!pay&&!early&&!dispute)return;
+    const button=pay||early||dispute;button.disabled=true;
+    try{
+      const user=await getContractorUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      const requestId=pay?pay.dataset.projectPaymentSubmit:early?early.dataset.contractorEarlyFinish:dispute.dataset.projectPaymentDispute;const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+      if((r.contractorId||r.requesterId||r.customerId)!==user.uid||!r.projectId)throw new Error('لا تملك صلاحية هذا الطلب.');
+      if(dispute){
+        const index=Number(dispute.dataset.installmentIndex);const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.slice():[];const item=schedule[index];if(!item||!['due','pending_review','paid'].includes(item.status))throw new Error('لا يمكن الاعتراض على هذه الدفعة في حالتها الحالية.');
+        const reason=prompt('اكتب سبب الاعتراض على الدفعة؛ سيبقى المبلغ محل مراجعة الدعم:','');if(reason===null)return;if(!reason.trim())throw new Error('اكتب سبب الاعتراض.');
+        const disputes=Array.isArray(r.paymentDisputes)?r.paymentDisputes.slice():[];if(disputes.some(d=>Number(d.installmentIndex)===index&&d.status==='pending_support'))throw new Error('يوجد اعتراض قائم على هذه الدفعة.');
+        const amount=Math.max(0,Number(item.amount||0)-Number(item.paidAmount||0));const entry={id:`${Date.now()}_${index}`,installmentIndex:index,label:item.label||`الدفعة ${index+1}`,amount:amount||Number(item.amount||0),reason:reason.trim().slice(0,1000),requestedBy:user.uid,requestedAt:new Date(),status:'pending_support'};disputes.push(entry);schedule[index]={...item,status:'disputed',disputeId:entry.id};const ledger=(Array.isArray(r.paymentLedger)?r.paymentLedger:[]).map(x=>Number(x.installmentIndex)===index&&x.status==='pending_owner_review'?{...x,status:'disputed'}:x);
+        await window.ma3daUpdateDoc(ref,{paymentDisputes:disputes,paymentSchedule:schedule,paymentLedger:ledger,settlementStatus:'disputed',settlementReviewRequired:true,updatedAt:new Date()});alert('تم تعليق مراجعة الدفعة وإرسال الاعتراض للدعم.');
+      }else if(pay){
+        const index=Number(pay.dataset.installmentIndex);const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.slice():[];const item=schedule[index];if(!item||item.status!=='due')throw new Error('هذه الدفعة ليست مستحقة الآن.');
+        const dueAmount=Math.max(0,Number(item.amount||0)-Number(item.paidAmount||0));const amount=Number(prompt(`المتبقي من الدفعة: ${dueAmount.toFixed(2)} ريال. أدخل المبلغ الذي حولته:`,String(dueAmount)));if(!Number.isFinite(amount)||amount<=0||amount>dueAmount)throw new Error('قيمة الدفعة غير صحيحة.');
+        const reference=prompt('أدخل رقم مرجع التحويل أو ملاحظة الإثبات. لا يتم التحقق من التحويل إلكترونيًا هنا:','');if(reference===null)return;
+        const ledger=Array.isArray(r.paymentLedger)?r.paymentLedger.slice():[];const entry={id:`${Date.now()}_${index}`,installmentIndex:index,amount,reference:String(reference).slice(0,160),submittedBy:user.uid,submittedAt:new Date(),status:'pending_owner_review'};ledger.push(entry);schedule[index]={...item,status:'pending_review',submittedAmount:amount,submittedAt:new Date(),receiptReference:String(reference).slice(0,160)};
+        await window.ma3daUpdateDoc(ref,{paymentLedger:ledger,paymentSchedule:schedule,paymentStatus:'pending_review',updatedAt:new Date()});alert('تم تسجيل إثبات الدفعة للمراجعة. لم يُعتبر المبلغ مدفوعًا بعد.');
+      }else{
+        if(!['accepted','working','duration_expired'].includes(String(r.status||'')))throw new Error('لا يمكن طلب الإنهاء المبكر في حالة الطلب الحالية.');
+        if(['pending_support','approved'].includes(r.earlyFinishStatus))throw new Error('يوجد طلب إنهاء مبكر قائم أو معتمد.');
+        const reason=prompt('اشرح سبب طلب إنهاء العمل قبل الموعد، مع ذكر ما تم إنجازه وأي اتفاق على التسوية:','');if(reason===null)return;if(!reason.trim())throw new Error('اكتب سبب الإنهاء المبكر.');
+        await window.ma3daUpdateDoc(ref,{earlyFinishStatus:'pending_support',earlyFinishRequest:{requestedBy:user.uid,requestedByRole:'contractor',requestedAt:new Date(),previousStatus:r.status||'working',reason:reason.trim().slice(0,1000)},settlementReviewRequired:true,updatedAt:new Date()});alert('أُرسل طلب الإنهاء إلى موظفي الدعم. سيبقى الطلب مفتوحًا حتى يراجع الدعم السبب والتسوية.');
       }
- 
- 
-      list.innerHTML =
-        orders
-          .map(
-            order =>
-              createContractorOrderCard(
-                order,
-                true
-              )
-          )
-          .join("");
- 
- 
-    } catch (error) {
- 
-      console.error(
-        "Load contractor previous orders error:",
-        error
-      );
- 
-      list.innerHTML = `
-        <div class="card">
-          <p>تعذر تحميل الطلبات السابقة.</p>
-        </div>
-      `;
- 
-    }
- 
-  }
- 
- 
-  /* =========================================================
-     ORDER CARD
-  ========================================================= */
- 
-  function createContractorOrderCard(
-    order,
-    previous = false
-  ) {
- 
-    const statusText =
-      getContractorStatusText(
-        order.status
-      );
- 
- 
-    const price =
-      order.price
-        ? `${order.price} ريال`
-        : "غير محدد";
- 
- 
-    return `
- 
-      <div
-        class="card contractor-order-card"
-        data-contractor-order-id="${order.id}"
-      >
- 
-        <h3>
-          🚜 ${escapeContractorHtml(
-            order.equipment || "-"
-          )}
-        </h3>
- 
- 
-        <p>
-          📍 ${escapeContractorHtml(
-            order.location || "-"
-          )}
-        </p>
- 
- 
-        <p>
-          ⏱️ ${escapeContractorHtml(
-            order.duration || "-"
-          )}
-        </p>
- 
- 
-        <p>
-          💰 ${price}
-        </p>
- 
- 
-        <p>
-          الحالة:
-          <strong>
-            ${statusText}
-          </strong>
-        </p>
- 
- 
-        <button
-          type="button"
-          class="main-btn"
-          data-contractor-order-details="${order.id}"
-        >
-          عرض التفاصيل
-        </button>
- 
-      </div>
- 
-    `;
- 
-  }
- 
- 
-  /* =========================================================
-     STATUS
-  ========================================================= */
- 
-  function getContractorStatusText(
-    status
-  ) {
- 
-    const statuses = {
- 
-      searching:
-        "جاري البحث عن معدة",
- 
-      accepted:
-        "تم قبول الطلب",
- 
-      arrived:
-        "المعدة وصلت",
- 
-      working:
-        "العمل جارٍ",
- 
-      completed:
-        "تم إكمال العمل",
- 
-      cancelled:
-        "تم إلغاء الطلب",
- 
-      rejected:
-        "تم رفض الطلب"
- 
-    };
- 
- 
-    return (
-      statuses[status] ||
-      "جاري معالجة الطلب"
-    );
- 
-  }
- 
- 
-  /* =========================================================
-     ORDER DETAILS
-  ========================================================= */
- 
-  async function openContractorOrderDetails(
-    orderId
-  ) {
- 
-    if (!orderId) {
-      return;
-    }
- 
- 
-    const user =
-      getContractorUser();
- 
-    if (!user) {
-      return;
-    }
- 
- 
-    try {
- 
-      const orderRef =
-        window.ma3daDoc(
-          window.ma3daDB,
-          "requests",
-          orderId
-        );
- 
- 
-      const snapshot =
-        await window.ma3daGetDoc(
-          orderRef
-        );
- 
- 
-      if (
-        !snapshot.exists()
-      ) {
- 
-        alert(
-          "الطلب غير موجود."
-        );
- 
-        return;
-      }
- 
- 
-      const order =
-        snapshot.data();
- 
- 
-      const requesterId =
-        order.contractorId ||
-        order.requesterId ||
-        order.customerId;
- 
- 
-      if (
-        requesterId !== user.uid
-      ) {
- 
-        alert(
-          "لا يمكنك عرض هذا الطلب."
-        );
- 
-        return;
-      }
- 
- 
-      contractorCurrentOrderId =
-        orderId;
- 
- 
-      contractorCurrentOrder = {
- 
-        id: orderId,
- 
-        ...order
- 
-      };
- 
- 
-      localStorage.setItem(
-        "contractorCurrentOrderId",
-        orderId
-      );
- 
- 
-      localStorage.setItem(
-        "contractorCurrentOrder",
-        JSON.stringify(
-          contractorCurrentOrder
-        )
-      );
- 
- 
-      const status =
-        document.getElementById(
-          "contractorOrderStatus"
-        );
- 
-      const equipment =
-        document.getElementById(
-          "contractorOrderEquipment"
-        );
- 
-      const duration =
-        document.getElementById(
-          "contractorOrderDuration"
-        );
- 
-      const location =
-        document.getElementById(
-          "contractorOrderLocation"
-        );
- 
-      const operator =
-        document.getElementById(
-          "contractorOrderOperator"
-        );
- 
-      const price =
-        document.getElementById(
-          "contractorOrderPrice"
-        );
- 
- 
-      if (status) {
- 
-        status.textContent =
-          getContractorStatusText(
-            order.status
-          );
- 
-      }
- 
- 
-      if (equipment) {
- 
-        equipment.textContent =
-          order.equipment || "-";
- 
-      }
- 
- 
-      if (duration) {
- 
-        duration.textContent =
-          order.duration || "-";
- 
-      }
- 
- 
-      if (location) {
- 
-        location.textContent =
-          order.location || "-";
- 
-      }
- 
- 
-      if (operator) {
- 
-        operator.textContent =
-          order.operator || "-";
- 
-      }
- 
- 
-      if (price) {
- 
-        price.textContent =
-          order.price
-            ? `${order.price} ريال`
-            : "-";
- 
-      }
- 
- 
-      contractorShowScreen(
-        "contractorOrderDetailsScreen"
-      );
- 
- 
-    } catch (error) {
- 
-      console.error(
-        "Contractor details error:",
-        error
-      );
- 
-      alert(
-        "تعذر تحميل تفاصيل الطلب."
-      );
- 
-    }
- 
-  }
- 
- 
-  /* =========================================================
-     CONTRACTOR EVENTS
-  ========================================================= */
- 
-  document.addEventListener(
-    "click",
-    function (event) {
- 
-      const detailsBtn =
-        event.target.closest(
-          "[data-contractor-order-details]"
-        );
- 
- 
-      if (detailsBtn) {
- 
-        openContractorOrderDetails(
-          detailsBtn.dataset
-            .contractorOrderDetails
-        );
- 
-        return;
-      }
- 
-    }
-  );
- 
- 
+      await loadContractorProjectRequestTracking();
+    }catch(error){console.error('Project payment/early finish action:',error);alert(error.message||'تعذر حفظ الإجراء.');}finally{button.disabled=false;}
+  });
+
+  document.addEventListener('click',async event=>{
+    const button=event.target.closest('[data-contractor-extend]');if(!button)return;
+    const countText=prompt('كم مدة التمديد؟ أدخل عدد الأيام أو الأسابيع أو الأشهر:','1');if(countText===null)return;
+    const count=Number(countText);if(!Number.isFinite(count)||count<1||count>365){alert('أدخل مدة صحيحة من 1 إلى 365.');return;}
+    const unitText=prompt('اكتب وحدة المدة: days للأيام، weeks للأسابيع، months للأشهر','days');if(unitText===null)return;
+    const reason=prompt('سبب طلب التمديد (اختياري):','');button.disabled=true;
+    try{await contractorRequestProjectExtension(button.dataset.contractorExtend,count,unitText,reason);alert('أُرسل طلب التمديد لصاحب المعدة. لن تتغير المدة أو القيمة حتى يوافق.');await loadContractorProjectRequestTracking();}
+    catch(err){console.error('Request extension failed:',err);alert(err.message||'تعذر إرسال طلب التمديد.');}finally{button.disabled=false;}
+  });
+
   /* =========================================================
      PROJECTS
   ========================================================= */
@@ -11189,7 +10837,8 @@ localStorage.setItem("selectedRole", "contractor");
   }
   document.querySelectorAll('[data-contractor-project-filter]').forEach(btn=>btn.addEventListener('click',()=>contractorSetProjectFilter(btn.dataset.contractorProjectFilter)));
 
-  async function loadContractorProjects() {
+  /* 05 — وظائف المقاول: المشاريع الحالية والسابقة */
+async function loadContractorProjects() {
     const list=document.getElementById('contractorProjectsList');if(!list)return;
     const user=await getContractorUser();if(!user || !user.uid){list.innerHTML='<div class="card">سجّل الدخول لعرض مشاريعك.</div>';return;}
     list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
@@ -11217,7 +10866,7 @@ localStorage.setItem("selectedRole", "contractor");
     const completeButton=event.target.closest('[data-contractor-complete-project]');
     if(completeButton){
       if(!confirm('هل تريد نقل هذا المشروع إلى المشاريع السابقة؟'))return;
-      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
+      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}const requestSnap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));let openWork=false;requestSnap.forEach(item=>{const r=item.data()||{};if(r.projectId===completeButton.dataset.contractorCompleteProject&&(r.contractorId||r.requesterId)===user.uid){const requestStatus=String(r.status||'');const unfinished=!['completed','rejected','cancelled'].includes(requestStatus);const settlementNeedsReview=['needs_settlement','disputed','under_review'].includes(String(r.settlementStatus||''));const unsettled=['rejected','cancelled'].includes(requestStatus)?(Number(r.paidTotal||0)>0||settlementNeedsReview):(Number(r.remainingBalance??r.price??0)>0||settlementNeedsReview);if(unfinished||unsettled)openWork=true;}});if(openWork){alert('لا يمكن نقل المشروع إلى المشاريع السابقة قبل إنهاء جميع طلبات المعدات وتسوية الأرصدة المتبقية.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
       catch(error){console.error('Complete contractor project error:',error);alert('تعذر تحديث حالة المشروع.');}return;
     }
     const button=event.target.closest('[data-contractor-project-request]');if(!button)return;
@@ -11228,7 +10877,7 @@ localStorage.setItem("selectedRole", "contractor");
       contractorSelectedProject=project;
       const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=project.name||project.projectName||'مشروعك';
       const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${project.city||''} ${project.address||project.location||''}`;
-      contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();
+      contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();await loadContractorProjectRequestTracking();
     }catch(error){console.error('Open project equipment picker error:',error);alert('تعذر فتح المشروع.');}
   });
 
@@ -11485,76 +11134,6 @@ localStorage.setItem("selectedRole", "contractor");
  
  
   /* =========================================================
-     ORDER DETAILS BACK
-  ========================================================= */
- 
-  const contractorOrderBackBtn =
-    document.getElementById(
-      "contractorOrderBackBtn"
-    );
- 
-  if (contractorOrderBackBtn) {
- 
-    contractorOrderBackBtn.addEventListener(
-      "click",
-      function () {
- 
-        contractorShowScreen(
-          "contractorProjectsScreen"
-        );
- 
-        contractorSetProjectFilter('current');
- 
-      }
-    );
- 
-  }
- 
- 
-  /* =========================================================
-     ORDER CHAT
-  ========================================================= */
- 
-  const contractorOrderChatBtn =
-    document.getElementById(
-      "contractorOrderChatBtn"
-    );
- 
-  if (contractorOrderChatBtn) {
- 
-    contractorOrderChatBtn.addEventListener(
-      "click",
-      function () {
- 
-        /*
-          نستخدم شاشة المحادثة الموجودة
-          في مِعدة بدلاً من إنشاء شاشة جديدة.
-        */
- 
-        if (
-          typeof showScreen ===
-          "function"
-        ) {
- 
-          showScreen(
-            "chatScreen"
-          );
- 
-        } else {
- 
-          contractorShowScreen(
-            "chatScreen"
-          );
- 
-        }
- 
-      }
-    );
- 
-  }
- 
- 
-  /* =========================================================
      SUPPORT
   ========================================================= */
  
@@ -11704,23 +11283,11 @@ localStorage.setItem("selectedRole", "contractor");
           );
  
           localStorage.removeItem(
-            "contractorCurrentOrderId"
-          );
- 
-          localStorage.removeItem(
-            "contractorCurrentOrder"
-          );
- 
-          localStorage.removeItem(
             "contractorProfile"
           );
  
  
           contractorProfile = null;
- 
-          contractorCurrentOrder = null;
- 
-          contractorCurrentOrderId = null;
  
  
           contractorShowScreen(
@@ -11891,21 +11458,12 @@ localStorage.setItem("selectedRole", "contractor");
   window.loadContractorProfile =
     loadContractorProfile;
  
-  window.loadContractorCurrentOrders =
-    loadContractorCurrentOrders;
- 
-  window.loadContractorPreviousOrders =
-    loadContractorPreviousOrders;
- 
   window.loadContractorProjects =
     loadContractorProjects;
 
   window.loadContractorNearbyEquipment =
     loadContractorNearbyEquipment;
 
-  window.openContractorOrderDetails =
-    openContractorOrderDetails;
- 
  
 })();
 /* =========================================================
@@ -12332,7 +11890,8 @@ document.addEventListener("click", function(event){
     rows.sort((a,b)=>(normalizeDate(b.createdAt)?.getTime()||0)-(normalizeDate(a.createdAt)?.getTime()||0));
     return rows;
   }
-  async function loadOwnTickets(kind=activeListKind){
+  /* 06-A — شكاوى العميل/المستخدم: قائمة الشكاوى الحالية والسابقة */
+async function loadOwnTickets(kind=activeListKind){
     activeListKind=kind;
     setFeedback('ma3daComplaintListFeedback','جارٍ تحميل الشكاوى...');
     const list=$('ma3daComplaintList'); if(list) list.innerHTML='<div class="ma3da-ticket-empty">جارٍ تحميل الشكاوى...</div>';
@@ -12414,7 +11973,8 @@ document.addEventListener("click", function(event){
   }
 
   // Staff side: render tickets with an explicit action to open the actual conversation.
-  async function staffTicketRows(){
+  /* 06-B — موظفو الدعم: عرض الشكاوى والرد عليها وإغلاقها */
+async function staffTicketRows(){
     const rows=await (async()=>{
       const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'supportTickets'));
       const a=[];snap.forEach(d=>a.push({id:d.id,...(d.data()||{})}));
@@ -12518,6 +12078,7 @@ document.addEventListener("click", function(event){
   document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
 })();
 
+/* 03/04/05 — وظائف الفواتير والدفعات المشتركة: العميل وصاحب المعدة والمقاول */
 /* Ma3da: invoice and income helpers */
 
 function showIncomeTab(tab) {
@@ -12620,6 +12181,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   'use strict';
   const $f = id => document.getElementById(id);
   let financeMode = 'contractor';
+  let ownerFinanceSubpage = 'menu';
   let cachedInvoices = [];
   let cachedPayments = [];
   let cachedProjects = [];
@@ -12651,6 +12213,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     else { document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active')); $f(id)?.classList.add('active'); }
   }
   window.ma3daOpenCustomerFinance = () => openFinance('customer');
+  function setOwnerFinanceSubpage(page){
+    ownerFinanceSubpage=page||'menu';
+    const menu=$f('ownerFinancePagesNav'), toolbar=$f('ownerFinancePageToolbar');
+    const customer=ownerFinanceSubpage==='customers', projects=ownerFinanceSubpage==='contractors';
+    if(menu)menu.hidden=ownerFinanceSubpage!=='menu';
+    if(toolbar)toolbar.hidden=ownerFinanceSubpage==='menu';
+    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!projects;
+    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
+    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
+  }
   function openFinance(mode){
     financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
@@ -12665,6 +12241,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=owner||customer;
     if($f('contractorCreateInvoiceCard'))$f('contractorCreateInvoiceCard').hidden=true;
     if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner||customer;
+    if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=!owner;
+    if($f('ownerFinancePageToolbar'))$f('ownerFinancePageToolbar').hidden=true;
+    if(owner){
+      setOwnerFinanceSubpage('menu');
+    }else{
+      ownerFinanceSubpage='';
+      if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=true;
+      if($f('ownerFinancePageToolbar'))$f('ownerFinancePageToolbar').hidden=true;
+      if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true;
+      if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+      if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+      if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+      if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
+    }
     loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);});
   }
   async function loadFinance(){
@@ -12941,10 +12531,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const target=event.target.closest('button');if(!target)return;
     if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
+    if(target.id==='openOwnerCustomerInvoicesBtn'){setOwnerFinanceSubpage('customers');return;}
+    if(target.id==='openOwnerContractorInvoicesBtn'){setOwnerFinanceSubpage('contractors');return;}
+    if(target.id==='ownerFinanceMenuBackBtn'){showScreen('operatorHomeScreen');return;}
+    if(target.id==='ownerFinanceSubpageBackBtn'){setOwnerFinanceSubpage('menu');return;}
+    if(target.id==='ownerFinanceMenuRefreshBtn'||target.id==='ownerFinanceSubpageRefreshBtn'){loadFinance().catch(err=>{console.error('Refresh Ma3da finance failed:',err);say('ownerInvoiceFeedback','تعذر تحديث الفواتير. تحقق من الاتصال.',true);});return;}
     if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
     if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
     const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
     if(target.id==='contractorFinanceBackBtn'){
+      if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
     }
     if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
@@ -12972,6 +12568,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
   window.ma3daRefreshFinance = () => loadFinance();
 })();
+
 
 
 
@@ -13023,12 +12620,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const groups={
       customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
       operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
-      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorOrderDetailsScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
+      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
     for(const ids of Object.values(groups)) if(ids.includes(currentId)){
       if(currentId==='supportForgotScreen') return 'supportLoginScreen';
-      if(currentId==='contractorEquipmentPickerScreen'||currentId==='contractorOrderDetailsScreen') return 'contractorProjectsScreen';
+      if(currentId==='contractorEquipmentPickerScreen') return 'contractorProjectsScreen';
       if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
@@ -13084,10 +12681,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     operatorEquipmentScreen:()=>typeof window.loadOperatorEquipmentEditor==='function'?window.loadOperatorEquipmentEditor():null,
     operatorSettingsScreen:()=>typeof window.loadOperatorSettings==='function'?window.loadOperatorSettings():null,
     contractorDataScreen:()=>typeof window.loadContractorProfile==='function'?window.loadContractorProfile():null,
-    contractorHomeScreen:async()=>{if(typeof window.loadContractorProfile==='function')await window.loadContractorProfile();if(typeof window.loadContractorCurrentOrders==='function')await window.loadContractorCurrentOrders();},
+    contractorHomeScreen:async()=>{if(typeof window.loadContractorProfile==='function')await window.loadContractorProfile();},
     contractorProjectsScreen:()=>typeof window.loadContractorProjects==='function'?window.loadContractorProjects():null,
-    contractorCurrentOrdersScreen:()=>typeof window.loadContractorCurrentOrders==='function'?window.loadContractorCurrentOrders():null,
-    contractorPreviousOrdersScreen:()=>typeof window.loadContractorPreviousOrders==='function'?window.loadContractorPreviousOrders():null,
     contractorEquipmentPickerScreen:()=>typeof window.loadContractorNearbyEquipment==='function'?window.loadContractorNearbyEquipment():null,
     contractorFinanceScreen:()=>typeof window.ma3daRefreshFinance==='function'?window.ma3daRefreshFinance():null,
     ma3daComplaintListScreen:()=>typeof window.ma3daRefreshSupportCenter==='function'?window.ma3daRefreshSupportCenter('ma3daComplaintListScreen'):null,
@@ -13116,7 +12711,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(typeof refresh==='function'){
           await refresh();
           status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
-        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorOrderDetailsScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
           status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
         }else{
           status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
@@ -13209,5 +12804,3 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   });
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 })();
- 
-    
