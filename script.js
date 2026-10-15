@@ -4000,12 +4000,31 @@ async function loadCustomerOrders(
  
     }
  
+    const requestsCollection =
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      );
+
+    /*
+      اجلب طلبات العميل الحالي فقط، بدل قراءة مجموعة الطلبات كاملة
+      ثم تصفيتها محليًا.
+    */
+    const customerRequestsQuery =
+      window.ma3daQuery && window.ma3daWhere
+        ? window.ma3daQuery(
+            requestsCollection,
+            window.ma3daWhere(
+              "customerId",
+              "==",
+              user.uid
+            )
+          )
+        : requestsCollection;
+
     const snapshot =
       await window.ma3daGetDocs(
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        )
+        customerRequestsQuery
       );
  
     const currentStatuses = [
