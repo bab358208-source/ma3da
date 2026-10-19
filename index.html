@@ -5171,6 +5171,7 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
+    <button id="contractorProjectTrackingBtn" class="contractor-action" type="button"><strong>🚜 متابعة طلبات المعدات</strong><span>صفحة مستقلة لمتابعة جميع طلبات المعدات، حالات القبول والتشغيل والتمديد والدفعات.</span><br><u>فتح متابعة الطلبات</u></button>
     <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
@@ -5203,12 +5204,6 @@
     <p id="contractorPickerProjectManager"></p>
     <p class="muted">راجع المعدات المرتبطة بالمشروع وحالة تشغيلها قبل طلب معدة إضافية.</p>
   </div>
-  <div class="card contractor-equipment-tracking-card">
-    <h2>متابعة معدات المشروع الحالية</h2>
-    <p class="muted">تعرض هذه القائمة الطلبات المرتبطة بالمشروع ومواعيدها وحالة العمل وآخر موقع محفوظ للمعدة إن توفر.</p>
-    <div id="contractorProjectEquipmentTracking"><div class="card">اختر مشروعًا لعرض معداته وطلباته الحالية.</div></div>
-    <button id="contractorRefreshTrackingBtn" class="back-btn" type="button">تحديث حالة المعدات</button>
-  </div>
   <div class="card">
     <h2>طلب معدة جديدة</h2>
     <label for="contractorScheduledStartAt">تاريخ ووقت بداية العمل *</label><input id="contractorScheduledStartAt" type="datetime-local" required>
@@ -5230,11 +5225,22 @@
   <div id="contractorNearbyEquipmentList"><div class="card">جارٍ تحميل المعدات القريبة…</div></div>
   <button id="contractorPickerBackBtn" class="back-btn" type="button">العودة للمشروع</button>
 </section>
+<!-- الصفحة: المقاول: متابعة طلبات المعدات | صفحة مستقلة عن إنشاء طلب جديد -->
+<section id="contractorProjectRequestTrackingScreen" class="screen">
+  <div class="hero"><div class="hero-icon">🚜</div><h1>متابعة طلبات المعدات</h1><p>تابع جميع طلبات معدات مشاريعك من صفحة مستقلة، دون الدخول إلى نموذج طلب معدة جديدة.</p></div>
+  <div class="card">
+    <label for="contractorTrackingProjectSelect">تصفية حسب المشروع</label>
+    <select id="contractorTrackingProjectSelect"><option value="">جميع المشاريع</option></select>
+    <p class="muted">تظهر حالة الطلب، مدة التشغيل، قيمة الاتفاق، الدفعات، الرصيد المتبقي، طلبات التمديد والاعتراضات المالية.</p>
+    <button id="contractorRefreshTrackingBtn" class="back-btn" type="button">⟳ تحديث الطلبات</button>
+  </div>
+  <div id="contractorProjectEquipmentTracking"><div class="card">جارٍ تحميل طلبات المعدات…</div></div>
+  <button id="contractorTrackingBackBtn" class="back-btn" type="button">العودة إلى لوحة المقاول</button>
+</section>
 <!-- الصفحة: المقاول: إدارة المشاريع | المعرّف البرمجي: contractorProjectsScreen -->
 <section id="contractorProjectsScreen" class="screen">
   <div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.</p></div>
   <button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروعك</button>
-  <button id="contractorProjectStageBtn" class="back-btn" type="button" hidden>📣 إعلان انتهاء مرحلة وإصدار فاتورتها</button>
   <div class="contractor-project-tabs" role="tablist" aria-label="تصنيف المشاريع">
     <button type="button" class="main-btn" data-contractor-project-filter="current" aria-pressed="true">المشاريع الحالية</button>
     <button type="button" class="back-btn" data-contractor-project-filter="previous" aria-pressed="false">المشاريع السابقة</button>
@@ -5248,44 +5254,10 @@
   <div id="ownerFinancePagesNav" class="ma3da-finance-nav" hidden>
     <div class="ma3da-finance-nav-head"><h2>فواتير التأجير ومستحقاتي</h2><p>اختر نوع الفواتير التي تريد مراجعتها.</p></div>
     <button type="button" class="ma3da-finance-page-card" id="openOwnerCustomerInvoicesBtn"><span class="ma3da-finance-page-icon">🧾</span><span><strong>فواتير العملاء</strong><small>فواتير طلبات تأجير المعدات للعملاء وحالة السداد</small></span><span class="ma3da-finance-page-arrow">←</span></button>
-    <button type="button" class="ma3da-finance-page-card" id="openOwnerContractorInvoicesBtn"><span class="ma3da-finance-page-icon">🏗️</span><span><strong>فواتير المقاولين</strong><small>فواتير المشاريع والدفعات ومستحقات المراحل</small></span><span class="ma3da-finance-page-arrow">←</span></button>
+    <button type="button" class="ma3da-finance-page-card" id="openOwnerContractorInvoicesBtn"><span class="ma3da-finance-page-icon">🏗️</span><span><strong>فواتير المقاولين</strong><small>فواتير اتفاقات المعدات والدفعات والمستحقات</small></span><span class="ma3da-finance-page-arrow">←</span></button>
     <div class="ma3da-finance-toolbar"><button type="button" class="back-btn" id="ownerFinanceMenuBackBtn">← رجوع</button><button type="button" class="back-btn" id="ownerFinanceMenuRefreshBtn">⟳ تحديث</button></div>
   </div>
   <div id="ownerFinancePageToolbar" class="ma3da-finance-toolbar" hidden><button type="button" class="back-btn" id="ownerFinanceSubpageBackBtn">← رجوع للفواتير</button><button type="button" class="back-btn" id="ownerFinanceSubpageRefreshBtn">⟳ تحديث</button></div>
-  <div class="card" id="contractorStageManagerCard" hidden>
-    <h3>إعلان انتهاء مرحلة من المشروع</h3>
-    <p>يختار مسؤول المشروع المشروع وطلب المعدة والمرحلة المنتهية. يظهر إشعار داخل حساب صاحب المعدة، ليصدر فاتورة المرحلة.</p>
-    <label for="contractorStageProject">المشروع *</label>
-    <select id="contractorStageProject"><option value="">جارٍ تحميل المشاريع…</option></select>
-    <label for="contractorStageRequest">طلب المعدة داخل المشروع *</label>
-    <select id="contractorStageRequest"><option value="">اختر المشروع أولًا</option></select>
-    <label for="contractorStageNumber">المرحلة المنتهية *</label>
-    <select id="contractorStageNumber"><option value="1">المرحلة الأولى</option><option value="2">المرحلة الثانية</option><option value="3">المرحلة الثالثة</option><option value="4">المرحلة الرابعة</option></select>
-    <button id="contractorAnnounceStageBtn" class="main-btn" type="button">إعلان انتهاء المرحلة وإشعار صاحب المعدة</button>
-    <p id="contractorStageFeedback" role="status" aria-live="polite"></p>
-    <div id="contractorProjectStagesList"></div>
-  </div>
-  <div class="card" id="ownerIssueInvoiceCard" hidden>
-    <h3>مراجعة انتهاء المرحلة وإصدار الفاتورة</h3>
-    <p>راجع الأعمال أولًا. اعتمد الانتهاء إذا كانت الأعمال مطابقة، أو سجّل ملاحظة/خلاف؛ لن تصدر الفاتورة قبل اعتماد المرحلة.</p>
-    <label for="ownerPhaseTask">المشروع والمرحلة *</label>
-    <select id="ownerPhaseTask"><option value="">جارٍ تحميل المراحل…</option></select>
-    <label for="ownerPhaseReviewNote">ملاحظات المراجعة أو سبب الخلاف</label>
-    <textarea id="ownerPhaseReviewNote" rows="2" maxlength="700" placeholder="اكتب ملاحظاتك على الأعمال، خصوصًا عند وجود خلاف"></textarea>
-    <div class="owner-phase-review-actions">
-      <button id="ownerApprovePhaseBtn" class="main-btn" type="button">اعتماد انتهاء المرحلة والسماح بالفاتورة</button>
-      <button id="ownerDisputePhaseBtn" class="back-btn" type="button">تسجيل ملاحظة أو خلاف</button>
-    </div>
-    <div class="ma3da-finance-row" id="ownerInvoiceIssueFields">
-      <h3>إصدار فاتورة المرحلة المعتمدة</h3>
-      <label for="ownerPhaseInvoiceAmount">مبلغ الفاتورة بالريال *</label>
-      <input id="ownerPhaseInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل مبلغ المرحلة المتفق عليه">
-      <label for="ownerInvoiceDescription">تفاصيل الفاتورة</label>
-      <textarea id="ownerInvoiceDescription" rows="2" maxlength="500" placeholder="تفاصيل تأجير المعدة لهذه المرحلة"></textarea>
-      <button id="ownerIssueInvoiceBtn" class="main-btn" type="button">إرسال فاتورة المرحلة لمسؤول المشروع</button>
-    </div>
-    <p id="ownerInvoiceFeedback" role="status" aria-live="polite"></p>
-  </div>
   <div class="card" id="contractorCreateInvoiceCard" hidden>
     <h3>إنشاء فاتورة مشروع (إيقاف — الفواتير تُنشأ تلقائيًا بعد قبول الطلب)</h3>
     <label for="contractorInvoiceProject">المشروع *</label><select id="contractorInvoiceProject"><option value="">جارٍ تحميل المشاريع…</option></select>
