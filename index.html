@@ -5221,9 +5221,9 @@
     <label for="contractorDailyStartTime">وقت بداية التشغيل اليومي *</label><input id="contractorDailyStartTime" type="time" value="07:00" required>
     <label for="contractorDailyEndTime">وقت نهاية التشغيل اليومي *</label><input id="contractorDailyEndTime" type="time" value="17:00" required>
     <label for="contractorOperator">المشغل *</label><select id="contractorOperator"><option value="مع مشغل">مع مشغل</option></select>
-    <label for="contractorPaymentPlan">طريقة الدفع المتفق عليها مبدئيًا *</label><select id="contractorPaymentPlan"><option value="four_stages">دفعات على أربع مراحل</option><option value="deposit_30">عربون 30% والباقي دفعات</option><option value="full_upfront">دفع كامل في البداية</option><option value="full_end">دفع كامل في النهاية</option></select>
-    <label for="contractorInstallmentCount">عدد دفعات المتبقي (للعربون أو الدفعات المرحلية)</label><input id="contractorInstallmentCount" type="number" min="1" max="12" value="3">
-    <label for="contractorPaymentTerms">شروط الدفع والتسوية *</label><textarea id="contractorPaymentTerms" rows="2" maxlength="700" placeholder="اكتب موعد استحقاق الدفعات وسياسة الإنهاء المبكر والإلغاء والاسترداد" required></textarea>
+    <label for="contractorPaymentPlan">طريقة السداد المتفق عليها *</label><select id="contractorPaymentPlan" required><option value="half_half">50% مقدّمًا و50% عند انتهاء العمل</option><option value="four_installments">أربع دفعات بمواعيد استحقاق محددة</option><option value="full_upfront">دفع كامل مقدّمًا قبل بدء التشغيل</option><option value="full_end">دفع كامل عند انتهاء العمل</option><option value="cash">الدفع النقدي (كاش) مع توثيق وتأكيد الاستلام</option></select>
+    <p class="muted">بعد قبول صاحب المعدة، تُنشأ فواتير الدفعات تلقائيًا في سجل موحّد يظهر للطرفين. لا يُثبت السداد الإلكتروني إلا بعد تأكيد موثوق من بوابة الدفع، والكاش يحتاج توثيقًا ومراجعة.</p>
+    <label for="contractorPaymentTerms">شروط الدفع والتسوية *</label><textarea id="contractorPaymentTerms" rows="2" maxlength="700" placeholder="اكتب مواعيد الاستحقاق وشروط التوثيق والاعتراض والإلغاء والاسترداد" required></textarea>
     <label for="contractorNotes">ملاحظات لصاحب المعدة</label><textarea id="contractorNotes" rows="2" placeholder="تفاصيل إضافية (اختياري)"></textarea>
     <button id="contractorRefreshEquipmentBtn" class="back-btn" type="button">تحديث المعدات القريبة</button>
   </div>
@@ -5234,7 +5234,7 @@
 <section id="contractorProjectsScreen" class="screen">
   <div class="hero"><div class="hero-icon">🏗️</div><h1>مشاريعي</h1><p>أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.</p></div>
   <button id="contractorCreateProjectBtn" class="main-btn" type="button">＋ إنشاء مشروعك</button>
-  <button id="contractorProjectStageBtn" class="back-btn" type="button">📣 إعلان انتهاء مرحلة وإصدار فاتورتها</button>
+  <button id="contractorProjectStageBtn" class="back-btn" type="button" hidden>📣 إعلان انتهاء مرحلة وإصدار فاتورتها</button>
   <div class="contractor-project-tabs" role="tablist" aria-label="تصنيف المشاريع">
     <button type="button" class="main-btn" data-contractor-project-filter="current" aria-pressed="true">المشاريع الحالية</button>
     <button type="button" class="back-btn" data-contractor-project-filter="previous" aria-pressed="false">المشاريع السابقة</button>
@@ -5244,7 +5244,7 @@
 </section>
 <!-- الصفحة: المقاول: الفواتير والدفعات | المعرّف البرمجي: contractorFinanceScreen -->
 <section id="contractorFinanceScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">فواتير المشاريع والدفعات وعمولة مِعدة.</p></div>
+  <div class="hero"><div class="hero-icon">🧾</div><h1 id="financeScreenTitle">الفواتير والمستحقات</h1><p id="financeScreenSubtitle">سجل الفواتير المشترك والدفعات والرصيد المستحق.</p></div>
   <div id="ownerFinancePagesNav" class="ma3da-finance-nav" hidden>
     <div class="ma3da-finance-nav-head"><h2>فواتير التأجير ومستحقاتي</h2><p>اختر نوع الفواتير التي تريد مراجعتها.</p></div>
     <button type="button" class="ma3da-finance-page-card" id="openOwnerCustomerInvoicesBtn"><span class="ma3da-finance-page-icon">🧾</span><span><strong>فواتير العملاء</strong><small>فواتير طلبات تأجير المعدات للعملاء وحالة السداد</small></span><span class="ma3da-finance-page-arrow">←</span></button>
@@ -5287,7 +5287,7 @@
     <p id="ownerInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="contractorCreateInvoiceCard" hidden>
-    <h3>إنشاء فاتورة مشروع (إدارة داخلية)</h3>
+    <h3>إنشاء فاتورة مشروع (إيقاف — الفواتير تُنشأ تلقائيًا بعد قبول الطلب)</h3>
     <label for="contractorInvoiceProject">المشروع *</label><select id="contractorInvoiceProject"><option value="">جارٍ تحميل المشاريع…</option></select>
     <label for="contractorInvoiceNumber">رقم الفاتورة (اختياري)</label><input id="contractorInvoiceNumber" maxlength="60" placeholder="يُنشأ تلقائيًا إذا تركته فارغًا">
     <label for="contractorInvoiceAmount">قيمة الفاتورة بالريال *</label><input id="contractorInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثال: 25000">
@@ -5297,12 +5297,12 @@
     <p id="contractorInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="contractorSubmitPaymentCard" hidden>
-    <h3>سداد فاتورة المشروع / تسجيل دفعة للمراجعة</h3>
+    <h3>توثيق سداد نقدي / تحويل للمراجعة</h3>
     <label for="contractorPaymentInvoice">الفاتورة *</label><select id="contractorPaymentInvoice"><option value="">حمّل الفواتير أولًا</option></select>
     <label for="contractorPaymentAmount">قيمة الدفعة بالريال *</label><input id="contractorPaymentAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="قيمة الدفعة المستلمة">
     <label for="contractorPaymentReference">مرجع التحويل أو ملاحظة</label><input id="contractorPaymentReference" maxlength="160" placeholder="رقم تحويل أو تفاصيل مختصرة">
-    <p class="muted">تُسجّل الدفعة «بانتظار التحقق». لا تُعتبر مدفوعة ولا تُحتسب العمولة نهائيًا قبل مراجعتها وتأكيدها من الجهة المخوّلة.</p>
-    <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال الدفعة للمراجعة</button>
+    <p class="muted">هذا المسار لتوثيق الكاش أو التحويل فقط. لا يُعدّ المبلغ مدفوعًا حتى يؤكد صاحب المعدة الاستلام؛ الدفع الإلكتروني يتطلب بوابة دفع مربوطة.</p>
+    <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال إثبات السداد للمراجعة</button>
     <p id="contractorPaymentFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="ownerBookingInvoiceCard" hidden>
@@ -5322,6 +5322,7 @@
     <p>تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.</p>
   </div>
   <div id="bookingInvoicesList" hidden><div class="card">لا توجد فواتير لطلباتك حتى الآن.</div></div>
+  <div class="card" id="ma3daOwnerWalletSummary" hidden><h3>محفظة صاحب المعدة</h3><p>ملخص المستحقات والتحصيلات المسجلة في الفواتير المشتركة.</p><div id="ma3daOwnerWalletMetrics"></div><p class="muted">الرصيد القابل للتحويل لا يُعرض كأموال مضمونة إلا عند وجود تسوية مالية فعلية وسجل تحويلات موثّق.</p></div>
   <div id="contractorInvoicesList"><div class="card">ستظهر فواتير مشاريعك هنا.</div></div>
   <button id="contractorFinanceBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
 </section>
