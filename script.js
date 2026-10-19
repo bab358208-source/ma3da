@@ -1,4 +1,4 @@
-/*
+*
 ============================================================
 دليل تنظيم ملف script.js — مِعدة
 01 — الصفحات التعريفية: وظائف المقدمة والتنقل التعريفي
@@ -10613,6 +10613,8 @@ async function openContractorHome() {
     const list=document.getElementById('contractorNearbyEquipmentList');if(!list)return;
     const filter=document.getElementById('contractorEquipmentType')?.value||'';
     const rows=contractorNearbyEquipmentCache.filter(item=>!filter||item.type===filter||item.equipmentType===filter||item.name===filter);
+    const equipmentSelect=document.getElementById('contractorSelectedEquipment');
+    if(equipmentSelect){const previous=equipmentSelect.value;equipmentSelect.innerHTML='<option value="">اختر المعدة المطلوبة</option>'+rows.map(item=>{const label=[item.type||item.equipmentType||item.name||'معدة',item.model].filter(Boolean).join(' — ');return `<option value="${escapeContractorHtml(item.id)}">${escapeContractorHtml(label)}${item.city?' — '+escapeContractorHtml(item.city):''}</option>`;}).join('');if(rows.some(item=>item.id===previous))equipmentSelect.value=previous;}
     if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد معدات مطابقة حالياً</h3><p>جرّب نوعًا آخر أو حدّث قائمة المعدات. تظهر المسافة عندما تكون إحداثيات المعدة محفوظة في ملف صاحبها.</p></div>';return;}
     list.innerHTML=rows.map(item=>{
       const distance=item._distanceKm==null?(item._sameCity?'في مدينة المشروع — الإحداثيات غير متاحة':'المسافة غير متاحة'): `${item._distanceKm.toFixed(1)} كم من المشروع`;
@@ -10620,7 +10622,7 @@ async function openContractorHome() {
       const price=Number(item.hourlyPrice||item.price||0);
       const image=item.image||item.imageUrl||item.photo||'';
       const location=item.city||item.location||'المدينة غير محددة';
-      return `<div class="contractor-equipment-card">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="main-btn" data-contractor-choose-equipment="${escapeContractorHtml(item.id)}">اختيار هذه المعدة وإرسال الطلب</button></div>`;
+      return `<div class="contractor-equipment-card">${image?`<img src="${escapeContractorHtml(image)}" alt="صورة المعدة">`:''}<h3>🚜 ${escapeContractorHtml(title)}</h3><p>📍 ${escapeContractorHtml(location)}</p><p class="contractor-distance">${escapeContractorHtml(distance)}</p><p>💰 ${price?`${price} ريال / ساعة`:'السعر غير محدد'}</p><p>⭐ ${escapeContractorHtml(item.rating??item.averageRating??'غير متوفر')}</p><button type="button" class="back-btn" data-contractor-choose-equipment="${escapeContractorHtml(item.id)}">اختيار هذه المعدة</button></div>`;
     }).join('');
   }
   // New project workflow helpers: cent-safe totals and calendar/work-day calculations.
@@ -10692,8 +10694,14 @@ async function openContractorHome() {
   window.ma3daCreateSharedProjectInvoices=ma3daCreateSharedProjectInvoices;
 
   document.addEventListener('click',async event=>{
-    const button=event.target.closest('[data-contractor-choose-equipment]');if(!button)return;
-    const equipment=contractorNearbyEquipmentCache.find(row=>row.id===button.dataset.contractorChooseEquipment);if(!equipment||!contractorSelectedProject)return;
+    const chooseButton=event.target.closest('[data-contractor-choose-equipment]');
+    const submitButton=event.target.closest('#contractorSubmitProjectEquipmentRequestBtn');
+    if(!chooseButton&&!submitButton)return;
+    const equipmentSelect=document.getElementById('contractorSelectedEquipment');
+    if(chooseButton){if(equipmentSelect)equipmentSelect.value=chooseButton.dataset.contractorChooseEquipment;equipmentSelect?.scrollIntoView({behavior:'smooth',block:'center'});equipmentSelect?.focus();return;}
+    const selectedEquipmentId=equipmentSelect?.value||'';
+    const equipment=contractorNearbyEquipmentCache.find(row=>row.id===selectedEquipmentId);if(!equipment){alert('اختر المعدة المطلوبة من خانة اختيار المعدة أولًا.');return;}if(!contractorSelectedProject)return;
+    const button=submitButton;
     const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
     const startValue=document.getElementById('contractorScheduledStartAt')?.value||'';
     const startAt=startValue?new Date(startValue):null;
@@ -10726,9 +10734,11 @@ async function openContractorHome() {
     try{
       const profile=contractorGetProfile()||{};const paymentSchedule=ma3daBuildProjectPaymentSchedule(price,paymentPlan);const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name||contractorSelectedProject.projectName||'',projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration:durationLabel,durationUnit,durationCount,durationHours:hours,scheduledStartAt:startAt,scheduledEndAt:scheduleEnd,dailyStartTime,dailyEndTime,workDays,scheduledWorkDays,restDays:[0,1,2,3,4,5,6].filter(day=>!workDays.includes(day)),hoursPerWorkday,operator,notes,price,originalPrice:price,hourlyPrice,paymentPlan,installmentCount,paymentTerms,paymentStatus:'unpaid',paymentSchedule,paymentLedger:[],paidTotal:0,remainingBalance:price,agreementVersion:1,agreementStatus:'awaiting_owner_decision',extensionStatus:'none',extensionHistory:[],workStatus:'awaiting_acceptance',earlyFinishStatus:'none',earlyFinishHistory:[],settlementPolicy:paymentTerms,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date(),updatedAt:new Date()};
       const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
-      alert('تم إرسال طلبك لصاحب المعدة المختارة بنجاح.');contractorShowScreen('contractorProjectsScreen');contractorProjectFilter='current';contractorSetProjectFilter('current');
+      alert('تم إرسال طلب المعدة لهذا المشروع بنجاح. ستظهر حالة الطلب في قسم المتابعة أسفل الصفحة.');
+      await loadContractorProjectRequestTracking();
+      document.getElementById('contractorProjectTrackingSection')?.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(error){console.error('Send selected equipment request error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لإرسال الطلب في Firebase.':'تعذر إرسال الطلب حالياً.');}
-    finally{button.disabled=false;button.textContent='اختيار هذه المعدة وإرسال الطلب';}
+    finally{button.disabled=false;button.textContent='إرسال طلب المعدة';}
   });
 
   /* =========================================================
@@ -10775,17 +10785,12 @@ async function openContractorHome() {
   });
 
   async function loadContractorProjectRequestTracking(){
-    const target=document.getElementById('contractorProjectEquipmentTracking');if(!target)return;
+    const target=document.getElementById('contractorProjectEquipmentTracking');if(!target||!contractorSelectedProject)return;
     try{
-      const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المعدات.</div>';return;}
-      const filter=document.getElementById('contractorTrackingProjectSelect');
-      const projectsSnap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));const projects=[];
-      projectsSnap.forEach(doc=>{const p=doc.data()||{};if((p.contractorId||p.ownerId||p.userId)===user.uid)projects.push({id:doc.id,...p});});
-      if(filter){const previous=filter.value;filter.innerHTML='<option value="">جميع المشاريع</option>'+projects.map(p=>`<option value="${escapeContractorHtml(p.id)}">${escapeContractorHtml(p.name||p.projectName||'مشروع بدون اسم')}</option>`).join('');if(projects.some(p=>p.id===previous))filter.value=previous;else if(contractorSelectedProject?.id&&projects.some(p=>p.id===contractorSelectedProject.id))filter.value=contractorSelectedProject.id;}
-      const projectFilter=filter?.value||contractorSelectedProject?.id||'';
+      const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المشروع.</div>';return;}
       const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));const rows=[];
-      snap.forEach(doc=>{const r=doc.data()||{};if((r.contractorId||r.requesterId||r.customerId)===user.uid&&!!r.projectId&&(!projectFilter||r.projectId===projectFilter))rows.push({id:doc.id,...r});});
-      if(!rows.length){target.innerHTML='<div class="card"><h3>لا توجد طلبات معدات</h3><p>ستظهر هنا طلبات المعدات المرتبطة بمشاريعك بعد إرسالها.</p></div>';return;}
+      snap.forEach(doc=>{const r=doc.data()||{};if(r.projectId===contractorSelectedProject.id&&(r.contractorId||r.requesterId||r.customerId)===user.uid)rows.push({id:doc.id,...r});});
+      if(!rows.length){target.innerHTML='<div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div>';return;}
       const now=Date.now();
       for(const r of rows){
         const endMs=operatorRequestDateValue(r.scheduledEndAt);
@@ -10850,19 +10855,6 @@ async function openContractorHome() {
      PROJECTS
   ========================================================= */
  
-  const contractorProjectTrackingBtn=document.getElementById('contractorProjectTrackingBtn');
-  if(contractorProjectTrackingBtn)contractorProjectTrackingBtn.addEventListener('click',async()=>{
-    contractorSelectedProject=null;
-    const trackingFilter=document.getElementById('contractorTrackingProjectSelect');if(trackingFilter)trackingFilter.value='';
-    contractorShowScreen('contractorProjectRequestTrackingScreen');
-    await loadContractorProjectRequestTracking();
-  });
-
-  const contractorTrackingProjectSelect=document.getElementById('contractorTrackingProjectSelect');
-  if(contractorTrackingProjectSelect)contractorTrackingProjectSelect.addEventListener('change',()=>loadContractorProjectRequestTracking());
-  const contractorTrackingBackBtn=document.getElementById('contractorTrackingBackBtn');
-  if(contractorTrackingBackBtn)contractorTrackingBackBtn.addEventListener('click',()=>contractorShowScreen('contractorHomeScreen'));
-
   const contractorProjectsBtn =
     document.getElementById(
       "contractorProjectsBtn"
@@ -12291,14 +12283,14 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!projects;
     if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير اتفاقات المعدات والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
   }
   function openFinance(mode){
     financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
     const owner=financeMode==='owner'; const customer=financeMode==='customer';
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'تابع فواتير اتفاقات المعدات والدفعات وحالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!owner;
     if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
     if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
@@ -12363,7 +12355,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const accepted=['accepted','arrived','working','completed','complete','invoice_pending','invoice_issued','payment_pending','paid','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
       return isProject && ownerId===user.uid && accepted;
     });
-    cachedInvoices=invoices.filter(i=>i.invoiceKind==='agreement_installment'&&(financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid)));
+    cachedInvoices=invoices.filter(i=>financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid));
     cachedPhases=phaseRows.filter(ph=>financeMode==='owner'?ph.ownerId===user.uid:ph.contractorId===user.uid);
     const invoiceIds=new Set(cachedInvoices.map(i=>i.id));
     cachedPayments=payments.filter(p=>invoiceIds.has(p.invoiceId));
@@ -12633,7 +12625,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   document.addEventListener('click',event=>{
     const target=event.target.closest('button');if(!target)return;
-    if(target.id==='contractorFinanceBtn'){openFinance('contractor');return;}
+    if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
     if(target.id==='openOwnerCustomerInvoicesBtn'){setOwnerFinanceSubpage('customers');return;}
     if(target.id==='openOwnerContractorInvoicesBtn'){setOwnerFinanceSubpage('contractors');return;}
@@ -12647,6 +12639,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
     }
+    if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
+    if(target.id==='ownerApprovePhaseBtn'){reviewOwnerPhase('approve');return;}
+    if(target.id==='ownerDisputePhaseBtn'){reviewOwnerPhase('disputed');return;}
+    if(target.id==='contractorAnnounceStageBtn'){announceStageCompletion();return;}
     const confirmPaymentButton=target.closest('[data-owner-confirm-payment]');
     if(confirmPaymentButton){confirmPaymentReceived(confirmPaymentButton.getAttribute('data-owner-confirm-payment'));return;}
     if(target.id==='contractorCreateInvoiceBtn'){return;}
@@ -12720,7 +12716,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const groups={
       customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
       operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
-      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectRequestTrackingScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
+      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
     for(const ids of Object.values(groups)) if(ids.includes(currentId)){
@@ -12730,7 +12726,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
       if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
-      if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen'||currentId==='contractorProjectRequestTrackingScreen') return 'contractorHomeScreen';
+      if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
       if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
       return ids[1] || 'roleScreen';
