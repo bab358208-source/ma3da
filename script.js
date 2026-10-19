@@ -10775,12 +10775,17 @@ async function openContractorHome() {
   });
 
   async function loadContractorProjectRequestTracking(){
-    const target=document.getElementById('contractorProjectEquipmentTracking');if(!target||!contractorSelectedProject)return;
+    const target=document.getElementById('contractorProjectEquipmentTracking');if(!target)return;
     try{
-      const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المشروع.</div>';return;}
+      const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المعدات.</div>';return;}
+      const filter=document.getElementById('contractorTrackingProjectSelect');
+      const projectsSnap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));const projects=[];
+      projectsSnap.forEach(doc=>{const p=doc.data()||{};if((p.contractorId||p.ownerId||p.userId)===user.uid)projects.push({id:doc.id,...p});});
+      if(filter){const previous=filter.value;filter.innerHTML='<option value="">جميع المشاريع</option>'+projects.map(p=>`<option value="${escapeContractorHtml(p.id)}">${escapeContractorHtml(p.name||p.projectName||'مشروع بدون اسم')}</option>`).join('');if(projects.some(p=>p.id===previous))filter.value=previous;else if(contractorSelectedProject?.id&&projects.some(p=>p.id===contractorSelectedProject.id))filter.value=contractorSelectedProject.id;}
+      const projectFilter=filter?.value||contractorSelectedProject?.id||'';
       const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));const rows=[];
-      snap.forEach(doc=>{const r=doc.data()||{};if(r.projectId===contractorSelectedProject.id&&(r.contractorId||r.requesterId||r.customerId)===user.uid)rows.push({id:doc.id,...r});});
-      if(!rows.length){target.innerHTML='<div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div>';return;}
+      snap.forEach(doc=>{const r=doc.data()||{};if((r.contractorId||r.requesterId||r.customerId)===user.uid&&!!r.projectId&&(!projectFilter||r.projectId===projectFilter))rows.push({id:doc.id,...r});});
+      if(!rows.length){target.innerHTML='<div class="card"><h3>لا توجد طلبات معدات</h3><p>ستظهر هنا طلبات المعدات المرتبطة بمشاريعك بعد إرسالها.</p></div>';return;}
       const now=Date.now();
       for(const r of rows){
         const endMs=operatorRequestDateValue(r.scheduledEndAt);
@@ -10845,6 +10850,19 @@ async function openContractorHome() {
      PROJECTS
   ========================================================= */
  
+  const contractorProjectTrackingBtn=document.getElementById('contractorProjectTrackingBtn');
+  if(contractorProjectTrackingBtn)contractorProjectTrackingBtn.addEventListener('click',async()=>{
+    contractorSelectedProject=null;
+    const trackingFilter=document.getElementById('contractorTrackingProjectSelect');if(trackingFilter)trackingFilter.value='';
+    contractorShowScreen('contractorProjectRequestTrackingScreen');
+    await loadContractorProjectRequestTracking();
+  });
+
+  const contractorTrackingProjectSelect=document.getElementById('contractorTrackingProjectSelect');
+  if(contractorTrackingProjectSelect)contractorTrackingProjectSelect.addEventListener('change',()=>loadContractorProjectRequestTracking());
+  const contractorTrackingBackBtn=document.getElementById('contractorTrackingBackBtn');
+  if(contractorTrackingBackBtn)contractorTrackingBackBtn.addEventListener('click',()=>contractorShowScreen('contractorHomeScreen'));
+
   const contractorProjectsBtn =
     document.getElementById(
       "contractorProjectsBtn"
@@ -12273,14 +12291,14 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!projects;
     if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير اتفاقات المعدات والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
   }
   function openFinance(mode){
     financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
     const owner=financeMode==='owner'; const customer=financeMode==='customer';
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'تابع فواتير اتفاقات المعدات والدفعات وحالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!owner;
     if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
     if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
@@ -12345,7 +12363,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const accepted=['accepted','arrived','working','completed','complete','invoice_pending','invoice_issued','payment_pending','paid','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
       return isProject && ownerId===user.uid && accepted;
     });
-    cachedInvoices=invoices.filter(i=>financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid));
+    cachedInvoices=invoices.filter(i=>i.invoiceKind==='agreement_installment'&&(financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid)));
     cachedPhases=phaseRows.filter(ph=>financeMode==='owner'?ph.ownerId===user.uid:ph.contractorId===user.uid);
     const invoiceIds=new Set(cachedInvoices.map(i=>i.id));
     cachedPayments=payments.filter(p=>invoiceIds.has(p.invoiceId));
@@ -12615,7 +12633,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   document.addEventListener('click',event=>{
     const target=event.target.closest('button');if(!target)return;
-    if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
+    if(target.id==='contractorFinanceBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
     if(target.id==='openOwnerCustomerInvoicesBtn'){setOwnerFinanceSubpage('customers');return;}
     if(target.id==='openOwnerContractorInvoicesBtn'){setOwnerFinanceSubpage('contractors');return;}
@@ -12629,10 +12647,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
     }
-    if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
-    if(target.id==='ownerApprovePhaseBtn'){reviewOwnerPhase('approve');return;}
-    if(target.id==='ownerDisputePhaseBtn'){reviewOwnerPhase('disputed');return;}
-    if(target.id==='contractorAnnounceStageBtn'){announceStageCompletion();return;}
     const confirmPaymentButton=target.closest('[data-owner-confirm-payment]');
     if(confirmPaymentButton){confirmPaymentReceived(confirmPaymentButton.getAttribute('data-owner-confirm-payment'));return;}
     if(target.id==='contractorCreateInvoiceBtn'){return;}
@@ -12706,7 +12720,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const groups={
       customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
       operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
-      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
+      contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectRequestTrackingScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
     for(const ids of Object.values(groups)) if(ids.includes(currentId)){
@@ -12716,7 +12730,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
       if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
-      if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
+      if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen'||currentId==='contractorProjectRequestTrackingScreen') return 'contractorHomeScreen';
       if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
       return ids[1] || 'roleScreen';
