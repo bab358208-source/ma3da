@@ -5171,7 +5171,6 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
-    <button id="contractorProjectTrackingBtn" class="contractor-action" type="button"><strong>🚜 متابعة طلبات المعدات</strong><span>صفحة مستقلة لمتابعة جميع طلبات المعدات، حالات القبول والتشغيل والتمديد والدفعات.</span><br><u>فتح متابعة الطلبات</u></button>
     <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
@@ -5205,7 +5204,10 @@
     <p class="muted">راجع المعدات المرتبطة بالمشروع وحالة تشغيلها قبل طلب معدة إضافية.</p>
   </div>
   <div class="card">
-    <h2>طلب معدة جديدة</h2>
+    <h2>طلب معدة لهذا المشروع</h2>
+    <label for="contractorSelectedEquipment">اختيار المعدة المطلوبة *</label>
+    <select id="contractorSelectedEquipment" required><option value="">جارٍ تحميل المعدات المتاحة…</option></select>
+    <p class="muted">اختر المعدة من القائمة، ويمكنك مراجعة تفاصيلها في البطاقات أسفل الطلب.</p>
     <label for="contractorScheduledStartAt">تاريخ ووقت بداية العمل *</label><input id="contractorScheduledStartAt" type="datetime-local" required>
     <label for="contractorDurationUnit">وحدة المدة *</label><select id="contractorDurationUnit"><option value="days">أيام</option><option value="weeks">أسابيع</option><option value="months">أشهر</option></select>
     <label for="contractorDurationCount">عدد المدة *</label><input id="contractorDurationCount" type="number" min="1" max="365" step="1" value="1" required>
@@ -5221,21 +5223,16 @@
     <label for="contractorPaymentTerms">شروط الدفع والتسوية *</label><textarea id="contractorPaymentTerms" rows="2" maxlength="700" placeholder="اكتب مواعيد الاستحقاق وشروط التوثيق والاعتراض والإلغاء والاسترداد" required></textarea>
     <label for="contractorNotes">ملاحظات لصاحب المعدة</label><textarea id="contractorNotes" rows="2" placeholder="تفاصيل إضافية (اختياري)"></textarea>
     <button id="contractorRefreshEquipmentBtn" class="back-btn" type="button">تحديث المعدات القريبة</button>
+    <button id="contractorSubmitProjectEquipmentRequestBtn" class="main-btn" type="button">إرسال طلب المعدة</button>
   </div>
   <div id="contractorNearbyEquipmentList"><div class="card">جارٍ تحميل المعدات القريبة…</div></div>
+  <section id="contractorProjectTrackingSection" class="card">
+    <h2>🚜 متابعة المعدة بعد القبول</h2>
+    <p class="muted">بعد إرسال الطلب ستظهر حالته هنا، وبعد قبول صاحب المعدة تظهر متابعة التشغيل والتمديد والدفعات والرصيد.</p>
+    <div id="contractorProjectEquipmentTracking"><div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div></div>
+    <button id="contractorRefreshTrackingBtn" class="back-btn" type="button">⟳ تحديث متابعة المعدة</button>
+  </section>
   <button id="contractorPickerBackBtn" class="back-btn" type="button">العودة للمشروع</button>
-</section>
-<!-- الصفحة: المقاول: متابعة طلبات المعدات | صفحة مستقلة عن إنشاء طلب جديد -->
-<section id="contractorProjectRequestTrackingScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🚜</div><h1>متابعة طلبات المعدات</h1><p>تابع جميع طلبات معدات مشاريعك من صفحة مستقلة، دون الدخول إلى نموذج طلب معدة جديدة.</p></div>
-  <div class="card">
-    <label for="contractorTrackingProjectSelect">تصفية حسب المشروع</label>
-    <select id="contractorTrackingProjectSelect"><option value="">جميع المشاريع</option></select>
-    <p class="muted">تظهر حالة الطلب، مدة التشغيل، قيمة الاتفاق، الدفعات، الرصيد المتبقي، طلبات التمديد والاعتراضات المالية.</p>
-    <button id="contractorRefreshTrackingBtn" class="back-btn" type="button">⟳ تحديث الطلبات</button>
-  </div>
-  <div id="contractorProjectEquipmentTracking"><div class="card">جارٍ تحميل طلبات المعدات…</div></div>
-  <button id="contractorTrackingBackBtn" class="back-btn" type="button">العودة إلى لوحة المقاول</button>
 </section>
 <!-- الصفحة: المقاول: إدارة المشاريع | المعرّف البرمجي: contractorProjectsScreen -->
 <section id="contractorProjectsScreen" class="screen">
