@@ -5226,7 +5226,7 @@
     <button id="contractorSubmitProjectEquipmentRequestBtn" class="main-btn" type="button">إرسال طلب المعدة</button>
   </div>
   <div id="contractorNearbyEquipmentList"><div class="card">جارٍ تحميل المعدات القريبة…</div></div>
-  <section id="contractorProjectTrackingSection" class="card">
+  <section id="contractorProjectTrackingSection" class="card" hidden>
     <h2>🚜 متابعة المعدة بعد القبول</h2>
     <p class="muted">بعد إرسال الطلب ستظهر حالته هنا، وبعد قبول صاحب المعدة تظهر متابعة التشغيل والتمديد والدفعات والرصيد.</p>
     <div id="contractorProjectEquipmentTracking"><div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div></div>
@@ -5413,7 +5413,8 @@
   onSnapshot,
   query,
   orderBy,
-  where
+  where,
+  runTransaction
 }
   from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -5604,6 +5605,11 @@ window.ma3daQuery =
 
 window.ma3daWhere =
   where;
+
+// Financial integrity: all payment confirmation writes are committed atomically.
+window.ma3daRunTransaction = (callback) => runTransaction(db, callback);
+window.ma3daNewPaymentRef = () => doc(collection(db, 'projectInvoicePayments'));
+window.ma3daNewInvoiceRef = () => doc(collection(db, 'projectInvoices'));
 
 window.ma3daOrderBy =
   orderBy;
