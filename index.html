@@ -1577,7 +1577,7 @@
 
 
       <button
-        id="operatorCurrentOrderBtn"
+        id="operatorCustomerOrdersBtn"
         class="operator-menu-card"
         type="button"
       >
@@ -1590,11 +1590,11 @@
         <div class="operator-menu-content">
 
           <strong>
-            الطلب الحالي
+            طلبات العملاء
           </strong>
 
           <span>
-            متابعة الطلب الذي تعمل عليه
+            الطلبات الحالية والسابقة في صفحة واحدة
           </span>
 
         </div>
@@ -1606,37 +1606,6 @@
 
       </button>
 
-
-
-      <button
-        id="operatorPreviousOrdersBtn"
-        class="operator-menu-card"
-        type="button"
-      >
-
-        <div class="operator-menu-icon">
-          🕘
-        </div>
-
-
-        <div class="operator-menu-content">
-
-          <strong>
-            الطلبات السابقة
-          </strong>
-
-          <span>
-            سجل أعمالك السابقة
-          </span>
-
-        </div>
-
-
-        <span class="operator-menu-arrow">
-          ←
-        </span>
-
-      </button>
 
 
       <button
@@ -2365,68 +2334,29 @@
 
 
 
-<!-- =====================================================
-     الطلبات السابقة لصاحب المعدة
-===================================================== -->
-
-
-<!-- الصفحة: صاحب المعدة: PreviousOrders — صفحة خاصة بصاحب المعدة | المعرّف البرمجي: operatorPreviousOrdersScreen -->
-<section
-  id="operatorPreviousOrdersScreen"
-  class="screen"
->
-
-
-  <button
-    id="backFromOperatorPreviousOrdersBtn"
-    class="back-btn"
-    type="button"
-  >
-    ← الرجوع
-  </button>
-
-
+<!-- الصفحة: صاحب المعدة: طلبات العملاء الحالية والسابقة في صفحة واحدة -->
+<section id="operatorCustomerOrdersScreen" class="screen">
+  <button id="backFromOperatorCustomerOrdersBtn" class="back-btn" type="button">← الرجوع</button>
   <div class="hero">
-
-
-    <div class="hero-icon">
-      🕘
-    </div>
-
-
-    <h1>
-      الطلبات السابقة
-    </h1>
-
-
-    <p>
-      سجل الأعمال التي أنجزتها
-    </p>
-
-
+    <div class="hero-icon">🚜</div>
+    <h1>طلبات العملاء</h1>
+    <p>تابع طلبات العملاء الحالية وسجل الطلبات السابقة من صفحة واحدة</p>
   </div>
-
-
-  <div id="operatorPreviousOrdersList">
-
-    <div class="card center">
-
-      <p>
-        جاري تحميل الطلبات...
-      </p>
-
-    </div>
-
+  <div class="operator-request-tabs" role="tablist" aria-label="طلبات العملاء الحالية والسابقة">
+    <button id="operatorCustomerCurrentTab" class="operator-request-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="operatorCustomerCurrentPanel" data-owner-customer-filter="current">الطلبات الحالية</button>
+    <button id="operatorCustomerPreviousTab" class="operator-request-tab" type="button" role="tab" aria-selected="false" aria-controls="operatorCustomerPreviousPanel" data-owner-customer-filter="previous">الطلبات السابقة</button>
   </div>
-
-
+  <div class="operator-requests-toolbar">
+    <span id="operatorCustomerOrdersUpdated" aria-live="polite">لم يتم التحديث بعد</span>
+    <button id="refreshOperatorCustomerOrdersBtn" class="back-btn" type="button">⟳ تحديث الطلبات</button>
+  </div>
+  <div id="operatorCustomerCurrentPanel" role="tabpanel" aria-labelledby="operatorCustomerCurrentTab">
+    <div id="operatorCustomerCurrentList"><div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div></div>
+  </div>
+  <div id="operatorCustomerPreviousPanel" role="tabpanel" aria-labelledby="operatorCustomerPreviousTab" hidden>
+    <div id="operatorCustomerPreviousList"><div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div></div>
+  </div>
 </section>
-
-
-
-<!-- =====================================================
-     الدخل
-===================================================== -->
 
 
 <!-- الصفحة: صاحب المعدة: طلبات المشاريع الحالية والسابقة — مستقلة عن طلبات العملاء -->
