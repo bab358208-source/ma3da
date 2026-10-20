@@ -2998,21 +2998,11 @@ const confirmPaymentBtn =
   document.getElementById("confirmPaymentBtn");
  
 if(confirmPaymentBtn){
- 
-  confirmPaymentBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      if(!selectedPayment)
-        return;
- 
-      showScreen(
-        "ratingScreen"
-      );
- 
-    }
-  );
- 
+  confirmPaymentBtn.addEventListener("click", async ()=>{
+    // لا يسمح زر السداد بتجاوز الفاتورة إلى التقييم.
+    if(window.ma3daOpenCustomerFinance){ window.ma3daOpenCustomerFinance(); return; }
+    alert('افتح «فواتيري والمدفوعات» للتحقق من الفاتورة والسداد قبل التقييم.');
+  });
 }
  
 /* RATING */
@@ -5392,7 +5382,7 @@ async function loadOperatorNewRequests(){
     renderOperatorRequestCards(projectList,projectRequests,"projects");
     if(projectList){
       const activeProjectRows=[];snapshot.forEach(docSnap=>{const d=docSnap.data()||{};const target=d.equipmentOwnerId||d.ownerId||d.operatorId||'';if(d.projectId&&target===user.uid&&['accepted','working','duration_expired','completed'].includes(String(d.status||'')))activeProjectRows.push({id:docSnap.id,...d});});
-      if(activeProjectRows.length){const review=document.createElement('div');review.className='card';review.innerHTML='<h2>إدارة طلبات المشاريع المقبولة</h2>'+activeProjectRows.map(r=>{const pending=(r.paymentLedger||[]).filter(x=>x.status==='pending_owner_review');const lifecycle=r.status==='accepted'&&['scheduled','awaiting_acceptance'].includes(String(r.workStatus||''))?`<button type="button" class="accept-btn" data-owner-project-start="${r.id}">بدء تشغيل المعدة</button>`:(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))?`<button type="button" class="accept-btn" data-owner-project-complete="${r.id}">تأكيد انتهاء العمل</button>`:'';const stageAction=r.paymentPlan==='four_installments'&&r.status!=='completed'?`<button type="button" class="back-btn" data-owner-project-stage-due="${r.id}">اعتماد إنجاز المرحلة التالية</button>`:'';return `<div class="operator-info" style="border-top:1px solid #eadfc5;padding-top:10px;margin-top:10px"><h3>${String(r.projectName||'مشروع').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))} — ${String(r.equipment||'معدة').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</h3><p>الحالة: ${r.status} · القيمة: ${Number(r.price||0).toLocaleString('ar-SA')} ريال · المتبقي: ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p>${lifecycle}${stageAction}${pending.map(x=>`<p>إثبات دفعة: ${Number(x.amount||0).toLocaleString('ar-SA')} ريال · المرجع: ${String(x.reference||'—').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</p><button type="button" class="accept-btn" data-owner-approve-project-payment="${r.id}" data-ledger-id="${x.id}">تأكيد استلام الدفعة</button> <button type="button" class="reject-btn" data-owner-reject-project-payment="${r.id}" data-ledger-id="${x.id}">رفض الإثبات</button>`).join('')}</div>`;}).join('');projectList.appendChild(review);}
+      if(activeProjectRows.length){const review=document.createElement('div');review.className='card';review.innerHTML='<h2>إدارة طلبات المشاريع المقبولة</h2>'+activeProjectRows.map(r=>{const pending=(r.paymentLedger||[]).filter(x=>x.status==='pending_owner_review');const lifecycle=r.status==='accepted'&&['scheduled','awaiting_acceptance'].includes(String(r.workStatus||''))?`<button type="button" class="accept-btn" data-owner-project-start="${r.id}">بدء تشغيل المعدة</button>`:(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))?`<button type="button" class="accept-btn" data-owner-project-complete="${r.id}">تأكيد انتهاء العمل</button>`:'';const stageAction=r.paymentPlan==='four_installments'&&r.status!=='completed'?`<button type="button" class="back-btn" data-owner-project-stage-due="${r.id}">اعتماد إنجاز المرحلة التالية</button>`:'';return `<div class="operator-info" style="border-top:1px solid #eadfc5;padding-top:10px;margin-top:10px"><h3>${String(r.projectName||'مشروع').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))} — ${String(r.equipment||'معدة').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</h3><p>الحالة: ${r.status} · القيمة: ${Number(r.price||0).toLocaleString('ar-SA')} ريال · المتبقي: ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p>${lifecycle}${stageAction}${pending.map(x=>`<p>إثبات دفعة: ${Number(x.amount||0).toLocaleString('ar-SA')} ريال · المرجع: ${String(x.reference||'—').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</p><p class="muted">راجع الفاتورة المشتركة من صفحة الدخل لتأكيد الإثبات وتحديث السجلات المالية معًا.</p>`).join('')}</div>`;}).join('');projectList.appendChild(review);}
     }
     if(updatedLabel){
       updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
@@ -5411,9 +5401,7 @@ async function loadOperatorNewRequests(){
 async function operatorDecideProjectWorkState(requestId, action){
   const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');
   const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
-  if(!r.projectId)throw new Error('هذا الإجراء مخصص لطلبات المشاريع.');
-  if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية إدارة هذا الطلب.');
-  const now=new Date();
+  if(!r.projectId)throw new Error('هذا الإجراء مخصص لطلبات المشاريع.');if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية إدارة هذا الطلب.');const now=new Date();
   if(action==='start'){
     if(r.status!=='accepted'||!['scheduled','awaiting_acceptance'].includes(String(r.workStatus||'')))throw new Error('لا يمكن بدء التشغيل في حالة الطلب الحالية.');
     await window.ma3daUpdateDoc(ref,{status:'working',workStatus:'working',workStartedAt:now,workStartedBy:user.uid,updatedAt:now});return;
@@ -5422,18 +5410,31 @@ async function operatorDecideProjectWorkState(requestId, action){
     if(!['working','duration_expired'].includes(String(r.status||''))&&!['working','duration_expired'].includes(String(r.workStatus||'')))throw new Error('لا يمكن إنهاء العمل قبل بدء التشغيل.');
     const plannedEnd=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():new Date(r.scheduledEndAt||0);
     if(r.status!=='duration_expired'&&r.workStatus!=='duration_expired'&&Number.isFinite(plannedEnd.getTime())&&plannedEnd.getTime()>Date.now())throw new Error('لم تنتهِ المدة المتفق عليها. الإنهاء المبكر يحتاج مراجعة موظف الدعم.');
-    const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.map(x=>({...x})):[];
-    if(r.paymentPlan==='full_end'&&schedule[0]&&schedule[0].status!=='paid')schedule[0]={...schedule[0],status:'due',dueAt:now};
-    if(r.paymentPlan==='half_half'&&schedule[1]&&schedule[1].status!=='paid')schedule[1]={...schedule[1],status:'due',dueAt:now};
-    if(r.paymentPlan==='cash'&&schedule[0]&&schedule[0].status!=='paid')schedule[0]={...schedule[0],status:'due',dueAt:now,requiresReceiptVerification:true};
-    if(r.paymentPlan==='four_installments'){const next=schedule.findIndex(x=>x.status==='not_due');if(next>=0&&schedule.slice(0,next).every(x=>x.status==='paid'))schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};}
-    await window.ma3daUpdateDoc(ref,{status:'completed',workStatus:'completed',workCompletedAt:now,workCompletedBy:user.uid,paymentSchedule:schedule,settlementStatus:Number(r.remainingBalance??r.price??0)>0?'needs_settlement':(r.settlementStatus||'settled'),requestClosed:Number(r.remainingBalance??r.price??0)<=0,updatedAt:now});return;
+    if(typeof window.ma3daRunTransaction!=='function')throw new Error('المعاملات المالية الآمنة غير متاحة.');
+    await window.ma3daRunTransaction(async tx=>{
+      const rs=await tx.get(ref);if(!rs.exists())throw new Error('الطلب غير موجود.');const current=rs.data()||{};if((current.equipmentOwnerId||current.ownerId||current.operatorId)!==user.uid)throw new Error('لا تملك صلاحية إدارة هذا الطلب.');
+      const schedule=Array.isArray(current.paymentSchedule)?current.paymentSchedule.map(x=>({...x})):[];
+      if(current.paymentPlan==='full_end'&&schedule[0]&&schedule[0].status!=='paid')schedule[0]={...schedule[0],status:'due',dueAt:now};
+      if(current.paymentPlan==='half_half'&&schedule[1]&&schedule[1].status!=='paid')schedule[1]={...schedule[1],status:'due',dueAt:now};
+      if(current.paymentPlan==='cash'&&schedule[0]&&schedule[0].status!=='paid')schedule[0]={...schedule[0],status:'due',dueAt:now,requiresReceiptVerification:true};
+      if(current.paymentPlan==='four_installments'){const next=schedule.findIndex(x=>x.status==='not_due');if(next>=0&&schedule.slice(0,next).every(x=>x.status==='paid'))schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};}
+      const q=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoices'),window.ma3daWhere('requestId','==',requestId));const is=await tx.get(q);const invoices=[];is.forEach(d=>{const x=d.data()||{};if(x.invoiceKind==='agreement_installment')invoices.push({id:d.id,...x});});
+      const patch={status:'completed',workStatus:'completed',workCompletedAt:now,workCompletedBy:user.uid,paymentSchedule:schedule,settlementStatus:Number(current.remainingBalance??current.price??0)>0?'needs_settlement':(current.settlementStatus||'settled'),requestClosed:Number(current.remainingBalance??current.price??0)<=0,updatedAt:now};
+      tx.update(ref,patch);
+      for(const inv of invoices){const item=schedule.find(x=>Number(x.installment)===Number(inv.installmentIndex));if(!item)continue;const dueAt=item.dueAt||((item.status==='due'&&(item.ownerMarkedStageComplete||['work_completion','cash_verification_at_completion'].includes(item.dueRule)))?now:inv.dueAt||null);tx.update(window.ma3daDoc(window.ma3daDB,'projectInvoices',inv.id),{dueAt:dueAt||null,paymentStatus:item.status==='paid'?'paid':(item.status==='due'?'unpaid':inv.paymentStatus),updatedAt:now});}
+    });return;
   }
   if(action==='stage'){
     if(r.paymentPlan!=='four_installments')throw new Error('الدفعات المرحلية غير مفعلة لهذا الاتفاق.');
-    const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.map(x=>({...x})):[];const next=schedule.findIndex(x=>x.status==='not_due');if(next<0)throw new Error('لا توجد مرحلة تالية لاستحقاقها.');if(schedule.slice(0,next).some(x=>x.status!=='paid'))throw new Error('لا يمكن استحقاق المرحلة التالية قبل تأكيد سداد المرحلة السابقة.');
-    if(!confirm(`تأكيد إنجاز ${schedule[next].label||'المرحلة التالية'} وجعل دفعتها مستحقة للمقاول؟`))return;
-    schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};await window.ma3daUpdateDoc(ref,{paymentSchedule:schedule,updatedAt:now});return;
+    const preview=Array.isArray(r.paymentSchedule)?r.paymentSchedule:[];const previewNext=preview.findIndex(x=>x.status==='not_due');if(previewNext<0)throw new Error('لا توجد مرحلة تالية لاستحقاقها.');if(preview.slice(0,previewNext).some(x=>x.status!=='paid'))throw new Error('لا يمكن استحقاق المرحلة التالية قبل تأكيد سداد المرحلة السابقة.');
+    if(!confirm('تأكيد إنجاز '+(preview[previewNext].label||'المرحلة التالية')+' وجعل دفعتها مستحقة للمقاول؟'))return;
+    if(typeof window.ma3daRunTransaction!=='function')throw new Error('المعاملات المالية الآمنة غير متاحة.');
+    await window.ma3daRunTransaction(async tx=>{
+      const rs=await tx.get(ref);if(!rs.exists())throw new Error('الطلب غير موجود.');const current=rs.data()||{};if((current.equipmentOwnerId||current.ownerId||current.operatorId)!==user.uid)throw new Error('لا تملك صلاحية إدارة هذا الطلب.');if(current.paymentPlan!=='four_installments')throw new Error('خطة الدفعات لا تسمح بهذا الإجراء.');
+      const schedule=Array.isArray(current.paymentSchedule)?current.paymentSchedule.map(x=>({...x})):[];const next=schedule.findIndex(x=>x.status==='not_due');if(next<0||schedule.slice(0,next).some(x=>x.status!=='paid'))throw new Error('تغيرت حالة الدفعات؛ حدّث الطلب وحاول مجددًا.');
+      const q=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoices'),window.ma3daWhere('requestId','==',requestId));const is=await tx.get(q);const invoice=[];is.forEach(d=>{const x=d.data()||{};if(x.invoiceKind==='agreement_installment'&&Number(x.installmentIndex)===Number(schedule[next].installment))invoice.push({id:d.id,...x});});if(!invoice.length)throw new Error('فاتورة القسط التالي غير موجودة؛ لم يتم تغيير الاستحقاق.');
+      schedule[next]={...schedule[next],status:'due',dueAt:now,ownerMarkedStageComplete:true};tx.update(ref,{paymentSchedule:schedule,updatedAt:now});for(const inv of invoice)tx.update(window.ma3daDoc(window.ma3daDB,'projectInvoices',inv.id),{dueAt:now,paymentStatus:'unpaid',status:'issued',updatedAt:now});
+    });return;
   }
 }
 document.addEventListener('click',async event=>{
@@ -5441,19 +5442,7 @@ document.addEventListener('click',async event=>{
   const button=start||finish||stage;button.disabled=true;try{await operatorDecideProjectWorkState(button.dataset.ownerProjectStart||button.dataset.ownerProjectComplete||button.dataset.ownerProjectStageDue,start?'start':finish?'complete':'stage');alert(start?'تم تسجيل بدء التشغيل.':finish?'تم إنهاء العمل وتحديث حالة التسوية.':'تم تحديث استحقاق المرحلة.');await loadOperatorNewRequests();}catch(error){console.error('Project work lifecycle:',error);alert(error.message||'تعذر تحديث حالة العمل.');}finally{button.disabled=false;}
 });
 
-async function operatorDecideProjectPayment(requestId, ledgerId, approve){
-  const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');
-  const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
-  if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('لا تملك صلاحية مراجعة هذه الدفعة.');
-  const ledger=Array.isArray(r.paymentLedger)?r.paymentLedger.slice():[];const index=ledger.findIndex(x=>x.id===ledgerId);if(index<0||ledger[index].status!=='pending_owner_review')throw new Error('لا توجد دفعة معلقة بهذه البيانات.');
-  const entry={...ledger[index],status:approve?'confirmed':'rejected',reviewedBy:user.uid,reviewedAt:new Date()};ledger[index]=entry;
-  const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.slice():[];const installmentIndex=Number(entry.installmentIndex);const installment=schedule[installmentIndex];let paidTotal=Number(r.paidTotal||0);
-  if(approve&&installment){paidTotal=Math.round((paidTotal+Number(entry.amount||0))*100)/100;const dueRemaining=Math.max(0,Math.round((Number(installment.amount||0)-Number(installment.paidAmount||0)-Number(entry.amount||0))*100)/100);schedule[installmentIndex]={...installment,status:dueRemaining<=0?'paid':'due',paidAmount:Math.round((Number(installment.paidAmount||0)+Number(entry.amount||0))*100)/100,paidAt:new Date(),reviewStatus:'confirmed'};}
-  else if(installment){schedule[installmentIndex]={...installment,status:'due',reviewStatus:'rejected'};}
-  if(approve&&r.paymentPlan==='half_half'&&schedule[installmentIndex]?.status==='paid'){const next=schedule.findIndex((x,i)=>i>installmentIndex&&x.status==='not_due');if(next>=0)schedule[next]={...schedule[next],status:'due',dueAt:new Date()};}
-  const total=Number(r.price||0);const remaining=Math.max(0,Math.round((total-paidTotal)*100)/100);
-  await window.ma3daUpdateDoc(ref,{paymentLedger:ledger,paymentSchedule:schedule,paidTotal,remainingBalance:remaining,paymentStatus:remaining<=0?'paid':(paidTotal>0?'partially_paid':'unpaid'),updatedAt:new Date()});
-}
+async function operatorDecideProjectPayment(){throw new Error('مسار تأكيد الدفعات المنفصل مؤرشف. افتح الفاتورة المشتركة وأكّد الإثبات منها لتحديث السجلات المالية معًا.');}
 document.addEventListener('click',async event=>{const approve=event.target.closest('[data-owner-approve-project-payment]');const reject=event.target.closest('[data-owner-reject-project-payment]');if(!approve&&!reject)return;const button=approve||reject;button.disabled=true;try{await operatorDecideProjectPayment(button.dataset.ownerApproveProjectPayment||button.dataset.ownerRejectProjectPayment,button.dataset.ledgerId,!!approve);alert(approve?'تم تأكيد الدفعة وتحديث الرصيد.':'تم رفض إثبات الدفعة وإعادتها للمقاول.');await loadOperatorNewRequests();}catch(error){console.error('Project payment review:',error);alert(error.message||'تعذر مراجعة الدفعة.');}finally{button.disabled=false;}});
 
 /* Tabs and manual refresh update the lists only; the full page is not reloaded. */
@@ -10455,11 +10444,34 @@ async function openContractorHome() {
   let contractorNearbyEquipmentCache = [];
 
   function contractorLoadLeaflet(){
+    if(window.L)return window.L;
     return new Promise((resolve,reject)=>{
-      if(window.L){resolve(window.L);return;}
       const existing=document.querySelector('script[data-ma3da-leaflet]');
-      if(existing){existing.addEventListener('load',()=>resolve(window.L),{once:true});existing.addEventListener('error',reject,{once:true});return;}
-      const tag=document.createElement('script');tag.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';tag.async=true;tag.dataset.ma3daLeaflet='1';tag.onload=()=>window.L?resolve(window.L):reject(new Error('Leaflet unavailable'));tag.onerror=()=>reject(new Error('Map library failed'));document.head.appendChild(tag);
+      const tag=existing||document.createElement('script');
+      let settled=false;
+      const finish=(error)=>{
+        if(settled)return;
+        settled=true;
+        clearTimeout(timeoutId);
+        tag.removeEventListener('load',onLoad);
+        tag.removeEventListener('error',onError);
+        if(error)reject(error);
+        else if(window.L)resolve(window.L);
+        else reject(new Error('Leaflet unavailable'));
+      };
+      const onLoad=()=>finish(window.L?null:new Error('Leaflet unavailable'));
+      const onError=()=>finish(new Error('Map library failed'));
+      const timeoutId=setTimeout(()=>finish(new Error('Map library timed out')),8000);
+      tag.addEventListener('load',onLoad,{once:true});
+      tag.addEventListener('error',onError,{once:true});
+      if(!existing){
+        tag.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        tag.async=true;
+        tag.dataset.ma3daLeaflet='1';
+        document.head.appendChild(tag);
+      }else if(existing.dataset.ma3daLeafletLoaded==='1'){
+        finish(window.L?null:new Error('Leaflet unavailable'));
+      }
     });
   }
 
@@ -10512,7 +10524,7 @@ async function openContractorHome() {
     const submit=document.getElementById('submitContractorRequestBtn');
     if(submit)submit.textContent=project?'حفظ تعديلات المشروع':'حفظ المشروع';
     contractorShowScreen('contractorRequestScreen');
-    await contractorInitProjectMap();
+    contractorInitProjectMap().catch(error=>console.warn('Project map initialization skipped:',error));
   }
   const contractorCreateProjectBtn=document.getElementById('contractorCreateProjectBtn');
   if(contractorCreateProjectBtn)contractorCreateProjectBtn.addEventListener('click',()=>contractorStartProjectForm());
@@ -10674,8 +10686,10 @@ async function openContractorHome() {
       else if(item.dueRule==='work_completion'||item.dueRule==='cash_verification_at_completion')dueAt=end;
       else if(item.dueRule==='scheduled_installment_2')dueAt=new Date(start.getTime()+(end.getTime()-start.getTime())/3);
       else if(item.dueRule==='scheduled_installment_3')dueAt=new Date(start.getTime()+2*(end.getTime()-start.getTime())/3);
-      const invoiceNumber=`M3-P-${Date.now()}-${index+1}`;
-      const invoiceRef=await window.ma3daAddDoc(invoiceCollection,{
+      const invoiceNumber='M3-P-'+requestId+'-'+(index+1);
+      const stableInvoiceId='M3P_'+String(requestId).replace(/[^a-zA-Z0-9_-]/g,'_')+'_'+(index+1);
+      const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices',stableInvoiceId);
+      await window.ma3daRunTransaction(async tx=>{const already=await tx.get(invoiceRef);if(already.exists())return;tx.set(invoiceRef,{
         invoiceKind:'agreement_installment',invoiceNumber,requestId,projectId:request.projectId||'',projectName:request.projectName||'',
         contractorId:request.contractorId||request.requesterId||request.customerId||'',contractorName:request.contractorName||'',
         ownerId:request.equipmentOwnerId||request.ownerId||request.operatorId||'',equipmentOwnerId:request.equipmentOwnerId||request.ownerId||request.operatorId||'',
@@ -10684,7 +10698,8 @@ async function openContractorHome() {
         invoiceAmount:Math.round(Number(item.amount||0)*100)/100,agreementTotal:total,paidAmount:0,remainingAmount:Math.round(Number(item.amount||0)*100)/100,
         currency:'SAR',description:`${item.label} — ${request.equipment||'معدة'} — ${request.projectName||'مشروع'}`,
         dueRule:item.dueRule,dueAt:dueAt||null,paymentMethod:request.paymentPlan==='cash'?'cash':'gateway',
-        status:'issued',paymentStatus:'unpaid',settlementStatus:'settlement_pending',paymentEvents:[],createdBy:request.contractorId||request.requesterId||'',createdAt:new Date(),updatedAt:new Date(),schemaVersion:4
+        status:'issued',paymentStatus:'unpaid',settlementStatus:'settlement_pending',paymentEvents:[],financialPolicyVersion:'ma3da-finance-v1',createdBy:request.contractorId||request.requesterId||'',createdAt:new Date(),updatedAt:new Date(),schemaVersion:5
+      });
       });
       if(invoiceRef?.id)createdIds.push(invoiceRef.id);
     }
@@ -10732,8 +10747,10 @@ async function openContractorHome() {
     if(!Number.isFinite(price)||price<=0){alert('تعذر احتساب القيمة. تحقق من سعر الساعة وجدول التشغيل.');return;}
     button.disabled=true;button.textContent='جارٍ إرسال الطلب…';
     try{
-      const profile=contractorGetProfile()||{};const paymentSchedule=ma3daBuildProjectPaymentSchedule(price,paymentPlan);const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name||contractorSelectedProject.projectName||'',projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration:durationLabel,durationUnit,durationCount,durationHours:hours,scheduledStartAt:startAt,scheduledEndAt:scheduleEnd,dailyStartTime,dailyEndTime,workDays,scheduledWorkDays,restDays:[0,1,2,3,4,5,6].filter(day=>!workDays.includes(day)),hoursPerWorkday,operator,notes,price,originalPrice:price,hourlyPrice,paymentPlan,installmentCount,paymentTerms,paymentStatus:'unpaid',paymentSchedule,paymentLedger:[],paidTotal:0,remainingBalance:price,agreementVersion:1,agreementStatus:'awaiting_owner_decision',extensionStatus:'none',extensionHistory:[],workStatus:'awaiting_acceptance',earlyFinishStatus:'none',earlyFinishHistory:[],settlementPolicy:paymentTerms,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date(),updatedAt:new Date()};
+      const profile=contractorGetProfile()||{};const paymentSchedule=ma3daBuildProjectPaymentSchedule(price,paymentPlan);const requestData={location:contractorSelectedProject.address||contractorSelectedProject.city,projectId:contractorSelectedProject.id,projectName:contractorSelectedProject.name||contractorSelectedProject.projectName||'',projectCity:contractorSelectedProject.city,projectLatitude:contractorSelectedProject.latitude,projectLongitude:contractorSelectedProject.longitude,projectCoordinates:contractorSelectedProject.coordinates,equipment:equipment.type||equipment.equipmentType||equipment.name||'معدة',equipmentId:equipment.id,equipmentOwnerId:equipment.ownerId||equipment.operatorId||equipment.userId||'',equipmentModel:equipment.model||'',equipmentImage:equipment.image||equipment.imageUrl||'',equipmentCity:equipment.city||'',equipmentLatitude:contractorCoordinatesForEquipment(equipment)?.lat??null,equipmentLongitude:contractorCoordinatesForEquipment(equipment)?.lng??null,distanceKm:equipment._distanceKm,duration:durationLabel,durationUnit,durationCount,durationHours:hours,scheduledStartAt:startAt,scheduledEndAt:scheduleEnd,dailyStartTime,dailyEndTime,workDays,scheduledWorkDays,restDays:[0,1,2,3,4,5,6].filter(day=>!workDays.includes(day)),hoursPerWorkday,operator,notes,price,originalPrice:price,hourlyPrice,paymentPlan,installmentCount,paymentTerms,paymentStatus:'unpaid',paymentSchedule,paymentLedger:[],paidTotal:0,remainingBalance:price,financialPolicyVersion:'ma3da-finance-v1',agreementVersion:1,agreementStatus:'awaiting_owner_decision',extensionStatus:'none',extensionHistory:[],workStatus:'awaiting_acceptance',earlyFinishStatus:'none',earlyFinishHistory:[],settlementPolicy:paymentTerms,customerId:user.uid,customerEmail:user.email||'',requesterId:user.uid,requesterRole:'contractor',requesterType:'contractor',contractorId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCity:profile.city||'',contractorCompany:profile.company||'',status:'searching',createdAt:new Date(),updatedAt:new Date()};
       const result=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),requestData);
+      const trackingSection=document.getElementById('contractorProjectTrackingSection');
+      if(trackingSection)trackingSection.hidden=false;
       alert('تم إرسال طلب المعدة لهذا المشروع بنجاح. ستظهر حالة الطلب في قسم المتابعة أسفل الصفحة.');
       await loadContractorProjectRequestTracking();
       document.getElementById('contractorProjectTrackingSection')?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -10788,9 +10805,15 @@ async function openContractorHome() {
     const target=document.getElementById('contractorProjectEquipmentTracking');if(!target||!contractorSelectedProject)return;
     try{
       const user=await getContractorUser();if(!user?.uid){target.innerHTML='<div class="card">سجّل الدخول لعرض طلبات المشروع.</div>';return;}
-      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));const rows=[];
+      const requestCollection=window.ma3daCollection(window.ma3daDB,'requests');
+      const requestQuery=window.ma3daQuery&&window.ma3daWhere
+        ? window.ma3daQuery(requestCollection,window.ma3daWhere('projectId','==',contractorSelectedProject.id))
+        : requestCollection;
+      const snap=await window.ma3daGetDocs(requestQuery);const rows=[];
       snap.forEach(doc=>{const r=doc.data()||{};if(r.projectId===contractorSelectedProject.id&&(r.contractorId||r.requesterId||r.customerId)===user.uid)rows.push({id:doc.id,...r});});
-      if(!rows.length){target.innerHTML='<div class="card">لا توجد طلبات معدات لهذا المشروع حتى الآن.</div>';return;}
+      const trackingSection=document.getElementById('contractorProjectTrackingSection');
+      if(trackingSection)trackingSection.hidden=rows.length===0;
+      if(!rows.length){target.innerHTML='<div class="card">بعد إرسال طلب المعدة، ستظهر متابعته هنا.</div>';return;}
       const now=Date.now();
       for(const r of rows){
         const endMs=operatorRequestDateValue(r.scheduledEndAt);
@@ -10809,7 +10832,7 @@ async function openContractorHome() {
         const canEarlyFinish=(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))&&!['pending_support','approved'].includes(r.earlyFinishStatus);
         return `<div class="contractor-tracking-item"><h3>${escapeContractorHtml(r.equipment||'معدة')} — ${escapeContractorHtml(r.equipmentModel||'')}</h3><p><strong>الحالة:</strong> ${escapeContractorHtml(({searching:'بانتظار صاحب المعدة',accepted:'مقبول — بانتظار التشغيل/مستمر',working:'قيد التشغيل',duration_expired:'انتهت المدة — بانتظار قرار الأطراف',extension_requested:'طلب تمديد معلّق',rejected:'مرفوض',completed:'منتهٍ',cancelled:'ملغى'})[r.status]||r.status||'—')}</p><p><strong>المدة:</strong> ${escapeContractorHtml(r.duration||'—')} · ${escapeContractorHtml(r.dailyStartTime||'—')}–${escapeContractorHtml(r.dailyEndTime||'—')}</p><p><strong>أيام التشغيل:</strong> ${escapeContractorHtml((r.workDays||[]).map(d=>['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][Number(d)]||'').filter(Boolean).join('، ')||'—')}</p><p><strong>نهاية المدة:</strong> ${endDate&&!Number.isNaN(endDate.getTime())?escapeContractorHtml(endDate.toLocaleString('ar-SA')):'—'}</p><p><strong>القيمة المتفق عليها:</strong> ${money(r.price)} · <strong>المدفوع:</strong> ${money(paid)} · <strong>المتبقي:</strong> ${money(remaining)}</p><p><strong>طريقة الدفع:</strong> ${escapeContractorHtml(({half_half:'50% مقدّمًا و50% عند انتهاء العمل',four_installments:'أربع دفعات',full_upfront:'كامل المبلغ مقدّمًا',full_end:'كامل المبلغ عند انتهاء العمل',cash:'نقدًا مع توثيق الاستلام'})[r.paymentPlan]||r.paymentPlan||'—')}</p><p><strong>شروط التسوية:</strong> ${escapeContractorHtml(r.settlementPolicy||r.paymentTerms||'—')}</p>${paymentHtml}${r.extensionStatus==='pending'?'<p>طلب التمديد بانتظار صاحب المعدة. لا تتغير المدة أو القيمة قبل الموافقة.</p>':r.extensionStatus==='rejected'?'<p>رُفض التمديد. تواصل مع صاحب المعدة والدعم إذا استمر العمل.</p>':''}${r.earlyFinishStatus==='pending_support'?'<p>طلب الإنهاء المبكر بانتظار قرار موظف الدعم.</p>':''}${r.earlyFinishStatus==='approved'?'<p>اعتمد الدعم إنهاء العمل؛ التسوية المالية ما زالت بحاجة إلى مراجعة.</p>':''}${canExtend?`<button type="button" class="main-btn" data-contractor-extend="${escapeContractorHtml(r.id)}">طلب تمديد المدة</button>`:''}${canEarlyFinish?`<button type="button" class="back-btn" data-contractor-early-finish="${escapeContractorHtml(r.id)}">طلب إنهاء مبكر عبر الدعم</button>`:''}</div>`;
       }).join('');
-    }catch(err){console.error('Project request tracking failed:',err);target.innerHTML='<div class="card">تعذر تحميل طلبات المشروع.</div>';}
+    }catch(err){console.error('Project request tracking failed:',err);const trackingSection=document.getElementById('contractorProjectTrackingSection');if(trackingSection)trackingSection.hidden=false;target.innerHTML='<div class="card">تعذر تحميل متابعة الطلب الآن. اضغط تحديث للمحاولة مجددًا.</div>';}
   }
 
   document.addEventListener('click',async event=>{
@@ -10819,6 +10842,7 @@ async function openContractorHome() {
       const user=await getContractorUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
       const requestId=pay?pay.dataset.projectPaymentSubmit:early?early.dataset.contractorEarlyFinish:dispute.dataset.projectPaymentDispute;const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
       if((r.contractorId||r.requesterId||r.customerId)!==user.uid||!r.projectId)throw new Error('لا تملك صلاحية هذا الطلب.');
+      if(pay){if(typeof window.ma3daOpenProjectInvoicePayment!=='function')throw new Error('افتح صفحة الفواتير المشتركة لتسجيل الدفعة.');await window.ma3daOpenProjectInvoicePayment(requestId,Number(pay.dataset.installmentIndex));return;}
       if(dispute){
         const index=Number(dispute.dataset.installmentIndex);const schedule=Array.isArray(r.paymentSchedule)?r.paymentSchedule.slice():[];const item=schedule[index];if(!item||!['due','pending_review','paid'].includes(item.status))throw new Error('لا يمكن الاعتراض على هذه الدفعة في حالتها الحالية.');
         const reason=prompt('اكتب سبب الاعتراض على الدفعة؛ سيبقى المبلغ محل مراجعة الدعم:','');if(reason===null)return;if(!reason.trim())throw new Error('اكتب سبب الاعتراض.');
@@ -12280,7 +12304,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
     if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
     if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
-    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!projects;
+    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true; // نظام المراحل القديم مؤرشف
     if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
     if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
@@ -12291,12 +12315,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const owner=financeMode==='owner'; const customer=financeMode==='customer';
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
     if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
-    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=!owner;
+    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true; // النظام المرحلي القديم مؤرشف وغير نشط
     if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
     if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
     if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!(customer||owner);
     if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
-    if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=owner||customer;
+    if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=true; // النظام المرحلي القديم مؤرشف وغير نشط
     if($f('contractorCreateInvoiceCard'))$f('contractorCreateInvoiceCard').hidden=true;
     if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner||customer;
     if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=!owner;
@@ -12313,8 +12337,18 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
       if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
     }
-    loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);});
+    return loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);throw err;});
   }
+  window.ma3daOpenProjectInvoicePayment=async(requestId,zeroBasedIndex)=>{
+    await openFinance('contractor');
+    const invoice=cachedInvoices.find(i=>i.requestId===requestId&&i.invoiceKind==='agreement_installment'&&Number(i.installmentIndex)===Number(zeroBasedIndex)+1);
+    if(!invoice)throw new Error('لم تُنشأ الفاتورة المشتركة لهذا القسط بعد؛ حدّث الفواتير أو تواصل مع الدعم.');
+    if(invoice.paymentStatus==='paid')throw new Error('هذا القسط مسدد بالفعل.');
+    const select=$f('contractorPaymentInvoice');if(select)select.value=invoice.id;const summary=paymentSummary(invoice);
+    if($f('contractorPaymentAmount'))$f('contractorPaymentAmount').value=String(Math.max(0,summary.remaining-summary.pending).toFixed(2));
+    if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=false;$f('contractorSubmitPaymentCard')?.scrollIntoView?.({behavior:'smooth',block:'start'});
+    say('contractorPaymentFeedback','تسجيل الإثبات يتم من الفاتورة المشتركة، ويُحدّث سجل الدفعات والطلب معًا بعد المراجعة.');
+  };
   function ensureFinanceRealtimeUpdates(){
     if(typeof window.ma3daOnSnapshot!=='function'||!window.ma3daDB)return;
     const refreshAfterChange=()=>{
@@ -12355,7 +12389,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const accepted=['accepted','arrived','working','completed','complete','invoice_pending','invoice_issued','payment_pending','paid','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
       return isProject && ownerId===user.uid && accepted;
     });
-    cachedInvoices=invoices.filter(i=>financeMode==='owner'?(i.ownerId===user.uid||i.equipmentOwnerId===user.uid):(i.contractorId===user.uid));
+    cachedInvoices=invoices.filter(i=>{const activeKind=i.invoiceKind==='agreement_installment'||i.invoiceKind==='customer_booking';if(!activeKind)return false;if(financeMode==='owner')return (i.ownerId===user.uid||i.equipmentOwnerId===user.uid);if(financeMode==='customer')return i.customerId===user.uid;return i.invoiceKind==='agreement_installment'&&i.contractorId===user.uid;});
     cachedPhases=phaseRows.filter(ph=>financeMode==='owner'?ph.ownerId===user.uid:ph.contractorId===user.uid);
     const invoiceIds=new Set(cachedInvoices.map(i=>i.id));
     cachedPayments=payments.filter(p=>invoiceIds.has(p.invoiceId));
@@ -12380,27 +12414,63 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       else {list.innerHTML='<h3>فواتير طلبات التأجير</h3>'+rows.sort((a,b)=>Number(b.invoiceIssuedAt||b.workCompletedAt||b.completedAt||0)-Number(a.invoiceIssuedAt||a.workCompletedAt||a.completedAt||0)).map(r=>{
         const amount=Number(r.invoiceAmount||r.finalAmount||r.price||0);
         const state=r.paymentStatus==='paid'?'مسددة ومؤكدة':r.invoiceStatus==='issued'?'الفاتورة صادرة — بانتظار الدفع':r.status==='invoice_pending'?'بانتظار إصدار الفاتورة':'بانتظار التسوية';
-        const ownerDetails='';
+        const sharedInvoice=cachedInvoices.find(i=>i.id===r.sharedInvoiceId||i.requestId===r.id&&i.invoiceKind==='customer_booking');
+        const invoicePayments=sharedInvoice?cachedPayments.filter(p=>p.invoiceId===sharedInvoice.id):[];
+        const confirmButtons=financeMode==='owner'?invoicePayments.filter(p=>p.status==='pending_verification').map(p=>`<div class="ma3da-finance-row"><p>إثبات سداد: ${money(p.amount)} — ${esc(p.reference||'بدون مرجع')}</p><button class="main-btn" type="button" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button></div>`).join(''):'';
         const issueButton=financeMode==='owner'&&!r.invoiceNumber?`<button class="main-btn" type="button" data-issue-booking-invoice="${esc(r.id)}">إصدار فاتورة لهذا الطلب</button>`:'';
-        const payNotice=financeMode==='customer'&&r.paymentStatus!=='paid'?'<p class="muted">الدفع الإلكتروني غير مفعّل حتى ربط بوابة دفع معتمدة. لا تعتبر التحويل خارج مِعدة دفعًا داخل التطبيق.</p>':'';
-        return `<div class="ma3da-finance-row"><h3>${esc(r.invoiceNumber||'فاتورة لم تصدر بعد')}</h3><p><strong>رقم الطلب:</strong> ${esc(r.id)}</p><p><strong>المعدة:</strong> ${esc(r.equipment||'معدة')}</p><p><strong>الموقع:</strong> ${esc(r.location||'—')}</p><p><strong>تاريخ الفاتورة:</strong> ${when(r.invoiceIssuedAt||r.workCompletedAt||r.completedAt)}</p><p><strong>قيمة الفاتورة:</strong> ${money(amount)}</p>${ownerDetails}<p><strong>حالة الفاتورة والسداد:</strong> <span class="ma3da-finance-status">${esc(state)}</span></p><p><strong>حالة الطلب:</strong> ${esc(r.requestClosed?'مغلق ماليًا':'مفتوح حتى تأكيد السداد')}</p>${issueButton}${payNotice}</div>`;
+        const payButton=financeMode==='customer'&&r.invoiceNumber&&r.paymentStatus!=='paid'?`<button class="main-btn" type="button" data-booking-submit-payment="${esc(r.id)}">تسجيل إثبات سداد للمراجعة</button>`:'';
+        const payNotice=financeMode==='customer'&&r.paymentStatus!=='paid'?'<p class="muted">هذا الزر يسجّل إثبات تحويل أو سداد نقدي للمراجعة فقط. الدفع الإلكتروني (Apple Pay/مدى/Visa) غير مفعّل حتى ربط بوابة دفع وتأكيدها من الخادم.</p>':'';
+        return `<div class="ma3da-finance-row"><h3>${esc(r.invoiceNumber||'فاتورة لم تصدر بعد')}</h3><p><strong>رقم الطلب:</strong> ${esc(r.id)}</p><p><strong>المعدة:</strong> ${esc(r.equipment||'معدة')}</p><p><strong>الموقع:</strong> ${esc(r.location||'—')}</p><p><strong>تاريخ الفاتورة:</strong> ${when(r.invoiceIssuedAt||r.workCompletedAt||r.completedAt)}</p><p><strong>قيمة الفاتورة:</strong> ${money(amount)}</p><p><strong>حالة الفاتورة والسداد:</strong> <span class="ma3da-finance-status">${esc(state)}</span></p><p><strong>حالة الطلب:</strong> ${esc(r.requestClosed?'مغلق ماليًا':'مفتوح حتى تأكيد السداد')}</p>${issueButton}${payButton}${payNotice}${confirmButtons}</div>`;
       }).join('');}
     }
     const select=$f('ownerBookingInvoiceRequest');
     if(select){const eligible=rows.filter(r=>!r.invoiceNumber&&(r.status==='invoice_pending'||r.status==='completed'));select.innerHTML='<option value="">اختر طلبًا انتهى العمل فيه</option>'+eligible.map(r=>`<option value="${esc(r.id)}">${esc(r.equipment||'معدة')} — ${esc(r.location||'الموقع غير محدد')} — ${money(r.price||0)}</option>`).join('');if(!eligible.length)select.innerHTML='<option value="">لا توجد طلبات بانتظار إصدار فاتورة</option>';}
   }
+  async function submitBookingPaymentProof(requestId){
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      if(typeof window.ma3daRunTransaction!=='function'||typeof window.ma3daNewPaymentRef!=='function')throw new Error('طبقة المعاملات المالية غير جاهزة.');
+      const requestRef=window.ma3daDoc(window.ma3daDB,'requests',requestId);
+      const paymentRef=window.ma3daNewPaymentRef();
+      const cachedInvoice=cachedInvoices.find(i=>i.requestId===requestId&&i.invoiceKind==='customer_booking');
+      const cachedPaid=cachedInvoice?cachedPayments.filter(x=>x.invoiceId===cachedInvoice.id&&['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0):0;
+      const cachedPending=cachedInvoice?cachedPayments.filter(x=>x.invoiceId===cachedInvoice.id&&x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0):0;
+      const suggested=Math.max(0,Number(cachedInvoice?.invoiceAmount||0)-cachedPaid-cachedPending);
+      const raw=prompt('أدخل مبلغ إثبات السداد (ريال سعودي):',suggested.toFixed(2));if(raw===null)return;const amount=Math.round(Number(raw)*100)/100;if(!Number.isFinite(amount)||amount<=0||amount>suggested)throw new Error('أدخل مبلغًا صحيحًا لا يتجاوز المتبقي الظاهر.');
+      const reference=(prompt('رقم مرجع التحويل أو وصف السداد النقدي (اختياري):','')||'').trim();
+      await window.ma3daRunTransaction(async tx=>{
+        const rs=await tx.get(requestRef);if(!rs.exists())throw new Error('الطلب غير موجود.');const request=rs.data()||{};
+        if(request.customerId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');
+        if(!request.sharedInvoiceId)throw new Error('الفاتورة المشتركة غير جاهزة؛ اطلب من صاحب المعدة إصدارها.');
+        const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices',request.sharedInvoiceId);const ins=await tx.get(invoiceRef);if(!ins.exists())throw new Error('تعذر العثور على الفاتورة المشتركة.');const invoice={...ins.data(),id:ins.id};
+        if(invoice.invoiceKind!=='customer_booking'||invoice.requestId!==requestId)throw new Error('الفاتورة لا تطابق طلب العميل.');
+        if(invoice.paymentStatus==='paid')throw new Error('الفاتورة مسددة بالفعل.');
+        const q=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoicePayments'),window.ma3daWhere('invoiceId','==',invoice.id));const snaps=await tx.get(q);const rows=[];snaps.forEach(d=>rows.push({...d.data(),id:d.id}));
+        const paid=rows.filter(x=>['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0);const pending=rows.filter(x=>x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0);const remaining=Math.max(0,Math.round((Number(invoice.invoiceAmount||0)-paid-pending)*100)/100);if(remaining<=0)throw new Error('المبلغ المتبقي مغطى بدفعات مؤكدة أو معلقة.');
+        if(amount>remaining+0.009)throw new Error('تغير الرصيد أثناء التسجيل؛ أعد فتح الفاتورة وتحقق من المتبقي.');const now=new Date();
+        tx.set(paymentRef,{invoiceId:invoice.id,invoiceKind:'customer_booking',invoiceNumber:invoice.invoiceNumber||'',requestId,customerId:user.uid,ownerId:invoice.ownerId||invoice.equipmentOwnerId||'',amount,currency:'SAR',reference,method:'manual_receipt',status:'pending_verification',submittedBy:user.uid,submittedAt:now,note:'إثبات يدوي غير مؤكد؛ لا يُعد السداد نهائيًا إلا بعد مراجعة صاحب المعدة.',schemaVersion:5});
+        const ledger=(Array.isArray(request.paymentLedger)?request.paymentLedger:[]).filter(x=>x.paymentId!==paymentRef.id&&x.id!==paymentRef.id);ledger.push({id:paymentRef.id,paymentId:paymentRef.id,invoiceId:invoice.id,amount,reference,status:'pending_owner_review',submittedAt:now,submittedBy:user.uid});
+        tx.update(requestRef,{paymentLedger:ledger,paymentStatus:'pending_review',lastPaymentSubmittedAt:now,updatedAt:now});tx.update(invoiceRef,{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:now,updatedAt:now});
+      });
+      alert('تم تسجيل إثبات السداد للمراجعة فقط؛ لم يتم تأكيد وصول المال أو تنفيذ دفع إلكتروني.');await loadFinance();
+    }catch(err){if(err.message!=='أُلغي تسجيل إثبات السداد.')console.error('Submit booking payment proof failed:',err);if(err.message!=='أُلغي تسجيل إثبات السداد.')alert(err.message||'تعذر تسجيل إثبات السداد.');}
+  }
   async function issueBookingInvoice(requestIdFromButton){
     const btn=$f('ownerIssueBookingInvoiceBtn');if(btn)btn.disabled=true;
     try{
       const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      if(typeof window.ma3daRunTransaction!=='function'||typeof window.ma3daNewInvoiceRef!=='function')throw new Error('طبقة المعاملات المالية غير جاهزة.');
       const requestId=requestIdFromButton||$f('ownerBookingInvoiceRequest')?.value;if(!requestId)throw new Error('اختر الطلب أولًا.');
-      const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
-      const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';if(ownerId!==user.uid)throw new Error('لا تملك صلاحية إصدار فاتورة لهذا الطلب.');
-      if(r.invoiceNumber)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
-      const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');
-      const invoiceNumber=`M3-B-${Date.now()}`,now=new Date();
-      await window.ma3daUpdateDoc(ref,{invoiceNumber,invoiceAmount:Math.round(amount*100)/100,invoiceDescription:($f('ownerBookingInvoiceDescription')?.value||'').trim()||`فاتورة تأجير ${r.equipment||'معدة'}`,invoiceStatus:'issued',paymentStatus:'unpaid',invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false});
-      say('ownerBookingInvoiceFeedback',`صدرت الفاتورة ${invoiceNumber} وحُفظت على الطلب لتظهر للطرفين. لم يُحصّل أي مبلغ إلكتروني حتى الآن.`);if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
+      const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const invoiceRef=window.ma3daNewInvoiceRef();const now=new Date();
+      await window.ma3daRunTransaction(async tx=>{
+        const snap=await tx.get(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+        const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';if(ownerId!==user.uid)throw new Error('لا تملك صلاحية إصدار فاتورة لهذا الطلب.');
+        if(r.invoiceNumber||r.sharedInvoiceId)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
+        const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');const finalAmount=Math.round(amount*100)/100;const invoiceNumber='M3-B-'+Date.now();const description=($f('ownerBookingInvoiceDescription')?.value||'').trim()||'فاتورة تأجير '+(r.equipment||'معدة');
+        tx.set(invoiceRef,{invoiceKind:'customer_booking',invoiceNumber,requestId,customerId:r.customerId||'',customerEmail:r.customerEmail||'',ownerId,equipmentOwnerId:ownerId,ownerEmail:user.email||'',equipment:r.equipment||'معدة',equipmentId:r.equipmentId||'',projectName:r.projectName||'',invoiceAmount:finalAmount,paidAmount:0,remainingAmount:finalAmount,currency:'SAR',description,paymentMethod:'manual_receipt',status:'issued',paymentStatus:'unpaid',settlementStatus:'settlement_pending',paymentEvents:[],createdBy:user.uid,createdAt:now,updatedAt:now,schemaVersion:5,financialPolicyVersion:'ma3da-finance-v1'});
+        tx.update(ref,{invoiceNumber,sharedInvoiceId:invoiceRef.id,invoiceAmount:finalAmount,invoiceDescription:description,invoiceStatus:'issued',paymentStatus:'unpaid',paidTotal:0,remainingBalance:finalAmount,invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false,financialPolicyVersion:'ma3da-finance-v1'});
+      });
+      say('ownerBookingInvoiceFeedback','صدرت الفاتورة المشتركة وحُفظ رابطها مع الطلب في معاملة واحدة. لا يعني ذلك تحصيلًا إلكترونيًا.');if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
     }catch(err){console.error('Issue booking invoice failed:',err);say('ownerBookingInvoiceFeedback',err.message||'تعذر إصدار الفاتورة.',true);}finally{if(btn)btn.disabled=false;}
   }
   function renderOwnerRequestOptions(){
@@ -12469,15 +12539,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   function paymentSummary(invoice){
     const rows=cachedPayments.filter(p=>p.invoiceId===invoice.id);
-    const verified=rows.filter(p=>p.status==='verified');
+    const verified=rows.filter(p=>['verified','confirmed'].includes(p.status));
     const paid=verified.reduce((sum,p)=>sum+Number(p.amount||0),0);
     const pending=rows.filter(p=>p.status==='pending_verification').reduce((sum,p)=>sum+Number(p.amount||0),0);
     return {paid,pending,remaining:Math.max(0,Number(invoice.invoiceAmount||0)-paid)};
   }
   function renderInvoiceCards(){
     const list=$f('contractorInvoicesList');if(!list)return;
-    if(!cachedInvoices.length){list.innerHTML=`<div class="card"><h3>${financeMode==='owner'?'لا توجد فواتير تأجير حتى الآن':'لا توجد فواتير واردة حتى الآن'}</h3><p>${financeMode==='owner'?'عندما يعلن مسؤول المشروع انتهاء مرحلة، ستظهر هنا لإصدار فاتورتها.':'ستظهر هنا فواتير المراحل التي يصدرها أصحاب المعدات لمشاريعك.'}</p></div>`;return;}
-    const sorted=[...cachedInvoices].sort((a,b)=>{
+    const activeInvoices=cachedInvoices.filter(i=>i.invoiceKind==='agreement_installment');
+    if(!activeInvoices.length){list.innerHTML=`<div class="card"><h3>${financeMode==='owner'?'لا توجد فواتير مشاريع حتى الآن':'لا توجد فواتير مشاريع واردة حتى الآن'}</h3><p>${financeMode==='owner'?'ستظهر هنا فواتير اتفاقيات تأجير المعدات للمشاريع.':'ستظهر هنا الفواتير المشتركة لاتفاقيات تأجير المعدات للمشاريع.'}</p></div>`;return;}
+    const sorted=[...activeInvoices].sort((a,b)=>{
       const toTime=v=>{try{return (v?.toDate?v.toDate():new Date(v||0)).getTime()||0}catch(_){return 0}};
       return toTime(b.createdAt)-toTime(a.createdAt);
     });
@@ -12557,75 +12628,91 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   async function confirmPaymentReceived(paymentId){
     try{
-      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
-      const payment=cachedPayments.find(p=>p.id===paymentId);if(!payment)throw new Error('تعذر العثور على الدفعة.');
-      if(financeMode!=='owner'||(payment.ownerId!==user.uid))throw new Error('تأكيد الاستلام متاح لصاحب المعدة المرتبط بالفاتورة فقط.');
-      if(payment.status!=='pending_verification')throw new Error('هذه الدفعة ليست بانتظار تأكيد الاستلام.');
-      const invoice=cachedInvoices.find(i=>i.id===payment.invoiceId);if(!invoice)throw new Error('تعذر العثور على الفاتورة.');
-      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoicePayments',payment.id),{
-        status:'verified',verifiedBy:user.uid,verifiedAt:new Date(),
-        verificationMethod:'owner_confirmed_receipt',updatedAt:new Date()
-      });
-      const totalBefore=cachedPayments.filter(p=>p.invoiceId===invoice.id&&p.status==='verified').reduce((sum,p)=>sum+Number(p.amount||0),0);
-      const totalAfter=totalBefore+Number(payment.amount||0);
-      if(invoice.phaseTaskId){
-        const phase=cachedPhases.find(p=>p.id===invoice.phaseTaskId);
-        const complete=totalAfter>=Number(invoice.invoiceAmount||0);
-        await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',invoice.phaseTaskId),{
-          status:complete?'payment_confirmed':'partial_payment_confirmed',paymentConfirmedAt:new Date(),updatedAt:new Date()
-        });
-      }
-      const now=new Date();
-      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',invoice.id),{
-        paymentStatus:totalAfter>=Number(invoice.invoiceAmount||0)?'paid':'partially_paid',paidAmount:totalAfter,remainingAmount:Math.max(0,Number(invoice.invoiceAmount||0)-totalAfter),lastPaymentConfirmedAt:now,
-        paymentEvents:[...(Array.isArray(invoice.paymentEvents)?invoice.paymentEvents:[]),{type:'payment_confirmed',paymentId:payment.id,amount:Number(payment.amount||0),verifiedBy:user.uid,verifiedAt:now,method:payment.reference?'cash_or_transfer_receipt':'manual_receipt_review'}],updatedAt:now
-      });
-      if(invoice.requestId){
-        const requestRef=window.ma3daDoc(window.ma3daDB,'requests',invoice.requestId);const requestSnap=await window.ma3daGetDoc(requestRef);
-        if(requestSnap.exists()){
-          const request=requestSnap.data()||{};const paidTotal=Math.round((Number(request.paidTotal||0)+Number(payment.amount||0))*100)/100;const remainingBalance=Math.max(0,Math.round((Number(request.price||request.agreementTotal||0)-paidTotal)*100)/100);
-          const schedule=(Array.isArray(request.paymentSchedule)?request.paymentSchedule:[]).map(item=>Number(item.installment)===Number(invoice.installmentIndex)?{...item,paidAmount:Math.round((Number(item.paidAmount||0)+Number(payment.amount||0))*100)/100,status:Math.max(0,Number(item.amount||0)-Number(item.paidAmount||0)-Number(payment.amount||0))<=0?'paid':'due',paidAt:now,reviewStatus:'confirmed'}:item);
-          await window.ma3daUpdateDoc(requestRef,{paidTotal,remainingBalance,paymentStatus:remainingBalance<=0?'paid':paidTotal>0?'partially_paid':'unpaid',paymentSchedule:schedule,settlementStatus:remainingBalance<=0?'settled':'needs_settlement',requestClosed:remainingBalance<=0&&['completed','complete'].includes(String(request.status||'')),lastPaymentConfirmedAt:now,updatedAt:now});
+      const user=await getUser(); if(!user?.uid) throw new Error('سجّل الدخول أولًا.');
+      if(financeMode!=='owner') throw new Error('تأكيد الاستلام متاح لصاحب المعدة فقط.');
+      if(typeof window.ma3daRunTransaction!=='function') throw new Error('يلزم تحديث طبقة Firebase للمعاملات المالية الآمنة.');
+      const paymentRef=window.ma3daDoc(window.ma3daDB,'projectInvoicePayments',paymentId);
+      const result=await window.ma3daRunTransaction(async tx=>{
+        const ps=await tx.get(paymentRef); if(!ps.exists()) throw new Error('الدفعة غير موجودة.');
+        const payment={...ps.data(),id:ps.id};
+        if(payment.status!=='pending_verification') throw new Error('تمت مراجعة هذه الدفعة مسبقًا أو لم تعد معلقة.');
+        const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices',payment.invoiceId);
+        const is=await tx.get(invoiceRef); if(!is.exists()) throw new Error('الفاتورة المرتبطة بالدفعة غير موجودة.');
+        const invoice={...is.data(),id:is.id};
+        if((invoice.ownerId||invoice.equipmentOwnerId)!==user.uid || (payment.ownerId && payment.ownerId!==user.uid)) throw new Error('لا تملك صلاحية تأكيد هذه الفاتورة.');
+        if(!['agreement_installment','customer_booking'].includes(invoice.invoiceKind)) throw new Error('نوع الفاتورة غير معتمد في المسار المالي الحالي.');
+        const requestRef=invoice.requestId?window.ma3daDoc(window.ma3daDB,'requests',invoice.requestId):null;
+        const rs=requestRef?await tx.get(requestRef):null;
+        const request=rs&&rs.exists()?(rs.data()||{}):null;
+        const invoicePaymentsQuery=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoicePayments'),window.ma3daWhere('invoiceId','==',invoice.id));
+        const ips=await tx.get(invoicePaymentsQuery);
+        const invPayments=[];ips.forEach(d=>invPayments.push({...d.data(),id:d.id}));
+        const requestPaymentsQuery=invoice.requestId?window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoicePayments'),window.ma3daWhere('requestId','==',invoice.requestId)):null;
+        const rps=requestPaymentsQuery?await tx.get(requestPaymentsQuery):null;
+        const reqPayments=[];if(rps)rps.forEach(d=>reqPayments.push({...d.data(),id:d.id}));
+        const amount=Math.round(Number(payment.amount||0)*100)/100; if(!Number.isFinite(amount)||amount<=0) throw new Error('قيمة الدفعة غير صحيحة.');
+        const totalBefore=invPayments.filter(x=>x.id!==payment.id&&['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0);
+        const pendingOthers=invPayments.filter(x=>x.id!==payment.id&&x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0);
+        const invoiceTotal=Math.round(Number(invoice.invoiceAmount||0)*100)/100;
+        if(totalBefore+amount>invoiceTotal+0.009) throw new Error('تأكيد هذه الدفعة سيتجاوز قيمة الفاتورة. راجع الدفعات المسجلة.');
+        if(totalBefore+pendingOthers+amount>invoiceTotal+0.009) throw new Error('مجموع الدفعات المؤكدة والمعلقة يتجاوز قيمة الفاتورة؛ عالج الإثباتات المعلقة أولًا.');
+        const now=new Date(); const totalAfter=Math.round((totalBefore+amount)*100)/100; const invoiceRemaining=Math.max(0,Math.round((invoiceTotal-totalAfter)*100)/100);
+        const events=Array.isArray(invoice.paymentEvents)?invoice.paymentEvents.slice():[];
+        const ledger=request&&Array.isArray(request.paymentLedger)?request.paymentLedger.slice():[];
+        const li=ledger.findIndex(x=>x.id===payment.id||x.paymentId===payment.id);
+        const ledgerEntry={id:payment.id,paymentId:payment.id,invoiceId:invoice.id,amount,reference:payment.reference||'',status:'confirmed',submittedBy:payment.submittedBy||payment.customerId||payment.contractorId||'',submittedAt:payment.submittedAt||now,reviewedBy:user.uid,verifiedAt:now};
+        if(li>=0) ledger[li]={...ledger[li],...ledgerEntry}; else ledger.push(ledgerEntry);
+        let requestPatch=null;
+        if(request){
+          const paidAcrossRequest=reqPayments.filter(x=>x.id!==payment.id&&['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0)+amount;
+          const isBooking=invoice.invoiceKind==='customer_booking';
+          const requestTotal=isBooking?invoiceTotal:Number(request.price||request.agreementTotal||invoice.agreementTotal||invoiceTotal);
+          const requestPaid=Math.round(paidAcrossRequest*100)/100; const remaining=Math.max(0,Math.round((requestTotal-requestPaid)*100)/100);
+          let schedule=Array.isArray(request.paymentSchedule)?request.paymentSchedule.map(x=>({...x})):[];
+          if(!isBooking && Number(invoice.installmentIndex)>0){
+            const idx=schedule.findIndex(x=>Number(x.installment)===Number(invoice.installmentIndex));
+            if(idx>=0){const paidOnInvoice=totalAfter;schedule[idx]={...schedule[idx],paidAmount:paidOnInvoice,status:invoiceRemaining<=0?'paid':'due',paidAt:invoiceRemaining<=0?now:(schedule[idx].paidAt||null),reviewStatus:invoiceRemaining<=0?'confirmed':'partial'};}
+          }
+          const canClose=isBooking?remaining<=0:(remaining<=0&&['completed','complete','invoice_issued','paid'].includes(String(request.status||'')));
+          requestPatch={paymentLedger:ledger,paidTotal:requestPaid,remainingBalance:remaining,paymentStatus:remaining<=0?'paid':(requestPaid>0?'partially_paid':'unpaid'),paymentSchedule:schedule,settlementStatus:remaining<=0?'settled':'needs_settlement',requestClosed:canClose,lastPaymentConfirmedAt:now,updatedAt:now};
+          if(isBooking&&remaining<=0){requestPatch.status='paid';requestPatch.invoiceStatus='paid';requestPatch.paymentStatus='paid';}
         }
-      }
-      say('ownerInvoiceFeedback','تم توثيق تأكيد الدفعة وتحديث سجل الفاتورة المشتركة. هذا تأكيد يدوي للاستلام وليس إشعار بوابة دفع إلكترونية.');
+        tx.update(paymentRef,{status:'verified',verifiedBy:user.uid,verifiedAt:now,verificationMethod:'owner_confirmed_receipt',updatedAt:now});
+        tx.update(invoiceRef,{paymentStatus:invoiceRemaining<=0?'paid':'partially_paid',paidAmount:totalAfter,remainingAmount:invoiceRemaining,settlementStatus:invoiceRemaining<=0?'settled':'settlement_pending',lastPaymentConfirmedAt:now,paymentEvents:[...events,{type:'payment_confirmed',paymentId:payment.id,amount,verifiedBy:user.uid,verifiedAt:now,method:payment.reference?'cash_or_transfer_receipt':'manual_receipt_review'}],updatedAt:now});
+        if(requestRef&&requestPatch) tx.update(requestRef,requestPatch);
+        return {invoiceRemaining,requestRemaining:requestPatch?.remainingBalance??null};
+      });
+      say('ownerInvoiceFeedback','تم تأكيد الإثبات وتحديث الدفعة والفاتورة والطلب ضمن معاملة Firebase واحدة. هذا تأكيد يدوي للاستلام، وليس تحصيلًا إلكترونيًا.');
       await loadFinance();
-    }catch(err){console.error('Confirm payment receipt failed:',err);say('ownerInvoiceFeedback',err.message||'تعذر تأكيد استلام الدفعة. تحقق من صلاحيات Firebase.',true);}
+    }catch(err){console.error('Confirm payment receipt failed:',err);say('ownerInvoiceFeedback',err.message||'تعذر تأكيد استلام الدفعة. تحقق من الصلاحيات والاتصال.',true);}
   }
   async function submitPayment(invoiceIdFromButton){
     const btn=$f('contractorSubmitPaymentBtn');if(btn)btn.disabled=true;
     try{
       const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
-      const invoiceId=invoiceIdFromButton||$f('contractorPaymentInvoice')?.value;
-      const invoice=cachedInvoices.find(i=>i.id===invoiceId);
-      const amount=Number($f('contractorPaymentAmount')?.value);
-      const reference=($f('contractorPaymentReference')?.value||'').trim();
-      if(!invoice)throw new Error('اختر فاتورة واردة تخص أحد مشاريعك.');
-      if(invoice.contractorId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');
-      if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل قيمة دفعة صحيحة.');
-      const summary=paymentSummary(invoice);
-      if(amount>summary.remaining)throw new Error('قيمة الدفعة أكبر من المتبقي على الفاتورة.');
-      const paymentRef=await window.ma3daAddDoc(col('projectInvoicePayments'),{
-        invoiceId, contractorId:user.uid, ownerId:invoice.ownerId||invoice.equipmentOwnerId||'', projectId:invoice.projectId,
-        requestId:invoice.requestId||'', projectName:invoice.projectName||'', invoiceNumber:invoice.invoiceNumber||'',
-        stageNumber:invoice.stageNumber||null,stageName:invoice.stageName||'',phaseTaskId:invoice.phaseTaskId||'',
-        amount:Math.round(amount*100)/100, currency:'SAR', reference,
-        status:'pending_verification', submittedBy:user.uid, submittedAt:new Date(),
-        note:'إفادة مقدم الطلب غير مؤكدة؛ يلزم تأكيد صاحب المعدة لاستلام التحويل أو ربط مزود دفع موثوق.', schemaVersion:3
+      if(typeof window.ma3daRunTransaction!=='function'||typeof window.ma3daNewPaymentRef!=='function')throw new Error('طبقة المعاملات المالية غير جاهزة.');
+      const invoiceId=invoiceIdFromButton||$f('contractorPaymentInvoice')?.value;const invoiceCached=cachedInvoices.find(i=>i.id===invoiceId);if(!invoiceCached)throw new Error('اختر فاتورة واردة تخص أحد مشاريعك.');if(invoiceCached.contractorId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');
+      const amount=Math.round(Number($f('contractorPaymentAmount')?.value)*100)/100;const reference=($f('contractorPaymentReference')?.value||'').trim();if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل قيمة دفعة صحيحة.');
+      const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices',invoiceId);const requestRef=invoiceCached.requestId?window.ma3daDoc(window.ma3daDB,'requests',invoiceCached.requestId):null;const paymentRef=window.ma3daNewPaymentRef();
+      await window.ma3daRunTransaction(async tx=>{
+        const ins=await tx.get(invoiceRef);if(!ins.exists())throw new Error('الفاتورة غير موجودة.');const invoice={...ins.data(),id:ins.id};if(invoice.contractorId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');if(invoice.paymentStatus==='paid')throw new Error('الفاتورة مسددة بالفعل.');
+        let request=null;if(requestRef){const rs=await tx.get(requestRef);if(!rs.exists())throw new Error('طلب المشروع المرتبط بالفاتورة غير موجود.');request=rs.data()||{};if(request.contractorId!==user.uid)throw new Error('الطلب لا يتبع حساب المقاول الحالي.');}
+        const q=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoicePayments'),window.ma3daWhere('invoiceId','==',invoiceId));const snaps=await tx.get(q);const rows=[];snaps.forEach(d=>rows.push({...d.data(),id:d.id}));
+        const paid=rows.filter(x=>['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0);const pending=rows.filter(x=>x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0);const remaining=Math.max(0,Math.round((Number(invoice.invoiceAmount||0)-paid-pending)*100)/100);if(amount>remaining+0.009)throw new Error('قيمة الدفعة تتجاوز المتبقي بعد احتساب الدفعات المعلقة.');
+        if(invoice.invoiceKind==='agreement_installment'&&request){const idx=(Array.isArray(request.paymentSchedule)?request.paymentSchedule:[]).findIndex(x=>Number(x.installment)===Number(invoice.installmentIndex));if(idx>=0){const item=request.paymentSchedule[idx];if(item.status!=='due')throw new Error(item.status==='paid'?'هذا القسط مسدد بالفعل.':'لم يحِن موعد استحقاق هذا القسط بعد.');}}
+        if(invoice.dueAt){const due=invoice.dueAt?.toDate?invoice.dueAt.toDate():new Date(invoice.dueAt);if(Number.isFinite(due.getTime())&&due.getTime()>Date.now())throw new Error('لم يحِن موعد استحقاق هذه الدفعة بعد.');}
+        const now=new Date();tx.set(paymentRef,{invoiceId,invoiceKind:invoice.invoiceKind||'agreement_installment',contractorId:user.uid,ownerId:invoice.ownerId||invoice.equipmentOwnerId||'',projectId:invoice.projectId||'',requestId:invoice.requestId||'',projectName:invoice.projectName||'',invoiceNumber:invoice.invoiceNumber||'',installmentIndex:invoice.installmentIndex||null,amount,currency:'SAR',reference,method:'manual_receipt',status:'pending_verification',submittedBy:user.uid,submittedAt:now,note:'إثبات يدوي غير مؤكد؛ لا يعتبر تحصيلًا إلكترونيًا.',schemaVersion:5});
+        const ledger=request&&Array.isArray(request.paymentLedger)?request.paymentLedger.slice():[];ledger.push({id:paymentRef.id,paymentId:paymentRef.id,invoiceId,installmentIndex:Math.max(0,Number(invoice.installmentIndex||1)-1),amount,reference,status:'pending_owner_review',submittedAt:now,submittedBy:user.uid});
+        if(request){const schedule=(Array.isArray(request.paymentSchedule)?request.paymentSchedule.map(x=>({...x})):[]);const idx=schedule.findIndex(x=>Number(x.installment)===Number(invoice.installmentIndex));if(idx>=0)schedule[idx]={...schedule[idx],status:'pending_review',submittedAmount:Math.round((Number(schedule[idx].submittedAmount||0)+amount)*100)/100,submittedAt:now,receiptReference:reference};tx.update(requestRef,{paymentLedger:ledger,paymentSchedule:schedule,paymentStatus:'pending_review',updatedAt:now});}
+        tx.update(invoiceRef,{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:now,updatedAt:now});
       });
-      try{
-        await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',invoice.id),{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:new Date(),updatedAt:new Date()});
-        if(invoice.phaseTaskId)await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectPhaseTasks',invoice.phaseTaskId),{status:'payment_submitted',lastPaymentId:paymentRef?.id||'',lastPaymentSubmittedAt:new Date(),updatedAt:new Date()});
-      }catch(updateError){console.warn('Payment recorded but stage status update failed:',updateError);}
-      $f('contractorPaymentAmount').value='';$f('contractorPaymentReference').value='';
-      say('contractorPaymentFeedback','تم تسجيل الدفعة للمراجعة فقط. لم يتم تنفيذ دفع إلكتروني أو تأكيد وصول المال.');
-      await loadFinance();
-    }catch(err){console.error('Submit payment record failed:',err);say('contractorPaymentFeedback',err.message||'تعذر تسجيل الدفعة. تحقق من صلاحيات Firebase.',true);}
-    finally{if(btn)btn.disabled=false;}
+      if($f('contractorPaymentAmount'))$f('contractorPaymentAmount').value='';if($f('contractorPaymentReference'))$f('contractorPaymentReference').value='';say('contractorPaymentFeedback','تم تسجيل إثبات السداد للمراجعة فقط، وتحديث الطلب والفاتورة معًا. لم يتم تنفيذ تحصيل إلكتروني.');await loadFinance();
+    }catch(err){console.error('Submit payment record failed:',err);say('contractorPaymentFeedback',err.message||'تعذر تسجيل الدفعة. تحقق من الصلاحيات والاتصال.',true);}finally{if(btn)btn.disabled=false;}
   }
   document.addEventListener('click',event=>{
     const target=event.target.closest('button');if(!target)return;
-    if(target.id==='contractorFinanceBtn'||target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
+    if(target.id==='contractorFinanceBtn'){openFinance('contractor');return;}
+    if(target.id==='contractorProjectStageBtn'){openFinance('contractor');return;}
     if(target.id==='operatorFinanceBtn'){openFinance('owner');return;}
     if(target.id==='openOwnerCustomerInvoicesBtn'){setOwnerFinanceSubpage('customers');return;}
     if(target.id==='openOwnerContractorInvoicesBtn'){setOwnerFinanceSubpage('contractors');return;}
@@ -12634,15 +12721,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(target.id==='ownerFinanceMenuRefreshBtn'||target.id==='ownerFinanceSubpageRefreshBtn'){loadFinance().catch(err=>{console.error('Refresh Ma3da finance failed:',err);say('ownerInvoiceFeedback','تعذر تحديث الفواتير. تحقق من الاتصال.',true);});return;}
     if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
     if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
+    const bookingPayButton=target.closest('[data-booking-submit-payment]');if(bookingPayButton){submitBookingPaymentProof(bookingPayButton.getAttribute('data-booking-submit-payment'));return;}
     const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
     if(target.id==='contractorFinanceBackBtn'){
       if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
     }
-    if(target.id==='ownerIssueInvoiceBtn'){issueOwnerInvoice();return;}
-    if(target.id==='ownerApprovePhaseBtn'){reviewOwnerPhase('approve');return;}
-    if(target.id==='ownerDisputePhaseBtn'){reviewOwnerPhase('disputed');return;}
-    if(target.id==='contractorAnnounceStageBtn'){announceStageCompletion();return;}
+    if(target.id==='ownerIssueInvoiceBtn'){say('ownerInvoiceFeedback','نظام فواتير المراحل القديم مؤرشف. استخدم الفاتورة المشتركة المنشأة من اتفاق المشروع.',true);return;}
+    if(target.id==='ownerApprovePhaseBtn'){say('ownerInvoiceFeedback','اعتماد المراحل القديم غير نشط في المسار المالي المعتمد.',true);return;}
+    if(target.id==='ownerDisputePhaseBtn'){say('ownerInvoiceFeedback','اعتراضات فواتير المراحل القديمة مؤرشفة؛ استخدم مسار اعتراضات دفعات الاتفاق.',true);return;}
+    if(target.id==='contractorAnnounceStageBtn'){say('contractorStageFeedback','نظام فواتير المراحل القديم غير نشط. تُدار دفعات المشروع من الفواتير المشتركة.',true);return;}
     const confirmPaymentButton=target.closest('[data-owner-confirm-payment]');
     if(confirmPaymentButton){confirmPaymentReceived(confirmPaymentButton.getAttribute('data-owner-confirm-payment'));return;}
     if(target.id==='contractorCreateInvoiceBtn'){return;}
