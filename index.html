@@ -1638,6 +1638,20 @@
 
       </button>
 
+
+      <button
+        id="operatorProjectOrdersBtn"
+        class="operator-menu-card"
+        type="button"
+      >
+        <div class="operator-menu-icon">🏗️</div>
+        <div class="operator-menu-content">
+          <strong>طلبات المشاريع</strong>
+          <span>الطلبات الحالية والسابقة لمسؤولي المشاريع، بشكل مستقل عن طلبات العملاء</span>
+        </div>
+        <span class="operator-menu-arrow">←</span>
+      </button>
+
     </div>
 
 
@@ -2413,6 +2427,31 @@
 <!-- =====================================================
      الدخل
 ===================================================== -->
+
+
+<!-- الصفحة: صاحب المعدة: طلبات المشاريع الحالية والسابقة — مستقلة عن طلبات العملاء -->
+<section id="operatorProjectOrdersScreen" class="screen">
+  <button id="backFromOperatorProjectOrdersBtn" class="back-btn" type="button">← الرجوع</button>
+  <div class="hero">
+    <div class="hero-icon">🏗️</div>
+    <h1>طلبات المشاريع</h1>
+    <p>إدارة طلبات مسؤولي المشاريع بشكل مستقل عن طلبات العملاء</p>
+  </div>
+  <div class="operator-request-tabs" role="tablist" aria-label="طلبات المشاريع الحالية والسابقة">
+    <button id="operatorProjectCurrentTab" class="operator-request-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="operatorProjectCurrentPanel" data-owner-project-filter="current">الطلبات الحالية</button>
+    <button id="operatorProjectPreviousTab" class="operator-request-tab" type="button" role="tab" aria-selected="false" aria-controls="operatorProjectPreviousPanel" data-owner-project-filter="previous">الطلبات السابقة</button>
+  </div>
+  <div class="operator-requests-toolbar">
+    <span id="operatorProjectOrdersUpdated" aria-live="polite">لم يتم التحديث بعد</span>
+    <button id="refreshOperatorProjectOrdersBtn" class="back-btn" type="button">⟳ تحديث الطلبات</button>
+  </div>
+  <div id="operatorProjectCurrentPanel" role="tabpanel" aria-labelledby="operatorProjectCurrentTab">
+    <div id="operatorProjectCurrentList"><div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div></div>
+  </div>
+  <div id="operatorProjectPreviousPanel" role="tabpanel" aria-labelledby="operatorProjectPreviousTab" hidden>
+    <div id="operatorProjectPreviousList"><div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div></div>
+  </div>
+</section>
 
 
 <!-- الصفحة: صاحب المعدة: Income — صفحة خاصة بصاحب المعدة | المعرّف البرمجي: operatorIncomeScreen -->
