@@ -5371,7 +5371,7 @@ async function loadOperatorNewRequests(){
       const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
       if(legacyContractorRequest)return;
-      const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
+      const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||role==='project_manager'||!!data.contractorId);
       const request={id:docSnap.id,...data};
       (isProjectRequest ? projectRequests : customerRequests).push(request);
     });
@@ -5380,10 +5380,6 @@ async function loadOperatorNewRequests(){
     projectRequests.sort(sortNewest);
     renderOperatorRequestCards(customerList,customerRequests,"customers");
     renderOperatorRequestCards(projectList,projectRequests,"projects");
-    if(projectList){
-      const activeProjectRows=[];snapshot.forEach(docSnap=>{const d=docSnap.data()||{};const target=d.equipmentOwnerId||d.ownerId||d.operatorId||'';if(d.projectId&&target===user.uid&&['accepted','working','duration_expired','completed'].includes(String(d.status||'')))activeProjectRows.push({id:docSnap.id,...d});});
-      if(activeProjectRows.length){const review=document.createElement('div');review.className='card';review.innerHTML='<h2>إدارة طلبات المشاريع المقبولة</h2>'+activeProjectRows.map(r=>{const pending=(r.paymentLedger||[]).filter(x=>x.status==='pending_owner_review');const lifecycle=r.status==='accepted'&&['scheduled','awaiting_acceptance'].includes(String(r.workStatus||''))?`<button type="button" class="accept-btn" data-owner-project-start="${r.id}">بدء تشغيل المعدة</button>`:(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))?`<button type="button" class="accept-btn" data-owner-project-complete="${r.id}">تأكيد انتهاء العمل</button>`:'';const stageAction=r.paymentPlan==='four_installments'&&r.status!=='completed'?`<button type="button" class="back-btn" data-owner-project-stage-due="${r.id}">اعتماد إنجاز المرحلة التالية</button>`:'';return `<div class="operator-info" style="border-top:1px solid #eadfc5;padding-top:10px;margin-top:10px"><h3>${String(r.projectName||'مشروع').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))} — ${String(r.equipment||'معدة').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</h3><p>الحالة: ${r.status} · القيمة: ${Number(r.price||0).toLocaleString('ar-SA')} ريال · المتبقي: ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p>${lifecycle}${stageAction}${pending.map(x=>`<p>إثبات دفعة: ${Number(x.amount||0).toLocaleString('ar-SA')} ريال · المرجع: ${String(x.reference||'—').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</p><p class="muted">راجع الفاتورة المشتركة من صفحة الدخل لتأكيد الإثبات وتحديث السجلات المالية معًا.</p>`).join('')}</div>`;}).join('');projectList.appendChild(review);}
-    }
     if(updatedLabel){
       updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
     }
@@ -5395,6 +5391,94 @@ async function loadOperatorNewRequests(){
     if(updatedLabel) updatedLabel.textContent='لم يكتمل التحديث. حاول مرة أخرى.';
   }finally{
     if(refreshButton){refreshButton.disabled=false;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> تحديث الطلبات';}
+  }
+}
+
+/* 04 — وظائف صاحب المعدة: طلبات المشاريع الحالية والسابقة، مستقلة عن طلبات العملاء */
+let operatorProjectOrdersFilter = "current";
+
+function setOperatorProjectOrdersFilter(filter){
+  operatorProjectOrdersFilter = filter === "previous" ? "previous" : "current";
+  const currentTab=document.getElementById("operatorProjectCurrentTab");
+  const previousTab=document.getElementById("operatorProjectPreviousTab");
+  const currentPanel=document.getElementById("operatorProjectCurrentPanel");
+  const previousPanel=document.getElementById("operatorProjectPreviousPanel");
+  if(currentTab){currentTab.classList.toggle("is-active",operatorProjectOrdersFilter==="current");currentTab.setAttribute("aria-selected",String(operatorProjectOrdersFilter==="current"));}
+  if(previousTab){previousTab.classList.toggle("is-active",operatorProjectOrdersFilter==="previous");previousTab.setAttribute("aria-selected",String(operatorProjectOrdersFilter==="previous"));}
+  if(currentPanel)currentPanel.hidden=operatorProjectOrdersFilter!=="current";
+  if(previousPanel)previousPanel.hidden=operatorProjectOrdersFilter!=="previous";
+}
+
+function renderOwnerProjectOrderCards(list, requests, previous){
+  if(!list)return;
+  if(!requests.length){
+    list.innerHTML=`<div class="card center"><div class="success-icon">${previous?'✓':'🏗️'}</div><h3>${previous?'لا توجد طلبات مشاريع سابقة':'لا توجد طلبات مشاريع حالية'}</h3><p>${previous?'ستظهر هنا طلبات المشاريع بعد انتهاء العمل أو إغلاقها.':'تنتقل طلبات المشروع إلى هنا مباشرة بعد قبولك لها، وتبقى هنا حتى انتهاء العمل.'}</p></div>`;
+    return;
+  }
+  list.innerHTML="";
+  requests.forEach(r=>{
+    const card=document.createElement("article");card.className="card operator-new-request-card";
+    const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const statusLabels={accepted:"مقبول — بانتظار بدء التشغيل",working:"قيد التشغيل",duration_expired:"انتهت المدة — بانتظار الإنهاء",completed:"منتهي",paid:"مدفوع",rejected:"مرفوض",cancelled:"ملغي",extension_requested:"طلب تمديد بانتظار المراجعة"};
+    const planLabels={half_half:"50% مقدّمًا و50% عند الانتهاء",four_installments:"أربع دفعات",full_upfront:"كامل المبلغ مقدّمًا",full_end:"كامل المبلغ عند الانتهاء",cash:"نقدًا مع توثيق الاستلام"};
+    const pending=(r.paymentLedger||[]).filter(x=>x.status==="pending_owner_review");
+    const canStart=!previous&&r.status==="accepted"&&["scheduled","awaiting_acceptance"].includes(String(r.workStatus||""));
+    const canFinish=!previous&&(["working","duration_expired"].includes(String(r.status||""))||["working","duration_expired"].includes(String(r.workStatus||"")));
+    const canStage=!previous&&r.paymentPlan==="four_installments"&&r.status!=="completed";
+    const startBtn=canStart?`<button type="button" class="accept-btn" data-owner-project-start="${esc(r.id)}">بدء تشغيل المعدة</button>`:"";
+    const finishBtn=canFinish?`<button type="button" class="accept-btn" data-owner-project-complete="${esc(r.id)}">تأكيد انتهاء العمل</button>`:"";
+    const stageBtn=canStage?`<button type="button" class="back-btn" data-owner-project-stage-due="${esc(r.id)}">اعتماد إنجاز المرحلة التالية</button>`:"";
+    card.innerHTML=`
+      <div class="request-title"><span>🏗️</span><div><h2>${esc(r.projectName||"مشروع بدون اسم")}</h2><p>طلب مشروع مستقل عن طلبات العملاء</p></div></div>
+      <div class="operator-info">
+        <div class="operator-info-row"><span>🚜 المعدة</span><strong>${esc(r.equipment||r.equipmentType||"معدة")}</strong></div>
+        <div class="operator-info-row"><span>👤 مسؤول المشروع</span><strong>${esc(r.contractorName||r.contractorCompany||r.requesterName||"مسؤول المشروع")}</strong></div>
+        <div class="operator-info-row"><span>📍 موقع المشروع</span><strong>${esc(r.location||r.projectCity||"—")}</strong></div>
+        <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
+        <div class="operator-info-row"><span>💰 قيمة الاتفاق</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>💵 المدفوع</span><strong>${Number(r.paidTotal||0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>🧾 المتبقي</span><strong>${Number(r.remainingBalance??r.price??0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>💳 خطة الدفع</span><strong>${esc(planLabels[r.paymentPlan]||r.paymentPlan||"—")}</strong></div>
+        <div class="operator-info-row"><span>🗓️ أوقات التشغيل</span><strong>${esc(r.dailyStartTime||"—")} - ${esc(r.dailyEndTime||"—")}</strong></div>
+        <div class="operator-info-row"><span>📅 المدة</span><strong>${r.scheduledStartAt?new Date(operatorRequestDateValue(r.scheduledStartAt)).toLocaleString("ar-SA"):"—"} — ${r.scheduledEndAt?new Date(operatorRequestDateValue(r.scheduledEndAt)).toLocaleString("ar-SA"):"—"}</strong></div>
+      </div>
+      <div class="operator-notes"><span>📝 ملاحظات المشروع</span><p>${esc(r.notes||"لا توجد ملاحظات")}</p></div>
+      ${pending.length?`<div class="card"><strong>إثباتات سداد بانتظار المراجعة</strong>${pending.map(x=>`<p>${Number(x.amount||0).toLocaleString("ar-SA")} ريال — ${esc(x.reference||"دون مرجع")}</p>`).join("")}<p>افتح صفحة الدخل والفواتير المشتركة لتأكيد الإثباتات.</p></div>`:""}
+      ${!previous?`<div class="operator-buttons">${startBtn}${finishBtn}${stageBtn}</div>`:`<div class="operator-buttons"><span class="muted">تاريخ الانتهاء: ${r.workCompletedAt?new Date(operatorRequestDateValue(r.workCompletedAt)).toLocaleString("ar-SA"):r.completedAt?new Date(operatorRequestDateValue(r.completedAt)).toLocaleString("ar-SA"):"غير مسجل"}</span></div>`}`;
+    list.appendChild(card);
+  });
+}
+
+async function loadOperatorProjectOrders(){
+  const currentList=document.getElementById("operatorProjectCurrentList");
+  const previousList=document.getElementById("operatorProjectPreviousList");
+  const updated=document.getElementById("operatorProjectOrdersUpdated");
+  if(!currentList&&!previousList)return;
+  if(currentList)currentList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div>';
+  if(previousList)previousList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div>';
+  try{
+    const user=await getOperatorCurrentUser();
+    if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات المشاريع.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
+    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const current=[],previous=[];
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data()||{};
+      const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
+      const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
+      const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
+      if(owner!==user.uid||!isProject)return;
+      const r={id:docSnap.id,...d};
+      if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
+      else if(["accepted","working","duration_expired","extension_requested"].includes(String(d.status||"")))current.push(r);
+    });
+    const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
+    current.sort(sort);previous.sort((a,b)=>operatorRequestDateValue(b.workCompletedAt||b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.workCompletedAt||a.completedAt||a.updatedAt||a.createdAt));
+    renderOwnerProjectOrderCards(currentList,current,false);renderOwnerProjectOrderCards(previousList,previous,true);
+    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
+  }catch(error){
+    console.error("تعذر تحميل طلبات المشاريع لصاحب المعدة:",error);
+    const msg='<div class="card center"><h3>تعذر تحميل طلبات المشاريع</h3><p>تحقق من الاتصال وصلاحيات Firebase ثم حدّث الصفحة.</p></div>';
+    if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;if(updated)updated.textContent="تعذر التحديث";
   }
 }
 
@@ -5439,7 +5523,7 @@ async function operatorDecideProjectWorkState(requestId, action){
 }
 document.addEventListener('click',async event=>{
   const start=event.target.closest('[data-owner-project-start]');const finish=event.target.closest('[data-owner-project-complete]');const stage=event.target.closest('[data-owner-project-stage-due]');if(!start&&!finish&&!stage)return;
-  const button=start||finish||stage;button.disabled=true;try{await operatorDecideProjectWorkState(button.dataset.ownerProjectStart||button.dataset.ownerProjectComplete||button.dataset.ownerProjectStageDue,start?'start':finish?'complete':'stage');alert(start?'تم تسجيل بدء التشغيل.':finish?'تم إنهاء العمل وتحديث حالة التسوية.':'تم تحديث استحقاق المرحلة.');await loadOperatorNewRequests();}catch(error){console.error('Project work lifecycle:',error);alert(error.message||'تعذر تحديث حالة العمل.');}finally{button.disabled=false;}
+  const button=start||finish||stage;button.disabled=true;try{await operatorDecideProjectWorkState(button.dataset.ownerProjectStart||button.dataset.ownerProjectComplete||button.dataset.ownerProjectStageDue,start?'start':finish?'complete':'stage');alert(start?'تم تسجيل بدء التشغيل.':finish?'تم إنهاء العمل وتحديث حالة التسوية.':'تم تحديث استحقاق المرحلة.');await loadOperatorNewRequests();await loadOperatorProjectOrders();}catch(error){console.error('Project work lifecycle:',error);alert(error.message||'تعذر تحديث حالة العمل.');}finally{button.disabled=false;}
 });
 
 async function operatorDecideProjectPayment(){throw new Error('مسار تأكيد الدفعات المنفصل مؤرشف. افتح الفاتورة المشتركة وأكّد الإثبات منها لتحديث السجلات المالية معًا.');}
@@ -5526,7 +5610,8 @@ async function acceptOperatorRequest(
     const equipment =
       await getOperatorEquipment();
  
-    const isProjectRequest = !!request.projectId && (request.requesterRole === 'contractor' || request.requesterType === 'contractor' || !!request.contractorId);
+    const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
+    const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
     if(isProjectRequest && (!request.scheduledStartAt || !request.scheduledEndAt || !Array.isArray(request.workDays) || !request.workDays.length || !request.dailyStartTime || !request.dailyEndTime || !request.paymentTerms || !Array.isArray(request.paymentSchedule) || !request.paymentSchedule.length)){
       alert('لا يمكن قبول الطلب: بيانات الجدول أو شروط الدفع أو خطة الدفعات غير مكتملة.');return;
     }
@@ -5582,11 +5667,14 @@ async function acceptOperatorRequest(
  
     localStorage.setItem("orderState", "accepted");
  
-    await loadOperatorCurrentOrder();
- 
-    showScreen(
-      "operatorCurrentOrderScreen"
-    );
+    if(isProjectRequest){
+      await loadOperatorProjectOrders();
+      setOperatorProjectOrdersFilter("current");
+      showScreen("operatorProjectOrdersScreen");
+    }else{
+      await loadOperatorCurrentOrder();
+      showScreen("operatorCurrentOrderScreen");
+    }
  
   }catch(error){
  
@@ -7313,6 +7401,17 @@ if(operatorPreviousOrdersBtn){
  
 }
  
+/* صفحة طلبات المشاريع الحالية والسابقة — مستقلة عن طلبات العملاء */
+const operatorProjectOrdersBtn=document.getElementById("operatorProjectOrdersBtn");
+if(operatorProjectOrdersBtn){operatorProjectOrdersBtn.addEventListener("click",async()=>{await loadOperatorProjectOrders();setOperatorProjectOrdersFilter("current");showScreen("operatorProjectOrdersScreen");});}
+const backOperatorProjectOrdersBtn=document.getElementById("backFromOperatorProjectOrdersBtn");
+if(backOperatorProjectOrdersBtn){backOperatorProjectOrdersBtn.addEventListener("click",()=>showScreen("operatorHomeScreen"));}
+document.addEventListener("click",event=>{
+  const tab=event.target.closest("[data-owner-project-filter]");
+  if(tab){setOperatorProjectOrdersFilter(tab.dataset.ownerProjectFilter);return;}
+  if(event.target.closest("#refreshOperatorProjectOrdersBtn"))loadOperatorProjectOrders();
+});
+
 /* EQUIPMENT BUTTON */
  
 const operatorEditEquipmentBtn =
@@ -12803,7 +12902,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function backFallback(currentId){
     const groups={
       customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
-      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
+      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
       contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
@@ -12813,7 +12912,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
-      if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
+      if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
       if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
       if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
@@ -12860,6 +12959,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     operatorNewRequestsScreen:()=>typeof window.loadOperatorNewRequests==='function'?window.loadOperatorNewRequests():null,
     operatorCurrentOrderScreen:()=>typeof window.loadOperatorCurrentOrder==='function'?window.loadOperatorCurrentOrder():null,
     operatorPreviousOrdersScreen:()=>typeof window.loadOperatorPreviousOrders==='function'?window.loadOperatorPreviousOrders():null,
+    operatorProjectOrdersScreen:()=>typeof window.loadOperatorProjectOrders==='function'?window.loadOperatorProjectOrders():null,
     operatorIncomeScreen:()=>typeof window.loadOperatorIncome==='function'?window.loadOperatorIncome():null,
     operatorRatingsScreen:()=>typeof window.loadOperatorRatings==='function'?window.loadOperatorRatings():null,
     operatorEquipmentScreen:()=>typeof window.loadOperatorEquipmentEditor==='function'?window.loadOperatorEquipmentEditor():null,
