@@ -6343,6 +6343,93 @@ async function operatorFinishWork(){
  
 }
  
+/* 04 — وظائف صاحب المعدة: طلبات العملاء الحالية والسابقة في صفحة واحدة */
+let operatorCustomerOrdersFilter = "current";
+
+function setOperatorCustomerOrdersFilter(filter){
+  operatorCustomerOrdersFilter = filter === "previous" ? "previous" : "current";
+  const currentTab=document.getElementById("operatorCustomerCurrentTab");
+  const previousTab=document.getElementById("operatorCustomerPreviousTab");
+  const currentPanel=document.getElementById("operatorCustomerCurrentPanel");
+  const previousPanel=document.getElementById("operatorCustomerPreviousPanel");
+  if(currentTab){currentTab.classList.toggle("is-active",operatorCustomerOrdersFilter==="current");currentTab.setAttribute("aria-selected",String(operatorCustomerOrdersFilter==="current"));}
+  if(previousTab){previousTab.classList.toggle("is-active",operatorCustomerOrdersFilter==="previous");previousTab.setAttribute("aria-selected",String(operatorCustomerOrdersFilter==="previous"));}
+  if(currentPanel)currentPanel.hidden=operatorCustomerOrdersFilter!=="current";
+  if(previousPanel)previousPanel.hidden=operatorCustomerOrdersFilter!=="previous";
+}
+
+function renderOwnerCustomerOrderCards(list, requests, previous){
+  if(!list)return;
+  if(!requests.length){
+    list.innerHTML=`<div class="card center"><div class="success-icon">${previous?'✓':'🚜'}</div><h3>${previous?'لا توجد طلبات عملاء سابقة':'لا توجد طلبات عملاء حالية'}</h3><p>${previous?'ستظهر هنا الطلبات بعد اكتمالها أو رفضها.':'ستظهر هنا طلبات العملاء المقبولة أو الجاري تنفيذها.'}</p></div>`;
+    return;
+  }
+  list.innerHTML="";
+  requests.forEach(r=>{
+    const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const card=document.createElement("article");
+    card.className="card operator-new-request-card";
+    const statusLabels={accepted:"مقبول",arrived:"وصلت المعدة",working:"قيد العمل",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي",in_progress:"قيد التنفيذ"};
+    card.innerHTML=`
+      <div class="request-title"><span>🚜</span><div><h2>${esc(r.equipment||r.equipmentType||"معدة")}</h2><p>طلب عميل</p></div></div>
+      <div class="operator-info">
+        <div class="operator-info-row"><span>👤 العميل</span><strong>${esc(r.customerName||r.requesterName||"عميل")}</strong></div>
+        <div class="operator-info-row"><span>📍 الموقع</span><strong>${esc(r.location||"—")}</strong></div>
+        <div class="operator-info-row"><span>⏱️ المدة</span><strong>${esc(r.duration||"—")}</strong></div>
+        <div class="operator-info-row"><span>💰 المبلغ</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>📌 الحالة</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
+      </div>
+      ${!previous?`<button type="button" class="main-btn" data-owner-customer-open="${esc(r.id)}">عرض تفاصيل الطلب</button>`:`<div class="operator-current-status"><strong>${r.status==="completed"?"تم إكمال الطلب":"انتهى الطلب دون إكمال"}</strong></div>`}`;
+    list.appendChild(card);
+  });
+}
+
+async function loadOperatorCustomerOrders(){
+  const currentList=document.getElementById("operatorCustomerCurrentList");
+  const previousList=document.getElementById("operatorCustomerPreviousList");
+  const updated=document.getElementById("operatorCustomerOrdersUpdated");
+  if(!currentList&&!previousList)return;
+  if(currentList)currentList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div>';
+  if(previousList)previousList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div>';
+  try{
+    const user=await getOperatorCurrentUser();
+    if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات العملاء.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
+    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const current=[],previous=[];
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data()||{};
+      const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
+      const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
+      const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
+      if(owner!==user.uid||isProject)return;
+      const r={id:docSnap.id,...d};
+      if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
+      else if(["accepted","arrived","working","in_progress","duration_expired"].includes(String(d.status||"")))current.push(r);
+    });
+    const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
+    current.sort(sort);
+    previous.sort((a,b)=>operatorRequestDateValue(b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.completedAt||a.updatedAt||a.createdAt));
+    renderOwnerCustomerOrderCards(currentList,current,false);
+    renderOwnerCustomerOrderCards(previousList,previous,true);
+    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
+  }catch(error){
+    console.error("تعذر تحميل طلبات العملاء لصاحب المعدة:",error);
+    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم حاول تحديث الطلبات.</p></div>';
+    if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;
+    if(updated)updated.textContent="لم يكتمل التحديث. حاول مرة أخرى.";
+  }
+}
+
+window.loadOperatorCustomerOrders=loadOperatorCustomerOrders;
+
+document.addEventListener("click",event=>{
+  const tab=event.target.closest("[data-owner-customer-filter]");
+  if(tab){setOperatorCustomerOrdersFilter(tab.dataset.ownerCustomerFilter);return;}
+  if(event.target.closest("#refreshOperatorCustomerOrdersBtn")){loadOperatorCustomerOrders();return;}
+  const open=event.target.closest("[data-owner-customer-open]");
+  if(open){localStorage.setItem("currentRequestId",open.dataset.ownerCustomerOpen);loadOperatorCurrentOrder().then(()=>showScreen("operatorCurrentOrderScreen"));}
+});
+
 /* OPERATOR PREVIOUS ORDERS */
  
 async function loadOperatorPreviousOrders(){
@@ -7361,45 +7448,16 @@ if(operatorNewRequestsBtn){
  
 }
  
-const operatorCurrentOrderBtn =
-  document.getElementById("operatorCurrentOrderBtn");
- 
-if(operatorCurrentOrderBtn){
- 
-  operatorCurrentOrderBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      await loadOperatorCurrentOrder();
- 
-      showScreen(
-        "operatorCurrentOrderScreen"
-      );
- 
-    }
-  );
- 
+const operatorCustomerOrdersBtn=document.getElementById("operatorCustomerOrdersBtn");
+if(operatorCustomerOrdersBtn){
+  operatorCustomerOrdersBtn.addEventListener("click",async()=>{
+    setOperatorCustomerOrdersFilter("current");
+    await loadOperatorCustomerOrders();
+    showScreen("operatorCustomerOrdersScreen");
+  });
 }
- 
-const operatorPreviousOrdersBtn =
-  document.getElementById("operatorPreviousOrdersBtn");
- 
-if(operatorPreviousOrdersBtn){
- 
-  operatorPreviousOrdersBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      await loadOperatorPreviousOrders();
- 
-      showScreen(
-        "operatorPreviousOrdersScreen"
-      );
- 
-    }
-  );
- 
-}
+const backOperatorCustomerOrdersBtn=document.getElementById("backFromOperatorCustomerOrdersBtn");
+if(backOperatorCustomerOrdersBtn){backOperatorCustomerOrdersBtn.addEventListener("click",()=>showScreen("operatorHomeScreen"));}
  
 /* صفحة طلبات المشاريع الحالية والسابقة — مستقلة عن طلبات العملاء */
 const operatorProjectOrdersBtn=document.getElementById("operatorProjectOrdersBtn");
@@ -12902,7 +12960,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function backFallback(currentId){
     const groups={
       customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
-      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
+      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
       contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
@@ -12912,7 +12970,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
-      if(['operatorCurrentOrderScreen','operatorPreviousOrdersScreen','operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
+      if(['operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
       if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
       if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
@@ -12958,7 +13016,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     operatorHomeScreen:()=>typeof window.loadOperatorHome==='function'?window.loadOperatorHome():null,
     operatorNewRequestsScreen:()=>typeof window.loadOperatorNewRequests==='function'?window.loadOperatorNewRequests():null,
     operatorCurrentOrderScreen:()=>typeof window.loadOperatorCurrentOrder==='function'?window.loadOperatorCurrentOrder():null,
-    operatorPreviousOrdersScreen:()=>typeof window.loadOperatorPreviousOrders==='function'?window.loadOperatorPreviousOrders():null,
+    operatorCustomerOrdersScreen:()=>typeof window.loadOperatorCustomerOrders==='function'?window.loadOperatorCustomerOrders():null,
     operatorProjectOrdersScreen:()=>typeof window.loadOperatorProjectOrders==='function'?window.loadOperatorProjectOrders():null,
     operatorIncomeScreen:()=>typeof window.loadOperatorIncome==='function'?window.loadOperatorIncome():null,
     operatorRatingsScreen:()=>typeof window.loadOperatorRatings==='function'?window.loadOperatorRatings():null,
