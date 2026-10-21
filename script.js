@@ -179,10 +179,14 @@ async function saveOrder(){
       "تم تجهيز collection requests"
     );
  
+    const locationParts = String(order.location || "").trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)\s*$/);
     const requestData = {
  
       location:
         order.location || "",
+      locationLatitude: locationParts ? Number(locationParts[1]) : null,
+      locationLongitude: locationParts ? Number(locationParts[2]) : null,
+      locationCoordinates: locationParts ? { latitude: Number(locationParts[1]), longitude: Number(locationParts[2]) } : null,
  
       equipment:
         order.equipment || "",
@@ -589,6 +593,52 @@ function stopAcceptanceWatcher(){
  
 }
  
+function ma3daCustomerCoordinates(data){
+  const lat=Number(data?.locationLatitude ?? data?.latitude ?? data?.locationCoordinates?.latitude ?? data?.coordinates?.latitude);
+  const lng=Number(data?.locationLongitude ?? data?.longitude ?? data?.locationCoordinates?.longitude ?? data?.coordinates?.longitude);
+  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180)return {lat,lng};
+  const raw=String(data?.location||'');
+  const match=raw.match(/(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)/);
+  if(!match)return null;
+  const parsedLat=Number(match[1]),parsedLng=Number(match[2]);
+  return Math.abs(parsedLat)<=90&&Math.abs(parsedLng)<=180?{lat:parsedLat,lng:parsedLng}:null;
+}
+
+function ma3daOpenCustomerMap(data){
+  const point=ma3daCustomerCoordinates(data||{});
+  const location=String(data?.location||'').trim();
+  const url=point
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(point.lat+','+point.lng)}&travelmode=driving`
+    : location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}` : '';
+  if(!url){alert('موقع العميل غير محفوظ كإحداثيات أو عنوان. اطلب من العميل تحديد موقعه بدقة.');return;}
+  window.open(url,'_blank','noopener,noreferrer');
+}
+
+function ma3daNotifyCustomerStatus(requestId,data){
+  const status=String(data?.status||'');
+  const labels={accepted:'المعدة في الطريق إليك',arrived:'المعدة وصلت إلى موقعك',working:'بدأت المعدة العمل',completed:'انتهى العمل بالمعدة — يمكنك تقييم المعدة الآن',invoice_issued:'صدرت فاتورة السداد لطلبك',payment_submitted:'تم تسجيل السداد وبانتظار التأكيد',paid:'تم تأكيد السداد',rejected:'تم رفض طلب المعدة'};
+  const paymentStatus=String(data?.paymentStatus||'');
+  const invoiceLabel=labels[status] || (paymentStatus==='paid'?'تم تأكيد السداد':paymentStatus==='payment_submitted'?'تم تسجيل السداد وبانتظار التأكيد':'');
+  const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
+  const previous=localStorage.getItem('ma3daLastCustomerNotice:'+requestId);
+  if(!invoiceLabel||previous===token)return;
+  localStorage.setItem('ma3daLastCustomerNotice:'+requestId,token);
+  const wasInitialized=localStorage.getItem('ma3daCustomerNoticeInitialized:'+requestId)==='1';
+  localStorage.setItem('ma3daCustomerNoticeInitialized:'+requestId,'1');
+  if(!wasInitialized)return;
+  // Browser notifications work only while this page is active; closed-app push requires FCM/service-worker setup.
+  if(document.visibilityState==='visible'){
+    const toast=document.createElement('div');
+    toast.setAttribute('role','status');
+    toast.style.cssText='position:fixed;z-index:99999;bottom:18px;left:16px;right:16px;padding:14px 16px;background:#171717;color:#fff;border-radius:12px;box-shadow:0 6px 24px #0003;text-align:center;font-weight:700';
+    toast.textContent=invoiceLabel+(data?.invoiceNumber?' — فاتورتك متاحة في «فواتيري»':'');
+    document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
+  }
+  if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
+    try{new Notification('مِعدة — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
+  }
+}
+
 function startAcceptanceWatcher(){
  
   stopAcceptanceWatcher();
@@ -631,8 +681,8 @@ function startAcceptanceWatcher(){
           if(!snapshot.exists())
             return;
  
-          const data =
-            snapshot.data();
+          const data = snapshot.data();
+          ma3daNotifyCustomerStatus(requestId,data);
  
           /* ACCEPTED */
  
@@ -697,17 +747,8 @@ function startAcceptanceWatcher(){
  
             updateWorkingScreen();
  
-            if(
-              document.getElementById("searchingScreen")?.classList.contains(
-                "active"
-              )
-            ){
- 
-              showScreen(
-                "matchedScreen"
-              );
- 
-            }
+            const activeScreen=document.querySelector('.screen.active')?.id||'';
+            if(activeScreen==='searchingScreen') showScreen('matchedScreen');
  
           }
  
@@ -769,9 +810,9 @@ function startAcceptanceWatcher(){
  
             }
  
-            showScreen(
-              "arrivedCustomerScreen"
-            );
+            if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen'].includes(document.querySelector('.screen.active')?.id||'')){
+              showScreen("arrivedCustomerScreen");
+            }
  
           }
  
@@ -804,9 +845,9 @@ function startAcceptanceWatcher(){
  
             updateWorkingScreen();
  
-            showScreen(
-              "workingScreen"
-            );
+            if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen'].includes(document.querySelector('.screen.active')?.id||'')){
+              showScreen("workingScreen");
+            }
  
             clearInterval(
               timerInterval
@@ -831,20 +872,9 @@ if(
     timerInterval
   );
  
-  if(
-    document
-      .getElementById("paymentScreen")
-      ?.classList.contains("active")
-  )
-    return;
- 
-  setOrderState(
-    "completed"
-  );
- 
-  showScreen(
-    "completedScreen"
-  );
+  setOrderState("completed");
+  const activeScreen=document.querySelector('.screen.active')?.id||'';
+  if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen','completedScreen'].includes(activeScreen)) showScreen("completedScreen");
  
 }
           /* REJECTED */
@@ -1743,6 +1773,22 @@ if(arrivedAtCustomerBtn){
  
 }
  
+/* موقع العميل: الضغط على الموقع يفتح خرائط الهاتف بإحداثياته */
+const acceptedCustomerLocationElement=document.getElementById('acceptedCustomerLocation');
+if(acceptedCustomerLocationElement){
+  acceptedCustomerLocationElement.style.cursor='pointer';
+  acceptedCustomerLocationElement.title='اضغط لفتح موقع العميل في الخرائط';
+  acceptedCustomerLocationElement.addEventListener('click',async()=>{
+    try{
+      const requestId=localStorage.getItem('currentRequestId');
+      if(!requestId)throw new Error('لا يوجد طلب حالي.');
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
+      if(!snap.exists())throw new Error('الطلب غير موجود.');
+      ma3daOpenCustomerMap(snap.data()||{});
+    }catch(error){alert(error.message||'تعذر فتح موقع العميل.');}
+  });
+}
+
 /* ACCEPT REQUEST */
  
 if(acceptRequestBtn){
@@ -2487,8 +2533,12 @@ function getMa3daActiveRole(){
   return selectedRole;
 }
  
+let ma3daChatReturnScreen='';
 function openMa3daChat(){
   getMa3daActiveRole();
+  const active=document.querySelector('.screen.active')?.id||'';
+  ma3daChatReturnScreen=active==='chatScreen'?'':active;
+  if(!ma3daChatReturnScreen)ma3daChatReturnScreen=getMa3daActiveRole()==='customer'?'matchedScreen':'operatorCurrentOrderScreen';
   showScreen("chatScreen");
   startChatListener();
   setTimeout(() => document.getElementById("chatInput")?.focus(), 100);
@@ -2499,6 +2549,19 @@ if (chatBtn) chatBtn.addEventListener("click", openMa3daChat);
  
 const operatorChatCustomerBtn = document.getElementById("operatorChatCustomerBtn");
 if (operatorChatCustomerBtn) operatorChatCustomerBtn.addEventListener("click", openMa3daChat);
+const operatorChatBtn = document.getElementById("operatorChatBtn");
+if (operatorChatBtn) operatorChatBtn.addEventListener("click", openMa3daChat);
+const backFromChatBtn = document.getElementById("backFromChatBtn");
+if(backFromChatBtn)backFromChatBtn.addEventListener('click',()=>{
+  if(chatMessagesUnsubscribe){chatMessagesUnsubscribe();chatMessagesUnsubscribe=null;}
+  const role=getMa3daActiveRole();
+  let target=ma3daChatReturnScreen;
+  if(!target||target==='chatScreen')target=role==='customer'?'currentOrdersScreen':'operatorCurrentOrderScreen';
+  if(!document.getElementById(target))target=role==='customer'?'customerHomeScreen':'operatorHomeScreen';
+  showScreen(target);
+  if(role==='customer'&&target==='currentOrdersScreen')loadCustomerOrders('current');
+  if(role!=='customer'&&target==='operatorCurrentOrderScreen'&&typeof loadOperatorCurrentOrder==='function')loadOperatorCurrentOrder();
+});
  
 async function sendChatMessage(){
   if (chatSending) return;
@@ -2975,15 +3038,6 @@ if(paymentBtn){
   paymentBtn.addEventListener(
     "click",
     ()=>{
- 
-      if(
-        typeof stopAcceptanceWatcher ===
-        "function"
-      ){
- 
-        stopAcceptanceWatcher();
- 
-      }
  
       showScreen(
         "paymentScreen"
@@ -3936,6 +3990,10 @@ if(getLocationBtn){
  
 /* 03 — وظائف العميل: الصفحة الرئيسية وطلبات العميل */
 /* CUSTOMER HOME */
+if(document.getElementById('currentOrderBtn')){
+  const customerOrdersStartup=()=>{if((localStorage.getItem('selectedRole')||selectedRole)==='customer')startCustomerOrdersRealtime();};
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')customerOrdersStartup();});
+}
  
 const currentOrderBtn =
   document.getElementById("currentOrderBtn");
@@ -3950,9 +4008,8 @@ if(currentOrderBtn){
         "currentOrdersScreen"
       );
  
-      await loadCustomerOrders(
-        "current"
-      );
+      await loadCustomerOrders("current");
+      startCustomerOrdersRealtime();
  
     }
   );
@@ -3972,9 +4029,8 @@ if(previousOrdersBtn){
         "previousOrdersScreen"
       );
  
-      await loadCustomerOrders(
-        "previous"
-      );
+      await loadCustomerOrders("previous");
+      startCustomerOrdersRealtime();
  
     }
   );
@@ -4026,16 +4082,12 @@ async function loadCustomerOrders(
       );
  
     const currentStatuses = [
-      "searching",
-      "accepted",
-      "arrived",
-      "working"
+      "searching", "accepted", "arrived", "working", "in_progress",
+      "duration_expired", "invoice_pending", "invoice_issued", "payment_pending",
+      "payment_submitted", "paid"
     ];
  
-    const previousStatuses = [
-      "completed",
-      "rejected"
-    ];
+    const previousStatuses = ["rejected", "cancelled"];
  
     const wantedStatuses =
       type === "current"
@@ -4050,12 +4102,10 @@ async function loadCustomerOrders(
         const data =
           docSnapshot.data();
  
-        if(
-          data.customerId === user.uid &&
-          wantedStatuses.includes(
-            data.status
-          )
-        ){
+        const financiallyOpen=Number(data.remainingBalance??data.invoiceAmount??data.price??0)>0 || !['paid','settled'].includes(String(data.paymentStatus||data.settlementStatus||''));
+        const belongsInCurrent=type==='current'&&(currentStatuses.includes(String(data.status||''))||(data.status==='completed'&&financiallyOpen));
+        const belongsInPrevious=type==='previous'&&(previousStatuses.includes(String(data.status||''))||(data.status==='completed'&&!financiallyOpen));
+        if(data.customerId===user.uid&&(belongsInCurrent||belongsInPrevious)){
  
           orders.push({
  
@@ -4196,6 +4246,7 @@ async function loadCustomerOrders(
             </div>
  
           </div>
+          <button type="button" class="main-btn" data-customer-open-order="${customerOrder.id}">فتح الطلب ومتابعته</button>
  
         `;
  
@@ -4270,6 +4321,63 @@ function getCustomerOrderStatusClass(
  
 }
  
+/* فتح الطلب من قائمة الطلبات الحالية/السابقة */
+document.addEventListener('click',async event=>{
+  const button=event.target.closest('[data-customer-open-order]');
+  if(!button)return;
+  const requestId=button.dataset.customerOpenOrder;
+  if(!requestId)return;
+  localStorage.setItem('currentRequestId',requestId);
+  try{
+    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
+    if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
+    const data=snap.data()||{};
+    order={location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)};
+    localStorage.setItem('currentOrder',JSON.stringify(order));
+    if(typeof startAcceptanceWatcher==='function')startAcceptanceWatcher();
+    const screenByStatus={searching:'searchingScreen',accepted:'matchedScreen',arrived:'arrivedCustomerScreen',working:'workingScreen',completed:'completedScreen',invoice_pending:'paymentScreen',invoice_issued:'paymentScreen',payment_pending:'paymentScreen',payment_submitted:'paymentScreen',paid:'ratingScreen'};
+    const target=screenByStatus[String(data.status||'')]||'matchedScreen';
+    if(target==='arrivedCustomerScreen'){
+      const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
+      const l=document.getElementById('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';
+    }
+    if(target==='matchedScreen'){updateMatchedScreen();updateWorkingScreen();}
+    if(target==='workingScreen'){updateWorkingScreen();}
+    showScreen(target);
+  }catch(error){console.error('تعذر فتح طلب العميل:',error);alert('تعذر تحميل تفاصيل الطلب. تحقق من الاتصال.');}
+});
+
+/* 03 — وظائف العميل: تحديث الطلبات الحالية آليًا من Firebase */
+let customerOrdersRealtimeUnsubscribe=null;
+let customerOrdersRealtimeUserId='';
+async function startCustomerOrdersRealtime(){
+  try{
+    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
+    if(!user?.uid||!window.ma3daDB||typeof window.ma3daCollection!=='function'||typeof window.ma3daOnSnapshot!=='function')return;
+    if(customerOrdersRealtimeUnsubscribe&&customerOrdersRealtimeUserId===user.uid)return;
+    if(customerOrdersRealtimeUnsubscribe){customerOrdersRealtimeUnsubscribe();customerOrdersRealtimeUnsubscribe=null;}
+    customerOrdersRealtimeUserId=user.uid;
+    customerOrdersRealtimeUnsubscribe=window.ma3daOnSnapshot(window.ma3daCollection(window.ma3daDB,'requests'),snapshot=>{
+      const currentActive=document.getElementById('currentOrdersScreen')?.classList.contains('active');
+      const previousActive=document.getElementById('previousOrdersScreen')?.classList.contains('active');
+      let currentChanged=false,previousChanged=false;
+      snapshot.forEach(doc=>{
+        const data=doc.data()||{};
+        if(data.customerId!==user.uid)return;
+        const id=doc.id;
+        ma3daNotifyCustomerStatus(id,data);
+        if(id===localStorage.getItem('currentRequestId')){
+          localStorage.setItem('currentOrder',JSON.stringify({location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)}));
+        }
+        if(['rejected','cancelled'].includes(String(data.status||''))||(data.status==='completed'&&Number(data.remainingBalance??data.invoiceAmount??data.price??0)<=0&&(data.paymentStatus==='paid'||data.settlementStatus==='settled')))previousChanged=true;
+        else currentChanged=true;
+      });
+      if(currentActive&&currentChanged)loadCustomerOrders('current');
+      if(previousActive&&previousChanged)loadCustomerOrders('previous');
+    },error=>console.error('Customer orders realtime listener failed:',error));
+  }catch(error){console.warn('تعذر تفعيل تحديث طلبات العميل المباشر:',error);}
+}
+
 /* CUSTOMER ORDER BACK */
  
 const backFromCurrentOrdersBtn =
@@ -5474,7 +5582,6 @@ async function loadOperatorProjectOrders(){
     const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
     current.sort(sort);previous.sort((a,b)=>operatorRequestDateValue(b.workCompletedAt||b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.workCompletedAt||a.completedAt||a.updatedAt||a.createdAt));
     renderOwnerProjectOrderCards(currentList,current,false);renderOwnerProjectOrderCards(previousList,previous,true);
-    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
   }catch(error){
     console.error("تعذر تحميل طلبات المشاريع لصاحب المعدة:",error);
     const msg='<div class="card center"><h3>تعذر تحميل طلبات المشاريع</h3><p>تحقق من الاتصال وصلاحيات Firebase ثم حدّث الصفحة.</p></div>';
@@ -6411,12 +6518,10 @@ async function loadOperatorCustomerOrders(){
     previous.sort((a,b)=>operatorRequestDateValue(b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.completedAt||a.updatedAt||a.createdAt));
     renderOwnerCustomerOrderCards(currentList,current,false);
     renderOwnerCustomerOrderCards(previousList,previous,true);
-    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
   }catch(error){
     console.error("تعذر تحميل طلبات العملاء لصاحب المعدة:",error);
-    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم حاول تحديث الطلبات.</p></div>';
+    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم أعد فتح الصفحة.</p></div>';
     if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;
-    if(updated)updated.textContent="لم يكتمل التحديث. حاول مرة أخرى.";
   }
 }
 
