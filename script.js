@@ -862,20 +862,35 @@ function startAcceptanceWatcher(){
             updateTimer();
  
           }
-/* COMPLETED */
+/* COMPLETED / PAYMENT REQUIRED */
 if(
-  data.status ===
-  "completed"
+  data.status === "completed" ||
+  data.status === "invoice_pending"
 ){
- 
-  clearInterval(
-    timerInterval
-  );
- 
-  setOrderState("completed");
-  const activeScreen=document.querySelector('.screen.active')?.id||'';
-  if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen','completedScreen'].includes(activeScreen)) showScreen("completedScreen");
- 
+  clearInterval(timerInterval);
+  setOrderState(data.status);
+
+  if(data.status === "invoice_pending"){
+    // انتهاء العمل يجب أن يظهر للعميل شاشة السداد مباشرة.
+    const amount = document.getElementById("bookingPaymentAmount");
+    if(amount){
+      amount.textContent = "المبلغ المستحق: " +
+        Number(data.finalPrice || data.price || 0).toLocaleString("ar-SA", {
+          style: "currency",
+          currency: "SAR"
+        });
+    }
+    if(document.getElementById("paymentScreen")){
+      showScreen("paymentScreen");
+    }else{
+      console.error("شاشة paymentScreen غير موجودة في index.html");
+    }
+  }else{
+    const activeScreen = document.querySelector('.screen.active')?.id || '';
+    if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen','completedScreen'].includes(activeScreen)){
+      showScreen("completedScreen");
+    }
+  }
 }
           /* REJECTED */
  
