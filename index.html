@@ -2189,56 +2189,16 @@
     </h2>
 
 
-    <div class="info-row">
+    <div class="ma3da-order-kicker">تفاصيل الطلب</div>
 
-      <span>
-        المعدة
-      </span>
-
-      <strong id="operatorCurrentEquipment">
-        -
-      </strong>
-
+    <div class="ma3da-order-details">
+      <div class="ma3da-detail-row"><span>اسم المعدة</span><strong id="operatorCurrentEquipment">-</strong></div>
+      <div class="ma3da-detail-row"><span>اسم العميل</span><strong id="operatorCurrentCustomerName">-</strong></div>
+      <div class="ma3da-detail-row"><span>موقع العميل</span><strong id="operatorCurrentLocation">-</strong></div>
+      <div class="ma3da-detail-row"><span>المدة</span><strong id="operatorCurrentDuration">-</strong></div>
+      <div class="ma3da-detail-row ma3da-price-row"><span>المبلغ</span><strong id="operatorCurrentPrice">-</strong></div>
     </div>
 
-
-    <div class="info-row">
-
-      <span>
-        موقع العميل
-      </span>
-
-      <strong id="operatorCurrentLocation">
-        -
-      </strong>
-
-    </div>
-
-
-    <div class="info-row">
-
-      <span>
-        مدة العمل
-      </span>
-
-      <strong id="operatorCurrentDuration">
-        -
-      </strong>
-
-    </div>
-
-
-    <div class="info-row">
-
-      <span>
-        السعر
-      </span>
-
-      <strong id="operatorCurrentPrice">
-        -
-      </strong>
-
-    </div>
 
 
     <div class="operator-current-status">
@@ -2274,6 +2234,10 @@
     </button>
 
 
+
+    <button id="operatorCustomerMapBtn" class="main-btn ma3da-secondary-btn" type="button">📍 موقع العميل على الخريطة</button>
+    <button id="operatorCheckDistanceBtn" class="main-btn ma3da-secondary-btn" type="button">📡 التحقق من المسافة</button>
+    <p id="operatorDistanceFeedback" class="ma3da-distance-feedback" role="status" aria-live="polite">يجب أن تكون على بُعد كيلومتر واحد أو أقل لتأكيد الوصول.</p>
 
     <button
       id="operatorArrivedBtn"
@@ -4016,13 +3980,8 @@
 
       <div>
 
-        <strong>
-          فهد القحطاني
-        </strong>
-
-        <span>
-          مشغل معدات ⭐ 4.8
-        </span>
+        <strong id="matchedOperatorName">صاحب المعدة</strong>
+        <span id="matchedOperatorType">صاحب معدة مِعدة</span>
 
       </div>
 
@@ -5326,6 +5285,22 @@
 .support-stat{background:#fff;border:1px solid #eadfc5;border-radius:12px;padding:12px}.support-stat strong{display:block;font-size:1.35rem;margin-top:6px}
 .support-row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:white;border:1px solid #eee4d0;border-radius:10px;padding:12px;margin:8px 0;overflow-wrap:anywhere}
 .support-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}
+
+/* مِعدة 2026 — هوية تفاصيل الطلب بعد القبول */
+.ma3da-order-kicker{margin:20px 0 10px;text-align:right;font-size:1.08rem;font-weight:900;color:#9a762b;letter-spacing:.1px}
+.ma3da-order-details{padding:8px 14px;margin:0 0 18px;border:1px solid rgba(184,145,55,.28);border-radius:18px;background:linear-gradient(145deg,#fffdf7,#fff 70%);box-shadow:0 10px 28px rgba(31,41,55,.055)}
+.ma3da-detail-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid #eee8da;text-align:right}
+.ma3da-detail-row:last-child{border-bottom:0}
+.ma3da-detail-row span{color:#6b7280;font-size:.92rem;flex:0 0 auto}
+.ma3da-detail-row strong{color:#202124;font-size:.97rem;font-weight:800;text-align:left;overflow-wrap:anywhere}
+.ma3da-price-row strong{color:#9a762b;font-size:1.12rem}
+.ma3da-secondary-btn{background:#fff!important;color:#86651f!important;border:1px solid rgba(184,145,55,.48)!important;box-shadow:none!important}
+.ma3da-distance-feedback{margin:8px 0 14px;text-align:center;font-size:.88rem;line-height:1.7;color:#777}
+#operatorArrivedBtn:disabled{opacity:.48;filter:grayscale(.2);cursor:not-allowed;box-shadow:none}
+#matchedScreen .driver-card{border:1px solid rgba(184,145,55,.25);border-radius:18px;background:linear-gradient(145deg,#fffdf7,#fff);padding:16px}
+#matchedScreen #matchedOperatorName{display:block;color:#242424;font-weight:900;font-size:1.05rem}
+#matchedScreen #matchedOperatorType{display:block;color:#8b6a25;margin-top:5px}
+@media(max-width:480px){.ma3da-order-details{padding:6px 12px}.ma3da-detail-row{padding:12px 0}.ma3da-detail-row span{font-size:.87rem}.ma3da-detail-row strong{font-size:.92rem}}
 </style>
 <!-- الصفحة: الدعم الفني: تسجيل دخول موظفي الدعم | المعرّف البرمجي: supportLoginScreen -->
 <section id="supportLoginScreen" class="screen support-screen">
