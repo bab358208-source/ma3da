@@ -744,6 +744,11 @@ function startAcceptanceWatcher(){
             );
  
             updateMatchedScreen();
+            const matchedOperatorName=document.getElementById('matchedOperatorName');
+            const matchedOperatorType=document.getElementById('matchedOperatorType');
+            if(matchedOperatorName)matchedOperatorName.textContent=data.operatorName||data.equipmentOwnerName||data.ownerName||'صاحب المعدة';
+            if(matchedOperatorType)matchedOperatorType.textContent=data.equipment||'صاحب معدة مِعدة';
+            window.ma3daActiveCustomerRequestData=data;
  
             updateWorkingScreen();
  
@@ -2542,20 +2547,28 @@ const trackingBtn =
   document.getElementById("trackingBtn");
  
 if(trackingBtn){
- 
-  trackingBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      showScreen(
-        "trackingScreen"
-      );
- 
-      startTracking();
- 
-    }
-  );
- 
+  trackingBtn.addEventListener("click",async()=>{
+    const requestId=localStorage.getItem('currentRequestId');
+    if(!requestId){alert('لا يوجد طلب حالي.');return;}
+    try{
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
+      if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
+      const data=snap.data()||{};
+      let ownerEquipment={};
+      const ownerId=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
+      if(ownerId){try{const equipmentSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'equipment',ownerId));if(equipmentSnap.exists())ownerEquipment=equipmentSnap.data()||{};}catch(e){console.warn('تعذر قراءة موقع المعدة المسجل:',e);}}
+      const lat=Number(data.equipmentLocationLatitude??data.ownerLocationLatitude??data.equipmentLatitude??data.equipmentCoordinates?.latitude??data.ownerEquipmentLocation?.latitude??ownerEquipment.latitude??ownerEquipment.lat??ownerEquipment.locationLatitude??ownerEquipment.coordinates?.latitude);
+      const lng=Number(data.equipmentLocationLongitude??data.ownerLocationLongitude??data.equipmentLongitude??data.equipmentCoordinates?.longitude??data.ownerEquipmentLocation?.longitude??ownerEquipment.longitude??ownerEquipment.lng??ownerEquipment.locationLongitude??ownerEquipment.coordinates?.longitude);
+      const savedAddress=String(data.equipmentLocationAddress??data.ownerEquipmentAddress??data.equipmentAddress??data.ownerEquipmentLocation?.address??ownerEquipment.address??ownerEquipment.locationAddress??ownerEquipment.city??'').trim();
+      const point=Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&(lat!==0||lng!==0)?{lat,lng}:null;
+      const status=document.getElementById('trackingStatus');
+      const distance=document.getElementById('distanceText');
+      const eta=document.getElementById('etaText');
+      if(point){if(status)status.textContent='موقع المعدة المسجّل عند صاحب المعدة';if(distance)distance.textContent=`${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`;if(eta)eta.textContent='موقع ثابت';showScreen('trackingScreen');window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(point.lat+','+point.lng)}`,'_blank','noopener,noreferrer');}
+      else if(savedAddress){if(status)status.textContent='موقع المعدة المسجّل عند صاحب المعدة';if(distance)distance.textContent=savedAddress;if(eta)eta.textContent='موقع ثابت';showScreen('trackingScreen');window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(savedAddress)}`,'_blank','noopener,noreferrer');}
+      else {alert('لم يُحفظ موقع المعدة المسجّل في بيانات هذا الطلب بعد. لا نعرض موقعًا تقديريًا أو تتبعًا وهميًا.');}
+    }catch(error){console.error('تعذر تحميل موقع المعدة:',error);alert('تعذر تحميل موقع المعدة حاليًا.');}
+  });
 }
  
 /* وظائف المحادثة المشتركة: العميل وصاحب المعدة — أبقيناها مشتركة لتجنب كسر الربط */
@@ -6015,6 +6028,7 @@ function updateOperatorCurrentUI(
   const price =
     document.getElementById("operatorCurrentPrice");
  
+  const customerName = document.getElementById("operatorCurrentCustomerName");
   const statusText =
     document.getElementById("operatorCurrentStatusText");
  
@@ -6047,9 +6061,7 @@ function updateOperatorCurrentUI(
       statusIcon.textContent =
         "⚪";
  
-    if(arrivedBtn)
-      arrivedBtn.style.display =
-        "none";
+    if(arrivedBtn){ arrivedBtn.style.display = "none"; arrivedBtn.disabled = true; }
  
     if(startBtn)
       startBtn.style.display =
@@ -6074,6 +6086,10 @@ function updateOperatorCurrentUI(
   if(location)
     location.textContent =
       data.location || "-";
+  if(customerName)
+    customerName.textContent = data.customerName || data.customerFullName || data.name || data.customerDisplayName || "العميل";
+  window.ma3daActiveRequestData = data;
+  ma3daUpdateArrivalEligibility(data);
  
   if(duration)
     duration.textContent =
@@ -6186,6 +6202,13 @@ function updateOperatorCurrentUI(
 /* OPERATOR ARRIVED */
  
 async function operatorMarkArrived(){
+  const latestData=window.ma3daActiveRequestData||{};
+  const targetPoint=ma3daCustomerCoordinates(latestData);
+  if(!targetPoint||!ma3daOwnerPosition||ma3daDistanceKm(ma3daOwnerPosition,targetPoint)>1){
+    ma3daUpdateArrivalEligibility(latestData);
+    alert('لا يمكن تأكيد الوصول إلا بعد التحقق من موقعك والتأكد أنك على بُعد كيلومتر واحد أو أقل من العميل.');
+    return;
+  }
  
   const requestId =
     localStorage.getItem("currentRequestId");
