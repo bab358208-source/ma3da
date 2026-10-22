@@ -1789,6 +1789,27 @@ if(acceptedCustomerLocationElement){
   });
 }
 
+/* زر مخصص لفتح موقع العميل في Google Maps لصاحب المعدة */
+const openAcceptedCustomerMapBtn=document.getElementById('openAcceptedCustomerMapBtn');
+if(openAcceptedCustomerMapBtn){
+  openAcceptedCustomerMapBtn.addEventListener('click',async()=>{
+    openAcceptedCustomerMapBtn.disabled=true;
+    try{
+      const requestId=localStorage.getItem('currentRequestId');
+      if(!requestId)throw new Error('لا يوجد طلب حالي.');
+      if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
+      if(!snap.exists())throw new Error('الطلب غير موجود.');
+      ma3daOpenCustomerMap(snap.data()||{});
+    }catch(error){
+      console.error('تعذر فتح موقع العميل في Google Maps:',error);
+      alert(error.message||'تعذر فتح موقع العميل.');
+    }finally{
+      openAcceptedCustomerMapBtn.disabled=false;
+    }
+  });
+}
+
 /* ACCEPT REQUEST */
  
 if(acceptRequestBtn){
@@ -3141,6 +3162,17 @@ if(ratingBtn){
               requestId
             );
  
+          const requestSnapshot = await window.ma3daGetDoc(requestRef);
+          if(!requestSnapshot.exists()){
+            alert("تعذر العثور على الطلب.");
+            return;
+          }
+          const requestData = requestSnapshot.data() || {};
+          if(requestData.paymentStatus !== "paid" || requestData.status !== "paid"){
+            alert("تقييم المعدة متاح بعد تأكيد سداد الفاتورة بالكامل.");
+            return;
+          }
+
           await window.ma3daUpdateDoc(
             requestRef,
             {
@@ -3208,6 +3240,25 @@ newRequestButtons.forEach(
   }
 );
  
+/* أزرار الرجوع للقائمة الرئيسية بعد التقييم أو إنهاء العمل */
+const thankYouHomeBtn=document.getElementById("thankYouHomeBtn");
+if(thankYouHomeBtn){
+  thankYouHomeBtn.addEventListener("click",()=>{
+    showScreen("customerHomeScreen");
+  });
+}
+const operatorCompletedHomeBtn=document.getElementById("operatorCompletedHomeBtn");
+if(operatorCompletedHomeBtn){
+  operatorCompletedHomeBtn.addEventListener("click",async()=>{
+    try{
+      if(typeof loadOperatorHome==="function") await loadOperatorHome();
+    }catch(error){
+      console.error("تعذر تحديث الصفحة الرئيسية لصاحب المعدة:",error);
+    }
+    showScreen("operatorHomeScreen");
+  });
+}
+
 /* BACK ROLE */
  
 const backRoleBtn =
@@ -13181,6 +13232,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     // Main home pages for each marketplace role
     'customerHomeScreen','contractorHomeScreen','operatorHomeScreen'
   ]);
+  // These screens update through the existing live/polling listeners; do not show a manual refresh button.
+  const noRefreshToolbarScreenIds = new Set([
+    'matchedScreen','operatorAcceptedScreen','chatScreen'
+  ]);
   function hasOwnRefreshControl(screen){
     return [...screen.querySelectorAll('button,[role="button"]')].some(b=>{
       if(!visibleInScreen(b,screen)) return false;
@@ -13196,6 +13251,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(noToolbarScreenIds.has(screen.id)) return;
 
     const hasRefresh=hasOwnRefreshControl(screen);
+    const suppressRefresh=noRefreshToolbarScreenIds.has(screen.id);
     const toolbar=document.createElement('div');
     toolbar.className='ma3da-page-toolbar';
     toolbar.setAttribute('role','group');
@@ -13216,7 +13272,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
 
     let status=null;
-    if(!hasRefresh){
+    if(!hasRefresh && !suppressRefresh){
       const refresh=document.createElement('button');
       refresh.type='button';
       refresh.className='ma3da-page-refresh';
