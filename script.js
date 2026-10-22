@@ -179,14 +179,10 @@ async function saveOrder(){
       "تم تجهيز collection requests"
     );
  
-    const locationParts = String(order.location || "").trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)\s*$/);
     const requestData = {
  
       location:
         order.location || "",
-      locationLatitude: locationParts ? Number(locationParts[1]) : null,
-      locationLongitude: locationParts ? Number(locationParts[2]) : null,
-      locationCoordinates: locationParts ? { latitude: Number(locationParts[1]), longitude: Number(locationParts[2]) } : null,
  
       equipment:
         order.equipment || "",
@@ -593,52 +589,6 @@ function stopAcceptanceWatcher(){
  
 }
  
-function ma3daCustomerCoordinates(data){
-  const lat=Number(data?.locationLatitude ?? data?.latitude ?? data?.locationCoordinates?.latitude ?? data?.coordinates?.latitude);
-  const lng=Number(data?.locationLongitude ?? data?.longitude ?? data?.locationCoordinates?.longitude ?? data?.coordinates?.longitude);
-  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180)return {lat,lng};
-  const raw=String(data?.location||'');
-  const match=raw.match(/(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)/);
-  if(!match)return null;
-  const parsedLat=Number(match[1]),parsedLng=Number(match[2]);
-  return Math.abs(parsedLat)<=90&&Math.abs(parsedLng)<=180?{lat:parsedLat,lng:parsedLng}:null;
-}
-
-function ma3daOpenCustomerMap(data){
-  const point=ma3daCustomerCoordinates(data||{});
-  const location=String(data?.location||'').trim();
-  const url=point
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(point.lat+','+point.lng)}&travelmode=driving`
-    : location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}` : '';
-  if(!url){alert('موقع العميل غير محفوظ كإحداثيات أو عنوان. اطلب من العميل تحديد موقعه بدقة.');return;}
-  window.open(url,'_blank','noopener,noreferrer');
-}
-
-function ma3daNotifyCustomerStatus(requestId,data){
-  const status=String(data?.status||'');
-  const labels={accepted:'المعدة في الطريق إليك',arrived:'المعدة وصلت إلى موقعك',working:'بدأت المعدة العمل',completed:'انتهى العمل بالمعدة — يمكنك تقييم المعدة الآن',invoice_issued:'صدرت فاتورة السداد لطلبك',payment_submitted:'تم تسجيل السداد وبانتظار التأكيد',paid:'تم تأكيد السداد',rejected:'تم رفض طلب المعدة'};
-  const paymentStatus=String(data?.paymentStatus||'');
-  const invoiceLabel=labels[status] || (paymentStatus==='paid'?'تم تأكيد السداد':paymentStatus==='payment_submitted'?'تم تسجيل السداد وبانتظار التأكيد':'');
-  const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
-  const previous=localStorage.getItem('ma3daLastCustomerNotice:'+requestId);
-  if(!invoiceLabel||previous===token)return;
-  localStorage.setItem('ma3daLastCustomerNotice:'+requestId,token);
-  const wasInitialized=localStorage.getItem('ma3daCustomerNoticeInitialized:'+requestId)==='1';
-  localStorage.setItem('ma3daCustomerNoticeInitialized:'+requestId,'1');
-  if(!wasInitialized)return;
-  // Browser notifications work only while this page is active; closed-app push requires FCM/service-worker setup.
-  if(document.visibilityState==='visible'){
-    const toast=document.createElement('div');
-    toast.setAttribute('role','status');
-    toast.style.cssText='position:fixed;z-index:99999;bottom:18px;left:16px;right:16px;padding:14px 16px;background:#171717;color:#fff;border-radius:12px;box-shadow:0 6px 24px #0003;text-align:center;font-weight:700';
-    toast.textContent=invoiceLabel+(data?.invoiceNumber?' — فاتورتك متاحة في «فواتيري»':'');
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
-  }
-  if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
-    try{new Notification('مِعدة — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
-  }
-}
-
 function startAcceptanceWatcher(){
  
   stopAcceptanceWatcher();
@@ -681,8 +631,8 @@ function startAcceptanceWatcher(){
           if(!snapshot.exists())
             return;
  
-          const data = snapshot.data();
-          ma3daNotifyCustomerStatus(requestId,data);
+          const data =
+            snapshot.data();
  
           /* ACCEPTED */
  
@@ -747,8 +697,17 @@ function startAcceptanceWatcher(){
  
             updateWorkingScreen();
  
-            const activeScreen=document.querySelector('.screen.active')?.id||'';
-            if(activeScreen==='searchingScreen') showScreen('matchedScreen');
+            if(
+              document.getElementById("searchingScreen")?.classList.contains(
+                "active"
+              )
+            ){
+ 
+              showScreen(
+                "matchedScreen"
+              );
+ 
+            }
  
           }
  
@@ -810,9 +769,9 @@ function startAcceptanceWatcher(){
  
             }
  
-            if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen'].includes(document.querySelector('.screen.active')?.id||'')){
-              showScreen("arrivedCustomerScreen");
-            }
+            showScreen(
+              "arrivedCustomerScreen"
+            );
  
           }
  
@@ -845,9 +804,9 @@ function startAcceptanceWatcher(){
  
             updateWorkingScreen();
  
-            if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen'].includes(document.querySelector('.screen.active')?.id||'')){
-              showScreen("workingScreen");
-            }
+            showScreen(
+              "workingScreen"
+            );
  
             clearInterval(
               timerInterval
@@ -872,9 +831,20 @@ if(
     timerInterval
   );
  
-  setOrderState("completed");
-  const activeScreen=document.querySelector('.screen.active')?.id||'';
-  if(['searchingScreen','matchedScreen','trackingScreen','arrivedCustomerScreen','workingScreen','completedScreen'].includes(activeScreen)) showScreen("completedScreen");
+  if(
+    document
+      .getElementById("paymentScreen")
+      ?.classList.contains("active")
+  )
+    return;
+ 
+  setOrderState(
+    "completed"
+  );
+ 
+  showScreen(
+    "completedScreen"
+  );
  
 }
           /* REJECTED */
@@ -1773,22 +1743,6 @@ if(arrivedAtCustomerBtn){
  
 }
  
-/* موقع العميل: الضغط على الموقع يفتح خرائط الهاتف بإحداثياته */
-const acceptedCustomerLocationElement=document.getElementById('acceptedCustomerLocation');
-if(acceptedCustomerLocationElement){
-  acceptedCustomerLocationElement.style.cursor='pointer';
-  acceptedCustomerLocationElement.title='اضغط لفتح موقع العميل في الخرائط';
-  acceptedCustomerLocationElement.addEventListener('click',async()=>{
-    try{
-      const requestId=localStorage.getItem('currentRequestId');
-      if(!requestId)throw new Error('لا يوجد طلب حالي.');
-      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
-      if(!snap.exists())throw new Error('الطلب غير موجود.');
-      ma3daOpenCustomerMap(snap.data()||{});
-    }catch(error){alert(error.message||'تعذر فتح موقع العميل.');}
-  });
-}
-
 /* ACCEPT REQUEST */
  
 if(acceptRequestBtn){
@@ -2533,12 +2487,8 @@ function getMa3daActiveRole(){
   return selectedRole;
 }
  
-let ma3daChatReturnScreen='';
 function openMa3daChat(){
   getMa3daActiveRole();
-  const active=document.querySelector('.screen.active')?.id||'';
-  ma3daChatReturnScreen=active==='chatScreen'?'':active;
-  if(!ma3daChatReturnScreen)ma3daChatReturnScreen=getMa3daActiveRole()==='customer'?'matchedScreen':'operatorCurrentOrderScreen';
   showScreen("chatScreen");
   startChatListener();
   setTimeout(() => document.getElementById("chatInput")?.focus(), 100);
@@ -2549,19 +2499,6 @@ if (chatBtn) chatBtn.addEventListener("click", openMa3daChat);
  
 const operatorChatCustomerBtn = document.getElementById("operatorChatCustomerBtn");
 if (operatorChatCustomerBtn) operatorChatCustomerBtn.addEventListener("click", openMa3daChat);
-const operatorChatBtn = document.getElementById("operatorChatBtn");
-if (operatorChatBtn) operatorChatBtn.addEventListener("click", openMa3daChat);
-const backFromChatBtn = document.getElementById("backFromChatBtn");
-if(backFromChatBtn)backFromChatBtn.addEventListener('click',()=>{
-  if(chatMessagesUnsubscribe){chatMessagesUnsubscribe();chatMessagesUnsubscribe=null;}
-  const role=getMa3daActiveRole();
-  let target=ma3daChatReturnScreen;
-  if(!target||target==='chatScreen')target=role==='customer'?'currentOrdersScreen':'operatorCurrentOrderScreen';
-  if(!document.getElementById(target))target=role==='customer'?'customerHomeScreen':'operatorHomeScreen';
-  showScreen(target);
-  if(role==='customer'&&target==='currentOrdersScreen')loadCustomerOrders('current');
-  if(role!=='customer'&&target==='operatorCurrentOrderScreen'&&typeof loadOperatorCurrentOrder==='function')loadOperatorCurrentOrder();
-});
  
 async function sendChatMessage(){
   if (chatSending) return;
@@ -3039,6 +2976,15 @@ if(paymentBtn){
     "click",
     ()=>{
  
+      if(
+        typeof stopAcceptanceWatcher ===
+        "function"
+      ){
+ 
+        stopAcceptanceWatcher();
+ 
+      }
+ 
       showScreen(
         "paymentScreen"
       );
@@ -3053,9 +2999,16 @@ const confirmPaymentBtn =
  
 if(confirmPaymentBtn){
   confirmPaymentBtn.addEventListener("click", async ()=>{
-    // لا يسمح زر السداد بتجاوز الفاتورة إلى التقييم.
-    if(window.ma3daOpenCustomerFinance){ window.ma3daOpenCustomerFinance(); return; }
-    alert('افتح «فواتيري والمدفوعات» للتحقق من الفاتورة والسداد قبل التقييم.');
+    const requestId = localStorage.getItem("currentRequestId");
+    if (!requestId) { alert('تعذر تحديد الطلب الحالي. افتح الطلب من «الطلبات الحالية» ثم حاول مجددًا.'); return; }
+    confirmPaymentBtn.disabled = true;
+    try {
+      if (typeof window.ma3daSubmitCustomerBookingPayment !== "function") throw new Error('خدمة السداد غير جاهزة.');
+      await window.ma3daSubmitCustomerBookingPayment(requestId);
+    } catch (error) {
+      console.error('Customer payment flow failed:', error);
+      alert(error.message || 'تعذر بدء السداد.');
+    } finally { confirmPaymentBtn.disabled = false; }
   });
 }
  
@@ -3178,6 +3131,9 @@ if(ratingBtn){
  
 }
  
+/* 03 — بعد التقييم: العودة للقائمة الرئيسية */
+document.getElementById("ratingHomeBtn")?.addEventListener("click", () => showScreen("customerHomeScreen"));
+
 /* NEW REQUEST */
  
 const newRequestButtons =
@@ -3187,24 +3143,15 @@ const newRequestButtons =
  
 newRequestButtons.forEach(
   button=>{
- 
-    button.addEventListener(
-      "click",
-      ()=>{
- 
-        selectedPayment =
-          "";
- 
-        selectedRating =
-          0;
- 
-        showScreen(
-          "requestScreen"
-        );
- 
+    button.addEventListener("click", ()=>{
+      selectedPayment = "";
+      selectedRating = 0;
+      if (button.id === "thankYouNewRequestBtn") {
+        showScreen("customerHomeScreen");
+        return;
       }
-    );
- 
+      showScreen("requestScreen");
+    });
   }
 );
  
@@ -3990,10 +3937,6 @@ if(getLocationBtn){
  
 /* 03 — وظائف العميل: الصفحة الرئيسية وطلبات العميل */
 /* CUSTOMER HOME */
-if(document.getElementById('currentOrderBtn')){
-  const customerOrdersStartup=()=>{if((localStorage.getItem('selectedRole')||selectedRole)==='customer')startCustomerOrdersRealtime();};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')customerOrdersStartup();});
-}
  
 const currentOrderBtn =
   document.getElementById("currentOrderBtn");
@@ -4008,8 +3951,9 @@ if(currentOrderBtn){
         "currentOrdersScreen"
       );
  
-      await loadCustomerOrders("current");
-      startCustomerOrdersRealtime();
+      await loadCustomerOrders(
+        "current"
+      );
  
     }
   );
@@ -4029,8 +3973,9 @@ if(previousOrdersBtn){
         "previousOrdersScreen"
       );
  
-      await loadCustomerOrders("previous");
-      startCustomerOrdersRealtime();
+      await loadCustomerOrders(
+        "previous"
+      );
  
     }
   );
@@ -4082,12 +4027,16 @@ async function loadCustomerOrders(
       );
  
     const currentStatuses = [
-      "searching", "accepted", "arrived", "working", "in_progress",
-      "duration_expired", "invoice_pending", "invoice_issued", "payment_pending",
-      "payment_submitted", "paid"
+      "searching",
+      "accepted",
+      "arrived",
+      "working"
     ];
  
-    const previousStatuses = ["rejected", "cancelled"];
+    const previousStatuses = [
+      "completed",
+      "rejected"
+    ];
  
     const wantedStatuses =
       type === "current"
@@ -4102,10 +4051,12 @@ async function loadCustomerOrders(
         const data =
           docSnapshot.data();
  
-        const financiallyOpen=Number(data.remainingBalance??data.invoiceAmount??data.price??0)>0 || !['paid','settled'].includes(String(data.paymentStatus||data.settlementStatus||''));
-        const belongsInCurrent=type==='current'&&(currentStatuses.includes(String(data.status||''))||(data.status==='completed'&&financiallyOpen));
-        const belongsInPrevious=type==='previous'&&(previousStatuses.includes(String(data.status||''))||(data.status==='completed'&&!financiallyOpen));
-        if(data.customerId===user.uid&&(belongsInCurrent||belongsInPrevious)){
+        if(
+          data.customerId === user.uid &&
+          wantedStatuses.includes(
+            data.status
+          )
+        ){
  
           orders.push({
  
@@ -4246,7 +4197,6 @@ async function loadCustomerOrders(
             </div>
  
           </div>
-          <button type="button" class="main-btn" data-customer-open-order="${customerOrder.id}">فتح الطلب ومتابعته</button>
  
         `;
  
@@ -4321,63 +4271,6 @@ function getCustomerOrderStatusClass(
  
 }
  
-/* فتح الطلب من قائمة الطلبات الحالية/السابقة */
-document.addEventListener('click',async event=>{
-  const button=event.target.closest('[data-customer-open-order]');
-  if(!button)return;
-  const requestId=button.dataset.customerOpenOrder;
-  if(!requestId)return;
-  localStorage.setItem('currentRequestId',requestId);
-  try{
-    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
-    if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
-    const data=snap.data()||{};
-    order={location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)};
-    localStorage.setItem('currentOrder',JSON.stringify(order));
-    if(typeof startAcceptanceWatcher==='function')startAcceptanceWatcher();
-    const screenByStatus={searching:'searchingScreen',accepted:'matchedScreen',arrived:'arrivedCustomerScreen',working:'workingScreen',completed:'completedScreen',invoice_pending:'paymentScreen',invoice_issued:'paymentScreen',payment_pending:'paymentScreen',payment_submitted:'paymentScreen',paid:'ratingScreen'};
-    const target=screenByStatus[String(data.status||'')]||'matchedScreen';
-    if(target==='arrivedCustomerScreen'){
-      const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
-      const l=document.getElementById('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';
-    }
-    if(target==='matchedScreen'){updateMatchedScreen();updateWorkingScreen();}
-    if(target==='workingScreen'){updateWorkingScreen();}
-    showScreen(target);
-  }catch(error){console.error('تعذر فتح طلب العميل:',error);alert('تعذر تحميل تفاصيل الطلب. تحقق من الاتصال.');}
-});
-
-/* 03 — وظائف العميل: تحديث الطلبات الحالية آليًا من Firebase */
-let customerOrdersRealtimeUnsubscribe=null;
-let customerOrdersRealtimeUserId='';
-async function startCustomerOrdersRealtime(){
-  try{
-    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
-    if(!user?.uid||!window.ma3daDB||typeof window.ma3daCollection!=='function'||typeof window.ma3daOnSnapshot!=='function')return;
-    if(customerOrdersRealtimeUnsubscribe&&customerOrdersRealtimeUserId===user.uid)return;
-    if(customerOrdersRealtimeUnsubscribe){customerOrdersRealtimeUnsubscribe();customerOrdersRealtimeUnsubscribe=null;}
-    customerOrdersRealtimeUserId=user.uid;
-    customerOrdersRealtimeUnsubscribe=window.ma3daOnSnapshot(window.ma3daCollection(window.ma3daDB,'requests'),snapshot=>{
-      const currentActive=document.getElementById('currentOrdersScreen')?.classList.contains('active');
-      const previousActive=document.getElementById('previousOrdersScreen')?.classList.contains('active');
-      let currentChanged=false,previousChanged=false;
-      snapshot.forEach(doc=>{
-        const data=doc.data()||{};
-        if(data.customerId!==user.uid)return;
-        const id=doc.id;
-        ma3daNotifyCustomerStatus(id,data);
-        if(id===localStorage.getItem('currentRequestId')){
-          localStorage.setItem('currentOrder',JSON.stringify({location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)}));
-        }
-        if(['rejected','cancelled'].includes(String(data.status||''))||(data.status==='completed'&&Number(data.remainingBalance??data.invoiceAmount??data.price??0)<=0&&(data.paymentStatus==='paid'||data.settlementStatus==='settled')))previousChanged=true;
-        else currentChanged=true;
-      });
-      if(currentActive&&currentChanged)loadCustomerOrders('current');
-      if(previousActive&&previousChanged)loadCustomerOrders('previous');
-    },error=>console.error('Customer orders realtime listener failed:',error));
-  }catch(error){console.warn('تعذر تفعيل تحديث طلبات العميل المباشر:',error);}
-}
-
 /* CUSTOMER ORDER BACK */
  
 const backFromCurrentOrdersBtn =
@@ -5582,6 +5475,7 @@ async function loadOperatorProjectOrders(){
     const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
     current.sort(sort);previous.sort((a,b)=>operatorRequestDateValue(b.workCompletedAt||b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.workCompletedAt||a.completedAt||a.updatedAt||a.createdAt));
     renderOwnerProjectOrderCards(currentList,current,false);renderOwnerProjectOrderCards(previousList,previous,true);
+    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
   }catch(error){
     console.error("تعذر تحميل طلبات المشاريع لصاحب المعدة:",error);
     const msg='<div class="card center"><h3>تعذر تحميل طلبات المشاريع</h3><p>تحقق من الاتصال وصلاحيات Firebase ثم حدّث الصفحة.</p></div>';
@@ -6385,14 +6279,23 @@ async function operatorFinishWork(){
     await window.ma3daUpdateDoc(
       requestRef,
       {
- 
-        status:
-          "completed",
- 
-        completedAt
- 
+        status: "completed",
+        workStatus: "completed",
+        completedAt,
+        workCompletedAt: completedAt,
+        workCompletedBy: (window.ma3daAuth && window.ma3daAuth.currentUser && window.ma3daAuth.currentUser.uid) || "",
+        updatedAt: new Date()
       }
     );
+
+    // إصدار فاتورة العميل تلقائيًا بعد إنهاء صاحب المعدة للعمل.
+    if (typeof window.ma3daAutoIssueBookingInvoice === "function") {
+      try { await window.ma3daAutoIssueBookingInvoice(requestId); }
+      catch (invoiceError) {
+        console.error("تعذر إصدار الفاتورة تلقائيًا بعد انتهاء العمل:", invoiceError);
+        alert("تم تسجيل انتهاء العمل، لكن تعذر إصدار الفاتورة تلقائيًا. تحقق من صلاحيات Firebase قبل متابعة السداد.");
+      }
+    }
  
     clearInterval(
       operatorTimerInterval
@@ -6518,10 +6421,12 @@ async function loadOperatorCustomerOrders(){
     previous.sort((a,b)=>operatorRequestDateValue(b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.completedAt||a.updatedAt||a.createdAt));
     renderOwnerCustomerOrderCards(currentList,current,false);
     renderOwnerCustomerOrderCards(previousList,previous,true);
+    if(updated)updated.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
   }catch(error){
     console.error("تعذر تحميل طلبات العملاء لصاحب المعدة:",error);
-    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم أعد فتح الصفحة.</p></div>';
+    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم حاول تحديث الطلبات.</p></div>';
     if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;
+    if(updated)updated.textContent="لم يكتمل التحديث. حاول مرة أخرى.";
   }
 }
 
@@ -11825,6 +11730,50 @@ document.addEventListener("click", function(event){
  
 });
 
+/* 03 — متابعة السداد: الانتقال للتقييم فقط بعد تأكيد السداد في سجل الطلب */
+(function ma3daWatchCustomerPaymentCompletion(){
+  if (window.__ma3daCustomerPaymentWatchV1) return;
+  window.__ma3daCustomerPaymentWatchV1 = true;
+  let watchedId = '';
+  let unsubscribe = null;
+  function attach(){
+    const id = localStorage.getItem('currentRequestId') || '';
+    if (!id || id === watchedId || typeof window.ma3daOnSnapshot !== 'function' || !window.ma3daDB || typeof window.ma3daDoc !== 'function') return;
+    if (typeof unsubscribe === 'function') unsubscribe();
+    watchedId = id;
+    try {
+      unsubscribe = window.ma3daOnSnapshot(window.ma3daDoc(window.ma3daDB, 'requests', id), snap => {
+        if (!snap || !snap.exists()) return;
+        const request = snap.data() || {};
+        const active = document.querySelector('.screen.active');
+        if (request.paymentStatus === 'paid' && !request.rating && active && ['paymentScreen','completedScreen'].includes(active.id)) {
+          if (typeof window.showScreen === 'function') window.showScreen('ratingScreen');
+        }
+        if (request.invoiceNotificationText && request.invoiceNotificationAt) {
+          const stamp = String(request.invoiceNotificationAt.toMillis ? request.invoiceNotificationAt.toMillis() : (request.invoiceNotificationAt.seconds ? request.invoiceNotificationAt.seconds * 1000 : request.invoiceNotificationAt));
+          const key = 'ma3daInvoiceNoticeSeen_' + id;
+          let seen = ''; try { seen = localStorage.getItem(key) || ''; } catch (_) {}
+          if (seen !== stamp) {
+            const feedback = document.getElementById('customerPaymentFeedback');
+            if (feedback && active && ['paymentScreen','currentOrdersScreen','customerHomeScreen'].includes(active.id)) feedback.textContent = request.invoiceNotificationText;
+            const currentUser = window.ma3daAuth?.currentUser;
+            if (currentUser?.uid === request.customerId && 'Notification' in window && Notification.permission === 'granted') {
+              try { new Notification('مِعدة — فاتورة جديدة', { body: request.invoiceNotificationText }); } catch (_) {}
+            }
+            try { localStorage.setItem(key, stamp); } catch (_) {}
+          }
+        }
+      }, err => console.warn('Customer payment live updates unavailable:', err));
+    } catch (error) { console.warn('Unable to watch customer payment state:', error); }
+  }
+  document.addEventListener('click', event => {
+    if (event.target.closest('#paymentBtn,[data-open-current-order],#currentOrderBtn,[data-open-order]')) attach();
+  });
+  document.addEventListener('DOMContentLoaded', attach);
+  window.addEventListener('focus', attach);
+  attach();
+})();
+
 /* =========================================================
    MA3DA — MULTI-EQUIPMENT MANAGEMENT
    Added without changing requests/chat paths or existing roles.
@@ -12714,7 +12663,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const ledger=(Array.isArray(request.paymentLedger)?request.paymentLedger:[]).filter(x=>x.paymentId!==paymentRef.id&&x.id!==paymentRef.id);ledger.push({id:paymentRef.id,paymentId:paymentRef.id,invoiceId:invoice.id,amount,reference,status:'pending_owner_review',submittedAt:now,submittedBy:user.uid});
         tx.update(requestRef,{paymentLedger:ledger,paymentStatus:'pending_review',lastPaymentSubmittedAt:now,updatedAt:now});tx.update(invoiceRef,{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:now,updatedAt:now});
       });
-      alert('تم تسجيل إثبات السداد للمراجعة فقط؛ لم يتم تأكيد وصول المال أو تنفيذ دفع إلكتروني.');await loadFinance();
+      const paymentMessage = 'تم تسجيل إثبات السداد. سيظهر تأكيد السداد بعد التحقق من وصول المبلغ؛ ستجد الفاتورة في «فواتيري» دون الحاجة إلى الانتقال إليها الآن.';
+      const paymentFeedback = document.getElementById('customerPaymentFeedback');
+      if (paymentFeedback) paymentFeedback.textContent = paymentMessage;
+      alert(paymentMessage);
+      await loadFinance();
     }catch(err){if(err.message!=='أُلغي تسجيل إثبات السداد.')console.error('Submit booking payment proof failed:',err);if(err.message!=='أُلغي تسجيل إثبات السداد.')alert(err.message||'تعذر تسجيل إثبات السداد.');}
   }
   async function issueBookingInvoice(requestIdFromButton){
@@ -12730,7 +12683,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(r.invoiceNumber||r.sharedInvoiceId)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
         const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');const finalAmount=Math.round(amount*100)/100;const invoiceNumber='M3-B-'+Date.now();const description=($f('ownerBookingInvoiceDescription')?.value||'').trim()||'فاتورة تأجير '+(r.equipment||'معدة');
         tx.set(invoiceRef,{invoiceKind:'customer_booking',invoiceNumber,requestId,customerId:r.customerId||'',customerEmail:r.customerEmail||'',ownerId,equipmentOwnerId:ownerId,ownerEmail:user.email||'',equipment:r.equipment||'معدة',equipmentId:r.equipmentId||'',projectName:r.projectName||'',invoiceAmount:finalAmount,paidAmount:0,remainingAmount:finalAmount,currency:'SAR',description,paymentMethod:'manual_receipt',status:'issued',paymentStatus:'unpaid',settlementStatus:'settlement_pending',paymentEvents:[],createdBy:user.uid,createdAt:now,updatedAt:now,schemaVersion:5,financialPolicyVersion:'ma3da-finance-v1'});
-        tx.update(ref,{invoiceNumber,sharedInvoiceId:invoiceRef.id,invoiceAmount:finalAmount,invoiceDescription:description,invoiceStatus:'issued',paymentStatus:'unpaid',paidTotal:0,remainingBalance:finalAmount,invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false,financialPolicyVersion:'ma3da-finance-v1'});
+        tx.update(ref,{invoiceNumber,sharedInvoiceId:invoiceRef.id,invoiceAmount:finalAmount,invoiceDescription:description,invoiceStatus:'issued',paymentStatus:'unpaid',paidTotal:0,remainingBalance:finalAmount,invoiceIssuedAt:now,invoiceIssuedBy:user.uid,invoiceNotificationText:'فاتورة جديدة في قسم الفواتير يمكنك الاطلاع عليها',invoiceNotificationAt:now,updatedAt:now,status:'invoice_issued',requestClosed:false,financialPolicyVersion:'ma3da-finance-v1'});
       });
       say('ownerBookingInvoiceFeedback','صدرت الفاتورة المشتركة وحُفظ رابطها مع الطلب في معاملة واحدة. لا يعني ذلك تحصيلًا إلكترونيًا.');if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
     }catch(err){console.error('Issue booking invoice failed:',err);say('ownerBookingInvoiceFeedback',err.message||'تعذر إصدار الفاتورة.',true);}finally{if(btn)btn.disabled=false;}
@@ -13012,6 +12965,38 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   });
   $f('contractorStageProject')?.addEventListener('change',renderManagerRequestOptions);
   $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
+  // وظائف تستخدمها شاشة السداد دون تحويل العميل إلى صفحة الفواتير.
+  window.ma3daAutoIssueBookingInvoice = async requestId => {
+    financeMode = 'owner';
+    await issueBookingInvoice(requestId);
+    const refreshed = await readAll('requests');
+    const request = refreshed.find(r => r.id === requestId);
+    if (!request?.sharedInvoiceId || !request?.invoiceNumber) {
+      throw new Error('انتهى العمل، لكن تعذر إصدار الفاتورة تلقائيًا. تحقق من صلاحيات Firebase.');
+    }
+    const message = 'فاتورة جديدة في قسم الفواتير يمكنك الاطلاع عليها';
+    alert(message);
+    if (typeof window.ma3daGetCurrentUser === 'function') {
+      const current = await window.ma3daGetCurrentUser();
+      if (current?.uid === (request.equipmentOwnerId || request.ownerId || request.operatorId) && 'Notification' in window && Notification.permission === 'granted') {
+        try { new Notification('مِعدة — فاتورة جديدة', { body: message }); } catch (_) {}
+      }
+    }
+    return request;
+  };
+  window.ma3daSubmitCustomerBookingPayment = async requestId => {
+    financeMode = 'customer';
+    await loadFinance();
+    const request = cachedAllRequests.find(r => r.id === requestId);
+    if (!request?.invoiceNumber || !request?.sharedInvoiceId) throw new Error('الفاتورة لم تصدر بعد. انتظر حتى يصدرها صاحب المعدة تلقائيًا بعد إنهاء العمل.');
+    if (request.paymentStatus === 'paid') {
+      if (!request.rating) showScreen('ratingScreen');
+      else showScreen('thankYouScreen');
+      return;
+    }
+    await submitBookingPaymentProof(requestId);
+  };
+
   window.ma3daRefreshFinance = () => loadFinance();
 })();
 
@@ -13033,6 +13018,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   style.id = 'ma3da-universal-toolbar-styles';
   style.textContent = `
     .ma3da-page-toolbar{direction:rtl;display:flex;gap:9px;align-items:center;width:100%;box-sizing:border-box;margin:0 auto 12px;padding:0 0 2px;}
+    .ma3da-page-refresh .ma3da-toolbar-label{display:none!important;}
     .ma3da-page-toolbar button{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;flex:0 1 auto!important;min-width:112px!important;min-height:42px!important;padding:9px 13px!important;border-radius:10px!important;border:1px solid #b58a35!important;font-family:inherit!important;font-size:15px!important;font-weight:700!important;line-height:1.25!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:0 1px 3px #0000000d!important;}
     .ma3da-page-toolbar .ma3da-page-back{background:#171717!important;color:#fff!important;border-color:#171717!important;}
     .ma3da-page-toolbar .ma3da-page-refresh{background:#b58a35!important;color:#fff!important;border-color:#a57b2b!important;}
@@ -13221,7 +13207,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       refresh.type='button';
       refresh.className='ma3da-page-refresh';
       refresh.dataset.ma3daGlobalRefresh='true';
-      refresh.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">⟳</span><span class="ma3da-toolbar-label">تحديث</span>';
+      refresh.innerHTML='<span class="ma3da-toolbar-icon" aria-hidden="true">⟳</span>';
       refresh.setAttribute('aria-label','تحديث بيانات الصفحة');
       status=document.createElement('p');
       status.className='ma3da-page-refresh-status';
@@ -13251,3 +13237,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   });
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 })();
+
+/* 04 — صاحب المعدة: الرجوع للرئيسية بعد إنهاء العمل */
+document.addEventListener('click', event => {
+  if (event.target.closest('#operatorCompletedHomeBtn')) {
+    if (typeof window.showScreen === 'function') window.showScreen('operatorHomeScreen');
+  }
+});
