@@ -841,10 +841,13 @@ if(
   setOrderState(
     "completed"
   );
- 
-  showScreen(
-    "completedScreen"
-  );
+
+  // انتهاء العمل يفتح خطوة السداد عند العميل؛ لا نطلب منه فاتورة مسبقة.
+  if (localStorage.getItem("currentRequestId")) {
+    showScreen("paymentScreen");
+  } else {
+    showScreen("completedScreen");
+  }
  
 }
           /* REJECTED */
@@ -6288,14 +6291,9 @@ async function operatorFinishWork(){
       }
     );
 
-    // إصدار فاتورة العميل تلقائيًا بعد إنهاء صاحب المعدة للعمل.
-    if (typeof window.ma3daAutoIssueBookingInvoice === "function") {
-      try { await window.ma3daAutoIssueBookingInvoice(requestId); }
-      catch (invoiceError) {
-        console.error("تعذر إصدار الفاتورة تلقائيًا بعد انتهاء العمل:", invoiceError);
-        alert("تم تسجيل انتهاء العمل، لكن تعذر إصدار الفاتورة تلقائيًا. تحقق من صلاحيات Firebase قبل متابعة السداد.");
-      }
-    }
+    // دورة السداد المعتمدة: صاحب المعدة ينهي العمل فقط.
+    // لا تُصدر فاتورة في هذه الخطوة؛ ينتقل العميل إلى صفحة السداد،
+    // وتُنشأ الفاتورة بعد تأكيد نجاح الدفع من بوابة الدفع الموثوقة.
  
     clearInterval(
       operatorTimerInterval
@@ -12967,32 +12965,24 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   $f('ownerPhaseTask')?.addEventListener('change',syncOwnerInvoiceFields);
   // وظائف تستخدمها شاشة السداد دون تحويل العميل إلى صفحة الفواتير.
   window.ma3daAutoIssueBookingInvoice = async requestId => {
-    financeMode = 'owner';
-    await issueBookingInvoice(requestId);
+    // توافق خلفي فقط: إنهاء العمل لا يصدر فاتورة ولا يطلب صلاحية إصدارها من المالك.
     const refreshed = await readAll('requests');
-    const request = refreshed.find(r => r.id === requestId);
-    if (!request?.sharedInvoiceId || !request?.invoiceNumber) {
-      throw new Error('انتهى العمل، لكن تعذر إصدار الفاتورة تلقائيًا. تحقق من صلاحيات Firebase.');
-    }
-    const message = 'فاتورة جديدة في قسم الفواتير يمكنك الاطلاع عليها';
-    alert(message);
-    if (typeof window.ma3daGetCurrentUser === 'function') {
-      const current = await window.ma3daGetCurrentUser();
-      if (current?.uid === (request.equipmentOwnerId || request.ownerId || request.operatorId) && 'Notification' in window && Notification.permission === 'granted') {
-        try { new Notification('مِعدة — فاتورة جديدة', { body: message }); } catch (_) {}
-      }
-    }
-    return request;
+    return refreshed.find(r => r.id === requestId) || null;
   };
   window.ma3daSubmitCustomerBookingPayment = async requestId => {
     financeMode = 'customer';
-    await loadFinance();
-    const request = cachedAllRequests.find(r => r.id === requestId);
-    if (!request?.invoiceNumber || !request?.sharedInvoiceId) throw new Error('الفاتورة لم تصدر بعد. انتظر حتى يصدرها صاحب المعدة تلقائيًا بعد إنهاء العمل.');
+    const refreshed = await readAll('requests');
+    const request = refreshed.find(r => r.id === requestId);
+    if (!request) throw new Error('تعذر العثور على الطلب. افتح الطلب من «الطلبات الحالية» ثم حاول مجددًا.');
     if (request.paymentStatus === 'paid') {
       if (!request.rating) showScreen('ratingScreen');
       else showScreen('thankYouScreen');
       return;
+    }
+    // لا ننشئ فاتورة قبل الدفع، ولا نسجل الضغط على الزر كتحصيل ناجح.
+    // يلزم ربط بوابة دفع حقيقية وإضافة تحقق خادمي قبل إكمال هذه الخطوة.
+    if (!request.sharedInvoiceId || !request.invoiceNumber) {
+      throw new Error('تم إنهاء العمل. صفحة السداد جاهزة، لكن بوابة الدفع الإلكتروني لم تُربط بعد؛ لم يتم خصم أي مبلغ ولم تُصدر فاتورة. يلزم ربط بوابة الدفع وتأكيد نجاح العملية من الخادم أولًا.');
     }
     await submitBookingPaymentProof(requestId);
   };
