@@ -616,7 +616,7 @@ function ma3daOpenCustomerMap(data){
 
 function ma3daNotifyCustomerStatus(requestId,data){
   const status=String(data?.status||'');
-  const labels={accepted:'المعدة في الطريق إليك',arrived:'المعدة وصلت إلى موقعك',working:'بدأت المعدة العمل',completed:'انتهى العمل بالمعدة — يمكنك تقييم المعدة الآن',invoice_issued:'صدرت فاتورة السداد لطلبك',payment_submitted:'تم تسجيل السداد وبانتظار التأكيد',paid:'تم تأكيد السداد',rejected:'تم رفض طلب المعدة'};
+  const labels={accepted:'المعدة في الطريق إليك',arrived:'المعدة وصلت إلى موقعك',working:'بدأت المعدة العمل',completed:'انتهى العمل بالمعدة',invoice_pending:'انتهى العمل بالمعدة — يمكنك السداد الآن',invoice_issued:'صدرت فاتورة السداد لطلبك',payment_submitted:'تم تسجيل السداد وبانتظار التأكيد',paid:'تم تأكيد السداد',rejected:'تم رفض طلب المعدة'};
   const paymentStatus=String(data?.paymentStatus||'');
   const invoiceLabel=labels[status] || (paymentStatus==='paid'?'تم تأكيد السداد':paymentStatus==='payment_submitted'?'تم تسجيل السداد وبانتظار التأكيد':'');
   const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
@@ -3069,6 +3069,26 @@ if(paymentBtn){
  
 }
  
+const startBookingPaymentBtn=document.getElementById('startBookingPaymentBtn');
+if(startBookingPaymentBtn){
+  startBookingPaymentBtn.addEventListener('click',async()=>{
+    const feedback=document.getElementById('bookingPaymentFeedback');
+    const requestId=localStorage.getItem('currentRequestId');
+    if(!requestId){if(feedback)feedback.textContent='تعذر تحديد الطلب الحالي. افتح الطلب من جديد.';return;}
+    if(typeof window.ma3daStartBookingPayment!=='function'){
+      if(feedback)feedback.textContent='بوابة الدفع الإلكتروني غير مربوطة بالمشروع بعد. لم يتم خصم أي مبلغ ولم يُسجّل السداد.';
+      return;
+    }
+    startBookingPaymentBtn.disabled=true;
+    try{
+      await window.ma3daStartBookingPayment({requestId});
+    }catch(error){
+      console.error('تعذر بدء السداد الإلكتروني:',error);
+      if(feedback)feedback.textContent=error?.message||'تعذر بدء عملية السداد. لم يتم تأكيد الدفع.';
+    }finally{startBookingPaymentBtn.disabled=false;}
+  });
+}
+
 const confirmPaymentBtn =
   document.getElementById("confirmPaymentBtn");
  
@@ -4388,6 +4408,10 @@ document.addEventListener('click',async event=>{
     if(typeof startAcceptanceWatcher==='function')startAcceptanceWatcher();
     const screenByStatus={searching:'searchingScreen',accepted:'matchedScreen',arrived:'arrivedCustomerScreen',working:'workingScreen',completed:'completedScreen',invoice_pending:'paymentScreen',invoice_issued:'paymentScreen',payment_pending:'paymentScreen',payment_submitted:'paymentScreen',paid:'ratingScreen'};
     const target=screenByStatus[String(data.status||'')]||'matchedScreen';
+    if(target==='paymentScreen'){
+      const amount=document.getElementById('bookingPaymentAmount');
+      if(amount)amount.textContent='المبلغ المستحق: '+(Number(data.finalPrice||data.price||0).toLocaleString('ar-SA',{style:'currency',currency:'SAR'}));
+    }
     if(target==='arrivedCustomerScreen'){
       const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
       const l=document.getElementById('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';
@@ -6438,9 +6462,15 @@ async function operatorFinishWork(){
       {
  
         status:
+          "invoice_pending",
+        paymentStatus:
+          "unpaid",
+        workStatus:
           "completed",
- 
-        completedAt
+        completedAt,
+        workCompletedAt: completedAt,
+        finalPrice: Number(request.finalPrice || request.price || 0),
+        updatedAt: new Date()
  
       }
     );
@@ -6449,7 +6479,7 @@ async function operatorFinishWork(){
       operatorTimerInterval
     );
  
-    localStorage.setItem("orderState", "completed");
+    localStorage.setItem("orderState", "invoice_pending");
  
     const finalPrice =
       Number(
@@ -12730,9 +12760,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const sharedInvoice=cachedInvoices.find(i=>i.id===r.sharedInvoiceId||i.requestId===r.id&&i.invoiceKind==='customer_booking');
         const invoicePayments=sharedInvoice?cachedPayments.filter(p=>p.invoiceId===sharedInvoice.id):[];
         const confirmButtons=financeMode==='owner'?invoicePayments.filter(p=>p.status==='pending_verification').map(p=>`<div class="ma3da-finance-row"><p>إثبات سداد: ${money(p.amount)} — ${esc(p.reference||'بدون مرجع')}</p><button class="main-btn" type="button" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button></div>`).join(''):'';
-        const issueButton=financeMode==='owner'&&!r.invoiceNumber?`<button class="main-btn" type="button" data-issue-booking-invoice="${esc(r.id)}">إصدار فاتورة لهذا الطلب</button>`:'';
-        const payButton=financeMode==='customer'&&r.invoiceNumber&&r.paymentStatus!=='paid'?`<button class="main-btn" type="button" data-booking-submit-payment="${esc(r.id)}">تسجيل إثبات سداد للمراجعة</button>`:'';
-        const payNotice=financeMode==='customer'&&r.paymentStatus!=='paid'?'<p class="muted">هذا الزر يسجّل إثبات تحويل أو سداد نقدي للمراجعة فقط. الدفع الإلكتروني (Apple Pay/مدى/Visa) غير مفعّل حتى ربط بوابة دفع وتأكيدها من الخادم.</p>':'';
+        const issueButton='';
+        const payButton='';
+        const payNotice='';
         return `<div class="ma3da-finance-row"><h3>${esc(r.invoiceNumber||'فاتورة لم تصدر بعد')}</h3><p><strong>رقم الطلب:</strong> ${esc(r.id)}</p><p><strong>المعدة:</strong> ${esc(r.equipment||'معدة')}</p><p><strong>الموقع:</strong> ${esc(r.location||'—')}</p><p><strong>تاريخ الفاتورة:</strong> ${when(r.invoiceIssuedAt||r.workCompletedAt||r.completedAt)}</p><p><strong>قيمة الفاتورة:</strong> ${money(amount)}</p><p><strong>حالة الفاتورة والسداد:</strong> <span class="ma3da-finance-status">${esc(state)}</span></p><p><strong>حالة الطلب:</strong> ${esc(r.requestClosed?'مغلق ماليًا':'مفتوح حتى تأكيد السداد')}</p>${issueButton}${payButton}${payNotice}${confirmButtons}</div>`;
       }).join('');}
     }
@@ -13033,9 +13063,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(target.id==='ownerFinanceSubpageBackBtn'){setOwnerFinanceSubpage('menu');return;}
     if(target.id==='ownerFinanceMenuRefreshBtn'||target.id==='ownerFinanceSubpageRefreshBtn'){loadFinance().catch(err=>{console.error('Refresh Ma3da finance failed:',err);say('ownerInvoiceFeedback','تعذر تحديث الفواتير. تحقق من الاتصال.',true);});return;}
     if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
-    if(target.id==='ownerIssueBookingInvoiceBtn'){issueBookingInvoice();return;}
-    const bookingPayButton=target.closest('[data-booking-submit-payment]');if(bookingPayButton){submitBookingPaymentProof(bookingPayButton.getAttribute('data-booking-submit-payment'));return;}
-    const issueBookingButton=target.closest('[data-issue-booking-invoice]');if(issueBookingButton){const rid=issueBookingButton.getAttribute('data-issue-booking-invoice');const row=cachedAllRequests.find(r=>r.id===rid);if($f('ownerBookingInvoiceRequest'))$f('ownerBookingInvoiceRequest').value=rid;if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value=String(Number(row?.price||0));issueBookingInvoice(rid);return;}
     if(target.id==='contractorFinanceBackBtn'){
       if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
