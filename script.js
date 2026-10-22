@@ -205,6 +205,7 @@ async function saveOrder(){
  
       customerId:
         user.uid,
+      customerName: (document.getElementById("customerNameInput")?.value || document.getElementById("customerNameSettingsInput")?.value || "").trim(),
  
       customerEmail:
         user.email || "",
@@ -376,10 +377,7 @@ function updateMatchedScreen(){
     document.getElementById("matchedLocation");
  
   if(equipment)
-    equipment.textContent =
-      order.equipment
-        ? `${order.equipment} - CAT 320`
-        : "بوكلين - CAT 320";
+    equipment.textContent = order.equipment || "نوع المعدة";
  
   if(location)
     location.textContent =
@@ -727,8 +725,7 @@ function startAcceptanceWatcher(){
                 ...order,
  
                 operatorName:
-                  data.operatorName ||
-                  "فهد القحطاني",
+                  data.operatorName || data.equipmentOwnerName || data.ownerName || "صاحب المعدة",
  
                 operatorRating:
                   data.operatorRating ||
@@ -746,8 +743,13 @@ function startAcceptanceWatcher(){
             updateMatchedScreen();
             const matchedOperatorName=document.getElementById('matchedOperatorName');
             const matchedOperatorType=document.getElementById('matchedOperatorType');
-            if(matchedOperatorName)matchedOperatorName.textContent=data.operatorName||data.equipmentOwnerName||data.ownerName||'صاحب المعدة';
-            if(matchedOperatorType)matchedOperatorType.textContent=data.equipment||'صاحب معدة مِعدة';
+            let actualOwnerName=data.operatorName||data.equipmentOwnerName||data.ownerName||'';
+            const ownerId=data.operatorId||data.equipmentOwnerId||data.ownerId||'';
+            if(!actualOwnerName && ownerId && window.ma3daDB && window.ma3daDoc && window.ma3daGetDoc){
+              try{const ownerSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',ownerId));if(ownerSnap.exists()){const ownerProfile=ownerSnap.data()||{};actualOwnerName=ownerProfile.name||ownerProfile.fullName||ownerProfile.displayName||'';}}catch(ownerLookupError){console.warn('تعذر تحميل اسم صاحب المعدة:',ownerLookupError);}
+            }
+            if(matchedOperatorName)matchedOperatorName.textContent=actualOwnerName||'صاحب المعدة';
+            if(matchedOperatorType)matchedOperatorType.textContent=data.equipment||data.operatorEquipment||'نوع المعدة';
             window.ma3daActiveCustomerRequestData=data;
  
             updateWorkingScreen();
@@ -1876,7 +1878,15 @@ if(acceptRequestBtn){
           );
  
         const requestData =
-          requestSnap.data();
+          requestSnap.data() || {};
+        let acceptedOwnerName = window.ma3daCurrentOperatorProfile?.name || "";
+        try {
+          const currentOwner = window.ma3daGetCurrentUser ? await window.ma3daGetCurrentUser() : window.ma3daAuth?.currentUser;
+          if (!acceptedOwnerName && currentOwner?.uid) {
+            const ownerProfileSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "operators", currentOwner.uid));
+            if (ownerProfileSnap.exists()) { const profile = ownerProfileSnap.data() || {}; acceptedOwnerName = profile.name || profile.fullName || profile.displayName || ""; }
+          }
+        } catch (profileError) { console.warn("تعذر تحميل الاسم الحقيقي لصاحب المعدة:", profileError); }
  
         const customerLocation =
           requestData?.location ||
@@ -1896,8 +1906,8 @@ if(acceptRequestBtn){
           requestRef,
           {
             status: "accepted",
-            operatorName: "فهد القحطاني",
-            operatorRating: "4.8"
+            operatorName: acceptedOwnerName || requestData.operatorName || requestData.equipmentOwnerName || requestData.ownerName || "صاحب المعدة",
+            operatorRating: "5"
           }
         );
  
@@ -1908,10 +1918,10 @@ if(acceptRequestBtn){
             ...order,
  
             operatorName:
-              "فهد القحطاني",
+              acceptedOwnerName || requestData.operatorName || requestData.equipmentOwnerName || requestData.ownerName || "صاحب المعدة",
  
             operatorRating:
-              "4.8"
+              "5"
  
           })
         );
@@ -1930,9 +1940,8 @@ if(acceptRequestBtn){
           "تم قبول الطلب بنجاح 🚜"
         );
  
-        showScreen(
-          "operatorAcceptedScreen"
-        );
+        await loadOperatorCurrentOrder();
+        showScreen("operatorCurrentOrderScreen");
  
       }catch(error){
  
@@ -2164,6 +2173,7 @@ async function saveEquipment(){
     year,
  
     city,
+    locationAddress: city,
  
     availability,
  
@@ -5783,7 +5793,14 @@ async function acceptOperatorRequest(
     }
  
     const request =
-      requestSnap.data();
+      requestSnap.data() || {};
+    let customerProfile = {};
+    if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
+      try {
+        const customerSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "customers", request.customerId));
+        if (customerSnap.exists()) customerProfile = customerSnap.data() || {};
+      } catch (customerProfileError) { console.warn("تعذر تحميل بيانات العميل:", customerProfileError); }
+    }
  
     if(
       request.status !==
@@ -5847,6 +5864,7 @@ async function acceptOperatorRequest(
         operatorPhone:
           operatorData.phone ||
           "",
+        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
  
         operatorRating:
           Number(
@@ -5854,8 +5872,10 @@ async function acceptOperatorRequest(
           ),
  
         operatorEquipment:
-          equipment?.model ||
-          "",
+          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
+        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
+        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
+        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
  
         acceptedAt:
           Date.now(),
@@ -5989,12 +6009,17 @@ async function loadOperatorCurrentOrder(){
  
     }
  
-    const data =
-      snap.data();
- 
-    updateOperatorCurrentUI(
-      data
-    );
+    let data = snap.data() || {};
+    if (!data.customerName && !data.customerFullName && data.customerId && window.ma3daDoc && window.ma3daGetDoc) {
+      try {
+        const customerSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "customers", data.customerId));
+        if (customerSnap.exists()) {
+          const customerProfile = customerSnap.data() || {};
+          data = { ...data, customerName: customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل" };
+        }
+      } catch (customerProfileError) { console.warn("تعذر تحميل اسم العميل:", customerProfileError); }
+    }
+    updateOperatorCurrentUI(data);
  
   }catch(error){
  
@@ -6101,9 +6126,10 @@ function updateOperatorCurrentUI(
         data.price || 0
       ).toLocaleString("ar-SA")} ريال`;
  
-  if(arrivedBtn)
-    arrivedBtn.style.display =
-      "none";
+  if(arrivedBtn){
+    arrivedBtn.style.display = "none";
+    arrivedBtn.disabled = true;
+  }
  
   if(startBtn)
     startBtn.style.display =
@@ -6130,9 +6156,10 @@ function updateOperatorCurrentUI(
       statusText.textContent =
         "تم قبول الطلب — في الطريق إلى العميل";
  
-    if(arrivedBtn)
-      arrivedBtn.style.display =
-        "block";
+    if(arrivedBtn){
+      arrivedBtn.style.display = "block";
+      ma3daUpdateArrivalEligibility(data);
+    }
  
   }
  
@@ -6199,6 +6226,67 @@ function updateOperatorCurrentUI(
  
 }
  
+
+/* مِعدة 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
+let ma3daOwnerPosition = null;
+let ma3daArrivalDistanceKm = null;
+function ma3daDistanceKm(a,b){
+  if(!a||!b)return Infinity;
+  const rad=v=>v*Math.PI/180;
+  const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng);
+  const x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));
+}
+function ma3daUpdateArrivalEligibility(data){
+  const btn=document.getElementById('operatorArrivedBtn');
+  const feedback=document.getElementById('operatorDistanceFeedback');
+  const target=ma3daCustomerCoordinates(data||window.ma3daActiveRequestData||{});
+  const distance=target&&ma3daOwnerPosition?ma3daDistanceKm(ma3daOwnerPosition,target):Infinity;
+  ma3daArrivalDistanceKm=distance;
+  const eligible=Number.isFinite(distance)&&distance<=1;
+  if(btn){btn.disabled=!eligible;btn.setAttribute('aria-disabled',String(!eligible));}
+  if(feedback){
+    if(!target)feedback.textContent='موقع العميل غير محفوظ بإحداثيات دقيقة؛ لا يمكن تأكيد الوصول حتى يحدد العميل موقعه بدقة.';
+    else if(!ma3daOwnerPosition)feedback.textContent='اضغط «التحقق من المسافة» للسماح بتحديد موقعك والتحقق من أنك ضمن كيلومتر واحد.';
+    else feedback.textContent=eligible?`أنت ضمن نطاق الوصول (${(distance*1000).toFixed(0)} متر). يمكنك تأكيد الوصول.`:`أنت على بُعد ${(distance).toFixed(2)} كم من العميل. زر الوصول سيتاح عند دخول نطاق 1 كم.`;
+  }
+  return eligible;
+}
+function ma3daGetOwnerPosition(){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){reject(new Error('هذا الجهاز لا يدعم تحديد الموقع.'));return;}
+    navigator.geolocation.getCurrentPosition(
+      p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy}),
+      e=>reject(new Error(e.code===1?'اسمح للتطبيق بالوصول إلى موقعك للتحقق من المسافة.':'تعذر تحديد موقعك بدقة. حاول مرة أخرى في مكان مفتوح.')),
+      {enableHighAccuracy:true,timeout:20000,maximumAge:0}
+    );
+  });
+}
+const operatorCheckDistanceBtn=document.getElementById('operatorCheckDistanceBtn');
+if(operatorCheckDistanceBtn){operatorCheckDistanceBtn.addEventListener('click',async()=>{
+  const original=operatorCheckDistanceBtn.textContent;
+  operatorCheckDistanceBtn.disabled=true;operatorCheckDistanceBtn.textContent='جارٍ التحقق من موقعك…';
+  try{
+    ma3daOwnerPosition=await ma3daGetOwnerPosition();
+    let latest=window.ma3daActiveRequestData||{};
+    const id=localStorage.getItem('currentRequestId');
+    if(id&&window.ma3daDB&&window.ma3daDoc&&window.ma3daGetDoc){const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));if(snap.exists())latest=window.ma3daActiveRequestData=snap.data()||latest;}
+    if(!ma3daCustomerCoordinates(latest)){throw new Error('موقع العميل غير محفوظ كإحداثيات دقيقة؛ لا يمكن حساب المسافة بأمان.');}
+    ma3daUpdateArrivalEligibility(latest);
+  }catch(error){ma3daOwnerPosition=null;ma3daUpdateArrivalEligibility(window.ma3daActiveRequestData||{});alert(error.message||'تعذر التحقق من المسافة.');}
+  finally{operatorCheckDistanceBtn.disabled=false;operatorCheckDistanceBtn.textContent=original;}
+});}
+const operatorCustomerMapBtn=document.getElementById('operatorCustomerMapBtn');
+if(operatorCustomerMapBtn){operatorCustomerMapBtn.addEventListener('click',async()=>{
+  try{
+    const id=localStorage.getItem('currentRequestId');if(!id)throw new Error('لا يوجد طلب حالي.');
+    if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
+    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));
+    if(!snap.exists())throw new Error('الطلب غير موجود.');
+    ma3daOpenCustomerMap(snap.data()||{});
+  }catch(error){alert(error.message||'تعذر فتح موقع العميل.');}
+});}
+
 /* OPERATOR ARRIVED */
  
 async function operatorMarkArrived(){
