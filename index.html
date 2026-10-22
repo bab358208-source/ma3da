@@ -4502,9 +4502,12 @@
   class="screen"
 >
   <div class="card">
-    <h2>الفاتورة والسداد</h2>
-    <p>تُعرض الفاتورة وحالة السداد في صفحة «فواتيري والمدفوعات». لن نعرض طريقة دفع غير مربوطة ببوابة معتمدة، ولن يُغلق الطلب قبل تأكيد السداد من مزود الدفع.</p>
-    <button id="confirmPaymentBtn" class="main-btn" type="button">فتح فواتيري والمدفوعات</button>
+    <h2>سداد طلب المعدة</h2>
+    <p>انتهى العمل. أكمل السداد الإلكتروني، وبعد تأكيد بوابة الدفع الموثوق ستصدر الفاتورة تلقائيًا وتظهر في فواتير العميل وصاحب المعدة.</p>
+    <p id="bookingPaymentAmount" class="price-box">المبلغ المستحق: جارٍ تحميل المبلغ…</p>
+    <button id="startBookingPaymentBtn" class="main-btn" type="button">السداد الإلكتروني</button>
+    <p id="bookingPaymentFeedback" role="status" aria-live="polite"></p>
+    <button id="confirmPaymentBtn" class="back-btn" type="button">فتح فواتيري والمدفوعات</button>
   </div>
 </section>
 
