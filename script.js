@@ -8416,8 +8416,7 @@ console.log("SUPPORT CHECK EMAIL:", user.email);
         if(
           (
             role === "support" ||
-            role === "admin" ||
-            role === "owner"
+            role === "admin"
           ) &&
           data.active !== false
         ){
@@ -8679,8 +8678,7 @@ async function supportLogin(){
         if(
           (
             role === "support" ||
-            role === "admin" ||
-            role === "owner"
+            role === "admin"
           ) &&
           data.active !== false
         ){
@@ -8714,7 +8712,7 @@ async function supportLogin(){
  
       if(error)
         error.textContent =
-          "هذا الحساب ليس حساب موظف دعم مصرحًا له.";
+          "هذا الحساب ليس حساب موظف دعم مصرحًا له. استخدم بوابة الدخول المخصصة لحسابك.";
  
       return;
  
@@ -8743,12 +8741,7 @@ async function supportLogin(){
     );
  
  
-    if(employee.role === "owner"){
-      openSupportScreen("ownerPortalDashboardScreen");
-      await loadOwnerInformationCenter();
-    }else{
-      openSupportDashboard();
-    }
+    openSupportDashboard();
  
  
   }catch(errorObject){
@@ -9914,6 +9907,46 @@ async function supportLogout(){
  
  
 /* =========================================================
+   تسجيل دخول مالك المنصة — بوابة مستقلة عن موظفي الدعم
+   ========================================================= */
+async function ownerPortalLogin(){
+  const email = document.getElementById("ownerPortalEmailInput")?.value?.trim();
+  const password = document.getElementById("ownerPortalPasswordInput")?.value;
+  const error = document.getElementById("ownerPortalLoginError");
+  const button = document.getElementById("ownerPortalLoginBtn");
+  if(error) error.textContent = "";
+  if(!email){ if(error) error.textContent = "اكتب البريد الإلكتروني لمالك المنصة."; return; }
+  if(!password){ if(error) error.textContent = "اكتب كلمة المرور."; return; }
+  if(typeof window.ma3daLogin !== "function"){
+    if(error) error.textContent = "خدمة تسجيل الدخول غير جاهزة.";
+    return;
+  }
+  if(button){ button.disabled = true; button.textContent = "جاري التحقق..."; }
+  try{
+    await window.ma3daLogin(email, password);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const currentUser = window.ma3daAuth?.currentUser;
+    if(!currentUser) throw new Error("تعذر التعرف على حساب مالك المنصة.");
+    const ref = window.ma3daDoc(window.ma3daDB, "supportStaff", currentUser.uid);
+    const snapshot = await window.ma3daGetDoc(ref);
+    const data = snapshot.exists() ? (snapshot.data() || {}) : {};
+    if(data.role !== "owner" || data.active === false){
+      try{ if(typeof window.ma3daLogout === "function") await window.ma3daLogout(); }catch(_e){}
+      throw new Error("هذا الحساب ليس حساب مالك منصة مفعّلًا.");
+    }
+    supportEmployee = { user: currentUser, role: "owner", data };
+    localStorage.setItem("supportEmployee", JSON.stringify({uid: currentUser.uid, email: currentUser.email || email, role: "owner"}));
+    openSupportScreen("ownerPortalDashboardScreen");
+    await loadOwnerInformationCenter();
+  }catch(err){
+    console.error("خطأ دخول مالك المنصة:", err);
+    if(error) error.textContent = err?.message || "تعذر تسجيل الدخول.";
+  }finally{
+    if(button){ button.disabled = false; button.textContent = "دخول مالك المنصة"; }
+  }
+}
+
+/* =========================================================
    زر دخول موظفي الدعم من صفحة اختيار الدور
    ========================================================= */
  
@@ -9931,9 +9964,9 @@ function initHiddenOwnerPortalEntry(){
     if(taps >= 7){
       taps = 0;
       clearTimeout(resetHandle);
-      openSupportScreen("supportLoginScreen");
-      const error = document.getElementById("supportLoginError");
-      if(error) error.textContent = "دخول مالك المنصة: استخدم حساب المالك المصرح به.";
+      openSupportScreen("ownerPortalLoginScreen");
+      const error = document.getElementById("ownerPortalLoginError");
+      if(error) error.textContent = "أدخل بيانات حساب مالك المنصة المصرح به.";
     }
   });
 }
@@ -10291,6 +10324,16 @@ function initSupportPortal(){
  
   initSupportRoleButton();
   initHiddenOwnerPortalEntry();
+  const ownerLoginBtn = document.getElementById("ownerPortalLoginBtn");
+  if(ownerLoginBtn && !ownerLoginBtn.dataset.ownerPortalReady){
+    ownerLoginBtn.dataset.ownerPortalReady = "true";
+    ownerLoginBtn.addEventListener("click", ownerPortalLogin);
+  }
+  const ownerBackBtn = document.getElementById("ownerPortalBackBtn");
+  if(ownerBackBtn && !ownerBackBtn.dataset.ownerPortalReady){
+    ownerBackBtn.dataset.ownerPortalReady = "true";
+    ownerBackBtn.addEventListener("click", () => openSupportScreen("roleScreen"));
+  }
   const ownerLogout = document.getElementById("ownerPortalLogoutBtn");
   if(ownerLogout && !ownerLogout.dataset.ownerPortalReady){
     ownerLogout.dataset.ownerPortalReady = "true";
