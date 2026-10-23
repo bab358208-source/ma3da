@@ -9390,45 +9390,6 @@ async function loadSupportEquipment(){
  
  
 /* =========================================================
-   مراجعة تعديلات المعدات المعلقة
-   ========================================================= */
-async function loadSupportEquipmentEdits(){
-  const list=document.getElementById("supportEquipmentEditsList");
-  if(!list)return;
-  list.innerHTML='<div class="support-empty">جارٍ تحميل التعديلات المعلقة...</div>';
-  try{
-    const employee=await requireSupportEmployee();
-    if(!employee){list.innerHTML='<div class="support-empty">سجّل الدخول بحساب موظف الدعم.</div>';return;}
-    const rows=await supportGetCollection("equipment");
-    const pending=rows.filter(row=>row.editStatus==="pending"&&row.pendingChanges&&typeof row.pendingChanges==="object");
-    if(!pending.length){list.innerHTML='<div class="support-empty">لا توجد تعديلات معدات بانتظار المراجعة.</div>';return;}
-    list.innerHTML=pending.map(row=>{
-      const changes=row.pendingChanges||{};
-      const field=(label,key,proposed=false)=>`<p><strong>${label}:</strong> ${supportEscapeHtml((proposed?changes[key]:row[key])??'—')}</p>`;
-      return `<article class="support-card"><h3>${supportEscapeHtml(row.type||'معدة')} — ${supportEscapeHtml(row.model||'')}</h3><p><strong>معرّف المعدة:</strong> ${supportEscapeHtml(row.id)}</p><p><strong>صاحب المعدة:</strong> ${supportEscapeHtml(row.ownerEmail||row.ownerId||'—')}</p><p><strong>البيانات الحالية</strong></p>${field('النوع الحالي','type')}${field('الموديل الحالي','model')}${field('السنة الحالية','year')}${field('المدينة الحالية','city')}${field('السعر الحالي','hourlyPrice')}<hr><p><strong>التعديلات المطلوبة</strong></p>${field('النوع المقترح','type',true)}${field('الموديل المقترح','model',true)}${field('السنة المقترحة','year',true)}${field('المدينة المقترحة','city',true)}${field('السعر المقترح','hourlyPrice',true)}<p><strong>حالة التوفر المقترحة:</strong> ${supportEscapeHtml(changes.availability||row.availability||'—')}</p>${changes.plateNumber!==undefined?`<p><strong>رقم المعدة المقترح:</strong> ${supportEscapeHtml(changes.plateNumber||'—')}</p>`:''}${changes.image?`<p><strong>الصورة:</strong> تم إرفاق صورة جديدة بالتعديل.</p>`:''}<div class="support-nav"><button class="support-btn support-primary" type="button" data-support-approve-equipment-edit="${supportEscapeHtml(row.id)}">اعتماد التعديل</button><button class="support-btn support-danger" type="button" data-support-reject-equipment-edit="${supportEscapeHtml(row.id)}">رفض التعديل</button></div></article>`;
-    }).join('');
-  }catch(error){console.error('Load pending equipment edits:',error);list.innerHTML='<div class="support-empty">تعذر تحميل تعديلات المعدات. تحقق من صلاحيات قراءة equipment.</div>';}
-}
-
-async function decideSupportEquipmentEdit(equipmentId,approve){
-  const employee=await requireSupportEmployee();
-  if(!employee?.user?.uid)throw new Error('يجب تسجيل الدخول بصفة موظف دعم.');
-  const ref=window.ma3daDoc(window.ma3daDB,'equipment',equipmentId);
-  const snap=await window.ma3daGetDoc(ref);
-  if(!snap.exists())throw new Error('المعدة غير موجودة.');
-  const current=snap.data()||{};
-  if(current.editStatus!=='pending'||!current.pendingChanges||typeof current.pendingChanges!=='object')throw new Error('هذا التعديل غير معلّق أو سبق البت فيه.');
-  const now=Date.now();
-  if(approve){
-    const changes={...current.pendingChanges};
-    delete changes.requestedAt;delete changes.requestedBy;
-    await window.ma3daUpdateDoc(ref,{...changes,ownerId:current.ownerId||changes.ownerId||'',ownerEmail:current.ownerEmail||changes.ownerEmail||'',pendingChanges:null,editStatus:'approved',editReviewedAt:now,editReviewedBy:employee.user.uid,updatedAt:now});
-  }else{
-    await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:employee.user.uid,editRejectionReason:'رفض موظف الدعم',updatedAt:now});
-  }
-}
-
-/* =========================================================
    الطلبات الحالية
    ========================================================= */
  
@@ -9836,7 +9797,6 @@ async function openSupportDashboard(){
     loadSupportUsers(),
  
     loadSupportEquipment(),
-    loadSupportEquipmentEdits(),
  
     loadSupportOrders(),
  
@@ -10158,9 +10118,6 @@ function initSupportPortal(){
  
             await loadSupportEquipment();
  
-          }
-          if(section === "equipmentEdits"){
-            await loadSupportEquipmentEdits();
           }
  
  
@@ -12075,25 +12032,6 @@ document.addEventListener("click", function(event){
  
 });
 
-/* مراجعة تعديلات المعدات من لوحة موظفي الدعم */
-document.addEventListener('click',async event=>{
-  const approve=event.target.closest('[data-support-approve-equipment-edit]');
-  const reject=event.target.closest('[data-support-reject-equipment-edit]');
-  if(!approve&&!reject)return;
-  const button=approve||reject;
-  const equipmentId=button.dataset.supportApproveEquipmentEdit||button.dataset.supportRejectEquipmentEdit;
-  button.disabled=true;
-  try{
-    await decideSupportEquipmentEdit(equipmentId,!!approve);
-    alert(approve?'تم اعتماد تعديل المعدة وتحديث بياناتها.':'تم رفض التعديل والإبقاء على البيانات الحالية.');
-    await loadSupportEquipmentEdits();
-    await loadSupportEquipment();
-  }catch(error){
-    console.error('Support equipment edit decision:',error);
-    alert(error.code==='permission-denied'?'رفضت قواعد Firebase حفظ القرار. لم أغيّر قواعد Firebase؛ يلزم مراجعة صلاحيات موظف الدعم لمجموعة equipment.':(error.message||'تعذر حفظ قرار المراجعة.'));
-  }finally{button.disabled=false;}
-});
-
 /* =========================================================
    MA3DA — MULTI-EQUIPMENT MANAGEMENT
    Added without changing requests/chat paths or existing roles.
@@ -12605,8 +12543,6 @@ async function staffTicketRows(){
     try{
       const rows=await staffTicketRows();const ticket=rows.find(t=>t.id===ticketId);if(!ticket)throw new Error('الشكوى غير موجودة.');
       activeTicket={...ticket};
-      // لوحة المحادثة موجودة داخل قسم طلبات الدعم؛ أظهر هذا القسم أولاً حتى لا تبقى المحادثة مخفية عند فتحها من قسم آخر.
-      if(typeof supportSetSection==='function') supportSetSection('tickets');
       const panel=$('supportTicketConversation');if(panel)panel.hidden=false;
       setText('supportTicketConversationTitle',ticket.subject||ticket.title||'محادثة الشكوى');
       setText('supportTicketConversationMeta',`رقم الشكوى: ${ticket.id} · ${ticket.requesterEmail||ticket.requesterId||''} · ${statusLabel(ticket)}`);
