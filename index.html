@@ -5288,21 +5288,41 @@
      بوابة موظفي الدعم — تمت استعادة واجهتها
 ===================================================== -->
 <style id="ma3da-support-portal-styles">
-.support-screen{direction:rtl;text-align:right;max-width:1000px;margin:0 auto;padding:16px;color:#171717}
-.support-wrap{max-width:960px;margin:0 auto}
-.support-card,.support-panel{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 3px 12px #00000008}
-.support-title{margin:8px 0}.support-subtitle{color:#6b6254}
-.support-screen label{display:block;font-weight:600;margin:12px 0 6px}
-.support-input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
-.support-btn{font:inherit;cursor:pointer;border:1px solid #dfd2b4;border-radius:10px;padding:10px 14px;background:#f8f1df;color:#171717;margin:4px}
-.support-primary{background:#b58a36;color:white;border-color:#b58a36}.support-danger{background:#fff0ed;color:#8b2118}
-.support-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.support-brand{font-size:1.2rem;font-weight:700}.support-badge{display:inline-block;margin-top:5px;padding:4px 9px;border-radius:20px;background:#f3e8cc}
-.support-nav{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.support-nav [data-support-section].active{background:#b58a36;color:white}
-.support-section{display:none}.support-section.active{display:block}.support-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.support-stat{background:#fff;border:1px solid #eadfc5;border-radius:12px;padding:12px}.support-stat strong{display:block;font-size:1.35rem;margin-top:6px}
-.support-row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:white;border:1px solid #eee4d0;border-radius:10px;padding:12px;margin:8px 0;overflow-wrap:anywhere}
-.support-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}
+:root{--ma3da-gold:#c8a45b;--ma3da-gold-light:#f4e6c4;--ma3da-ink:#101112;--ma3da-paper:#fbfaf7;--ma3da-line:#e8e1d4}
+#supportDashboardScreen.support-screen{direction:rtl;text-align:right;max-width:none;width:100%;box-sizing:border-box;margin:0;padding:0;background:var(--ma3da-paper);color:#17191d;min-height:100vh}
+#supportDashboardScreen .support-wrap{max-width:none;margin:0;padding:0 30px 28px}
+#supportDashboardScreen .support-topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin:0 -30px 24px;padding:20px 30px;background:linear-gradient(110deg,#0b0c0d 0%,#171819 65%,#080909 100%);color:#fff;border:0;border-bottom:2px solid var(--ma3da-gold);border-radius:0;box-shadow:0 10px 28px #0002;position:relative;overflow:hidden}
+#supportDashboardScreen .support-topbar:before{content:"";position:absolute;left:0;top:0;width:34%;height:100%;background:linear-gradient(135deg,transparent 48%,#c8a45b33 49%,transparent 51%);pointer-events:none}
+#supportDashboardScreen .support-topbar>div:first-child{grid-column:2;grid-row:1;text-align:center;z-index:1}
+#supportDashboardScreen .support-topbar>div:last-child{display:contents}
+#supportDashboardScreen #supportRefreshBtn{grid-column:1;grid-row:1;justify-self:start;width:46px;height:46px;padding:0;font-size:0;border:1px solid var(--ma3da-gold);border-radius:50%;background:#151617;color:var(--ma3da-gold)}
+#supportDashboardScreen #supportRefreshBtn:before{content:"⟳";font-size:27px;line-height:1}
+#supportDashboardScreen #supportDashboardBackBtn{grid-column:3;grid-row:1;justify-self:end;background:transparent;color:#f2d99b;border:1px solid var(--ma3da-gold);border-radius:24px}
+#supportDashboardScreen #supportLogoutBtn{display:none;grid-column:3;grid-row:1;justify-self:end;background:transparent;color:#f2d99b;border:1px solid var(--ma3da-gold);border-radius:24px}
+#supportDashboardScreen .support-brand{font-size:clamp(1.25rem,2vw,2rem);font-weight:800;letter-spacing:.02em;color:#f4e2b4}
+#supportDashboardScreen .support-brand:after{content:"لوحة الموظف · متابعة وإدارة العمليات";display:block;font-size:.88rem;font-weight:400;letter-spacing:0;color:#d7d7d7;margin-top:8px}
+#supportDashboardScreen #supportEmployeeEmail{display:inline-block;color:#eee;background:transparent;border:0;font-size:.8rem}
+#supportDashboardScreen .support-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
+#supportDashboardScreen .support-stat{background:linear-gradient(145deg,#fff,#f8f5ee);border:1px solid var(--ma3da-line);border-radius:17px;padding:19px;box-shadow:0 5px 18px #211b0c08;font-size:.95rem}
+#supportDashboardScreen .support-stat strong{font-size:1.8rem;color:#a47d2c;margin-top:10px}
+#supportDashboardScreen .support-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:22px 0}
+#supportDashboardScreen .support-nav [data-support-section]{display:flex;align-items:center;justify-content:space-between;min-height:64px;text-align:right;margin:0;padding:15px 18px;background:#fff;border:1px solid var(--ma3da-line);border-radius:14px;color:#191a1b;box-shadow:0 4px 14px #00000006;transition:transform .16s,border-color .16s}
+#supportDashboardScreen .support-nav [data-support-section]:after{content:"‹";font-size:26px;color:#b18a3c}
+#supportDashboardScreen .support-nav [data-support-section].active{background:#171819;color:#f5e2b5;border-color:var(--ma3da-gold);box-shadow:0 7px 20px #0002}
+#supportDashboardScreen .support-nav [data-support-section].active:after{color:#f5d78e}
+#supportDashboardScreen .support-panel{background:#fff;border:1px solid var(--ma3da-line);border-radius:17px;padding:22px;margin:14px 0;box-shadow:0 5px 18px #00000007}
+#supportDashboardScreen .support-section h2{font-size:1.3rem;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #eee4d0}
+#supportDashboardScreen .support-btn{font:inherit;cursor:pointer;border:1px solid #d9c69a;border-radius:11px;padding:10px 14px;background:#f8f3e7;color:#181818;margin:4px}
+#supportDashboardScreen .support-primary{background:#b58a36;color:white;border-color:#b58a36}.support-danger{background:#fff0ed;color:#8b2118}
+#supportDashboardScreen .support-row{background:#fffdf9;border:1px solid #eae3d6;border-radius:13px;padding:15px;margin:10px 0;overflow-wrap:anywhere}
+#supportDashboardScreen .support-empty{padding:24px;text-align:center;color:#746b5b;background:#faf8f3;border-radius:13px}
+.support-screen:not(#supportDashboardScreen){direction:rtl;text-align:right;max-width:1000px;margin:0 auto;padding:16px;color:#171717}
+.support-screen:not(#supportDashboardScreen) .support-wrap{max-width:960px;margin:0 auto}
+.support-card,.support-screen:not(#supportDashboardScreen) .support-panel{background:#fffdf8;border:1px solid #eadfc5;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+.support-title{margin:8px 0}.support-subtitle{color:#6b6254}.support-screen label{display:block;font-weight:600;margin:12px 0 6px}.support-input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;font:inherit}
+.support-screen:not(#supportDashboardScreen) .support-btn{font:inherit;cursor:pointer;border:1px solid #dfd2b4;border-radius:10px;padding:10px 14px;background:#f8f1df;color:#171717;margin:4px}.support-screen:not(#supportDashboardScreen) .support-primary{background:#b58a36;color:white;border-color:#b58a36}
+.support-section{display:none}.support-section.active{display:block}.support-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.support-stat strong{display:block;margin-top:6px}
+@media(max-width:680px){#supportDashboardScreen .support-wrap{padding:0 14px 22px}#supportDashboardScreen .support-topbar{margin:0 -14px 18px;padding:16px 14px;grid-template-columns:48px 1fr 48px}#supportDashboardScreen .support-brand{font-size:1.05rem}#supportDashboardScreen .support-brand:after{font-size:.72rem}#supportDashboardScreen #supportLogoutBtn{font-size:0;width:44px;height:44px;padding:0}#supportDashboardScreen #supportLogoutBtn:before{content:"⇥";font-size:24px}#supportDashboardScreen .support-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#supportDashboardScreen .support-stat{padding:13px}#supportDashboardScreen .support-nav{grid-template-columns:1fr}#supportDashboardScreen .support-panel{padding:15px}}
 </style>
 <style>
 .owner-admin-wrap{max-width:1180px}.owner-admin-card{width:100%}.owner-admin-toolbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:18px}.owner-admin-toolbar>#ownerPortalRefreshBtn{justify-self:start}.owner-admin-toolbar>#ownerPortalLogoutBtn{justify-self:end}.owner-admin-heading{text-align:center}.owner-admin-heading .support-title{margin:0}.owner-admin-heading .support-subtitle{margin:6px 0 0}.owner-admin-metrics,.owner-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}.owner-admin-metric,.owner-admin-cardlink{font:inherit;text-align:right;color:inherit;background:#fff;border:1px solid #eadfc5;border-radius:14px;padding:17px;cursor:pointer;box-shadow:0 3px 12px #00000008}.owner-admin-metric{display:flex;flex-direction:column;gap:8px;min-height:120px}.owner-admin-metric span{font-weight:700}.owner-admin-metric strong{font-size:1.65rem;color:#a77b25}.owner-admin-metric small,.owner-admin-cardlink small{display:block;color:#746b5b;margin-top:5px}.owner-admin-cardlink{display:flex;align-items:center;gap:13px;min-height:90px}.owner-admin-icon{font-size:1.8rem}.owner-admin-cardlink>span:nth-child(2){flex:1}.owner-admin-cardlink strong{display:block}.owner-admin-arrow{font-size:1.4rem;color:#b58a36}.owner-admin-details{margin-top:22px;padding-top:16px;border-top:2px solid #eadfc5}.owner-admin-details-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.owner-admin-details-head h2{margin:0}.owner-admin-subcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}.owner-admin-subcard{border:1px solid #eadfc5;background:#fff;border-radius:11px;padding:13px;text-align:right;cursor:pointer;color:inherit;font:inherit}.owner-admin-subcard strong{display:block;font-size:1.3rem;color:#a77b25;margin-top:5px}.owner-admin-record{border:1px solid #eee4d0;border-radius:10px;padding:12px;margin:8px 0;background:#fff;overflow-wrap:anywhere}.owner-admin-record strong{display:block;margin-bottom:5px}.owner-admin-record small{display:block;color:#746b5b;margin-top:4px}.owner-admin-empty{padding:18px;text-align:center;color:#746b5b;background:#fff;border-radius:10px}.owner-admin-record button{margin-top:8px}@media(max-width:620px){.owner-admin-toolbar{grid-template-columns:1fr 1fr}.owner-admin-heading{grid-column:1/-1;grid-row:1}.owner-admin-toolbar>#ownerPortalRefreshBtn{grid-column:1;grid-row:2}.owner-admin-toolbar>#ownerPortalLogoutBtn{grid-column:2;grid-row:2}.owner-admin-metrics,.owner-admin-grid{grid-template-columns:1fr}.owner-admin-metric{min-height:unset}}
@@ -5364,33 +5384,37 @@
 <!-- الصفحة: الدعم الفني: لوحة الموظفين وإدارة الشكاوى | المعرّف البرمجي: supportDashboardScreen -->
 <section id="supportDashboardScreen" class="screen support-screen">
   <div class="support-wrap">
-    <div class="support-panel support-topbar"><div><div class="support-brand">مِعدة | مركز الدعم</div><span id="supportEmployeeEmail" class="support-badge">موظف دعم</span></div>
-      <div><button id="supportRefreshBtn" class="support-btn" type="button">تحديث</button><button id="supportLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
+    <div class="support-panel support-topbar">
+      <div><div class="support-brand">مِعدة | مركز الدعم</div><span id="supportEmployeeEmail" class="support-badge">موظف دعم</span></div>
+      <div><button id="supportRefreshBtn" class="support-btn" type="button" aria-label="تحديث" title="تحديث البيانات"></button><button id="supportLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
+      <button id="supportDashboardBackBtn" class="support-btn" type="button" aria-label="رجوع" title="رجوع">➜ رجوع</button>
     </div>
     <div class="support-stats">
-      <div class="support-stat">طلبات الدعم<strong id="supportStatTickets">0</strong></div>
+      <div class="support-stat">طلبات الدعم المفتوحة<strong id="supportStatTickets">0</strong></div>
       <div class="support-stat">العملاء<strong id="supportStatCustomers">0</strong></div>
       <div class="support-stat">أصحاب المعدات<strong id="supportStatOperators">0</strong></div>
       <div class="support-stat">الطلبات الحالية<strong id="supportStatOrders">0</strong></div>
     </div>
-    <div class="support-nav">
-      <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم</button>
-      <button class="support-btn" data-support-section="customers" type="button">بيانات العملاء</button>
-      <button class="support-btn" data-support-section="operators" type="button">أصحاب المعدات والمعدات</button>
-      <button class="support-btn" data-support-section="orders" type="button">الطلبات الحالية</button>
+    <div class="support-nav" aria-label="أقسام مركز الدعم">
+      <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
+      <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة تعديلات المعدات</button>
       <button class="support-btn" data-support-section="projectClosures" type="button">إنهاء مبكر للمشاريع</button>
-      <button class="support-btn" data-support-section="chats" type="button">محادثات الدعم</button>
-      <button class="support-btn" data-support-section="reports" type="button">البلاغات والمشاكل</button>
-      <button class="support-btn" data-support-section="settings" type="button">إعدادات الموظف</button>
+      <button class="support-btn" data-support-section="completedTickets" type="button">طلبات الدعم المكتملة</button>
+      <button class="support-btn" data-support-section="ratings" type="button">تقييمي</button>
+      <button class="support-btn" data-support-section="settings" type="button">الإعدادات</button>
+      <button class="support-btn" id="supportLogoutNavBtn" type="button">تسجيل الخروج</button>
     </div>
-    <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم</h2><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionProjectClosures" class="support-section support-panel"><h2>إنهاء مبكر للمشاريع</h2><p>مراجعة طلبات الإنهاء واتخاذ القرار وفق الصلاحيات الحالية. لا يُنفذ هذا القسم دفعًا أو استردادًا تلقائيًا.</p><div id="supportProjectClosuresList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionCompletedTickets" class="support-section support-panel"><h2>طلبات الدعم المكتملة</h2><p>أرشيف الشكاوى التي انتهت معالجتها وأُغلقت.</p><div id="supportCompletedTicketsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionRatings" class="support-section support-panel"><h2>تقييمي</h2><p>تظهر هنا تقييمات وملاحظات مقدمي الشكاوى على موظف الدعم عند توفر بيانات التقييم المرتبطة في النظام.</p><div id="supportRatingsList" class="support-list"><div class="support-empty">سيتم عرض التقييمات المسجلة هنا.</div></div></div>
+    <div id="supportSectionSettings" class="support-section support-panel"><h2>الإعدادات</h2><p>البريد: <strong id="supportSettingsEmail">—</strong></p><p>الصلاحية: <strong id="supportSettingsRole">موظف دعم</strong></p><label for="supportThemeSelect">لون الواجهة</label><select id="supportThemeSelect" class="support-input"><option value="gold">ذهبي وأسود</option><option value="light">فاتح</option></select><p>تُدار صلاحيات الموظفين من مجموعة <code>supportStaff</code> في Firebase.</p></div>
     <div id="supportSectionCustomers" class="support-section support-panel"><h2>بيانات العملاء</h2><div id="supportCustomersList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionOperators" class="support-section support-panel"><h2>أصحاب المعدات والمعدات</h2><div id="supportOperatorsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionOrders" class="support-section support-panel"><h2>الطلبات الحالية</h2><div id="supportOrdersList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionProjectClosures" class="support-section support-panel"><h2>طلبات إنهاء العمل المبكر للمشاريع</h2><p>لا يُنهى طلب المشروع مبكرًا إلا بقرار موظف الدعم بعد مراجعة السبب والاتفاق والدفعات. لا يُنفذ هذا القسم دفعًا أو استردادًا تلقائيًا.</p><div id="supportProjectClosuresList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionChats" class="support-section support-panel"><h2>محادثات الدعم</h2><div id="supportChatsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionReports" class="support-section support-panel"><h2>البلاغات والمشاكل</h2><div id="supportReportsList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionSettings" class="support-section support-panel"><h2>إعدادات الموظف</h2><p>البريد: <strong id="supportSettingsEmail">—</strong></p><p>الصلاحية: <strong id="supportSettingsRole">موظف دعم</strong></p><p>تُدار صلاحيات الموظفين من مجموعة <code>supportStaff</code> في Firebase.</p></div>
   </div>
 </section>
 
