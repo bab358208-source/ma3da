@@ -8353,7 +8353,8 @@ console.log("SUPPORT CHECK EMAIL:", user.email);
  
       if(
         role === "support" ||
-        role === "admin"
+        role === "admin" ||
+        role === "owner"
       ){
  
         return {
@@ -8415,7 +8416,8 @@ console.log("SUPPORT CHECK EMAIL:", user.email);
         if(
           (
             role === "support" ||
-            role === "admin"
+            role === "admin" ||
+            role === "owner"
           ) &&
           data.active !== false
         ){
@@ -9714,6 +9716,57 @@ document.addEventListener('click',async event=>{
 });
 
 /* =========================================================
+   مركز إدارة المعلومات — مالك المنصة فقط
+   الأرقام تُقرأ من سجلات Firestore؛ لا تُستخدم أرقام تجريبية.
+   ========================================================= */
+async function loadOwnerInformationCenter(){
+  const employee = supportEmployee;
+  if(!employee || employee.role !== "owner"){
+    alert("هذا المركز مخصص لمالك منصة مِعدة فقط.");
+    supportSetSection("tickets");
+    return;
+  }
+  const status = document.getElementById("ownerInfoStatus");
+  if(status) status.textContent = "جارٍ قراءة السجلات المتاحة من قاعدة البيانات…";
+  const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+  try{
+    if(!window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daGetDocs!=="function") throw new Error("اتصال قاعدة البيانات غير جاهز.");
+    const read = async name => {
+      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,name));
+      const rows=[]; snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})})); return rows;
+    };
+    const results=await Promise.allSettled([read("users"),read("equipment"),read("supportTickets"),read("requests"),read("supportStaff")]);
+    const rows=results.map(r=>r.status==="fulfilled"?r.value:null);
+    if(rows[0]) set("ownerInfoUsers",rows[0].length.toLocaleString("ar-SA")); else set("ownerInfoUsers","غير متاح");
+    if(rows[1]){
+      const ids=new Set(rows[1].map(x=>x.ownerId||x.userId||x.createdBy||x.operatorId).filter(Boolean));
+      set("ownerInfoEquipmentOwners",ids.size?ids.size.toLocaleString("ar-SA"):"لا توجد بيانات مالك قابلة للتحقق");
+    } else set("ownerInfoEquipmentOwners","غير متاح");
+    if(rows[2]) set("ownerInfoComplaints",rows[2].length.toLocaleString("ar-SA")); else set("ownerInfoComplaints","غير متاح");
+    if(rows[4]) set("ownerInfoSupportStaff",rows[4].filter(x=>x.active!==false).length.toLocaleString("ar-SA")); else set("ownerInfoSupportStaff","غير متاح");
+    // لا نحسب مستحقات أو عمولات من price/paidTotal بشكل تخميني؛ يلزم سجل تسوية/عمولة صريح.
+    set("ownerInfoDues","بحاجة إلى سجل تسويات موحّد");
+    set("ownerInfoCommissions","بحاجة إلى سجل عمولات موحّد");
+    const activity=document.getElementById("ownerInfoActivity");
+    if(activity){
+      const recent=rows[3]?rows[3].filter(x=>x.updatedAt||x.createdAt).sort((a,b)=>{
+        const t=v=>{const d=v?.toDate?v.toDate():new Date(v||0);return d.getTime()||0;};return t(b.updatedAt||b.createdAt)-t(a.updatedAt||a.createdAt);
+      }).slice(0,5):[];
+      activity.innerHTML=recent.length?recent.map(x=>{
+        const date=x.updatedAt||x.createdAt; const d=date?.toDate?date.toDate():new Date(date);
+        const dateText=Number.isNaN(d.getTime())?"تاريخ غير متاح":d.toLocaleString("ar-SA");
+        const safe=v=>String(v??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        return `<div class="owner-info-activity-row"><strong>${safe(x.equipmentName||x.title||x.requestType||"سجل طلب")}</strong><span>${safe(x.status||"حالة غير محددة")}</span><small>${safe(dateText)}</small></div>`;
+      }).join(""):"<p>لا توجد سجلات طلبات حديثة قابلة للعرض.</p>";
+    }
+    if(status) status.textContent="تم تحديث الأرقام المتاحة من السجلات الحالية. الأرقام غير المتاحة لم تُخمّن.";
+  }catch(error){
+    console.error("Owner information center load failed:",error);
+    if(status) status.textContent="تعذر تحميل بعض البيانات. تحقق من اتصال Firebase وصلاحيات القراءة.";
+  }
+}
+
+/* =========================================================
    فتح لوحة موظف الدعم
    ========================================================= */
  
@@ -10093,11 +10146,16 @@ function initSupportPortal(){
  
           if(!section)
             return;
- 
+
+          if(section === "ownerInfo" && supportEmployee?.role !== "owner"){
+            alert("هذا القسم مخصص لمالك المنصة فقط.");
+            return;
+          }
  
           supportSetSection(
             section
           );
+          if(section === "ownerInfo") await loadOwnerInformationCenter();
  
  
           if(section === "tickets"){
