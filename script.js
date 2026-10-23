@@ -8329,126 +8329,45 @@ async function getSupportEmployee(){
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
  
-  if(!user)
-    return null;
-console.log("SUPPORT CHECK UID:", user.uid);
-console.log("SUPPORT CHECK EMAIL:", user.email);
- 
-  /* -----------------------------------------
-     التحقق من Custom Claims
-     ----------------------------------------- */
- 
+  if(!user) return null;
+
+  console.log("SUPPORT CHECK UID:", user.uid);
+  console.log("SUPPORT CHECK EMAIL:", user.email);
+
+  /* التحقق من مستند supportStaff أولاً حتى لا يطغى دور الدعم في Custom Claims على دور المالك في Firestore. */
   try{
- 
-    if(
-      typeof user.getIdTokenResult ===
-      "function"
-    ){
- 
-      const token =
-        await user.getIdTokenResult();
- 
-      const role =
-        token?.claims?.role;
- 
-      if(
-        role === "support" ||
-        role === "admin" ||
-        role === "owner"
-      ){
- 
-        return {
-          user,
-          role
-        };
- 
-      }
- 
-    }
- 
-  }catch(error){
- 
-    console.warn(
-      "تعذر قراءة صلاحية الموظف من Firebase:",
-      error
-    );
- 
-  }
- 
- 
-  /* -----------------------------------------
-     التحقق من supportStaff/{uid}
-     ----------------------------------------- */
- 
-  try{
- 
-    if(
-      window.ma3daDB &&
-      window.ma3daDoc &&
-      window.ma3daGetDoc
-    ){
- 
-      const ref =
-        window.ma3daDoc(
-          window.ma3daDB,
-          "supportStaff",
-          user.uid
-        );
- 
- 
-      const snapshot =
-        await window.ma3daGetDoc(
-          ref
-        );
- 
- 
+    if(window.ma3daDB && window.ma3daDoc && window.ma3daGetDoc){
+      const ref = window.ma3daDoc(window.ma3daDB, "supportStaff", user.uid);
+      const snapshot = await window.ma3daGetDoc(ref);
       if(snapshot.exists()){
- 
-        const data =
-          snapshot.data() || {};
- 
- 
-        const role =
-          data.role ||
-          "support";
- 
- 
-        if(
-          (
-            role === "support" ||
-            role === "admin" ||
-            role === "owner"
-          ) &&
-          data.active !== false
-        ){
- 
-          return {
-            user,
-            role,
-            data
-          };
- 
+        const data = snapshot.data() || {};
+        const role = data.role || "support";
+        if(data.active !== false && (role === "support" || role === "admin" || role === "owner")){
+          return { user, role, data };
         }
- 
       }
- 
     }
- 
   }catch(error){
- 
-    console.error(
-      "تعذر التحقق من حساب موظف الدعم:",
-      error
-    );
- 
+    console.error("تعذر التحقق من حساب موظف الدعم:", error);
   }
- 
- 
+
+  /* الرجوع إلى Custom Claims عند عدم توفر دور صالح في مستند supportStaff. */
+  try{
+    if(typeof user.getIdTokenResult === "function"){
+      const token = await user.getIdTokenResult();
+      const role = token?.claims?.role;
+      if(role === "support" || role === "admin" || role === "owner"){
+        return { user, role };
+      }
+    }
+  }catch(error){
+    console.warn("تعذر قراءة صلاحية الموظف من Firebase:", error);
+  }
+
   return null;
- 
 }
- 
- 
+
+
 /* =========================================================
    حماية لوحة موظفي الدعم
    ========================================================= */
