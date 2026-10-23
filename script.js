@@ -8679,7 +8679,8 @@ async function supportLogin(){
         if(
           (
             role === "support" ||
-            role === "admin"
+            role === "admin" ||
+            role === "owner"
           ) &&
           data.active !== false
         ){
