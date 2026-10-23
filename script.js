@@ -9797,13 +9797,24 @@ async function loadOwnerInformationCenter(){
       content.innerHTML=html;
       details.scrollIntoView({behavior:"smooth",block:"start"});
     };
-    document.querySelectorAll('[data-owner-view]').forEach(btn=>{if(btn.dataset.ownerBound==='1')return;btn.dataset.ownerBound='1';btn.addEventListener('click',()=>openView(btn.dataset.ownerView));});
+    // Use one delegated click handler so the cards and their arrow/text all respond,
+    // including after detail content is rebuilt or the portal is reopened.
+    window.ma3daOwnerOpenView=openView;
+    if(!document.documentElement.dataset.ma3daOwnerViewDelegation){
+      document.documentElement.dataset.ma3daOwnerViewDelegation='1';
+      document.addEventListener('click',event=>{
+        const button=event.target && event.target.closest ? event.target.closest('[data-owner-view]') : null;
+        if(!button)return;
+        const dashboard=document.getElementById('ownerPortalDashboardScreen');
+        if(!dashboard || !dashboard.contains(button))return;
+        if(typeof window.ma3daOwnerOpenView==='function'){
+          event.preventDefault();
+          window.ma3daOwnerOpenView(button.dataset.ownerView);
+        }
+      });
+    }
     const close=document.getElementById("ownerAdminDetailsClose");if(close&&close.dataset.ownerBound!=='1'){close.dataset.ownerBound='1';close.addEventListener('click',()=>{details.hidden=true;});}
     const refresh=document.getElementById("ownerPortalRefreshBtn");if(refresh&&refresh.dataset.ownerBound!=='1'){refresh.dataset.ownerBound='1';refresh.addEventListener('click',()=>loadOwnerInformationCenter());}
-    // Attach handlers to nested detail cards rendered after the first click.
-    if(content&&content.dataset.ownerDelegation!=='1'){
-      content.dataset.ownerDelegation='1';content.addEventListener('click',e=>{const b=e.target.closest('[data-owner-view]');if(b)openView(b.dataset.ownerView);});
-    }
   }catch(error){
     console.error("Owner information center load failed:",error);
     if(statusEl)statusEl.textContent="تعذر تحميل البيانات. تحقق من اتصال Firebase وصلاحيات القراءة.";
