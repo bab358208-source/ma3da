@@ -9797,24 +9797,13 @@ async function loadOwnerInformationCenter(){
       content.innerHTML=html;
       details.scrollIntoView({behavior:"smooth",block:"start"});
     };
-    // Use one delegated click handler so the cards and their arrow/text all respond,
-    // including after detail content is rebuilt or the portal is reopened.
-    window.ma3daOwnerOpenView=openView;
-    if(!document.documentElement.dataset.ma3daOwnerViewDelegation){
-      document.documentElement.dataset.ma3daOwnerViewDelegation='1';
-      document.addEventListener('click',event=>{
-        const button=event.target && event.target.closest ? event.target.closest('[data-owner-view]') : null;
-        if(!button)return;
-        const dashboard=document.getElementById('ownerPortalDashboardScreen');
-        if(!dashboard || !dashboard.contains(button))return;
-        if(typeof window.ma3daOwnerOpenView==='function'){
-          event.preventDefault();
-          window.ma3daOwnerOpenView(button.dataset.ownerView);
-        }
-      });
-    }
+    document.querySelectorAll('[data-owner-view]').forEach(btn=>{if(btn.dataset.ownerBound==='1')return;btn.dataset.ownerBound='1';btn.addEventListener('click',()=>openView(btn.dataset.ownerView));});
     const close=document.getElementById("ownerAdminDetailsClose");if(close&&close.dataset.ownerBound!=='1'){close.dataset.ownerBound='1';close.addEventListener('click',()=>{details.hidden=true;});}
     const refresh=document.getElementById("ownerPortalRefreshBtn");if(refresh&&refresh.dataset.ownerBound!=='1'){refresh.dataset.ownerBound='1';refresh.addEventListener('click',()=>loadOwnerInformationCenter());}
+    // Attach handlers to nested detail cards rendered after the first click.
+    if(content&&content.dataset.ownerDelegation!=='1'){
+      content.dataset.ownerDelegation='1';content.addEventListener('click',e=>{const b=e.target.closest('[data-owner-view]');if(b)openView(b.dataset.ownerView);});
+    }
   }catch(error){
     console.error("Owner information center load failed:",error);
     if(statusEl)statusEl.textContent="تعذر تحميل البيانات. تحقق من اتصال Firebase وصلاحيات القراءة.";
@@ -12732,9 +12721,11 @@ async function staffTicketRows(){
   async function renderStaffTickets(targetId){
     const target=$(targetId);if(!target)return;
     try{
-      const rows=await staffTicketRows();
-      setText('supportStatTickets',rows.length);
-      target.innerHTML=rows.length?rows.slice(0,100).map(t=>`<div class="support-row"><div><strong>${escapeHtml(t.subject||t.title||t.category||'طلب دعم')}</strong><br><small>${escapeHtml(t.requesterName||t.requesterEmail||t.customerEmail||t.requesterId||'مستخدم')} · ${escapeHtml(t.requesterRole||'')}</small><br><small>رقم الشكوى: ${escapeHtml(t.id)} · ${escapeHtml(t.orderNumber?'رقم الطلب: '+t.orderNumber:'بدون رقم طلب')}</small></div><div><span class="ma3da-ticket-pill">${escapeHtml(statusLabel(t))}</span><br><button class="support-btn support-primary" type="button" data-open-staff-ticket="${escapeHtml(t.id)}">فتح المحادثة</button></div></div>`).join(''):'<div class="support-empty">لا توجد شكاوى.</div>';
+      const allRows=await staffTicketRows();
+      const completedView=targetId==='supportCompletedTicketsList';
+      const rows=allRows.filter(t=>completedView?isClosed(t):!isClosed(t));
+      setText('supportStatTickets',allRows.filter(t=>!isClosed(t)).length);
+      target.innerHTML=rows.length?rows.slice(0,100).map(t=>`<div class="support-row"><div><strong>${escapeHtml(t.subject||t.title||t.category||'طلب دعم')}</strong><br><small>${escapeHtml(t.requesterName||t.requesterEmail||t.customerEmail||t.requesterId||'مستخدم')} · ${escapeHtml(t.requesterRole||'')}</small><br><small>رقم الشكوى: ${escapeHtml(t.id)} · ${escapeHtml(t.orderNumber?'رقم الطلب: '+t.orderNumber:'بدون رقم طلب')}</small></div><div><span class="ma3da-ticket-pill">${escapeHtml(statusLabel(t))}</span><br><button class="support-btn support-primary" type="button" data-open-staff-ticket="${escapeHtml(t.id)}">${completedView?'عرض المحادثة':'فتح المحادثة'}</button></div></div>`).join(''):'<div class="support-empty">'+(completedView?'لا توجد طلبات دعم مكتملة حتى الآن.':'لا توجد شكاوى مفتوحة.')+'</div>';
     }catch(err){console.error(err);target.innerHTML='<div class="support-empty">تعذر تحميل الشكاوى. تحقق من صلاحيات موظف الدعم.</div>';}
   }
   async function openStaffTicket(ticketId){
@@ -12822,11 +12813,22 @@ async function staffTicketRows(){
   window.ma3daLoadPendingEquipmentEdits = loadPendingEquipmentEdits;
 
   // Override the old simple ticket lists so staff can actually open conversations.
-  loadSupportTickets = async function(){ await renderStaffTickets('supportTicketsList'); };
+  loadSupportTickets = async function(){ await renderStaffTickets('supportTicketsList'); await renderStaffTickets('supportCompletedTicketsList'); };
   loadSupportChats = async function(){ await renderStaffTickets('supportChatsList'); };
 
   document.addEventListener('click',async event=>{
     const el=event.target.closest('button');if(!el)return;
+    if(el.id==='supportDashboardBackBtn'){event.preventDefault();show('roleScreen');return;}
+    if(el.id==='supportLogoutNavBtn'){event.preventDefault();const logout=document.getElementById('supportLogoutBtn');if(logout)logout.click();return;}
+    if(el.matches('[data-support-section]')){
+      const name=el.dataset.supportSection;
+      if(name==='completedTickets'){supportSetSection(name);await renderStaffTickets('supportCompletedTicketsList');return;}
+      if(name==='tickets'){supportSetSection(name);await renderStaffTickets('supportTicketsList');return;}
+      if(name==='equipmentEdits'){supportSetSection(name);await loadPendingEquipmentEdits();return;}
+      if(name==='projectClosures'){supportSetSection(name);if(typeof loadSupportProjectClosures==='function')await loadSupportProjectClosures();return;}
+      if(name==='ratings'){supportSetSection(name);return;}
+    }
+    if(el.id==='supportThemeSelect')return;
 
     // Connect the existing support buttons in the current Index to the restored complaint center.
     // Keep the original support screens and all other sections intact.
@@ -13705,4 +13707,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
   });
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+})();
+
+// مظهر موظف الدعم: تفضيل محلي للواجهة فقط، دون تغيير بيانات Firebase.
+(function setupSupportThemePreference(){
+  const apply=theme=>{const root=document.getElementById('supportDashboardScreen');if(!root)return;root.classList.toggle('support-theme-light',theme==='light');};
+  document.addEventListener('change',event=>{if(event.target?.id!=='supportThemeSelect')return;const theme=event.target.value==='light'?'light':'gold';try{localStorage.setItem('ma3daSupportTheme',theme);}catch(_){}apply(theme);});
+  document.addEventListener('DOMContentLoaded',()=>{let theme='gold';try{theme=localStorage.getItem('ma3daSupportTheme')||'gold';}catch(_){}const select=document.getElementById('supportThemeSelect');if(select)select.value=theme;apply(theme);});
 })();
