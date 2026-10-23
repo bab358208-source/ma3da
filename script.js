@@ -8329,45 +8329,126 @@ async function getSupportEmployee(){
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
  
-  if(!user) return null;
-
-  console.log("SUPPORT CHECK UID:", user.uid);
-  console.log("SUPPORT CHECK EMAIL:", user.email);
-
-  /* التحقق من مستند supportStaff أولاً حتى لا يطغى دور الدعم في Custom Claims على دور المالك في Firestore. */
+  if(!user)
+    return null;
+console.log("SUPPORT CHECK UID:", user.uid);
+console.log("SUPPORT CHECK EMAIL:", user.email);
+ 
+  /* -----------------------------------------
+     التحقق من Custom Claims
+     ----------------------------------------- */
+ 
   try{
-    if(window.ma3daDB && window.ma3daDoc && window.ma3daGetDoc){
-      const ref = window.ma3daDoc(window.ma3daDB, "supportStaff", user.uid);
-      const snapshot = await window.ma3daGetDoc(ref);
+ 
+    if(
+      typeof user.getIdTokenResult ===
+      "function"
+    ){
+ 
+      const token =
+        await user.getIdTokenResult();
+ 
+      const role =
+        token?.claims?.role;
+ 
+      if(
+        role === "support" ||
+        role === "admin" ||
+        role === "owner"
+      ){
+ 
+        return {
+          user,
+          role
+        };
+ 
+      }
+ 
+    }
+ 
+  }catch(error){
+ 
+    console.warn(
+      "تعذر قراءة صلاحية الموظف من Firebase:",
+      error
+    );
+ 
+  }
+ 
+ 
+  /* -----------------------------------------
+     التحقق من supportStaff/{uid}
+     ----------------------------------------- */
+ 
+  try{
+ 
+    if(
+      window.ma3daDB &&
+      window.ma3daDoc &&
+      window.ma3daGetDoc
+    ){
+ 
+      const ref =
+        window.ma3daDoc(
+          window.ma3daDB,
+          "supportStaff",
+          user.uid
+        );
+ 
+ 
+      const snapshot =
+        await window.ma3daGetDoc(
+          ref
+        );
+ 
+ 
       if(snapshot.exists()){
-        const data = snapshot.data() || {};
-        const role = data.role || "support";
-        if(data.active !== false && (role === "support" || role === "admin" || role === "owner")){
-          return { user, role, data };
+ 
+        const data =
+          snapshot.data() || {};
+ 
+ 
+        const role =
+          data.role ||
+          "support";
+ 
+ 
+        if(
+          (
+            role === "support" ||
+            role === "admin" ||
+            role === "owner"
+          ) &&
+          data.active !== false
+        ){
+ 
+          return {
+            user,
+            role,
+            data
+          };
+ 
         }
+ 
       }
+ 
     }
+ 
   }catch(error){
-    console.error("تعذر التحقق من حساب موظف الدعم:", error);
+ 
+    console.error(
+      "تعذر التحقق من حساب موظف الدعم:",
+      error
+    );
+ 
   }
-
-  /* الرجوع إلى Custom Claims عند عدم توفر دور صالح في مستند supportStaff. */
-  try{
-    if(typeof user.getIdTokenResult === "function"){
-      const token = await user.getIdTokenResult();
-      const role = token?.claims?.role;
-      if(role === "support" || role === "admin" || role === "owner"){
-        return { user, role };
-      }
-    }
-  }catch(error){
-    console.warn("تعذر قراءة صلاحية الموظف من Firebase:", error);
-  }
-
+ 
+ 
   return null;
+ 
 }
-
-
+ 
+ 
 /* =========================================================
    حماية لوحة موظفي الدعم
    ========================================================= */
@@ -8662,7 +8743,12 @@ async function supportLogin(){
     );
  
  
-    openSupportDashboard();
+    if(employee.role === "owner"){
+      openSupportScreen("ownerPortalDashboardScreen");
+      await loadOwnerInformationCenter();
+    }else{
+      openSupportDashboard();
+    }
  
  
   }catch(errorObject){
@@ -9831,6 +9917,27 @@ async function supportLogout(){
    زر دخول موظفي الدعم من صفحة اختيار الدور
    ========================================================= */
  
+function initHiddenOwnerPortalEntry(){
+  const roleScreen = document.getElementById("roleScreen");
+  const trigger = roleScreen?.querySelector(".hero-icon");
+  if(!trigger || trigger.dataset.ownerPortalReady) return;
+  trigger.dataset.ownerPortalReady = "true";
+  let taps = 0;
+  let resetHandle;
+  trigger.addEventListener("click", () => {
+    taps += 1;
+    clearTimeout(resetHandle);
+    resetHandle = setTimeout(() => { taps = 0; }, 2200);
+    if(taps >= 7){
+      taps = 0;
+      clearTimeout(resetHandle);
+      openSupportScreen("supportLoginScreen");
+      const error = document.getElementById("supportLoginError");
+      if(error) error.textContent = "دخول مالك المنصة: استخدم حساب المالك المصرح به.";
+    }
+  });
+}
+
 function initSupportRoleButton(){
  
   const supportStaffBtn =
@@ -10183,6 +10290,12 @@ function initSupportPortal(){
      ----------------------------------------- */
  
   initSupportRoleButton();
+  initHiddenOwnerPortalEntry();
+  const ownerLogout = document.getElementById("ownerPortalLogoutBtn");
+  if(ownerLogout && !ownerLogout.dataset.ownerPortalReady){
+    ownerLogout.dataset.ownerPortalReady = "true";
+    ownerLogout.addEventListener("click", supportLogout);
+  }
  
 }
  
