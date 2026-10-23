@@ -9725,43 +9725,88 @@ async function loadOwnerInformationCenter(){
     supportSetSection("tickets");
     return;
   }
-  const status = document.getElementById("ownerInfoStatus");
-  if(status) status.textContent = "جارٍ قراءة السجلات المتاحة من قاعدة البيانات…";
-  const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+  const statusEl=document.getElementById("ownerInfoStatus");
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  const safe=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money=v=>Number(v||0).toLocaleString("ar-SA",{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
+  if(statusEl)statusEl.textContent="جارٍ قراءة بيانات المنصة…";
   try{
-    if(!window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daGetDocs!=="function") throw new Error("اتصال قاعدة البيانات غير جاهز.");
-    const read = async name => {
-      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,name));
-      const rows=[]; snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})})); return rows;
+    if(!window.ma3daDB||typeof window.ma3daCollection!=="function"||typeof window.ma3daGetDocs!=="function")throw new Error("اتصال قاعدة البيانات غير جاهز.");
+    const read=async name=>{try{const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,name));const rows=[];snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));return rows;}catch(e){console.warn('Owner dashboard collection unavailable:',name,e);return null;}};
+    const names=["customers","contractors","operators","projects","equipment","requests","supportTickets","supportStaff","projectInvoices"];
+    const result=await Promise.all(names.map(read));const data=Object.fromEntries(names.map((n,i)=>[n,result[i]]));
+    const list=n=>Array.isArray(data[n])?data[n]:[];
+    const available=n=>Array.isArray(data[n]);
+    const customerRows=list("customers"), contractorRows=list("contractors"), operatorRows=list("operators"), projectRows=list("projects"), equipmentRows=list("equipment"), requestRows=list("requests"), ticketRows=list("supportTickets"), staffRows=list("supportStaff"), invoiceRows=list("projectInvoices");
+    const ownerIds=new Set(equipmentRows.map(x=>x.ownerId||x.userId||x.createdBy||x.operatorId).filter(Boolean));
+    const successfulStatuses=new Set(["completed","paid","settled","success","successful"]);
+    const failedStatuses=new Set(["rejected","cancelled","canceled","failed","expired"]);
+    const successful=requestRows.filter(x=>successfulStatuses.has(String(x.status||"").toLowerCase())||String(x.paymentStatus||"").toLowerCase()==="paid");
+    const failed=requestRows.filter(x=>failedStatuses.has(String(x.status||"").toLowerCase()));
+    const isPaid=x=>String(x.paymentStatus||x.status||"").toLowerCase()==="paid"||String(x.paymentStatus||x.status||"").toLowerCase()==="settled";
+    const amountOf=x=>{for(const k of ["paidAmount","paidTotal","amountPaid","amount","totalAmount","invoiceAmount","finalAmount"]){const v=Number(x?.[k]);if(x?.[k]!==undefined&&x?.[k]!==null&&Number.isFinite(v)&&v>=0)return v;}return 0;};
+    // Total incoming is based on records explicitly marked paid, not merely requested prices.
+    const paidInvoices=invoiceRows.filter(isPaid);const paidRequests=requestRows.filter(isPaid);
+    const revenueRecords=paidInvoices.length?paidInvoices:paidRequests;
+    const revenue=revenueRecords.reduce((sum,x)=>sum+amountOf(x),0);
+    const commissionKeys=["commissionAmount","appCommission","platformCommission","commission","commissionTotal"];
+    const commissionRecords=[...requestRows,...invoiceRows];
+    const commissions=commissionRecords.reduce((sum,x)=>{for(const k of commissionKeys){if(x[k]!==undefined&&x[k]!==null&&Number.isFinite(Number(x[k])))return sum+Math.max(0,Number(x[k]));}return sum;},0);
+    set("ownerInfoRevenue",available("projectInvoices")||available("requests")?money(revenue):"غير متاح");
+    set("ownerInfoCommissions",available("requests")||available("projectInvoices")?money(commissions):"غير متاح");
+    set("ownerInfoRequests",requestRows.length.toLocaleString("ar-SA"));
+    if(statusEl)statusEl.textContent="تم تحميل السجلات المتاحة. افتح أي قسم لعرض التفاصيل.";
+
+    const details=document.getElementById("ownerAdminDetails"),title=document.getElementById("ownerAdminDetailsTitle"),content=document.getElementById("ownerAdminDetailsContent");
+    const dateText=x=>{const v=x?.updatedAt||x?.createdAt||x?.created_at||x?.timestamp;if(!v)return "التاريخ غير مسجل";const d=v?.toDate?v.toDate():new Date(v);return Number.isNaN(d.getTime())?"التاريخ غير مسجل":d.toLocaleString("ar-SA");};
+    const record=(heading,sub="",extra="")=>`<article class="owner-admin-record"><strong>${safe(heading)}</strong>${sub?`<span>${safe(sub)}</span>`:""}${extra?`<small>${safe(extra)}</small>`:""}</article>`;
+    const empty=msg=>`<div class="owner-admin-empty">${safe(msg)}</div>`;
+    const listHtml=(rows,headingFn,subFn,extraFn,emptyMsg)=>rows.length?rows.map(x=>record(headingFn(x),subFn?subFn(x):"",extraFn?extraFn(x):dateText(x))).join(""):empty(emptyMsg);
+    const subcard=(label,value,view)=>`<button type="button" class="owner-admin-subcard" data-owner-view="${safe(view)}">${safe(label)}<strong>${safe(value)}</strong></button>`;
+    const openView=view=>{
+      if(!details||!title||!content)return;
+      details.hidden=false;let html="";
+      if(view==="users"){
+        title.textContent="المستخدمون";
+        html=`<div class="owner-admin-subcards">${subcard("عدد العملاء",available("customers")?customerRows.length.toLocaleString("ar-SA"):"غير متاح","customers")}${subcard("أصحاب المعدات",available("contractors")?contractorRows.length.toLocaleString("ar-SA"):"غير متاح","contractors")}${subcard("عدد المعدات",available("equipment")?equipmentRows.length.toLocaleString("ar-SA"):"غير متاح","equipment")}${subcard("مسؤولو المشاريع",available("operators")?operatorRows.length.toLocaleString("ar-SA"):"غير متاح","operators")}${subcard("المشاريع القائمة",projectRows.filter(x=>!['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsCurrent")}${subcard("المشاريع السابقة",projectRows.filter(x=>['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsPrevious")}</div><p>اختر أي بطاقة لعرض البيانات التفصيلية.</p>`;
+      }else if(view==="customers"){
+        title.textContent="العملاء وبياناتهم";html=listHtml(customerRows,x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>x.phone||x.mobile||x.email||"بيانات التواصل غير مسجلة",x=>`المعرّف: ${x.id}`,"لا توجد بيانات عملاء في مجموعة customers أو تعذرت قراءتها.");
+      }else if(view==="contractors"){
+        title.textContent="أصحاب المعدات وبياناتهم";html=listHtml(contractorRows,x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>x.phone||x.mobile||x.email||"بيانات التواصل غير مسجلة",x=>`المعدات المرتبطة بالمعرّف: ${equipmentRows.filter(e=>(e.ownerId||e.userId||e.createdBy||e.operatorId)===x.id).length} · المعرّف: ${x.id}`,"لا توجد بيانات أصحاب معدات في مجموعة contractors أو تعذرت قراءتها.");
+      }else if(view==="equipment"){
+        title.textContent="المعدات المسجلة";html=listHtml(equipmentRows,x=>x.name||x.equipmentName||x.title||x.id,x=>x.ownerName||x.ownerId||x.userId||"المالك غير محدد",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد معدات مسجلة أو تعذرت قراءتها.");
+      }else if(view==="operators"){
+        title.textContent="مسؤولو المشاريع";html=listHtml(operatorRows,x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>x.phone||x.mobile||x.email||"بيانات التواصل غير مسجلة",x=>`المعرّف: ${x.id}`,"لا توجد بيانات مسؤولي مشاريع أو تعذرت قراءتها.");
+      }else if(view==="projectsCurrent"||view==="projectsPrevious"||view==="projects"){
+        const previous=view==="projectsPrevious";title.textContent=previous?"المشاريع السابقة":"المشاريع القائمة";const rows=projectRows.filter(x=>{const done=['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase());return view==="projects"?true:previous?done:!done;});html=listHtml(rows,x=>x.name||x.title||x.projectName||x.id,x=>`الحالة: ${x.status||"غير محددة"}`,x=>`المعرّف: ${x.id}`,"لا توجد مشاريع ضمن هذا القسم.");
+      }else if(view==="complaints"){
+        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}</div><p>اختر عدد الشكاوى أو موظفي الدعم لعرض التفاصيل.</p>`;
+      }else if(view==="tickets"){
+        title.textContent="الشكاوى";html=listHtml(ticketRows,x=>x.subject||x.title||x.category||"شكوى",x=>x.message||x.description||"لا يوجد وصف مسجل",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد شكاوى مسجلة أو تعذرت قراءتها.");
+      }else if(view==="staff"){
+        title.textContent="موظفو الدعم وتقييماتهم وملاحظات الجمهور";html=listHtml(staffRows.filter(x=>x.role!=="owner"),x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>`التقييم: ${x.rating??x.averageRating??x.supportRating??"غير مسجل"}`,x=>`ملاحظات الجمهور: ${x.publicFeedback||x.feedback||x.notes||x.customerFeedback||"لا توجد ملاحظات مسجلة"} · الحالة: ${x.active===false?"غير نشط":"نشط"}`,"لا توجد بيانات موظفي دعم أو تعذرت قراءتها.");
+      }else if(view==="requests"){
+        title.textContent="الطلبات الناجحة وغير الناجحة";html=`<div class="owner-admin-subcards">${subcard("عدد الطلبات الناجحة",successful.length.toLocaleString("ar-SA"),"requestsSuccess")}${subcard("عدد الطلبات غير الناجحة",failed.length.toLocaleString("ar-SA"),"requestsFailed")}</div>`;
+      }else if(view==="requestsSuccess"||view==="requestsFailed"){
+        const rows=view==="requestsSuccess"?successful:failed;title.textContent=view==="requestsSuccess"?"الطلبات الناجحة":"الطلبات غير الناجحة";html=listHtml(rows,x=>x.equipmentName||x.title||x.requestType||x.id,x=>`الحالة: ${x.status||"غير محددة"} · المبلغ: ${money(amountOf(x))}`,x=>`المعرّف: ${x.id}`,"لا توجد طلبات في هذا القسم.");
+      }else if(view==="money"){
+        title.textContent="إجمالي المبالغ الداخلة عبر التطبيق";html=`<div class="owner-admin-record"><strong>${money(revenue)}</strong><span>المجموع من السجلات المتاحة المعلّمة بأنها مدفوعة.</span><small>${paidInvoices.length?"المصدر: projectInvoices":"المصدر: requests"}. لا تشمل هذه القيمة السجلات التي لم تسجل حالة دفع مؤكدة.</small></div>`;
+      }else if(view==="commissions"){
+        title.textContent="إجمالي عمولات التطبيق";html=`<div class="owner-admin-record"><strong>${money(commissions)}</strong><span>مجموع حقول العمولات الصريحة الموجودة في سجلات الطلبات والفواتير.</span><small>إذا كانت قاعدة البيانات لا تحفظ العمولة في حقول مثل commissionAmount أو appCommission أو platformCommission أو commission، فسيظهر صفرًا حتى يُعتمد اسم حقل العمولة الفعلي.</small></div>`;
+      }
+      content.innerHTML=html;
+      details.scrollIntoView({behavior:"smooth",block:"start"});
     };
-    const results=await Promise.allSettled([read("users"),read("equipment"),read("supportTickets"),read("requests"),read("supportStaff")]);
-    const rows=results.map(r=>r.status==="fulfilled"?r.value:null);
-    if(rows[0]) set("ownerInfoUsers",rows[0].length.toLocaleString("ar-SA")); else set("ownerInfoUsers","غير متاح");
-    if(rows[1]){
-      const ids=new Set(rows[1].map(x=>x.ownerId||x.userId||x.createdBy||x.operatorId).filter(Boolean));
-      set("ownerInfoEquipmentOwners",ids.size?ids.size.toLocaleString("ar-SA"):"لا توجد بيانات مالك قابلة للتحقق");
-    } else set("ownerInfoEquipmentOwners","غير متاح");
-    if(rows[2]) set("ownerInfoComplaints",rows[2].length.toLocaleString("ar-SA")); else set("ownerInfoComplaints","غير متاح");
-    if(rows[4]) set("ownerInfoSupportStaff",rows[4].filter(x=>x.active!==false).length.toLocaleString("ar-SA")); else set("ownerInfoSupportStaff","غير متاح");
-    // لا نحسب مستحقات أو عمولات من price/paidTotal بشكل تخميني؛ يلزم سجل تسوية/عمولة صريح.
-    set("ownerInfoDues","بحاجة إلى سجل تسويات موحّد");
-    set("ownerInfoCommissions","بحاجة إلى سجل عمولات موحّد");
-    const activity=document.getElementById("ownerInfoActivity");
-    if(activity){
-      const recent=rows[3]?rows[3].filter(x=>x.updatedAt||x.createdAt).sort((a,b)=>{
-        const t=v=>{const d=v?.toDate?v.toDate():new Date(v||0);return d.getTime()||0;};return t(b.updatedAt||b.createdAt)-t(a.updatedAt||a.createdAt);
-      }).slice(0,5):[];
-      activity.innerHTML=recent.length?recent.map(x=>{
-        const date=x.updatedAt||x.createdAt; const d=date?.toDate?date.toDate():new Date(date);
-        const dateText=Number.isNaN(d.getTime())?"تاريخ غير متاح":d.toLocaleString("ar-SA");
-        const safe=v=>String(v??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        return `<div class="owner-info-activity-row"><strong>${safe(x.equipmentName||x.title||x.requestType||"سجل طلب")}</strong><span>${safe(x.status||"حالة غير محددة")}</span><small>${safe(dateText)}</small></div>`;
-      }).join(""):"<p>لا توجد سجلات طلبات حديثة قابلة للعرض.</p>";
+    document.querySelectorAll('[data-owner-view]').forEach(btn=>{if(btn.dataset.ownerBound==='1')return;btn.dataset.ownerBound='1';btn.addEventListener('click',()=>openView(btn.dataset.ownerView));});
+    const close=document.getElementById("ownerAdminDetailsClose");if(close&&close.dataset.ownerBound!=='1'){close.dataset.ownerBound='1';close.addEventListener('click',()=>{details.hidden=true;});}
+    const refresh=document.getElementById("ownerPortalRefreshBtn");if(refresh&&refresh.dataset.ownerBound!=='1'){refresh.dataset.ownerBound='1';refresh.addEventListener('click',()=>loadOwnerInformationCenter());}
+    // Attach handlers to nested detail cards rendered after the first click.
+    if(content&&content.dataset.ownerDelegation!=='1'){
+      content.dataset.ownerDelegation='1';content.addEventListener('click',e=>{const b=e.target.closest('[data-owner-view]');if(b)openView(b.dataset.ownerView);});
     }
-    if(status) status.textContent="تم تحديث الأرقام المتاحة من السجلات الحالية. الأرقام غير المتاحة لم تُخمّن.";
   }catch(error){
     console.error("Owner information center load failed:",error);
-    if(status) status.textContent="تعذر تحميل بعض البيانات. تحقق من اتصال Firebase وصلاحيات القراءة.";
+    if(statusEl)statusEl.textContent="تعذر تحميل البيانات. تحقق من اتصال Firebase وصلاحيات القراءة.";
   }
 }
 
