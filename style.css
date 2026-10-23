@@ -2850,3 +2850,148 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 #customerSupportTicketForm h2{text-align:center;font-size:23px;color:#171717}
 #customerSupportTicketForm{border-top:3px solid #c99a3e}
 @media(max-width:480px){.home-page{padding-left:10px;padding-right:10px}.home-header{margin-left:-10px;margin-right:-10px}.home-menu-item{padding:12px;gap:10px}.home-menu-text strong{font-size:15px}.home-menu-text span{font-size:12px}}
+
+/* مركز إدارة المعلومات — هوية مِعدة الذهبية */
+
+#supportSectionOwnerInfo {
+  color: #211b12;
+  background: linear-gradient(135deg, #fffaf0, #f6eedf);
+  border: 1px solid #ead9b8;
+}
+
+#supportSectionOwnerInfo .owner-info-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+#supportSectionOwnerInfo .owner-info-shield {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #171512;
+  color: #e6bd70;
+  font-size: 25px;
+}
+
+#supportSectionOwnerInfo .owner-info-heading h2 {
+  margin: 0 0 5px;
+  font-size: 25px;
+  color: #211b12;
+}
+
+#supportSectionOwnerInfo .owner-info-heading p {
+  margin: 0;
+  color: #786b56;
+  font-size: 13px;
+}
+
+#supportSectionOwnerInfo .owner-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+#supportSectionOwnerInfo .owner-info-stat {
+  min-width: 0;
+  padding: 17px 13px;
+  background: #fffdf8;
+  border: 1px solid #eee1ca;
+  border-radius: 16px;
+  box-shadow: 0 5px 16px rgba(65, 45, 12, 0.05);
+}
+
+#supportSectionOwnerInfo .owner-info-stat span {
+  display: block;
+  color: #786b56;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+#supportSectionOwnerInfo .owner-info-stat strong {
+  display: block;
+  font-size: 21px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  color: #211b12;
+}
+
+#supportSectionOwnerInfo .owner-info-stat small {
+  display: block;
+  margin-top: 5px;
+  color: #95866e;
+  font-size: 11px;
+}
+
+#supportSectionOwnerInfo .owner-info-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+#supportSectionOwnerInfo .owner-info-menu-item {
+  border: 1px solid #e9d8b8;
+  border-radius: 13px;
+  background: #fffdf8;
+  padding: 14px;
+  text-align: right;
+  color: #2c2417;
+  font-weight: 700;
+}
+
+#supportSectionOwnerInfo .owner-info-menu-item span {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b7b60;
+  margin-top: 5px;
+}
+
+#supportSectionOwnerInfo .owner-info-note {
+  padding: 12px 14px;
+  background: #f8edda;
+  border-radius: 12px;
+  color: #735a2c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+#supportSectionOwnerInfo .owner-info-activity-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee2ce;
+}
+
+#supportSectionOwnerInfo .owner-info-activity-row span,
+#supportSectionOwnerInfo .owner-info-activity-row small {
+  color: #81745f;
+  font-size: 12px;
+}
+
+#supportSectionOwnerInfo .owner-info-activity-row small {
+  grid-column: 1 / -1;
+}
+
+/* تنسيق الشاشات الصغيرة */
+
+@media (max-width: 560px) {
+  #supportSectionOwnerInfo .owner-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #supportSectionOwnerInfo .owner-info-menu {
+    grid-template-columns: 1fr;
+  }
+
+  #supportSectionOwnerInfo .owner-info-heading h2 {
+    font-size: 21px;
+  }
+}
+
