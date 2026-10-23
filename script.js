@@ -1,4 +1,4 @@
-/* 
+/*
 ============================================================
 دليل تنظيم ملف script.js — مِعدة
 01 — الصفحات التعريفية: وظائف المقدمة والتنقل التعريفي
@@ -10119,6 +10119,10 @@ function initSupportPortal(){
             await loadSupportEquipment();
  
           }
+
+          if(section === "equipmentEdits"){
+            if(typeof window.ma3daLoadPendingEquipmentEdits === 'function') await window.ma3daLoadPendingEquipmentEdits();
+          }
  
  
           if(section === "orders"){
@@ -12175,7 +12179,7 @@ document.addEventListener("click", function(event){
       list.innerHTML=rows.map(item=>{
         const cancelled=item.equipmentStatus==="cancelled";
         const availability=item.availability==="available"&&!cancelled;
-        const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.verificationStatus==="verified"?"موثقة":"قيد المراجعة");
+        const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.editStatus==="rejected"?"رُفض التعديل — البيانات السابقة محفوظة":(item.editStatus==="approved"?"تم اعتماد آخر تعديل":(item.verificationStatus==="verified"?"موثقة":"قيد المراجعة")));
         const photo=item.image?`<img class="mam-photo" src="${managerEscape(item.image)}" alt="صورة المعدة">`:'<div class="mam-photo" style="display:flex;align-items:center;justify-content:center">🚜</div>';
         return `<article class="mam-card"><div class="mam-equipment">${photo}<div><h3>${managerEscape(item.type||"معدة")}${item.model?" — "+managerEscape(item.model):""}</h3><div class="mam-muted">السنة: ${managerEscape(item.year||"—")} · المدينة: ${managerEscape(item.city||"—")}</div><div class="mam-muted">رقم المعدة: ${managerEscape(item.plateNumber||item.equipmentNumber||"غير مسجل")}</div><div class="mam-muted">السعر: ${managerEscape(item.hourlyPrice||0)} ريال/ساعة</div><span class="mam-status">${cancelled?"ملغاة":(availability?"متاحة":"غير متاحة")}</span> <span class="mam-status">${managerEscape(review)}</span></div></div><div class="mam-actions"><button type="button" class="mam-btn mam-secondary" data-mam-action="edit" data-id="${managerEscape(item.id)}">تعديل</button>${cancelled?"":`<button type="button" class="mam-btn mam-secondary" data-mam-action="toggle" data-id="${managerEscape(item.id)}">${availability?"جعلها غير متاحة":"جعلها متاحة"}</button><button type="button" class="mam-btn mam-danger" data-mam-action="cancel" data-id="${managerEscape(item.id)}">إلغاء المعدة</button>`}</div></article>`;
       }).join("");
@@ -12486,7 +12490,12 @@ async function loadOwnTickets(kind=activeListKind){
     const message={text,senderId:user.uid,senderEmail:user.email||'',senderRole:role,createdAt:new Date()};
     await window.ma3daAddDoc(ticketMessagesPath(ticketId),message);
     const ticketRef=window.ma3daDoc(window.ma3daDB,'supportTickets',ticketId);
-    if(role==='support') await window.ma3daUpdateDoc(ticketRef,{status:'replied',lastReply:text,lastReplyAt:new Date(),lastMessage:text,lastMessageAt:new Date()});
+    // إرسال الرسالة هو الإجراء الأساسي؛ لا نُظهر فشل الرد إذا رفضت القواعد تحديث بيانات الحالة فقط.
+    if(role==='support'){
+      try{
+        await window.ma3daUpdateDoc(ticketRef,{status:'replied',lastReply:text,lastReplyAt:new Date(),lastMessage:text,lastMessageAt:new Date()});
+      }catch(statusError){console.warn('أُرسلت رسالة الدعم لكن تعذر تحديث حالة الشكوى:',statusError);}
+    }
   }
   async function submitNewComplaint(){
     const btn=$('ma3daSubmitComplaintBtn'); const feedback=$('ma3daNewComplaintFeedback');
@@ -12543,7 +12552,7 @@ async function staffTicketRows(){
     try{
       const rows=await staffTicketRows();const ticket=rows.find(t=>t.id===ticketId);if(!ticket)throw new Error('الشكوى غير موجودة.');
       activeTicket={...ticket};
-      const panel=$('supportTicketConversation');if(panel)panel.hidden=false;
+      const panel=$('supportTicketConversation');if(panel){panel.hidden=false;panel.classList.add('active');}
       setText('supportTicketConversationTitle',ticket.subject||ticket.title||'محادثة الشكوى');
       setText('supportTicketConversationMeta',`رقم الشكوى: ${ticket.id} · ${ticket.requesterEmail||ticket.requesterId||''} · ${statusLabel(ticket)}`);
       setText('supportTicketConversationDescription',`${ticket.category||''}${ticket.orderNumber?' · رقم الطلب: '+ticket.orderNumber:''}\n${ticket.message||''}`);
@@ -12578,6 +12587,50 @@ async function staffTicketRows(){
     }catch(err){console.error(err);setFeedback('supportTicketReplyFeedback',err.code==='permission-denied'?'رفضت قواعد Firebase إغلاق الشكوى. تأكد من السماح لموظف الدعم المصرح له بتحديث status.':'تعذر إغلاق الشكوى.');}
   }
 
+  // 06-C — مراجعة تعديلات المعدات المرسلة من أصحابها.
+  async function loadPendingEquipmentEdits(){
+    const target=$('supportEquipmentEditsList'); if(!target)return;
+    target.innerHTML='<div class="support-empty">جارٍ تحميل التعديلات المعلّقة...</div>';
+    try{
+      await waitForFirebase();
+      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment'));
+      const rows=[];snap.forEach(d=>{const x=d.data()||{};if(x.editStatus==='pending'&&x.pendingChanges)rows.push({id:d.id,...x});});
+      rows.sort((a,b)=>(Number(b.editRequestedAt||b.requestedAt||0)-Number(a.editRequestedAt||a.requestedAt||0)));
+      target.innerHTML=rows.length?rows.map(x=>{
+        const c=x.pendingChanges||{};
+        const fields=[['نوع المعدة','type'],['الموديل','model'],['سنة الصنع','year'],['المدينة','city'],['رقم المعدة/اللوحة','plateNumber'],['السعر بالساعة','hourlyPrice'],['التوفر','availability'],['الصورة','image']];
+        const changes=fields.filter(([label,key])=>c[key]!==undefined && (key!=='image'||c[key]!==x.image)).map(([label,key])=>`<p><strong>${escapeHtml(label)}:</strong> ${key==='image'?(c[key]?'تم إرفاق صورة جديدة':'لم تُرفق صورة'):escapeHtml(key==='availability'?(c[key]==='available'?'متاحة':'غير متاحة'):c[key])}</p>`).join('');
+        const photo=c.image?`<img src="${escapeHtml(c.image)}" alt="الصورة المقترحة" style="max-width:180px;max-height:120px;object-fit:contain;border-radius:10px">`:'';
+        return `<article class="support-row" style="display:block;margin:12px 0;padding:16px"><h3>${escapeHtml(x.type||'معدة')} — ${escapeHtml(x.model||'')}</h3><p>صاحب المعدة: ${escapeHtml(x.ownerEmail||x.ownerId||'—')}</p><p>البيانات الحالية تبقى كما هي حتى الموافقة.</p><h4>التعديلات المقترحة</h4>${changes||'<p>لم يتم العثور على فروقات واضحة.</p>'}${photo}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="support-btn support-primary" type="button" data-approve-equipment-edit="${escapeHtml(x.id)}">الموافقة على التعديل</button><button class="support-btn support-danger" type="button" data-reject-equipment-edit="${escapeHtml(x.id)}">رفض التعديل</button></div></article>`;
+      }).join(''):'<div class="support-empty">لا توجد تعديلات معدات بانتظار المراجعة.</div>';
+    }catch(err){console.error('تعذر تحميل تعديلات المعدات:',err);target.innerHTML='<div class="support-empty">تعذر تحميل التعديلات. تحقق من صلاحيات قراءة equipment في Firebase.</div>';}
+  }
+  async function decideEquipmentEdit(id,approve){
+    try{
+      const user=await getUser();
+      const ref=window.ma3daDoc(window.ma3daDB,'equipment',id);
+      const snap=await window.ma3daGetDoc(ref);
+      if(!snap.exists())throw new Error('المعدة غير موجودة.');
+      const item=snap.data()||{};
+      if(item.editStatus!=='pending'||!item.pendingChanges)throw new Error('هذا التعديل لم يعد معلّقًا. حدّث القائمة.');
+      const now=new Date();
+      if(approve){
+        const c=item.pendingChanges;
+        const allowed={type:c.type,model:c.model,year:c.year,city:c.city,plateNumber:c.plateNumber,equipmentNumber:c.equipmentNumber,hourlyPrice:c.hourlyPrice,availability:c.availability,image:c.image};
+        Object.keys(allowed).forEach(k=>{if(allowed[k]===undefined)delete allowed[k];});
+        await window.ma3daUpdateDoc(ref,{...allowed,pendingChanges:null,editStatus:'approved',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:'تمت الموافقة على التعديل',updatedAt:Date.now()});
+        alert('تمت الموافقة على التعديل وتحديث بيانات المعدة المعتمدة.');
+      }else{
+        await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:'تم رفض التعديل؛ بقيت البيانات السابقة دون تغيير.'});
+        alert('تم رفض التعديل. بقيت بيانات المعدة الأصلية كما هي.');
+      }
+      await loadPendingEquipmentEdits();
+      if(typeof loadSupportEquipment==='function')await loadSupportEquipment();
+    }catch(err){console.error('تعذر اتخاذ قرار تعديل المعدة:',err);alert(err.code==='permission-denied'?'رفضت قواعد Firebase حفظ قرار الدعم. يلزم السماح لموظف الدعم المصرح له بتحديث مستند المعدة.':(err.message||'تعذر حفظ القرار.'));}
+  }
+
+  window.ma3daLoadPendingEquipmentEdits = loadPendingEquipmentEdits;
+
   // Override the old simple ticket lists so staff can actually open conversations.
   loadSupportTickets = async function(){ await renderStaffTickets('supportTicketsList'); };
   loadSupportChats = async function(){ await renderStaffTickets('supportChatsList'); };
@@ -12611,6 +12664,9 @@ async function staffTicketRows(){
     if(el.id==='ma3daComplaintChatBackBtn'){stopUserListener();await loadOwnTickets(activeListKind);show('ma3daComplaintListScreen');return;}
     if(el.id==='ma3daComplaintSendReplyBtn'){await sendUserReply();return;}
     if(el.matches('[data-open-staff-ticket]')){await openStaffTicket(el.dataset.openStaffTicket);return;}
+    if(el.id==='supportEquipmentEditsRefreshBtn'){await loadPendingEquipmentEdits();return;}
+    if(el.matches('[data-approve-equipment-edit]')){await decideEquipmentEdit(el.dataset.approveEquipmentEdit,true);return;}
+    if(el.matches('[data-reject-equipment-edit]')){await decideEquipmentEdit(el.dataset.rejectEquipmentEdit,false);return;}
     if(el.id==='supportTicketSendReplyBtn'){await sendStaffReply();return;}
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
   });
