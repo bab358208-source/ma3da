@@ -12605,6 +12605,8 @@ async function staffTicketRows(){
     try{
       const rows=await staffTicketRows();const ticket=rows.find(t=>t.id===ticketId);if(!ticket)throw new Error('الشكوى غير موجودة.');
       activeTicket={...ticket};
+      // لوحة المحادثة موجودة داخل قسم طلبات الدعم؛ أظهر هذا القسم أولاً حتى لا تبقى المحادثة مخفية عند فتحها من قسم آخر.
+      if(typeof supportSetSection==='function') supportSetSection('tickets');
       const panel=$('supportTicketConversation');if(panel)panel.hidden=false;
       setText('supportTicketConversationTitle',ticket.subject||ticket.title||'محادثة الشكوى');
       setText('supportTicketConversationMeta',`رقم الشكوى: ${ticket.id} · ${ticket.requesterEmail||ticket.requesterId||''} · ${statusLabel(ticket)}`);
