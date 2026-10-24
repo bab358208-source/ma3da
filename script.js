@@ -2625,8 +2625,10 @@ let chatMessagesUnsubscribe = null;
   style.id="ma3daChatBubbleColors";
   style.textContent=`
     #chatMessages .message{display:block;box-sizing:border-box;max-width:82%;width:fit-content;padding:10px 14px;margin:9px 0;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;clear:both;line-height:1.55}
-    #chatMessages .message.sent{background:#e7f3e8!important;color:#173b23!important;margin-right:auto!important;margin-left:0!important;border:1px solid #c6dfca!important;border-bottom-right-radius:5px!important}
-    #chatMessages .message.received{background:#f5e8cb!important;color:#4b3510!important;margin-left:auto!important;margin-right:0!important;border:1px solid #e5d2a5!important;border-bottom-left-radius:5px!important}
+    #chatMessages .message.sent{background:#d9fdd3!important;color:#173b23!important;margin-left:auto!important;margin-right:0!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
+    #chatMessages .message.received{background:#ffffff!important;color:#263238!important;margin-right:auto!important;margin-left:0!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
+    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:2px!important}
+    #chatMessages .message{flex:0 0 auto!important}
   `;
   document.head.appendChild(style);
 })();
@@ -2763,9 +2765,14 @@ function startChatListener(){
     snapshot.forEach(messageDoc => {
       const data = messageDoc.data();
       const bubble = document.createElement("div");
-      bubble.className = data.senderId === window.ma3daAuth?.currentUser?.uid
-        ? "message sent"
-        : (data.senderRole === role ? "message sent" : "message received");
+      const currentUid = window.ma3daAuth?.currentUser?.uid || "";
+      const senderId = data.senderId || data.uid || "";
+      const senderRole = String(data.senderRole || data.role || "").toLowerCase();
+      // Prefer the authenticated sender ID. Only use role for legacy messages without an ID.
+      const isOwnMessage = senderId && currentUid
+        ? senderId === currentUid
+        : (senderRole ? senderRole === String(role || "").toLowerCase() : false);
+      bubble.className = isOwnMessage ? "message sent" : "message received";
       bubble.textContent = data.text || "";
       container.appendChild(bubble);
     });
