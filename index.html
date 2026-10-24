@@ -68,6 +68,18 @@
     .tracking-description{line-height:1.8;color:#555;text-align:center;margin:12px 0;}
     #operatorOpenCustomerMapBtn{margin:10px 0;}
 
+
+/* واجهة الطلب المقبول: شبكة أزرار واضحة */
+.accepted-order-subtitle{text-align:center;font-weight:800;margin:6px 0 18px;color:#b38b36}
+.ma3da-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.ma3da-action-grid .ma3da-action-wide{grid-column:1/-1;min-height:68px;font-weight:800}
+.ma3da-action-grid .ma3da-action-small{min-height:58px;margin:0}
+.ma3da-order-details .info-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee5d2}
+.ma3da-order-details .info-row span{color:#555}
+.ma3da-notes{padding:12px;background:#faf7ef;border:1px solid #eadfc5;border-radius:10px;margin:12px 0;white-space:pre-wrap}
+#operatorDistanceFeedback{font-size:14px;line-height:1.7;margin:8px 0;color:#6b5527}
+.ma3da-action-grid button:disabled{opacity:.5;cursor:not-allowed}
+
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -2195,150 +2207,34 @@
     <p class="accepted-order-subtitle">طلب مقبول · جاهز للتنفيذ</p>
 
 
-    <div class="info-row">
-      <span>اسم العميل</span>
-      <strong id="operatorCurrentCustomerName">اسم العميل المسجل</strong>
+    <div class="ma3da-order-details">
+      <div class="info-row"><span>اسم المعدة</span><strong id="operatorCurrentEquipment">-</strong></div>
+      <div class="info-row"><span>اسم العميل المسجل</span><strong id="operatorCurrentCustomerName">اسم العميل المسجل</strong></div>
+      <div class="info-row"><span>المدة</span><strong id="operatorCurrentDuration">-</strong></div>
+      <div class="info-row"><span>المبلغ</span><strong id="operatorCurrentPrice">-</strong></div>
+      <div class="info-row"><span>موقع العميل</span><strong id="operatorCurrentLocation">-</strong></div>
     </div>
 
-    <div class="info-row">
-
-      <span>
-        اسم المعدة
-      </span>
-
-      <strong id="operatorCurrentEquipment">
-        -
-      </strong>
-
+    <div class="ma3da-action-grid">
+      <button id="operatorOpenCustomerMapBtn" class="main-btn ma3da-action-wide" type="button">📍 موقع العميل — فتح Google Maps</button>
+      <button id="operatorChatCustomerBtn" class="main-btn ma3da-action-small" type="button">💬 المحادثة</button>
+      <button id="operatorCallCustomerBtn" class="main-btn ma3da-action-small" type="button">📞 الاتصال</button>
     </div>
 
-
-    <div class="info-row">
-
-      <span>
-        موقع العميل
-      </span>
-
-      <strong id="operatorCurrentLocation">
-        -
-      </strong>
-
-    </div>
-    <button id="operatorOpenCustomerMapBtn" class="main-btn" type="button">📍 فتح موقع العميل في Google Maps</button>
-
-
-    <div class="info-row">
-
-      <span>
-        مدة العمل
-      </span>
-
-      <strong id="operatorCurrentDuration">
-        -
-      </strong>
-
+    <div id="operatorCurrentStatusPanel" class="operator-current-status">
+      <span id="operatorCurrentStatusIcon">🟡</span>
+      <strong id="operatorCurrentStatusText">جاري تحميل الحالة...</strong>
     </div>
 
-
-    <div class="info-row">
-
-      <span>
-        السعر
-      </span>
-
-      <strong id="operatorCurrentPrice">
-        -
-      </strong>
-
+    <button id="operatorCheckDistanceBtn" class="main-btn" type="button">📍 التحقق المكاني من موقعي</button>
+    <p id="operatorDistanceFeedback" role="status">يجب التحقق من موقعك الفعلي قبل تأكيد الوصول.</p>
+    <button id="operatorArrivedBtn" class="main-btn" type="button" style="display:none;" disabled>🚜 وصلت إلى موقع العميل</button>
+    <button id="operatorStartWorkBtn" class="main-btn" type="button" style="display:none;">▶️ بدأت العمل</button>
+    <div id="operatorWorkTimerBox" style="display:none;">
+      <div class="work-icon">🚜</div>
+      <div id="operatorTimer" class="timer">00:00:00</div>
     </div>
-
-
-    <div class="operator-current-status">
-
-      <span id="operatorCurrentStatusIcon">
-        🟡
-      </span>
-
-      <strong id="operatorCurrentStatusText">
-        جاري تحميل الحالة...
-      </strong>
-
-    </div>
-
-
-
-    <button
-      id="operatorCallCustomerBtn"
-      class="main-btn"
-      type="button"
-    >
-      📞 الاتصال بالعميل
-    </button>
-
-
-
-    <button
-      id="operatorChatCustomerBtn"
-      class="main-btn"
-      type="button"
-    >
-      💬 محادثة مع العميل
-    </button>
-
-
-
-    <button
-      id="operatorArrivedBtn"
-      class="main-btn"
-      type="button"
-      style="display:none;"
-    >
-      🚜 وصلت إلى موقع العميل
-    </button>
-
-
-
-    <button
-      id="operatorStartWorkBtn"
-      class="main-btn"
-      type="button"
-      style="display:none;"
-    >
-      ▶️ بدء العمل
-    </button>
-
-
-
-    <div
-      id="operatorWorkTimerBox"
-      style="display:none;"
-    >
-
-      <div class="work-icon">
-        🚜
-      </div>
-
-
-      <div
-        id="operatorTimer"
-        class="timer"
-      >
-        00:00:00
-      </div>
-
-    </div>
-
-
-
-    <button
-      id="operatorEndWorkBtn"
-      class="main-btn"
-      type="button"
-      style="display:none;"
-    >
-      إنهاء العمل
-    </button>
-
+    <button id="operatorEndWorkBtn" class="main-btn" type="button" style="display:none;">انتهى العمل</button>
 
   </div>
 
@@ -4014,7 +3910,7 @@
 
 
     <h2>طلبك تحت المتابعة</h2>
-    <p class="accepted-order-subtitle">تفاصيل صاحب المعدة وموقعها</p>
+    <p class="accepted-order-subtitle">تفاصيل صاحب المعدة :</p>
 
 
     <div class="driver-card">
@@ -4037,49 +3933,16 @@
 
 
 
-    <div class="info-row">
+    <div class="info-row"><span>نوع المعدة</span><strong id="matchedOperatorType">نوع المعدة</strong></div>
+    <div class="info-row"><span>موقع العمل في الطلب</span><strong id="matchedLocation">موقع العمل المحدد في الطلب</strong></div>
+    <h3 style="margin:14px 0 6px">تفاصيل الطلب</h3>
+    <div id="matchedRequestNotes" class="ma3da-notes">تفاصيل الطلب التي كتبها العميل</div>
 
-      <span>نوع المعدة</span>
-      <strong id="matchedOperatorType">بوكلين</strong>
-
+    <div class="ma3da-action-grid">
+      <button id="trackingBtn" class="main-btn ma3da-action-wide" type="button">🗺️ تتبع المعدة عبر Google Maps</button>
+      <button id="chatBtn" class="main-btn ma3da-action-small" type="button">💬 المحادثة</button>
+      <button id="callBtn" class="main-btn ma3da-action-small" type="button">📞 الاتصال</button>
     </div>
-
-
-
-    <div class="info-row">
-
-      <span>
-        الموقع
-      </span>
-
-      <strong id="matchedLocation">
-        موقع العميل
-      </strong>
-
-    </div>
-
-
-
-    <p class="tracking-description">عرض موقع المعدة المسجل لدى صاحبها على الخريطة، مع تحديث الموقع عند توفر إحداثيات حديثة.</p>
-    <button id="trackingBtn" class="main-btn" type="button">عرض موقع المعدة على الخريطة</button>
-
-
-    <button
-      id="callBtn"
-      class="main-btn"
-      type="button"
-    >
-      📞 اتصال
-    </button>
-
-
-    <button
-      id="chatBtn"
-      class="main-btn"
-      type="button"
-    >
-      💬 محادثة
-    </button>
 
 
   </div>
