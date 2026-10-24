@@ -12737,10 +12737,7 @@ async function staffTicketRows(){
       setText('supportTicketConversationTitle',ticket.subject||ticket.title||'محادثة الشكوى');
       setText('supportTicketConversationMeta',`رقم الشكوى: ${ticket.id} · ${ticket.requesterEmail||ticket.requesterId||''} · ${statusLabel(ticket)}`);
       setText('supportTicketConversationDescription',`${ticket.category||''}${ticket.orderNumber?' · رقم الطلب: '+ticket.orderNumber:''}\n${ticket.message||''}`);
-      const replyInput=$('supportTicketReplyInput'), sendBtn=$('supportTicketSendReplyBtn'), closeBtn=$('supportTicketCloseBtn');
-      if(!panel || !replyInput || !sendBtn || !closeBtn || !$('supportTicketConversationMessages')) throw new Error('واجهة المحادثة غير موجودة في index.html. حدّث ملف الصفحة مع script.js.');
-      replyInput.disabled=isClosed(ticket);sendBtn.disabled=isClosed(ticket);closeBtn.disabled=isClosed(ticket);
-      closeBtn.textContent=isClosed(ticket)?'الشكوى مغلقة':'إغلاق الشكوى';
+      $('supportTicketReplyInput').disabled=isClosed(ticket);$('supportTicketSendReplyBtn').disabled=isClosed(ticket);$('supportTicketCloseBtn').disabled=isClosed(ticket);
       const ref=ticketMessagesPath(ticket.id);
       const render=snap=>{let msgs=[];snap.forEach(d=>msgs.push({id:d.id,...(d.data()||{})}));renderMessages('supportTicketConversationMessages',mergeLegacyMessages(ticket,msgs),isClosed(ticket));};
       if(typeof window.ma3daOnSnapshot==='function')activeTicketMessagesUnsub=window.ma3daOnSnapshot(ref,render,err=>setFeedback('supportTicketReplyFeedback','تعذر تحديث الرسائل: '+(err.message||'')));
@@ -12765,7 +12762,7 @@ async function staffTicketRows(){
       // Staff authorization is still enforced by Firestore rules.
       await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'supportTickets',activeTicket.id),{status:'closed',closedAt:new Date(),closedBy:user.uid,closedByEmail:user.email||''});
       activeTicket.status='closed';setFeedback('supportTicketReplyFeedback','تم إغلاق الشكوى ونقلها إلى الشكاوى السابقة.');
-      if($('supportTicketReplyInput'))$('supportTicketReplyInput').disabled=true;if($('supportTicketSendReplyBtn'))$('supportTicketSendReplyBtn').disabled=true;if($('supportTicketCloseBtn'))$('supportTicketCloseBtn').disabled=true;
+      $('supportTicketReplyInput').disabled=true;$('supportTicketSendReplyBtn').disabled=true;$('supportTicketCloseBtn').disabled=true;
       await renderStaffTickets('supportChatsList');await renderStaffTickets('supportTicketsList');
       setTimeout(()=>{const p=$('supportTicketConversation');if(p)p.hidden=true;},900);
     }catch(err){console.error(err);setFeedback('supportTicketReplyFeedback',err.code==='permission-denied'?'رفضت قواعد Firebase إغلاق الشكوى. تأكد من السماح لموظف الدعم المصرح له بتحديث status.':'تعذر إغلاق الشكوى.');}
@@ -12864,7 +12861,7 @@ async function staffTicketRows(){
     if(el.matches('[data-reject-equipment-edit]')){await decideEquipmentEdit(el.dataset.rejectEquipmentEdit,false);return;}
     if(el.id==='supportTicketSendReplyBtn'){await sendStaffReply();return;}
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
-  }, true);
+  });
 
   // Page-level refresh hooks: refresh only the currently displayed support data.
   window.ma3daRefreshSupportCenter = async function(screenId){
