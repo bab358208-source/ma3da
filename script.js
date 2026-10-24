@@ -2624,11 +2624,10 @@ let chatMessagesUnsubscribe = null;
   const style=document.createElement("style");
   style.id="ma3daChatBubbleColors";
   style.textContent=`
-    #chatMessages .message{display:block;box-sizing:border-box;max-width:82%;width:fit-content;padding:10px 14px;margin:9px 0;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;clear:both;line-height:1.55}
-    #chatMessages .message.sent{background:#d9fdd3!important;color:#173b23!important;margin-left:auto!important;margin-right:0!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
-    #chatMessages .message.received{background:#ffffff!important;color:#263238!important;margin-right:auto!important;margin-left:0!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
-    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:2px!important}
-    #chatMessages .message{flex:0 0 auto!important}
+    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;padding:12px!important;box-sizing:border-box!important}
+    #chatMessages .message{display:block!important;box-sizing:border-box!important;flex:0 0 auto!important;width:fit-content!important;max-width:82%!important;padding:10px 14px!important;margin-top:6px!important;margin-bottom:6px!important;border-radius:16px!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;line-height:1.55!important;clear:none!important}
+    #chatMessages .message.sent{align-self:flex-end!important;margin-left:18%!important;margin-right:0!important;background:#d9fdd3!important;color:#173b23!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
+    #chatMessages .message.received{align-self:flex-start!important;margin-right:18%!important;margin-left:0!important;background:#ffffff!important;color:#263238!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
   `;
   document.head.appendChild(style);
 })();
@@ -2756,24 +2755,41 @@ function startChatListener(){
     messagesCollection, window.ma3daOrderBy("createdAt", "asc")
   );
  
+  // Resolve the authenticated user before classifying messages, so a late Firebase auth
+  // initialization does not incorrectly put every message on the same side.
+  const resolveCurrentUid = async () => {
+    try {
+      if (window.ma3daFirebaseReady) await window.ma3daFirebaseReady;
+      const user = window.ma3daGetCurrentUser
+        ? await window.ma3daGetCurrentUser()
+        : window.ma3daAuth?.currentUser;
+      return user?.uid || window.ma3daAuth?.currentUser?.uid || "";
+    } catch (error) {
+      console.warn("تعذر تحديد المستخدم الحالي للشات:", error);
+      return window.ma3daAuth?.currentUser?.uid || "";
+    }
+  };
+  let chatCurrentUid = "";
+  void resolveCurrentUid().then(uid => { chatCurrentUid = uid; });
+
   chatMessagesUnsubscribe = window.ma3daOnSnapshot(messagesQuery, snapshot => {
     const container = document.getElementById("chatMessages");
     if (!container) return;
  
     const role = getMa3daActiveRole();
+    const currentUid = chatCurrentUid || window.ma3daAuth?.currentUser?.uid || "";
     container.replaceChildren();
     snapshot.forEach(messageDoc => {
       const data = messageDoc.data();
       const bubble = document.createElement("div");
-      const currentUid = window.ma3daAuth?.currentUser?.uid || "";
-      const senderId = data.senderId || data.uid || "";
+      const senderId = data.senderId || data.uid || data.userId || "";
       const senderRole = String(data.senderRole || data.role || "").toLowerCase();
-      // Prefer the authenticated sender ID. Only use role for legacy messages without an ID.
+      // Use UID when both sides have one; legacy messages fall back to role.
       const isOwnMessage = senderId && currentUid
-        ? senderId === currentUid
+        ? String(senderId) === String(currentUid)
         : (senderRole ? senderRole === String(role || "").toLowerCase() : false);
       bubble.className = isOwnMessage ? "message sent" : "message received";
-      bubble.textContent = data.text || "";
+      bubble.textContent = data.text || data.message || "";
       container.appendChild(bubble);
     });
     container.scrollTop = container.scrollHeight;
