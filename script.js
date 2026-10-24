@@ -2618,6 +2618,18 @@ if(trackingBtn){
 /* وظائف المحادثة المشتركة: العميل وصاحب المعدة — أبقيناها مشتركة لتجنب كسر الربط */
 /* CHAT: CUSTOMER + EQUIPMENT OWNER */
 let chatMessagesUnsubscribe = null;
+// Keep the existing order-chat wiring; only make sender/receiver bubbles visually distinct.
+(function ensureMa3daChatBubbleColors(){
+  if(document.getElementById("ma3daChatBubbleColors")) return;
+  const style=document.createElement("style");
+  style.id="ma3daChatBubbleColors";
+  style.textContent=`
+    #chatMessages .message{display:block;box-sizing:border-box;max-width:82%;width:fit-content;padding:10px 14px;margin:9px 0;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;clear:both;line-height:1.55}
+    #chatMessages .message.sent{background:#e7f3e8!important;color:#173b23!important;margin-right:auto!important;margin-left:0!important;border:1px solid #c6dfca!important;border-bottom-right-radius:5px!important}
+    #chatMessages .message.received{background:#f5e8cb!important;color:#4b3510!important;margin-left:auto!important;margin-right:0!important;border:1px solid #e5d2a5!important;border-bottom-left-radius:5px!important}
+  `;
+  document.head.appendChild(style);
+})();
 let chatSending = false;
  
 function getMa3daActiveRole(){
@@ -12566,6 +12578,30 @@ document.addEventListener("click", function(event){
   window.__ma3daSupportCenterV2Bound = true;
 
   const $ = id => document.getElementById(id);
+  function ensureStaffConversationPanel(){
+    if($('supportTicketConversation')) return $('supportTicketConversation');
+    const dashboard=$('supportDashboardScreen');
+    if(!dashboard) return null;
+    const panel=document.createElement('section');
+    panel.id='supportTicketConversation';
+    panel.className='support-panel';
+    panel.hidden=true;
+    panel.style.cssText='margin-top:16px;padding:18px;';
+    panel.innerHTML='<h2 id="supportTicketConversationTitle">محادثة الشكوى</h2><p id="supportTicketConversationMeta"></p><p id="supportTicketConversationDescription" style="white-space:pre-wrap"></p><div id="supportTicketConversationMessages" class="ma3da-ticket-thread" aria-live="polite"></div><label for="supportTicketReplyInput">الرد على مقدم الشكوى</label><textarea id="supportTicketReplyInput" class="support-input" rows="3" maxlength="4000" placeholder="اكتب ردك هنا..."></textarea><p id="supportTicketReplyFeedback" role="status" aria-live="polite"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="supportTicketSendReplyBtn" class="support-btn support-primary" type="button">إرسال الرد</button><button id="supportTicketCloseBtn" class="support-btn support-danger" type="button">إغلاق الشكوى</button><button id="supportTicketConversationHideBtn" class="support-btn" type="button">إخفاء المحادثة</button></div>';
+    dashboard.appendChild(panel);
+    return panel;
+  }
+  function ensureRequesterRatingArea(){
+    const card=$('ma3daComplaintSendReplyBtn')?.parentElement;
+    if(!card || $('ma3daSupportStaffRating')) return;
+    const area=document.createElement('div');
+    area.id='ma3daSupportStaffRating';
+    area.style.cssText='margin-top:16px;padding:14px;border:1px solid #eadfc5;border-radius:12px;background:#fffdf8;';
+    area.hidden=true;
+    area.innerHTML='<h3>قيّم موظف الدعم</h3><p>بعد إغلاق الشكوى، قيّم تجربتك مع موظف الدعم.</p><div id="ma3daSupportRatingStars" role="group" aria-label="تقييم موظف الدعم" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-support-rating="1" aria-label="نجمة واحدة">☆</button><button type="button" data-support-rating="2" aria-label="نجمتان">☆</button><button type="button" data-support-rating="3" aria-label="ثلاث نجوم">☆</button><button type="button" data-support-rating="4" aria-label="أربع نجوم">☆</button><button type="button" data-support-rating="5" aria-label="خمس نجوم">☆</button></div><textarea id="ma3daSupportRatingComment" rows="2" maxlength="1000" placeholder="ملاحظتك (اختياري)" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea><p id="ma3daSupportRatingFeedback" role="status" aria-live="polite"></p><button id="ma3daSubmitSupportRatingBtn" class="main-btn" type="button">إرسال التقييم</button>';
+    card.appendChild(area);
+  }
+  let selectedSupportRating=0;
   let activeTicket = null;
   let activeTicketMessagesUnsub = null;
   let activeUserMessagesUnsub = null;
@@ -12684,8 +12720,29 @@ async function loadOwnTickets(kind=activeListKind){
       setFeedback('ma3daComplaintListFeedback','');
     }catch(err){ console.error('تعذر تحميل شكاوى المستخدم:',err); if(list) list.innerHTML='<div class="ma3da-ticket-empty">تعذر تحميل الشكاوى. تأكد من تسجيل الدخول وصلاحيات قراءة شكاواك في Firebase.</div>'; setFeedback('ma3daComplaintListFeedback',err.message||'تعذر تحميل الشكاوى.'); }
   }
+  function ensureRequesterRatingArea(){
+    const card=$('ma3daComplaintSendReplyBtn')?.parentElement;
+    if(!card || $('ma3daSupportStaffRating')) return;
+    const area=document.createElement('div');area.id='ma3daSupportStaffRating';area.hidden=true;
+    area.style.cssText='margin-top:16px;padding:14px;border:1px solid #eadfc5;border-radius:12px;background:#fffdf8;';
+    area.innerHTML='<h3>قيّم موظف الدعم</h3><p>بعد إغلاق الشكوى، قيّم تجربتك مع موظف الدعم.</p><div role="group" aria-label="تقييم موظف الدعم" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-support-rating="1" aria-label="نجمة واحدة">☆</button><button type="button" data-support-rating="2" aria-label="نجمتان">☆</button><button type="button" data-support-rating="3" aria-label="ثلاث نجوم">☆</button><button type="button" data-support-rating="4" aria-label="أربع نجوم">☆</button><button type="button" data-support-rating="5" aria-label="خمس نجوم">☆</button></div><textarea id="ma3daSupportRatingComment" rows="2" maxlength="1000" placeholder="ملاحظتك (اختياري)" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea><p id="ma3daSupportRatingFeedback" role="status" aria-live="polite"></p><button id="ma3daSubmitSupportRatingBtn" class="main-btn" type="button">إرسال التقييم</button>';
+    card.appendChild(area);
+  }
+  async function submitRequesterSupportRating(){
+    if(!activeTicket || !isClosed(activeTicket)){setFeedback('ma3daSupportRatingFeedback','يمكن تقييم موظف الدعم بعد إغلاق الشكوى فقط.');return;}
+    if(!selectedSupportRating){setFeedback('ma3daSupportRatingFeedback','اختر عدد النجوم أولًا.');return;}
+    if(activeTicket.supportRating){setFeedback('ma3daSupportRatingFeedback','تم تسجيل تقييمك لهذه الشكوى مسبقًا.');return;}
+    try{
+      const user=await getUser();
+      await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'supportTickets',activeTicket.id),{supportRating:selectedSupportRating,supportRatingComment:($('ma3daSupportRatingComment')?.value||'').trim(),supportRatedAt:new Date(),supportRatedBy:user.uid,supportStaffId:activeTicket.closedBy||activeTicket.assignedTo||''});
+      activeTicket.supportRating=selectedSupportRating;
+      setFeedback('ma3daSupportRatingFeedback','شكرًا لك، تم حفظ تقييم موظف الدعم.');
+      $('ma3daSubmitSupportRatingBtn').disabled=true;
+    }catch(err){console.error('تعذر حفظ تقييم موظف الدعم:',err);setFeedback('ma3daSupportRatingFeedback',err.code==='permission-denied'?'رفضت قواعد Firebase حفظ التقييم. يلزم السماح لصاحب الشكوى بتحديث حقول التقييم فقط.':'تعذر حفظ التقييم. حاول مرة أخرى.');}
+  }
   async function openUserTicket(ticketId){
     stopUserListener();
+    ensureRequesterRatingArea();
     try{
       const user=await getUser();
       const ticket=userTicketsCache.find(t=>t.id===ticketId) || (await getOwnTickets(user)).find(t=>t.id===ticketId);
@@ -12697,6 +12754,8 @@ async function loadOwnTickets(kind=activeListKind){
       setText('ma3daComplaintChatSubject',ticket.subject||ticket.category||'تفاصيل الشكوى');
       setText('ma3daComplaintChatDescription',`${ticket.message||ticket.description||''}${ticket.orderNumber?`\nرقم الطلب: ${ticket.orderNumber}`:''}`);
       const closed=isClosed(ticket);
+      const ratingArea=$('ma3daSupportStaffRating');
+      if(ratingArea){ratingArea.hidden=!closed;selectedSupportRating=0;const comment=$('ma3daSupportRatingComment');if(comment)comment.value=ticket.supportRatingComment||'';const submit=$('ma3daSubmitSupportRatingBtn');if(submit)submit.disabled=!!ticket.supportRating;setFeedback('ma3daSupportRatingFeedback',ticket.supportRating?`تم تسجيل تقييمك: ${ticket.supportRating} من 5.`:'');document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=(ticket.supportRating||0)?'★':'☆';star.disabled=!!ticket.supportRating;star.style.fontSize='24px';star.style.color=n<=(ticket.supportRating||0)?'#b88922':'#777';});}
       $('ma3daComplaintReplyInput').disabled=closed; $('ma3daComplaintSendReplyBtn').disabled=closed;
       $('ma3daComplaintReplyInput').placeholder=closed?'هذه الشكوى مغلقة ولا يمكن إرسال رسائل جديدة.':'اكتب رسالتك لفريق الدعم...';
       const render=async snap=>{
@@ -12775,6 +12834,7 @@ async function staffTicketRows(){
   }
   async function openStaffTicket(ticketId){
     stopStaffListener();
+    ensureStaffConversationPanel();
     try{
       const rows=await staffTicketRows();const ticket=rows.find(t=>t.id===ticketId);if(!ticket)throw new Error('الشكوى غير موجودة.');
       activeTicket={...ticket};
@@ -12811,6 +12871,15 @@ async function staffTicketRows(){
       await renderStaffTickets('supportChatsList');await renderStaffTickets('supportTicketsList');
       setTimeout(()=>{const p=$('supportTicketConversation');if(p)p.hidden=true;},900);
     }catch(err){console.error(err);setFeedback('supportTicketReplyFeedback',err.code==='permission-denied'?'رفضت قواعد Firebase إغلاق الشكوى. تأكد من السماح لموظف الدعم المصرح له بتحديث status.':'تعذر إغلاق الشكوى.');}
+  }
+
+  async function renderSupportRatings(){
+    const target=$('supportRatingsList');if(!target)return;
+    target.innerHTML='<div class="support-empty">جارٍ تحميل التقييمات...</div>';
+    try{
+      const rows=(await staffTicketRows()).filter(t=>Number(t.supportRating)>=1&&Number(t.supportRating)<=5);
+      target.innerHTML=rows.length?rows.map(t=>`<article class="support-row" style="display:block;margin:10px 0;padding:14px"><strong>${escapeHtml(t.subject||t.category||'شكوى')}</strong><p>رقم الشكوى: ${escapeHtml(t.id)}</p><p>تقييم مقدم الشكوى: <strong>${'★'.repeat(Number(t.supportRating))}${'☆'.repeat(5-Number(t.supportRating))}</strong> (${Number(t.supportRating)}/5)</p><p>الموظف: ${escapeHtml(t.closedByEmail||t.supportStaffId||t.assignedTo||'غير محدد')}</p><p>${escapeHtml(t.supportRatingComment||'لا توجد ملاحظات.')}</p></article>`).join(''):'<div class="support-empty">لا توجد تقييمات مسجلة حتى الآن.</div>';
+    }catch(err){console.error(err);target.innerHTML='<div class="support-empty">تعذر تحميل التقييمات. تحقق من صلاحيات قراءة الشكاوى.</div>';}
   }
 
   // 06-C — مراجعة تعديلات المعدات المرسلة من أصحابها.
@@ -12871,7 +12940,7 @@ async function staffTicketRows(){
       if(name==='tickets'){supportSetSection(name);await renderStaffTickets('supportTicketsList');return;}
       if(name==='equipmentEdits'){supportSetSection(name);await loadPendingEquipmentEdits();return;}
       if(name==='projectClosures'){supportSetSection(name);if(typeof loadSupportProjectClosures==='function')await loadSupportProjectClosures();return;}
-      if(name==='ratings'){supportSetSection(name);return;}
+      if(name==='ratings'){supportSetSection(name);await renderSupportRatings();return;}
     }
     if(el.id==='supportThemeSelect')return;
 
@@ -12906,6 +12975,9 @@ async function staffTicketRows(){
     if(el.matches('[data-reject-equipment-edit]')){await decideEquipmentEdit(el.dataset.rejectEquipmentEdit,false);return;}
     if(el.id==='supportTicketSendReplyBtn'){await sendStaffReply();return;}
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
+    if(el.id==='supportTicketConversationHideBtn'){const panel=$('supportTicketConversation');if(panel)panel.hidden=true;stopStaffListener();return;}
+    if(el.matches('[data-support-rating]')){selectedSupportRating=Number(el.dataset.supportRating)||0;document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=selectedSupportRating?'★':'☆';star.style.color=n<=selectedSupportRating?'#b88922':'#777';star.style.fontSize='24px';});return;}
+    if(el.id==='ma3daSubmitSupportRatingBtn'){await submitRequesterSupportRating();return;}
   });
 
   // Page-level refresh hooks: refresh only the currently displayed support data.
