@@ -748,7 +748,7 @@ function startAcceptanceWatcher(){
             if(!actualOwnerName && ownerId && window.ma3daDB && window.ma3daDoc && window.ma3daGetDoc){
               try{const ownerSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',ownerId));if(ownerSnap.exists()){const ownerProfile=ownerSnap.data()||{};actualOwnerName=ownerProfile.name||ownerProfile.fullName||ownerProfile.displayName||'';}}catch(ownerLookupError){console.warn('تعذر تحميل اسم صاحب المعدة:',ownerLookupError);}
             }
-            if(matchedOperatorName)matchedOperatorName.textContent=actualOwnerName||'صاحب المعدة';
+            if(matchedOperatorName)matchedOperatorName.textContent=actualOwnerName||'اسم صاحب المعدة المسجل';
             if(matchedOperatorType)matchedOperatorType.textContent=data.equipment||data.operatorEquipment||'نوع المعدة';
             window.ma3daActiveCustomerRequestData=data;
  
@@ -1796,6 +1796,20 @@ if(arrivedAtCustomerBtn){
 }
  
 /* موقع العميل: الضغط على الموقع يفتح خرائط الهاتف بإحداثياته */
+const operatorOpenCustomerMapBtn=document.getElementById('operatorOpenCustomerMapBtn');
+if(operatorOpenCustomerMapBtn){
+  operatorOpenCustomerMapBtn.addEventListener('click',async()=>{
+    try{
+      const requestId=localStorage.getItem('currentRequestId');
+      if(!requestId) throw new Error('لا يوجد طلب حالي.');
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
+      if(!snap.exists()) throw new Error('الطلب غير موجود.');
+      const data=snap.data()||{};
+      window.ma3daActiveRequestData=data;
+      ma3daOpenCustomerMap(data);
+    }catch(error){console.error('تعذر فتح موقع العميل:',error);alert(error.message||'تعذر فتح موقع العميل.');}
+  });
+}
 const acceptedCustomerLocationElement=document.getElementById('acceptedCustomerLocation');
 if(acceptedCustomerLocationElement){
   acceptedCustomerLocationElement.style.cursor='pointer';
