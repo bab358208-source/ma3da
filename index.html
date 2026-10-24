@@ -5404,6 +5404,13 @@
       <button class="support-btn" data-support-section="settings" type="button">الإعدادات</button>
       <button class="support-btn" id="supportLogoutNavBtn" type="button">تسجيل الخروج</button>
     </div>
+    <section id="supportTicketConversation" class="support-panel" hidden aria-live="polite" style="margin:16px 0;border:1px solid #c5a15a;border-radius:16px;padding:18px;background:#fffdf8">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h2 id="supportTicketConversationTitle" style="margin:0">محادثة الشكوى</h2><button id="supportTicketCloseBtn" class="support-btn support-danger" type="button">إغلاق الشكوى</button></div>
+      <p id="supportTicketConversationMeta" class="support-muted"></p><p id="supportTicketConversationDescription" style="white-space:pre-wrap"></p>
+      <div id="supportTicketConversationMessages" class="ma3da-ticket-thread" aria-live="polite" style="max-height:360px;overflow:auto;padding:10px;border:1px solid #eee4d0;border-radius:12px;background:#fff"></div>
+      <label for="supportTicketReplyInput">الرد على مقدم الشكوى</label><textarea id="supportTicketReplyInput" rows="3" maxlength="4000" placeholder="اكتب ردك هنا..." style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #d8cfbc;border-radius:10px;font:inherit"></textarea>
+      <p id="supportTicketReplyFeedback" role="status" aria-live="polite"></p><button id="supportTicketSendReplyBtn" class="support-btn support-primary" type="button">إرسال الرد</button>
+    </section>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionProjectClosures" class="support-section support-panel"><h2>إنهاء مبكر للمشاريع</h2><p>مراجعة طلبات الإنهاء واتخاذ القرار وفق الصلاحيات الحالية. لا يُنفذ هذا القسم دفعًا أو استردادًا تلقائيًا.</p><div id="supportProjectClosuresList" class="support-list">جارٍ التحميل...</div></div>
