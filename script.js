@@ -2789,6 +2789,38 @@ function startChatListener(){
         ? String(senderId) === String(currentUid)
         : (senderRole ? senderRole === String(role || "").toLowerCase() : false);
       bubble.className = isOwnMessage ? "message sent" : "message received";
+      // Set the bubble colors inline as well as in CSS so another stylesheet cannot
+      // accidentally make both sides green. Keep the existing sender-side logic.
+      bubble.style.setProperty("display", "block", "important");
+      bubble.style.setProperty("width", "fit-content", "important");
+      bubble.style.setProperty("max-width", "82%", "important");
+      bubble.style.setProperty("padding", "10px 14px", "important");
+      bubble.style.setProperty("margin-top", "6px", "important");
+      bubble.style.setProperty("margin-bottom", "6px", "important");
+      bubble.style.setProperty("border-radius", "16px", "important");
+      bubble.style.setProperty("white-space", "pre-wrap", "important");
+      bubble.style.setProperty("overflow-wrap", "anywhere", "important");
+      bubble.style.setProperty("box-sizing", "border-box", "important");
+      bubble.style.setProperty("text-align", "right", "important");
+      if (isOwnMessage) {
+        bubble.style.setProperty("align-self", "flex-end", "important");
+        bubble.style.setProperty("margin-left", "18%", "important");
+        bubble.style.setProperty("margin-right", "0", "important");
+        bubble.style.setProperty("background-color", "#d9fdd3", "important");
+        bubble.style.setProperty("background", "#d9fdd3", "important");
+        bubble.style.setProperty("color", "#173b23", "important");
+        bubble.style.setProperty("border", "1px solid #b9e7b0", "important");
+        bubble.style.setProperty("border-bottom-right-radius", "5px", "important");
+      } else {
+        bubble.style.setProperty("align-self", "flex-start", "important");
+        bubble.style.setProperty("margin-right", "18%", "important");
+        bubble.style.setProperty("margin-left", "0", "important");
+        bubble.style.setProperty("background-color", "#ffffff", "important");
+        bubble.style.setProperty("background", "#ffffff", "important");
+        bubble.style.setProperty("color", "#263238", "important");
+        bubble.style.setProperty("border", "1px solid #e1e5e8", "important");
+        bubble.style.setProperty("border-bottom-left-radius", "5px", "important");
+      }
       bubble.textContent = data.text || data.message || "";
       container.appendChild(bubble);
     });
