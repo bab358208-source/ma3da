@@ -7211,39 +7211,66 @@ async function loadOperatorIncome(){
 /* OPERATOR RATINGS */
  
 async function loadOperatorRatings(){
-  const user = await getOperatorCurrentUser();
-  const list = document.getElementById("operatorRatingsList");
-  const averageElement = document.getElementById("operatorAverageRating");
-  const countElement = document.getElementById("operatorRatingCount");
-  if(!user || !user.uid) return;
-  if(list) list.innerHTML = '<div class="card center"><p>جاري تحميل التقييمات...</p></div>';
-
-  let rows = [];
-  try {
-    // قراءة الطلبات المرتبطة بصاحب المعدة فقط؛ تجنب قراءة مجموعة requests كاملة.
-    rows = await ma3daReadUserRows("requests", ["operatorId", "equipmentOwnerId", "ownerId"], user.uid);
-  } catch(error) {
-    console.error("تعذر تحميل تقييمات صاحب المعدة:", error);
-    if(list) list.innerHTML = '<div class="card center"><p>تعذر تحميل التقييمات بسبب صلاحيات Firebase أو الاتصال. حاول تحديث الصفحة.</p></div>';
-    if(averageElement) averageElement.textContent = "0.0";
-    if(countElement) countElement.textContent = "0 تقييم";
+ 
+  const user =
+    await getOperatorCurrentUser();
+ 
+  if(!user)
     return;
-  }
-
-  let total = 0;
-  let count = 0;
-  const ratings = [];
-  rows.forEach(data => {
-    data = data || {};
-    const belongsToOwner = [data.operatorId, data.equipmentOwnerId, data.ownerId].includes(user.uid);
-    if(!belongsToOwner || data.status !== "completed") return;
-    const rating = Number(data.rating || 0);
-    if(rating >= 1 && rating <= 5) {
-      total += rating;
-      count++;
-      ratings.push(data);
+ 
+  const snapshot =
+    await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      )
+    );
+ 
+  let total =
+    0;
+ 
+  let count =
+    0;
+ 
+  const ratings =
+    [];
+ 
+  snapshot.forEach(
+    docSnap=>{
+ 
+      const data =
+        docSnap.data();
+ 
+      if(
+        data.operatorId === user.uid &&
+        data.status === "completed"
+      ){
+ 
+        const rating =
+          Number(
+            data.rating || 0
+          );
+ 
+        if(
+          rating >= 1 &&
+          rating <= 5
+        ){
+ 
+          total +=
+            rating;
+ 
+          count++;
+ 
+          ratings.push(
+            data
+          );
+ 
+        }
+ 
+      }
+ 
     }
-  });
+  );
  
   const average =
     count
@@ -7253,6 +7280,12 @@ async function loadOperatorRatings(){
         ).toFixed(1)
       : "0.0";
  
+  const averageElement =
+    document.getElementById("operatorAverageRating");
+ 
+  const countElement =
+    document.getElementById("operatorRatingCount");
+ 
   if(averageElement)
     averageElement.textContent =
       average;
@@ -7260,6 +7293,9 @@ async function loadOperatorRatings(){
   if(countElement)
     countElement.textContent =
       `${count} تقييم`;
+ 
+  const list =
+    document.getElementById("operatorRatingsList");
  
   if(!list)
     return;
@@ -12642,6 +12678,7 @@ document.addEventListener("click", function(event){
   let activeTicket = null;
   let activeTicketMessagesUnsub = null;
   let activeUserMessagesUnsub = null;
+  let activeUserTicketUnsub = null;
   let activeListKind = 'current';
   let currentUserRole = 'customer';
   let userTicketsCache = [];
@@ -12679,7 +12716,7 @@ document.addEventListener("click", function(event){
     if (active.toLowerCase().includes('operator')) return 'operator';
     return currentUserRole || 'customer';
   }
-  function stopUserListener(){ if(activeUserMessagesUnsub){try{activeUserMessagesUnsub();}catch(_){} activeUserMessagesUnsub=null;} }
+  function stopUserListener(){ if(activeUserMessagesUnsub){try{activeUserMessagesUnsub();}catch(_){} activeUserMessagesUnsub=null;} if(activeUserTicketUnsub){try{activeUserTicketUnsub();}catch(_){} activeUserTicketUnsub=null;} }
   function stopStaffListener(){ if(activeTicketMessagesUnsub){try{activeTicketMessagesUnsub();}catch(_){} activeTicketMessagesUnsub=null;} }
   function show(id){ if(typeof showScreen==='function') showScreen(id); else { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id)?.classList.add('active'); window.scrollTo(0,0); } }
   function ensureSupportLandingScreen(){
@@ -12800,9 +12837,31 @@ async function loadOwnTickets(kind=activeListKind){
         const merged=mergeLegacyMessages(ticket,msgs); renderMessages('ma3daComplaintMessages',merged,closed);
       };
       const messagesRef=ticketMessagesPath(ticket.id);
-      if(typeof window.ma3daOnSnapshot==='function') activeUserMessagesUnsub=window.ma3daOnSnapshot(messagesRef,render,err=>setFeedback('ma3daComplaintChatFeedback','تعذر تحديث المحادثة: '+(err.message||'')));
-      else renderMessages('ma3daComplaintMessages',await getTicketMessages(ticket),closed);
-      setFeedback('ma3daComplaintChatFeedback',closed?'هذه الشكوى مغلقة. يمكنك الاطلاع على المحادثة السابقة.':'');
+      if(typeof window.ma3daOnSnapshot==='function') {
+        activeUserMessagesUnsub=window.ma3daOnSnapshot(messagesRef,render,err=>setFeedback('ma3daComplaintChatFeedback','تعذر تحديث المحادثة: '+(err.message||'')));
+        // متابعة وثيقة الشكوى مباشرة حتى يظهر الإغلاق للعميل فورًا، حتى لو لم يحدّث الصفحة.
+        activeUserTicketUnsub=window.ma3daOnSnapshot(window.ma3daDoc(window.ma3daDB,'supportTickets',ticket.id),snap=>{
+          if(!snap || !snap.exists()) return;
+          const latest={id:ticket.id,...(snap.data()||{})};
+          if(latest.requesterId!==user.uid) return;
+          const becameClosed=!isClosed(activeTicket)&&isClosed(latest);
+          activeTicket={...activeTicket,...latest};
+          const nowClosed=isClosed(latest);
+          const reply=$('ma3daComplaintReplyInput'), send=$('ma3daComplaintSendReplyBtn');
+          if(reply){reply.disabled=nowClosed;reply.placeholder=nowClosed?'تم إغلاق الشكوى. لا يمكن إرسال رسائل جديدة.':'اكتب رسالتك لفريق الدعم...';}
+          if(send) send.disabled=nowClosed;
+          const closeNotice=nowClosed?'تم إغلاق الشكوى من فريق الدعم. يمكنك الآن تقييم موظف الدعم.':'';
+          setFeedback('ma3daComplaintChatFeedback',closeNotice || (nowClosed?'هذه الشكوى مغلقة. يمكنك الاطلاع على المحادثة السابقة.':''));
+          const area=$('ma3daSupportStaffRating'); if(area) area.hidden=!nowClosed;
+          if(becameClosed && typeof window.Notification==='function' && Notification.permission==='granted' && document.visibilityState!=='visible'){
+            try{new Notification('مِعدة — تم إغلاق الشكوى',{body:'تم إغلاق شكواك. افتح الدعم الفني لتقييم موظف الدعم.',tag:'ma3da-ticket-closed-'+ticket.id});}catch(_){ }
+          }
+          const submit=$('ma3daSubmitSupportRatingBtn'); if(submit) submit.disabled=!!latest.supportRating;
+          document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=(latest.supportRating||0)?'★':'☆';star.disabled=!!latest.supportRating;});
+          if(latest.supportRating) setFeedback('ma3daSupportRatingFeedback',`تم تسجيل تقييمك: ${latest.supportRating} من 5.`);
+        },err=>console.warn('تعذر متابعة حالة الشكوى مباشرة:',err));
+      } else renderMessages('ma3daComplaintMessages',await getTicketMessages(ticket),closed);
+      setFeedback('ma3daComplaintChatFeedback',closed?'تم إغلاق الشكوى. يمكنك الاطلاع على المحادثة السابقة وتقييم موظف الدعم.':'');
     }catch(err){setFeedback('ma3daComplaintChatFeedback',err.message||'تعذر فتح الشكوى.');}
   }
   async function sendMessage(ticketId,text,role){
