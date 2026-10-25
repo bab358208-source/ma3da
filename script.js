@@ -106,37 +106,6 @@ const durationHours={
 };
  
 /* ORDER */
-
-// يختار التطبيق معدة موثقة من النوع المطلوب، ثم يربط الطلب بمالكها الحقيقي.
-// لا نرسل طلبًا غير مسند؛ لأن صاحب المعدة لن يستطيع رؤيته بأمان دون هذا الربط.
-async function ma3daFindVerifiedEquipmentForCustomer(equipmentType){
-  if(!window.ma3daDB || !window.ma3daCollection || !window.ma3daGetDocs || !window.ma3daQuery || !window.ma3daWhere){
-    throw new Error('خدمة البحث عن المعدات غير جاهزة.');
-  }
-  const collectionRef=window.ma3daCollection(window.ma3daDB,'equipment');
-  const candidates=[];
-  for(const status of ['verified','approved']){
-    try{
-      const q=window.ma3daQuery(collectionRef,window.ma3daWhere('verificationStatus','==',status));
-      const snap=await window.ma3daGetDocs(q);
-      snap.forEach(docSnap=>{
-        const d=docSnap.data()||{};
-        const type=String(d.type||d.equipmentType||d.name||'').trim();
-        const ownerId=String(d.ownerId||d.operatorId||d.userId||'').trim();
-        const availability=String(d.availability??'').trim().toLowerCase();
-        const unavailable=[false,'false','unavailable','غير متاحة','غير متاح','موقوفة','موقوف'].includes(d.availability===false?false:availability);
-        if(type===String(equipmentType||'').trim() && ownerId && d.cancelledAt==null && d.equipmentStatus!=='cancelled' && !unavailable){
-          candidates.push({id:docSnap.id,...d,ownerId});
-        }
-      });
-    }catch(error){
-      console.warn('تعذر البحث عن المعدات بحالة '+status+':',error);
-    }
-  }
-  const unique=[...new Map(candidates.map(item=>[item.id,item])).values()];
-  unique.sort((a,b)=>Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0));
-  return unique[0]||null;
-}
  
 async function saveOrder(){
  
@@ -236,17 +205,8 @@ async function saveOrder(){
       "تم تجهيز collection requests"
     );
  
-    const targetEquipment=await ma3daFindVerifiedEquipmentForCustomer(order.equipment);
-    if(!targetEquipment){
-      alert('لا توجد معدة موثقة ومتاحة من النوع الذي اخترته حاليًا. جرّب نوعًا آخر أو تواصل مع الدعم.');
-      return false;
-    }
     const locationParts = String(order.location || "").trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)\s*$/);
     const requestData = {
-      equipmentId: targetEquipment.id,
-      equipmentOwnerId: targetEquipment.ownerId,
-      ownerId: targetEquipment.ownerId,
-      equipmentOwnerName: targetEquipment.ownerName || targetEquipment.ownerDisplayName || targetEquipment.operatorName || '',
  
       location:
         order.location || "",
