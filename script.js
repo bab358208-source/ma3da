@@ -1,29 +1,3 @@
-/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
-async function ma3daReadUserRows(collectionName, fields, uid){
-  if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
-    throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
-  }
-  const collectionRef=window.ma3daCollection(window.ma3daDB,collectionName);
-  // نفصل نتائج الاستعلامات: فشل حقل قديم/غير مسموح لا يلغي نتائج الحقول الأخرى.
-  const results=await Promise.allSettled([...new Set(fields)].map(field=>
-    window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))
-  ));
-  const rowsById=new Map();
-  let succeeded=0;
-  const failures=[];
-  results.forEach((result,index)=>{
-    if(result.status!=="fulfilled"){
-      failures.push({field:[...new Set(fields)][index],error:result.reason});
-      console.warn(`تعذر الاستعلام عن ${collectionName}.${[...new Set(fields)][index]} للمستخدم الحالي:`,result.reason);
-      return;
-    }
-    succeeded++;
-    result.value.forEach(docSnap=>rowsById.set(docSnap.id,{id:docSnap.id,...(docSnap.data()||{})}));
-  });
-  if(!succeeded && failures.length) throw failures[0].error;
-  return [...rowsById.values()];
-}
-
 /*
 ============================================================
 دليل تنظيم ملف script.js — مِعدة
@@ -2650,10 +2624,11 @@ let chatMessagesUnsubscribe = null;
   const style=document.createElement("style");
   style.id="ma3daChatBubbleColors";
   style.textContent=`
-    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;padding:12px!important;box-sizing:border-box!important}
-    #chatMessages .message{display:block!important;box-sizing:border-box!important;flex:0 0 auto!important;width:fit-content!important;max-width:82%!important;padding:10px 14px!important;margin-top:6px!important;margin-bottom:6px!important;border-radius:16px!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;line-height:1.55!important;clear:none!important}
-    #chatMessages .message.sent{align-self:flex-end!important;margin-left:18%!important;margin-right:0!important;background:#d9fdd3!important;color:#173b23!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
-    #chatMessages .message.received{align-self:flex-start!important;margin-right:18%!important;margin-left:0!important;background:#ffffff!important;color:#263238!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
+    #chatMessages .message{display:block;box-sizing:border-box;max-width:82%;width:fit-content;padding:10px 14px;margin:9px 0;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;clear:both;line-height:1.55}
+    #chatMessages .message.sent{background:#d9fdd3!important;color:#173b23!important;margin-left:auto!important;margin-right:0!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
+    #chatMessages .message.received{background:#ffffff!important;color:#263238!important;margin-right:auto!important;margin-left:0!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
+    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:2px!important}
+    #chatMessages .message{flex:0 0 auto!important}
   `;
   document.head.appendChild(style);
 })();
@@ -2781,73 +2756,24 @@ function startChatListener(){
     messagesCollection, window.ma3daOrderBy("createdAt", "asc")
   );
  
-  // Resolve the authenticated user before classifying messages, so a late Firebase auth
-  // initialization does not incorrectly put every message on the same side.
-  const resolveCurrentUid = async () => {
-    try {
-      if (window.ma3daFirebaseReady) await window.ma3daFirebaseReady;
-      const user = window.ma3daGetCurrentUser
-        ? await window.ma3daGetCurrentUser()
-        : window.ma3daAuth?.currentUser;
-      return user?.uid || window.ma3daAuth?.currentUser?.uid || "";
-    } catch (error) {
-      console.warn("تعذر تحديد المستخدم الحالي للشات:", error);
-      return window.ma3daAuth?.currentUser?.uid || "";
-    }
-  };
-  let chatCurrentUid = "";
-  void resolveCurrentUid().then(uid => { chatCurrentUid = uid; });
-
   chatMessagesUnsubscribe = window.ma3daOnSnapshot(messagesQuery, snapshot => {
     const container = document.getElementById("chatMessages");
     if (!container) return;
  
     const role = getMa3daActiveRole();
-    const currentUid = chatCurrentUid || window.ma3daAuth?.currentUser?.uid || "";
     container.replaceChildren();
     snapshot.forEach(messageDoc => {
       const data = messageDoc.data();
       const bubble = document.createElement("div");
-      const senderId = data.senderId || data.uid || data.userId || "";
+      const currentUid = window.ma3daAuth?.currentUser?.uid || "";
+      const senderId = data.senderId || data.uid || "";
       const senderRole = String(data.senderRole || data.role || "").toLowerCase();
-      // Use UID when both sides have one; legacy messages fall back to role.
+      // Prefer the authenticated sender ID. Only use role for legacy messages without an ID.
       const isOwnMessage = senderId && currentUid
-        ? String(senderId) === String(currentUid)
+        ? senderId === currentUid
         : (senderRole ? senderRole === String(role || "").toLowerCase() : false);
       bubble.className = isOwnMessage ? "message sent" : "message received";
-      // Set the bubble colors inline as well as in CSS so another stylesheet cannot
-      // accidentally make both sides green. Keep the existing sender-side logic.
-      bubble.style.setProperty("display", "block", "important");
-      bubble.style.setProperty("width", "fit-content", "important");
-      bubble.style.setProperty("max-width", "82%", "important");
-      bubble.style.setProperty("padding", "10px 14px", "important");
-      bubble.style.setProperty("margin-top", "6px", "important");
-      bubble.style.setProperty("margin-bottom", "6px", "important");
-      bubble.style.setProperty("border-radius", "16px", "important");
-      bubble.style.setProperty("white-space", "pre-wrap", "important");
-      bubble.style.setProperty("overflow-wrap", "anywhere", "important");
-      bubble.style.setProperty("box-sizing", "border-box", "important");
-      bubble.style.setProperty("text-align", "right", "important");
-      if (isOwnMessage) {
-        bubble.style.setProperty("align-self", "flex-end", "important");
-        bubble.style.setProperty("margin-left", "18%", "important");
-        bubble.style.setProperty("margin-right", "0", "important");
-        bubble.style.setProperty("background-color", "#d9fdd3", "important");
-        bubble.style.setProperty("background", "#d9fdd3", "important");
-        bubble.style.setProperty("color", "#173b23", "important");
-        bubble.style.setProperty("border", "1px solid #b9e7b0", "important");
-        bubble.style.setProperty("border-bottom-right-radius", "5px", "important");
-      } else {
-        bubble.style.setProperty("align-self", "flex-start", "important");
-        bubble.style.setProperty("margin-right", "18%", "important");
-        bubble.style.setProperty("margin-left", "0", "important");
-        bubble.style.setProperty("background-color", "#ffffff", "important");
-        bubble.style.setProperty("background", "#ffffff", "important");
-        bubble.style.setProperty("color", "#263238", "important");
-        bubble.style.setProperty("border", "1px solid #e1e5e8", "important");
-        bubble.style.setProperty("border-bottom-left-radius", "5px", "important");
-      }
-      bubble.textContent = data.text || data.message || "";
+      bubble.textContent = data.text || "";
       container.appendChild(bubble);
     });
     container.scrollTop = container.scrollHeight;
@@ -4309,7 +4235,13 @@ async function loadCustomerOrders(
  
     }
  
-    const customerRequestRows = await ma3daReadUserRows("requests", ["customerId", "requesterId"], user.uid);
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
+      );
  
     const currentStatuses = [
       "searching", "accepted", "arrived", "working", "in_progress",
@@ -4326,10 +4258,11 @@ async function loadCustomerOrders(
  
     const orders = [];
  
-    customerRequestRows.forEach(
-      data=>{
+    snapshot.forEach(
+      docSnapshot=>{
  
-        const docSnapshot = { id: data.id };
+        const data =
+          docSnapshot.data();
  
         const financiallyOpen=Number(data.remainingBalance??data.invoiceAmount??data.price??0)>0 || !['paid','settled'].includes(String(data.paymentStatus||data.settlementStatus||''));
         const belongsInCurrent=type==='current'&&(currentStatuses.includes(String(data.status||''))||(data.status==='completed'&&financiallyOpen));
@@ -5415,26 +5348,30 @@ async function getOperatorCurrentUser(){
 }
  
 async function getOperatorEquipment(){
-  const user=await getOperatorCurrentUser();
-  if(!user?.uid) return null;
-
-  // لا نفترض أن معرّف وثيقة المعدة يساوي UID؛ قد تكون الوثيقة ذات معرّف تلقائي.
-  const rows=await ma3daReadUserRows("equipment",["ownerId","operatorId","userId"],user.uid);
-  if(rows.length){
-    rows.sort((a,b)=>Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0));
-    return rows[0];
-  }
-
-  // توافق مع السجل القديم equipment/{uid} إذا كانت قواعد القراءة تسمح به.
-  try{
-    const ref=window.ma3daDoc(window.ma3daDB,"equipment",user.uid);
-    const snap=await window.ma3daGetDoc(ref);
-    if(snap.exists()){
-      const data=snap.data()||{};
-      if(data.ownerId===user.uid||data.operatorId===user.uid||data.userId===user.uid) return {id:snap.id,...data};
-    }
-  }catch(error){console.warn("تعذر قراءة سجل المعدة القديم؛ تم فحص سجلات المالك أولًا.",error);}
-  return null;
+ 
+  const user =
+    await getOperatorCurrentUser();
+ 
+  if(!user)
+    return null;
+ 
+  const ref =
+    window.ma3daDoc(
+      window.ma3daDB,
+      "equipment",
+      user.uid
+    );
+ 
+  const snap =
+    await window.ma3daGetDoc(
+      ref
+    );
+ 
+  if(!snap.exists())
+    return null;
+ 
+  return snap.data();
+ 
 }
  
 /* OPEN OPERATOR DASHBOARD */
@@ -5695,21 +5632,46 @@ async function loadOperatorNewRequests(){
       if(projectList) projectList.innerHTML=message;
       return;
     }
-    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
+    // لا نجلب مجموعة requests كاملة؛ قواعد Firestore ليست فلاتر، لذلك
+    // يجب أن تكون كل قراءة محددة باستعلام يسمح به الخادم.
+    const requestsCollection = window.ma3daCollection(window.ma3daDB,"requests");
+    if(typeof window.ma3daQuery !== "function" || typeof window.ma3daWhere !== "function"){
+      throw new Error("أدوات استعلام طلبات Firebase غير جاهزة.");
+    }
+    const requestDocs = new Map();
+    const readMatchingRequests = async (field, value, onlySearching) => {
+      if(value === undefined || value === null || String(value).trim() === "") return;
+      const constraints = [window.ma3daWhere(field,"==",value)];
+      if(onlySearching) constraints.push(window.ma3daWhere("status","==","searching"));
+      const q = window.ma3daQuery(requestsCollection,...constraints);
+      const result = await window.ma3daGetDocs(q);
+      result.forEach(docSnap => requestDocs.set(docSnap.id,docSnap));
+    };
+    const equipmentTypes = [...new Set([equipment.type,equipment.name].filter(v=>typeof v === "string" && v.trim()))];
+    const reads = [];
+    // طلبات العملاء: استعلامات محددة بنوع المعدة وحالة البحث فقط.
+    equipmentTypes.forEach(value=>{
+      reads.push(readMatchingRequests("equipment",value,true));
+      reads.push(readMatchingRequests("equipmentType",value,true));
+    });
+    // طلبات المشاريع/الطلبات المعيّنة: تظل مقيدة بمعرّف صاحب المعدة.
+    ["equipmentOwnerId","ownerId","operatorId"].forEach(field=>reads.push(readMatchingRequests(field,user.uid,false)));
+    await Promise.all(reads);
+
     const customerRequests=[];
     const projectRequests=[];
-    ownerRequestRows.forEach(data=>{
-      data = data || {};
+    requestDocs.forEach(docSnap=>{
+      const data=docSnap.data() || {};
       const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
       if(!eligibleStatus) return;
       const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
-      const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name);
+      const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name || data.equipmentType === equipment.name);
       if(!ownerMatches) return;
       const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
       if(legacyContractorRequest)return;
       const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||role==='project_manager'||!!data.contractorId);
-      const request={...data};
+      const request={id:docSnap.id,...data};
       (isProjectRequest ? projectRequests : customerRequests).push(request);
     });
     const sortNewest=(a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt);
@@ -5796,15 +5758,15 @@ async function loadOperatorProjectOrders(){
   try{
     const user=await getOperatorCurrentUser();
     if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات المشاريع.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const ownerProjectRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
+    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
     const current=[],previous=[];
-    ownerProjectRows.forEach(d=>{
-      d=d||{};
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data()||{};
       const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
       const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
       const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
       if(owner!==user.uid||!isProject)return;
-      const r={...d};
+      const r={id:docSnap.id,...d};
       if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
       else if(["accepted","working","duration_expired","extension_requested"].includes(String(d.status||"")))current.push(r);
     });
@@ -6835,15 +6797,15 @@ async function loadOperatorCustomerOrders(){
   try{
     const user=await getOperatorCurrentUser();
     if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات العملاء.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const ownerCustomerRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
+    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
     const current=[],previous=[];
-    ownerCustomerRows.forEach(d=>{
-      d=d||{};
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data()||{};
       const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
       const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
       const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
       if(owner!==user.uid||isProject)return;
-      const r={...d};
+      const r={id:docSnap.id,...d};
       if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
       else if(["accepted","arrived","working","in_progress","duration_expired"].includes(String(d.status||"")))current.push(r);
     });
@@ -6893,13 +6855,21 @@ async function loadOperatorPreviousOrders(){
     if(!user)
       return;
  
-    const previousRows = await ma3daReadUserRows("requests", ["operatorId", "equipmentOwnerId", "ownerId"], user.uid);
+    const snapshot =
+      await window.ma3daGetDocs(
+        window.ma3daCollection(
+          window.ma3daDB,
+          "requests"
+        )
+      );
  
     const requests = [];
  
-    previousRows.forEach(
-      data=>{
-        data = data || {};
+    snapshot.forEach(
+      docSnap=>{
+ 
+        const data =
+          docSnap.data();
  
         if(
           data.operatorId === user.uid &&
@@ -6909,7 +6879,14 @@ async function loadOperatorPreviousOrders(){
           )
         ){
  
-          requests.push({ ...data });
+          requests.push({
+ 
+            id:
+              docSnap.id,
+ 
+            ...data
+ 
+          });
  
         }
  
@@ -7052,18 +7029,13 @@ async function loadOperatorIncome(){
   if(!user)
     return;
  
-  let incomeRows;
-  try{
-    incomeRows=await ma3daReadUserRows("requests",["operatorId","equipmentOwnerId","ownerId"],user.uid);
-  }catch(error){
-    console.error("تعذر تحميل دخل صاحب المعدة:",error);
-    const list=document.getElementById("operatorIncomeList");
-    if(list) list.innerHTML='<div class="card center"><h3>تعذر تحميل الدخل</h3><p>تحقق من صلاحيات قراءة طلباتك في Firebase ثم أعد المحاولة.</p></div>';
-    const total=document.getElementById("operatorTotalIncome");if(total)total.textContent="—";
-    const count=document.getElementById("operatorCompletedCount");if(count)count.textContent="—";
-    const hours=document.getElementById("operatorTotalHours");if(hours)hours.textContent="—";
-    return;
-  }
+  const snapshot =
+    await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      )
+    );
  
   let totalIncome =
     0;
@@ -7077,12 +7049,14 @@ async function loadOperatorIncome(){
   const completedRequests =
     [];
  
-  incomeRows.forEach(
-    data=>{
-      data = data || {};
+  snapshot.forEach(
+    docSnap=>{
+ 
+      const data =
+        docSnap.data();
  
       if(
-        (data.operatorId===user.uid || data.equipmentOwnerId===user.uid || data.ownerId===user.uid) &&
+        data.operatorId === user.uid &&
         data.status === "completed"
       ){
  
@@ -9844,21 +9818,6 @@ async function loadOwnerInformationCenter(){
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   const safe=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money=v=>Number(v||0).toLocaleString("ar-SA",{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
-  if(!window.ma3daOwnerOnlineListenerStarted && typeof window.ma3daListenOnlineUsers==="function"){
-    window.ma3daOwnerOnlineListenerStarted=true;
-    window.ma3daListenOnlineUsers((count,error)=>{
-      const onlineEl=document.getElementById("ownerInfoOnlineUsers");
-      if(!onlineEl)return;
-      if(error){
-        onlineEl.textContent="تعذر التحميل";
-        console.warn("تعذر تحميل عدد المتصلين الآن:",error);
-      }else if(Number.isFinite(count)){
-        onlineEl.textContent=String(count);
-      }else{
-        onlineEl.textContent="—";
-      }
-    });
-  }
   if(statusEl)statusEl.textContent="جارٍ قراءة بيانات المنصة…";
   try{
     if(!window.ma3daDB||typeof window.ma3daCollection!=="function"||typeof window.ma3daGetDocs!=="function")throw new Error("اتصال قاعدة البيانات غير جاهز.");
@@ -11704,7 +11663,8 @@ async function loadContractorProjects() {
     const user=await getContractorUser();if(!user || !user.uid){list.innerHTML='<div class="card">سجّل الدخول لعرض مشاريعك.</div>';return;}
     list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
     try{
-      const all=await ma3daReadUserRows('projects', ['contractorId','ownerId','userId'], user.uid);
+      const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));
+      const all=[];snapshot.forEach(docSnap=>{const data=docSnap.data()||{};if((data.contractorId||data.ownerId||data.userId)===user.uid)all.push({id:docSnap.id,...data});});
       all.sort((a,b)=>{const at=a.createdAt?.seconds??(a.createdAt instanceof Date?a.createdAt.getTime()/1000:Number(a.createdAt)||0);const bt=b.createdAt?.seconds??(b.createdAt instanceof Date?b.createdAt.getTime()/1000:Number(b.createdAt)||0);return bt-at;});
       const projects=all.filter(project=>contractorProjectFilter==='previous'?contractorIsPreviousProject(project):!contractorIsPreviousProject(project));
       if(!projects.length){list.innerHTML=contractorProjectFilter==='previous'?'<div class="card"><h3>لا توجد مشاريع سابقة</h3><p>ستظهر هنا المشاريع التي تم إنهاؤها.</p></div>':'<div class="card"><h3>لا توجد مشاريع حالية</h3><p>أنشئ مشروعك أولًا، ثم افتحه لطلب معدة مرتبطة به.</p><button type="button" class="main-btn" id="contractorCreateFirstProjectBtn">＋ إنشاء مشروعك</button></div>';const first=document.getElementById('contractorCreateFirstProjectBtn');if(first)first.addEventListener('click',()=>contractorStartProjectForm());return;}
@@ -11726,7 +11686,7 @@ async function loadContractorProjects() {
     const completeButton=event.target.closest('[data-contractor-complete-project]');
     if(completeButton){
       if(!confirm('هل تريد نقل هذا المشروع إلى المشاريع السابقة؟'))return;
-      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}const requestRows=await ma3daReadUserRows('requests',['contractorId','requesterId'],user.uid);let openWork=false;requestRows.forEach(r=>{r=r||{};if(r.projectId===completeButton.dataset.contractorCompleteProject&&(r.contractorId||r.requesterId)===user.uid){const requestStatus=String(r.status||'');const unfinished=!['completed','rejected','cancelled'].includes(requestStatus);const settlementNeedsReview=['needs_settlement','disputed','under_review'].includes(String(r.settlementStatus||''));const unsettled=['rejected','cancelled'].includes(requestStatus)?(Number(r.paidTotal||0)>0||settlementNeedsReview):(Number(r.remainingBalance??r.price??0)>0||settlementNeedsReview);if(unfinished||unsettled)openWork=true;}});if(openWork){alert('لا يمكن نقل المشروع إلى المشاريع السابقة قبل إنهاء جميع طلبات المعدات وتسوية الأرصدة المتبقية.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
+      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}const requestSnap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));let openWork=false;requestSnap.forEach(item=>{const r=item.data()||{};if(r.projectId===completeButton.dataset.contractorCompleteProject&&(r.contractorId||r.requesterId)===user.uid){const requestStatus=String(r.status||'');const unfinished=!['completed','rejected','cancelled'].includes(requestStatus);const settlementNeedsReview=['needs_settlement','disputed','under_review'].includes(String(r.settlementStatus||''));const unsettled=['rejected','cancelled'].includes(requestStatus)?(Number(r.paidTotal||0)>0||settlementNeedsReview):(Number(r.remainingBalance??r.price??0)>0||settlementNeedsReview);if(unfinished||unsettled)openWork=true;}});if(openWork){alert('لا يمكن نقل المشروع إلى المشاريع السابقة قبل إنهاء جميع طلبات المعدات وتسوية الأرصدة المتبقية.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
       catch(error){console.error('Complete contractor project error:',error);alert('تعذر تحديث حالة المشروع.');}return;
     }
     const button=event.target.closest('[data-contractor-project-request]');if(!button)return;
@@ -12473,16 +12433,15 @@ document.addEventListener("click", function(event){
       const user = await managerCurrentUser();
       if(!user) throw new Error("يجب تسجيل الدخول أولًا.");
       if(!window.ma3daDB || typeof window.ma3daGetDocs !== "function" || typeof window.ma3daCollection !== "function") throw new Error("اتصال قاعدة البيانات غير جاهز.");
-      const rows=await ma3daReadUserRows("equipment", ["ownerId", "operatorId", "userId"], user.uid);
-      // Keep compatibility with the older equipment/{uid} document when it is readable.
-      try {
-        const legacyRef=window.ma3daDoc(window.ma3daDB,"equipment",user.uid);
-        const legacySnap=await window.ma3daGetDoc(legacyRef);
-        if(legacySnap.exists()&&!rows.some(item=>item.id===legacySnap.id)){
-          const legacyData=legacySnap.data()||{};
-          if(legacyData.ownerId===user.uid||legacyData.operatorId===user.uid||legacyData.userId===user.uid) rows.push({id:legacySnap.id,...legacyData});
+      const snapshot = await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"equipment"));
+      const rows=[];
+      snapshot.forEach(docSnap=>{
+        const data=docSnap.data()||{};
+        // Support both the older equipment/{uid} record and newer individual equipment documents.
+        if(data.ownerId===user.uid || docSnap.id===user.uid){
+          rows.push({id:docSnap.id,...data});
         }
-      } catch(legacyError) { console.warn("Legacy equipment record was not readable; continuing with owner-scoped equipment rows.",legacyError); }
+      });
       managerEquipmentCache=rows;
       if(!rows.length){list.innerHTML='<div class="mam-card mam-empty">لا توجد معدات مسجلة حتى الآن. اضغط «إضافة معدة جديدة» للبدء.</div>';return;}
       list.innerHTML=rows.map(item=>{
@@ -12678,7 +12637,6 @@ document.addEventListener("click", function(event){
   let activeTicket = null;
   let activeTicketMessagesUnsub = null;
   let activeUserMessagesUnsub = null;
-  let activeUserTicketUnsub = null;
   let activeListKind = 'current';
   let currentUserRole = 'customer';
   let userTicketsCache = [];
@@ -12716,7 +12674,7 @@ document.addEventListener("click", function(event){
     if (active.toLowerCase().includes('operator')) return 'operator';
     return currentUserRole || 'customer';
   }
-  function stopUserListener(){ if(activeUserMessagesUnsub){try{activeUserMessagesUnsub();}catch(_){} activeUserMessagesUnsub=null;} if(activeUserTicketUnsub){try{activeUserTicketUnsub();}catch(_){} activeUserTicketUnsub=null;} }
+  function stopUserListener(){ if(activeUserMessagesUnsub){try{activeUserMessagesUnsub();}catch(_){} activeUserMessagesUnsub=null;} }
   function stopStaffListener(){ if(activeTicketMessagesUnsub){try{activeTicketMessagesUnsub();}catch(_){} activeTicketMessagesUnsub=null;} }
   function show(id){ if(typeof showScreen==='function') showScreen(id); else { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id)?.classList.add('active'); window.scrollTo(0,0); } }
   function ensureSupportLandingScreen(){
@@ -12837,31 +12795,9 @@ async function loadOwnTickets(kind=activeListKind){
         const merged=mergeLegacyMessages(ticket,msgs); renderMessages('ma3daComplaintMessages',merged,closed);
       };
       const messagesRef=ticketMessagesPath(ticket.id);
-      if(typeof window.ma3daOnSnapshot==='function') {
-        activeUserMessagesUnsub=window.ma3daOnSnapshot(messagesRef,render,err=>setFeedback('ma3daComplaintChatFeedback','تعذر تحديث المحادثة: '+(err.message||'')));
-        // متابعة وثيقة الشكوى مباشرة حتى يظهر الإغلاق للعميل فورًا، حتى لو لم يحدّث الصفحة.
-        activeUserTicketUnsub=window.ma3daOnSnapshot(window.ma3daDoc(window.ma3daDB,'supportTickets',ticket.id),snap=>{
-          if(!snap || !snap.exists()) return;
-          const latest={id:ticket.id,...(snap.data()||{})};
-          if(latest.requesterId!==user.uid) return;
-          const becameClosed=!isClosed(activeTicket)&&isClosed(latest);
-          activeTicket={...activeTicket,...latest};
-          const nowClosed=isClosed(latest);
-          const reply=$('ma3daComplaintReplyInput'), send=$('ma3daComplaintSendReplyBtn');
-          if(reply){reply.disabled=nowClosed;reply.placeholder=nowClosed?'تم إغلاق الشكوى. لا يمكن إرسال رسائل جديدة.':'اكتب رسالتك لفريق الدعم...';}
-          if(send) send.disabled=nowClosed;
-          const closeNotice=nowClosed?'تم إغلاق الشكوى من فريق الدعم. يمكنك الآن تقييم موظف الدعم.':'';
-          setFeedback('ma3daComplaintChatFeedback',closeNotice || (nowClosed?'هذه الشكوى مغلقة. يمكنك الاطلاع على المحادثة السابقة.':''));
-          const area=$('ma3daSupportStaffRating'); if(area) area.hidden=!nowClosed;
-          if(becameClosed && typeof window.Notification==='function' && Notification.permission==='granted' && document.visibilityState!=='visible'){
-            try{new Notification('مِعدة — تم إغلاق الشكوى',{body:'تم إغلاق شكواك. افتح الدعم الفني لتقييم موظف الدعم.',tag:'ma3da-ticket-closed-'+ticket.id});}catch(_){ }
-          }
-          const submit=$('ma3daSubmitSupportRatingBtn'); if(submit) submit.disabled=!!latest.supportRating;
-          document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=(latest.supportRating||0)?'★':'☆';star.disabled=!!latest.supportRating;});
-          if(latest.supportRating) setFeedback('ma3daSupportRatingFeedback',`تم تسجيل تقييمك: ${latest.supportRating} من 5.`);
-        },err=>console.warn('تعذر متابعة حالة الشكوى مباشرة:',err));
-      } else renderMessages('ma3daComplaintMessages',await getTicketMessages(ticket),closed);
-      setFeedback('ma3daComplaintChatFeedback',closed?'تم إغلاق الشكوى. يمكنك الاطلاع على المحادثة السابقة وتقييم موظف الدعم.':'');
+      if(typeof window.ma3daOnSnapshot==='function') activeUserMessagesUnsub=window.ma3daOnSnapshot(messagesRef,render,err=>setFeedback('ma3daComplaintChatFeedback','تعذر تحديث المحادثة: '+(err.message||'')));
+      else renderMessages('ma3daComplaintMessages',await getTicketMessages(ticket),closed);
+      setFeedback('ma3daComplaintChatFeedback',closed?'هذه الشكوى مغلقة. يمكنك الاطلاع على المحادثة السابقة.':'');
     }catch(err){setFeedback('ma3daComplaintChatFeedback',err.message||'تعذر فتح الشكوى.');}
   }
   async function sendMessage(ticketId,text,role){
@@ -13299,17 +13235,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const user=await getUser();
     if(!user?.uid){say(financeMode==='owner'?'ownerInvoiceFeedback':'contractorPaymentFeedback','سجّل الدخول أولًا لعرض الفواتير.',true);return;}
     if(!window.ma3daDB || typeof window.ma3daGetDocs!=='function' || typeof window.ma3daCollection!=='function') throw new Error('Firebase is not ready');
-    const projectFields=financeMode==='owner'?['ownerId','userId']:financeMode==='contractor'?['contractorId','ownerId','userId']:[];
-    const requestFields=financeMode==='owner'?['equipmentOwnerId','ownerId','operatorId']:financeMode==='customer'?['customerId','requesterId']:['contractorId','requesterId'];
-    const invoiceFields=financeMode==='owner'?['ownerId','equipmentOwnerId']:financeMode==='customer'?['customerId']:['contractorId'];
-    const paymentFields=financeMode==='customer'?['customerId','submittedBy']:financeMode==='owner'?['ownerId','submittedBy']:['contractorId','submittedBy'];
-    const phaseFields=financeMode==='owner'?['ownerId']:['contractorId'];
     const [projects,invoices,payments,requests,phaseRows]=await Promise.all([
-      projectFields.length?ma3daReadUserRows('projects',projectFields,user.uid):Promise.resolve([]),
-      ma3daReadUserRows('projectInvoices',invoiceFields,user.uid),
-      ma3daReadUserRows('projectInvoicePayments',paymentFields,user.uid).catch(err=>{console.warn('Related payment rows are not readable yet.',err);return []; }),
-      ma3daReadUserRows('requests',requestFields,user.uid),
-      ma3daReadUserRows('projectPhaseTasks',phaseFields,user.uid).catch(err=>{console.warn('Project phase tasks are not readable yet; check Firestore rules.',err);return [];})
+      readAll('projects'),readAll('projectInvoices'),readAll('projectInvoicePayments'),readAll('requests'),
+      readAll('projectPhaseTasks').catch(err=>{console.warn('Project phase tasks are not readable yet; check Firestore rules.',err);return [];})
     ]);
     cachedProjects=projects.filter(p=>(p.contractorId||p.ownerId||p.userId)===user.uid);
     cachedAllRequests=requests;
