@@ -5195,6 +5195,7 @@
       <button type="button" class="owner-admin-metric" data-owner-view="money"><span>إجمالي المبالغ الداخلة عبر التطبيق</span><strong id="ownerInfoRevenue">—</strong><small>ريال سعودي · السجلات المدفوعة المتاحة</small></button>
       <button type="button" class="owner-admin-metric" data-owner-view="commissions"><span>إجمالي عمولات التطبيق</span><strong id="ownerInfoCommissions">—</strong><small>ريال سعودي · العمولات المسجلة صراحة</small></button>
       <button type="button" class="owner-admin-metric" data-owner-view="requests"><span>إجمالي الطلبات</span><strong id="ownerInfoRequests">—</strong><small>الناجحة وغير الناجحة</small></button>
+      <div class="owner-admin-metric" aria-live="polite"><span>المتصلون الآن</span><strong id="ownerInfoOnlineUsers">—</strong><small>عدد المستخدمين المتصلين حاليًا</small></div>
     </div>
     <div class="owner-admin-grid">
       <button type="button" class="owner-admin-cardlink" data-owner-view="users"><span class="owner-admin-icon">👥</span><span><strong>١. المستخدمون</strong><small>العملاء وأصحاب المعدات ومسؤولو المشاريع</small></span><span class="owner-admin-arrow">←</span></button>
@@ -5360,6 +5361,97 @@
 
   const auth =
     getAuth(app);
+
+  // ميزة المتصلين معزولة عن التهيئة الأساسية؛ تعطل RTDB لا يوقف التطبيق.
+  const PLATFORM_OWNER_UID = "klpX1xQUorTC31tP1OX0GCpF1ys2";
+  const PRESENCE_DATABASE_URL = "https://ma3da-58832-default-rtdb.europe-west1.firebasedatabase.app/";
+  let presenceSdkPromise = import("https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js")
+    .then(module => module)
+    .catch(error => {
+      console.warn("ميزة المتصلين غير متاحة حاليًا؛ سيستمر التطبيق الأساسي بالعمل.", error);
+      return null;
+    });
+
+  let presenceGeneration = 0;
+  let activePresenceRef = null;
+  let stopConnectionWatch = null;
+
+  window.ma3daListenOnlineUsers = callback => {
+    let cancelled = false;
+    let stopListening = null;
+    presenceSdkPromise.then(async sdk => {
+      if (cancelled) return;
+      if (!sdk) {
+        callback(null, new Error("تعذر تحميل خدمة المتصلين."));
+        return;
+      }
+      if (auth.currentUser?.uid !== PLATFORM_OWNER_UID) {
+        callback(null, new Error("الحساب الحالي ليس حساب مالك المنصة المحدد."));
+        return;
+      }
+      try {
+        const database = sdk.getDatabase(app, PRESENCE_DATABASE_URL);
+        stopListening = sdk.onValue(sdk.ref(database, "presence"), snapshot => {
+          const allPresence = snapshot.val() || {};
+          const count = Object.values(allPresence).filter(sessions =>
+            sessions && typeof sessions === "object" && Object.keys(sessions).length > 0
+          ).length;
+          callback(count, null);
+        }, error => callback(null, error));
+        if (cancelled && stopListening) stopListening();
+      } catch (error) {
+        callback(null, error);
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (stopListening) stopListening();
+    };
+  };
+
+  onAuthStateChanged(auth, async user => {
+    const generation = ++presenceGeneration;
+    if (stopConnectionWatch) {
+      stopConnectionWatch();
+      stopConnectionWatch = null;
+    }
+    const oldRef = activePresenceRef;
+    activePresenceRef = null;
+
+    const sdk = await presenceSdkPromise;
+    if (oldRef && sdk) {
+      try { await sdk.remove(oldRef); }
+      catch (error) { console.warn("تعذر تنظيف جلسة الاتصال السابقة:", error); }
+    }
+    if (!user || !sdk || generation !== presenceGeneration) return;
+
+    try {
+      const database = sdk.getDatabase(app, PRESENCE_DATABASE_URL);
+      const connectedRef = sdk.ref(database, ".info/connected");
+      stopConnectionWatch = sdk.onValue(connectedRef, async snapshot => {
+        if (snapshot.val() !== true || auth.currentUser?.uid !== user.uid ||
+            generation !== presenceGeneration) return;
+
+        const sessionId = (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function")
+          ? globalThis.crypto.randomUUID()
+          : `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const sessionRef = sdk.ref(database, `presence/${user.uid}/${sessionId}`);
+
+        try {
+          await sdk.onDisconnect(sessionRef).remove();
+          if (auth.currentUser?.uid !== user.uid || generation !== presenceGeneration) return;
+          await sdk.set(sessionRef, { connectedAt: sdk.serverTimestamp() });
+          activePresenceRef = sessionRef;
+        } catch (error) {
+          console.warn("تعذر تحديث حالة الاتصال؛ سيستمر التطبيق الأساسي بالعمل.", error);
+        }
+      }, error => {
+        console.warn("تعذر مراقبة حالة الاتصال؛ سيستمر التطبيق الأساسي بالعمل.", error);
+      });
+    } catch (error) {
+      console.warn("تعذر تهيئة ميزة المتصلين؛ سيستمر التطبيق الأساسي بالعمل.", error);
+    }
+  });
 
 
 
