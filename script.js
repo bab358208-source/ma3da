@@ -106,7 +106,38 @@ const durationHours={
 };
  
 /* ORDER */
- 
+
+// 03 — ربط طلب العميل بمعدة موثقة وصاحبها الحقيقي وفق validEquipmentTarget في Firestore Rules.
+async function ma3daFindVerifiedEquipmentForCustomer(equipmentType){
+  const required=["ma3daDB","ma3daCollection","ma3daQuery","ma3daWhere","ma3daGetDocs"];
+  if(required.some(name=>typeof window[name]!=="function" && name!=="ma3daDB") || !window.ma3daDB){
+    throw new Error("أدوات البحث عن المعدات غير جاهزة في Firebase.");
+  }
+  const ref=window.ma3daCollection(window.ma3daDB,"equipment");
+  const statuses=["verified","approved"];
+  const found=new Map();
+  const failures=[];
+  for(const status of statuses){
+    try{
+      const snap=await window.ma3daGetDocs(window.ma3daQuery(ref,window.ma3daWhere("verificationStatus","==",status)));
+      snap.forEach(docSnap=>{
+        const d=docSnap.data()||{};
+        const type=String(d.type||d.equipmentType||d.name||"").trim();
+        const ownerId=String(d.ownerId||d.operatorId||d.userId||"").trim();
+        const availability=String(d.availability??"").trim().toLowerCase();
+        const unavailable=d.availability===false || d.isAvailable===false || ["false","unavailable","غير متاحة","غير متاح","موقوفة","موقوف"].includes(availability);
+        if(type===String(equipmentType||"").trim() && ownerId && d.cancelledAt==null && d.equipmentStatus!=="cancelled" && !unavailable){
+          found.set(docSnap.id,{id:docSnap.id,...d,ownerId,type});
+        }
+      });
+    }catch(error){ failures.push(error); console.warn("تعذر البحث عن المعدات بحالة "+status,error); }
+  }
+  if(!found.size && failures.length===statuses.length) throw failures[0];
+  const rows=[...found.values()];
+  rows.sort((a,b)=>Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0));
+  return rows[0]||null;
+}
+
 async function saveOrder(){
  
   console.log(
@@ -205,8 +236,19 @@ async function saveOrder(){
       "تم تجهيز collection requests"
     );
  
+    // لا ننشئ طلبًا غير موجّه: قواعد Firestore تشترط معدة موثقة ومالكها الفعلي.
+    const targetEquipment = await ma3daFindVerifiedEquipmentForCustomer(order.equipment);
+    if(!targetEquipment){
+      alert("لا توجد معدة موثقة ومتاحة من النوع الذي اخترته حاليًا. جرّب نوعًا آخر أو تواصل مع الدعم.");
+      return false;
+    }
+
     const locationParts = String(order.location || "").trim().match(/^\s*(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)\s*$/);
     const requestData = {
+      equipmentId: targetEquipment.id,
+      equipmentOwnerId: targetEquipment.ownerId,
+      ownerId: targetEquipment.ownerId,
+      equipmentOwnerName: targetEquipment.ownerName || targetEquipment.ownerDisplayName || targetEquipment.operatorName || "",
  
       location:
         order.location || "",
