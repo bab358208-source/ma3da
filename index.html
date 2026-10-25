@@ -5195,6 +5195,7 @@
       <button type="button" class="owner-admin-metric" data-owner-view="money"><span>إجمالي المبالغ الداخلة عبر التطبيق</span><strong id="ownerInfoRevenue">—</strong><small>ريال سعودي · السجلات المدفوعة المتاحة</small></button>
       <button type="button" class="owner-admin-metric" data-owner-view="commissions"><span>إجمالي عمولات التطبيق</span><strong id="ownerInfoCommissions">—</strong><small>ريال سعودي · العمولات المسجلة صراحة</small></button>
       <button type="button" class="owner-admin-metric" data-owner-view="requests"><span>إجمالي الطلبات</span><strong id="ownerInfoRequests">—</strong><small>الناجحة وغير الناجحة</small></button>
+      <div class="owner-admin-metric" aria-live="polite"><span>المتصلون الآن</span><strong id="ownerInfoOnlineUsers">—</strong><small>عدد المستخدمين المتصلين حاليًا</small></div>
     </div>
     <div class="owner-admin-grid">
       <button type="button" class="owner-admin-cardlink" data-owner-view="users"><span class="owner-admin-icon">👥</span><span><strong>١. المستخدمون</strong><small>العملاء وأصحاب المعدات ومسؤولو المشاريع</small></span><span class="owner-admin-arrow">←</span></button>
@@ -5322,6 +5323,16 @@
   from
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
+  import {
+    getDatabase,
+    ref as rtdbRef,
+    onValue as rtdbOnValue,
+    onDisconnect as rtdbOnDisconnect,
+    set as rtdbSet,
+    remove as rtdbRemove,
+    serverTimestamp as rtdbServerTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
 
 
   const firebaseConfig = {
@@ -5355,6 +5366,75 @@
 
   const db =
     getFirestore(app);
+
+  // Realtime Database مخصصة لحالة الاتصال فقط؛ لا نغيّر Firestore.
+  const presenceDb = getDatabase(
+    app,
+    "https://ma3da-58832-default-rtdb.europe-west1.firebasedatabase.app/"
+  );
+
+  let presenceConnectedUnsubscribe = null;
+  let presenceSessionRef = null;
+  let onlineCountUnsubscribe = null;
+
+  window.ma3daListenOnlineCount = (callback) => {
+    if (onlineCountUnsubscribe) {
+      onlineCountUnsubscribe();
+      onlineCountUnsubscribe = null;
+    }
+    const presenceRef = rtdbRef(presenceDb, "presence");
+    onlineCountUnsubscribe = rtdbOnValue(
+      presenceRef,
+      (snapshot) => {
+        const users = snapshot.val() || {};
+        const count = Object.values(users).filter((sessions) =>
+          sessions && typeof sessions === "object" &&
+          Object.keys(sessions).length > 0
+        ).length;
+        callback(count, null);
+      },
+      (error) => callback(null, error)
+    );
+    return () => {
+      if (onlineCountUnsubscribe) {
+        onlineCountUnsubscribe();
+        onlineCountUnsubscribe = null;
+      }
+    };
+  };
+
+  // يسجل جلسة مستقلة لكل مستخدم مسجل دخوله، وتحذف الجلسة عند انقطاع الاتصال.
+  onAuthStateChanged(auth, async (user) => {
+    if (presenceConnectedUnsubscribe) {
+      presenceConnectedUnsubscribe();
+      presenceConnectedUnsubscribe = null;
+    }
+    if (presenceSessionRef) {
+      const oldRef = presenceSessionRef;
+      presenceSessionRef = null;
+      try { await rtdbRemove(oldRef); } catch (error) {
+        console.warn("تعذر تنظيف جلسة الاتصال السابقة:", error);
+      }
+    }
+    if (!user) return;
+
+    const sessionId = (typeof crypto !== "undefined" && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const sessionRef = rtdbRef(presenceDb, `presence/${user.uid}/${sessionId}`);
+    presenceSessionRef = sessionRef;
+    const connectedRef = rtdbRef(presenceDb, ".info/connected");
+
+    presenceConnectedUnsubscribe = rtdbOnValue(connectedRef, async (snapshot) => {
+      if (snapshot.val() !== true) return;
+      try {
+        await rtdbOnDisconnect(sessionRef).remove();
+        await rtdbSet(sessionRef, { connectedAt: rtdbServerTimestamp() });
+      } catch (error) {
+        console.warn("تعذر تحديث حالة الاتصال:", error);
+      }
+    });
+  });
 
 
 
