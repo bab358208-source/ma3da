@@ -9841,21 +9841,6 @@ async function loadOwnerInformationCenter(){
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   const safe=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const money=v=>Number(v||0).toLocaleString("ar-SA",{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
-  if(!window.ma3daOwnerOnlineListenerStarted && typeof window.ma3daListenOnlineUsers==="function"){
-    window.ma3daOwnerOnlineListenerStarted=true;
-    window.ma3daListenOnlineUsers((count,error)=>{
-      const onlineEl=document.getElementById("ownerInfoOnlineUsers");
-      if(!onlineEl)return;
-      if(error){
-        onlineEl.textContent="تعذر التحميل";
-        console.warn("تعذر تحميل عدد المتصلين الآن:",error);
-      }else if(Number.isFinite(count)){
-        onlineEl.textContent=String(count);
-      }else{
-        onlineEl.textContent="—";
-      }
-    });
-  }
   if(statusEl)statusEl.textContent="جارٍ قراءة بيانات المنصة…";
   try{
     if(!window.ma3daDB||typeof window.ma3daCollection!=="function"||typeof window.ma3daGetDocs!=="function")throw new Error("اتصال قاعدة البيانات غير جاهز.");
