@@ -4,9 +4,23 @@ async function ma3daReadUserRows(collectionName, fields, uid){
     throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
   }
   const collectionRef=window.ma3daCollection(window.ma3daDB,collectionName);
-  const snapshots=await Promise.all([...new Set(fields)].map(field=>window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))));
+  // نفصل نتائج الاستعلامات: فشل حقل قديم/غير مسموح لا يلغي نتائج الحقول الأخرى.
+  const results=await Promise.allSettled([...new Set(fields)].map(field=>
+    window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))
+  ));
   const rowsById=new Map();
-  snapshots.forEach(snapshot=>snapshot.forEach(docSnap=>rowsById.set(docSnap.id,{id:docSnap.id,...(docSnap.data()||{})})));
+  let succeeded=0;
+  const failures=[];
+  results.forEach((result,index)=>{
+    if(result.status!=="fulfilled"){
+      failures.push({field:[...new Set(fields)][index],error:result.reason});
+      console.warn(`تعذر الاستعلام عن ${collectionName}.${[...new Set(fields)][index]} للمستخدم الحالي:`,result.reason);
+      return;
+    }
+    succeeded++;
+    result.value.forEach(docSnap=>rowsById.set(docSnap.id,{id:docSnap.id,...(docSnap.data()||{})}));
+  });
+  if(!succeeded && failures.length) throw failures[0].error;
   return [...rowsById.values()];
 }
 
@@ -5401,30 +5415,26 @@ async function getOperatorCurrentUser(){
 }
  
 async function getOperatorEquipment(){
- 
-  const user =
-    await getOperatorCurrentUser();
- 
-  if(!user)
-    return null;
- 
-  const ref =
-    window.ma3daDoc(
-      window.ma3daDB,
-      "equipment",
-      user.uid
-    );
- 
-  const snap =
-    await window.ma3daGetDoc(
-      ref
-    );
- 
-  if(!snap.exists())
-    return null;
- 
-  return snap.data();
- 
+  const user=await getOperatorCurrentUser();
+  if(!user?.uid) return null;
+
+  // لا نفترض أن معرّف وثيقة المعدة يساوي UID؛ قد تكون الوثيقة ذات معرّف تلقائي.
+  const rows=await ma3daReadUserRows("equipment",["ownerId","operatorId","userId"],user.uid);
+  if(rows.length){
+    rows.sort((a,b)=>Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0));
+    return rows[0];
+  }
+
+  // توافق مع السجل القديم equipment/{uid} إذا كانت قواعد القراءة تسمح به.
+  try{
+    const ref=window.ma3daDoc(window.ma3daDB,"equipment",user.uid);
+    const snap=await window.ma3daGetDoc(ref);
+    if(snap.exists()){
+      const data=snap.data()||{};
+      if(data.ownerId===user.uid||data.operatorId===user.uid||data.userId===user.uid) return {id:snap.id,...data};
+    }
+  }catch(error){console.warn("تعذر قراءة سجل المعدة القديم؛ تم فحص سجلات المالك أولًا.",error);}
+  return null;
 }
  
 /* OPEN OPERATOR DASHBOARD */
@@ -7042,7 +7052,18 @@ async function loadOperatorIncome(){
   if(!user)
     return;
  
-  const incomeRows = await ma3daReadUserRows("requests", ["operatorId"], user.uid);
+  let incomeRows;
+  try{
+    incomeRows=await ma3daReadUserRows("requests",["operatorId","equipmentOwnerId","ownerId"],user.uid);
+  }catch(error){
+    console.error("تعذر تحميل دخل صاحب المعدة:",error);
+    const list=document.getElementById("operatorIncomeList");
+    if(list) list.innerHTML='<div class="card center"><h3>تعذر تحميل الدخل</h3><p>تحقق من صلاحيات قراءة طلباتك في Firebase ثم أعد المحاولة.</p></div>';
+    const total=document.getElementById("operatorTotalIncome");if(total)total.textContent="—";
+    const count=document.getElementById("operatorCompletedCount");if(count)count.textContent="—";
+    const hours=document.getElementById("operatorTotalHours");if(hours)hours.textContent="—";
+    return;
+  }
  
   let totalIncome =
     0;
@@ -7061,7 +7082,7 @@ async function loadOperatorIncome(){
       data = data || {};
  
       if(
-        data.operatorId === user.uid &&
+        (data.operatorId===user.uid || data.equipmentOwnerId===user.uid || data.ownerId===user.uid) &&
         data.status === "completed"
       ){
  
@@ -7190,66 +7211,39 @@ async function loadOperatorIncome(){
 /* OPERATOR RATINGS */
  
 async function loadOperatorRatings(){
- 
-  const user =
-    await getOperatorCurrentUser();
- 
-  if(!user)
+  const user = await getOperatorCurrentUser();
+  const list = document.getElementById("operatorRatingsList");
+  const averageElement = document.getElementById("operatorAverageRating");
+  const countElement = document.getElementById("operatorRatingCount");
+  if(!user || !user.uid) return;
+  if(list) list.innerHTML = '<div class="card center"><p>جاري تحميل التقييمات...</p></div>';
+
+  let rows = [];
+  try {
+    // قراءة الطلبات المرتبطة بصاحب المعدة فقط؛ تجنب قراءة مجموعة requests كاملة.
+    rows = await ma3daReadUserRows("requests", ["operatorId", "equipmentOwnerId", "ownerId"], user.uid);
+  } catch(error) {
+    console.error("تعذر تحميل تقييمات صاحب المعدة:", error);
+    if(list) list.innerHTML = '<div class="card center"><p>تعذر تحميل التقييمات بسبب صلاحيات Firebase أو الاتصال. حاول تحديث الصفحة.</p></div>';
+    if(averageElement) averageElement.textContent = "0.0";
+    if(countElement) countElement.textContent = "0 تقييم";
     return;
- 
-  const snapshot =
-    await window.ma3daGetDocs(
-      window.ma3daCollection(
-        window.ma3daDB,
-        "requests"
-      )
-    );
- 
-  let total =
-    0;
- 
-  let count =
-    0;
- 
-  const ratings =
-    [];
- 
-  snapshot.forEach(
-    docSnap=>{
- 
-      const data =
-        docSnap.data();
- 
-      if(
-        data.operatorId === user.uid &&
-        data.status === "completed"
-      ){
- 
-        const rating =
-          Number(
-            data.rating || 0
-          );
- 
-        if(
-          rating >= 1 &&
-          rating <= 5
-        ){
- 
-          total +=
-            rating;
- 
-          count++;
- 
-          ratings.push(
-            data
-          );
- 
-        }
- 
-      }
- 
+  }
+
+  let total = 0;
+  let count = 0;
+  const ratings = [];
+  rows.forEach(data => {
+    data = data || {};
+    const belongsToOwner = [data.operatorId, data.equipmentOwnerId, data.ownerId].includes(user.uid);
+    if(!belongsToOwner || data.status !== "completed") return;
+    const rating = Number(data.rating || 0);
+    if(rating >= 1 && rating <= 5) {
+      total += rating;
+      count++;
+      ratings.push(data);
     }
-  );
+  });
  
   const average =
     count
@@ -7259,12 +7253,6 @@ async function loadOperatorRatings(){
         ).toFixed(1)
       : "0.0";
  
-  const averageElement =
-    document.getElementById("operatorAverageRating");
- 
-  const countElement =
-    document.getElementById("operatorRatingCount");
- 
   if(averageElement)
     averageElement.textContent =
       average;
@@ -7272,9 +7260,6 @@ async function loadOperatorRatings(){
   if(countElement)
     countElement.textContent =
       `${count} تقييم`;
- 
-  const list =
-    document.getElementById("operatorRatingsList");
  
   if(!list)
     return;
