@@ -1,3 +1,15 @@
+/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
+async function ma3daReadUserRows(collectionName, fields, uid){
+  if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
+    throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
+  }
+  const collectionRef=window.ma3daCollection(window.ma3daDB,collectionName);
+  const snapshots=await Promise.all([...new Set(fields)].map(field=>window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))));
+  const rowsById=new Map();
+  snapshots.forEach(snapshot=>snapshot.forEach(docSnap=>rowsById.set(docSnap.id,{id:docSnap.id,...(docSnap.data()||{})})));
+  return [...rowsById.values()];
+}
+
 /*
 ============================================================
 دليل تنظيم ملف script.js — مِعدة
@@ -4283,13 +4295,7 @@ async function loadCustomerOrders(
  
     }
  
-    const snapshot =
-      await window.ma3daGetDocs(
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        )
-      );
+    const customerRequestRows = await ma3daReadUserRows("requests", ["customerId", "requesterId"], user.uid);
  
     const currentStatuses = [
       "searching", "accepted", "arrived", "working", "in_progress",
@@ -4306,11 +4312,10 @@ async function loadCustomerOrders(
  
     const orders = [];
  
-    snapshot.forEach(
-      docSnapshot=>{
+    customerRequestRows.forEach(
+      data=>{
  
-        const data =
-          docSnapshot.data();
+        const docSnapshot = { id: data.id };
  
         const financiallyOpen=Number(data.remainingBalance??data.invoiceAmount??data.price??0)>0 || !['paid','settled'].includes(String(data.paymentStatus||data.settlementStatus||''));
         const belongsInCurrent=type==='current'&&(currentStatuses.includes(String(data.status||''))||(data.status==='completed'&&financiallyOpen));
@@ -5680,11 +5685,11 @@ async function loadOperatorNewRequests(){
       if(projectList) projectList.innerHTML=message;
       return;
     }
-    const snapshot = await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
     const customerRequests=[];
     const projectRequests=[];
-    snapshot.forEach(docSnap=>{
-      const data=docSnap.data() || {};
+    ownerRequestRows.forEach(data=>{
+      data = data || {};
       const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
       if(!eligibleStatus) return;
       const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
@@ -5694,7 +5699,7 @@ async function loadOperatorNewRequests(){
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
       if(legacyContractorRequest)return;
       const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||role==='project_manager'||!!data.contractorId);
-      const request={id:docSnap.id,...data};
+      const request={...data};
       (isProjectRequest ? projectRequests : customerRequests).push(request);
     });
     const sortNewest=(a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt);
@@ -5781,15 +5786,15 @@ async function loadOperatorProjectOrders(){
   try{
     const user=await getOperatorCurrentUser();
     if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات المشاريع.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const ownerProjectRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
     const current=[],previous=[];
-    snapshot.forEach(docSnap=>{
-      const d=docSnap.data()||{};
+    ownerProjectRows.forEach(d=>{
+      d=d||{};
       const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
       const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
       const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
       if(owner!==user.uid||!isProject)return;
-      const r={id:docSnap.id,...d};
+      const r={...d};
       if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
       else if(["accepted","working","duration_expired","extension_requested"].includes(String(d.status||"")))current.push(r);
     });
@@ -6820,15 +6825,15 @@ async function loadOperatorCustomerOrders(){
   try{
     const user=await getOperatorCurrentUser();
     if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات العملاء.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"requests"));
+    const ownerCustomerRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
     const current=[],previous=[];
-    snapshot.forEach(docSnap=>{
-      const d=docSnap.data()||{};
+    ownerCustomerRows.forEach(d=>{
+      d=d||{};
       const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
       const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
       const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
       if(owner!==user.uid||isProject)return;
-      const r={id:docSnap.id,...d};
+      const r={...d};
       if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
       else if(["accepted","arrived","working","in_progress","duration_expired"].includes(String(d.status||"")))current.push(r);
     });
@@ -6878,21 +6883,13 @@ async function loadOperatorPreviousOrders(){
     if(!user)
       return;
  
-    const snapshot =
-      await window.ma3daGetDocs(
-        window.ma3daCollection(
-          window.ma3daDB,
-          "requests"
-        )
-      );
+    const previousRows = await ma3daReadUserRows("requests", ["operatorId", "equipmentOwnerId", "ownerId"], user.uid);
  
     const requests = [];
  
-    snapshot.forEach(
-      docSnap=>{
- 
-        const data =
-          docSnap.data();
+    previousRows.forEach(
+      data=>{
+        data = data || {};
  
         if(
           data.operatorId === user.uid &&
@@ -6902,14 +6899,7 @@ async function loadOperatorPreviousOrders(){
           )
         ){
  
-          requests.push({
- 
-            id:
-              docSnap.id,
- 
-            ...data
- 
-          });
+          requests.push({ ...data });
  
         }
  
@@ -7052,13 +7042,7 @@ async function loadOperatorIncome(){
   if(!user)
     return;
  
-  const snapshot =
-    await window.ma3daGetDocs(
-      window.ma3daCollection(
-        window.ma3daDB,
-        "requests"
-      )
-    );
+  const incomeRows = await ma3daReadUserRows("requests", ["operatorId"], user.uid);
  
   let totalIncome =
     0;
@@ -7072,11 +7056,9 @@ async function loadOperatorIncome(){
   const completedRequests =
     [];
  
-  snapshot.forEach(
-    docSnap=>{
- 
-      const data =
-        docSnap.data();
+  incomeRows.forEach(
+    data=>{
+      data = data || {};
  
       if(
         data.operatorId === user.uid &&
@@ -11701,8 +11683,7 @@ async function loadContractorProjects() {
     const user=await getContractorUser();if(!user || !user.uid){list.innerHTML='<div class="card">سجّل الدخول لعرض مشاريعك.</div>';return;}
     list.innerHTML='<div class="card"><p>جارٍ تحميل المشاريع…</p></div>';
     try{
-      const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'projects'));
-      const all=[];snapshot.forEach(docSnap=>{const data=docSnap.data()||{};if((data.contractorId||data.ownerId||data.userId)===user.uid)all.push({id:docSnap.id,...data});});
+      const all=await ma3daReadUserRows('projects', ['contractorId','ownerId','userId'], user.uid);
       all.sort((a,b)=>{const at=a.createdAt?.seconds??(a.createdAt instanceof Date?a.createdAt.getTime()/1000:Number(a.createdAt)||0);const bt=b.createdAt?.seconds??(b.createdAt instanceof Date?b.createdAt.getTime()/1000:Number(b.createdAt)||0);return bt-at;});
       const projects=all.filter(project=>contractorProjectFilter==='previous'?contractorIsPreviousProject(project):!contractorIsPreviousProject(project));
       if(!projects.length){list.innerHTML=contractorProjectFilter==='previous'?'<div class="card"><h3>لا توجد مشاريع سابقة</h3><p>ستظهر هنا المشاريع التي تم إنهاؤها.</p></div>':'<div class="card"><h3>لا توجد مشاريع حالية</h3><p>أنشئ مشروعك أولًا، ثم افتحه لطلب معدة مرتبطة به.</p><button type="button" class="main-btn" id="contractorCreateFirstProjectBtn">＋ إنشاء مشروعك</button></div>';const first=document.getElementById('contractorCreateFirstProjectBtn');if(first)first.addEventListener('click',()=>contractorStartProjectForm());return;}
@@ -11724,7 +11705,7 @@ async function loadContractorProjects() {
     const completeButton=event.target.closest('[data-contractor-complete-project]');
     if(completeButton){
       if(!confirm('هل تريد نقل هذا المشروع إلى المشاريع السابقة؟'))return;
-      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}const requestSnap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));let openWork=false;requestSnap.forEach(item=>{const r=item.data()||{};if(r.projectId===completeButton.dataset.contractorCompleteProject&&(r.contractorId||r.requesterId)===user.uid){const requestStatus=String(r.status||'');const unfinished=!['completed','rejected','cancelled'].includes(requestStatus);const settlementNeedsReview=['needs_settlement','disputed','under_review'].includes(String(r.settlementStatus||''));const unsettled=['rejected','cancelled'].includes(requestStatus)?(Number(r.paidTotal||0)>0||settlementNeedsReview):(Number(r.remainingBalance??r.price??0)>0||settlementNeedsReview);if(unfinished||unsettled)openWork=true;}});if(openWork){alert('لا يمكن نقل المشروع إلى المشاريع السابقة قبل إنهاء جميع طلبات المعدات وتسوية الأرصدة المتبقية.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
+      try{const user=await getContractorUser();const ref=window.ma3daDoc(window.ma3daDB,'projects',completeButton.dataset.contractorCompleteProject);const snap=await window.ma3daGetDoc(ref);if(!snap.exists()||(snap.data().contractorId||snap.data().ownerId||snap.data().userId)!==user?.uid){alert('لا تملك صلاحية تعديل هذا المشروع.');return;}const requestRows=await ma3daReadUserRows('requests',['contractorId','requesterId'],user.uid);let openWork=false;requestRows.forEach(r=>{r=r||{};if(r.projectId===completeButton.dataset.contractorCompleteProject&&(r.contractorId||r.requesterId)===user.uid){const requestStatus=String(r.status||'');const unfinished=!['completed','rejected','cancelled'].includes(requestStatus);const settlementNeedsReview=['needs_settlement','disputed','under_review'].includes(String(r.settlementStatus||''));const unsettled=['rejected','cancelled'].includes(requestStatus)?(Number(r.paidTotal||0)>0||settlementNeedsReview):(Number(r.remainingBalance??r.price??0)>0||settlementNeedsReview);if(unfinished||unsettled)openWork=true;}});if(openWork){alert('لا يمكن نقل المشروع إلى المشاريع السابقة قبل إنهاء جميع طلبات المعدات وتسوية الأرصدة المتبقية.');return;}await window.ma3daUpdateDoc(ref,{status:'completed',updatedAt:new Date()});await loadContractorProjects();}
       catch(error){console.error('Complete contractor project error:',error);alert('تعذر تحديث حالة المشروع.');}return;
     }
     const button=event.target.closest('[data-contractor-project-request]');if(!button)return;
@@ -12471,15 +12452,16 @@ document.addEventListener("click", function(event){
       const user = await managerCurrentUser();
       if(!user) throw new Error("يجب تسجيل الدخول أولًا.");
       if(!window.ma3daDB || typeof window.ma3daGetDocs !== "function" || typeof window.ma3daCollection !== "function") throw new Error("اتصال قاعدة البيانات غير جاهز.");
-      const snapshot = await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"equipment"));
-      const rows=[];
-      snapshot.forEach(docSnap=>{
-        const data=docSnap.data()||{};
-        // Support both the older equipment/{uid} record and newer individual equipment documents.
-        if(data.ownerId===user.uid || docSnap.id===user.uid){
-          rows.push({id:docSnap.id,...data});
+      const rows=await ma3daReadUserRows("equipment", ["ownerId", "operatorId", "userId"], user.uid);
+      // Keep compatibility with the older equipment/{uid} document when it is readable.
+      try {
+        const legacyRef=window.ma3daDoc(window.ma3daDB,"equipment",user.uid);
+        const legacySnap=await window.ma3daGetDoc(legacyRef);
+        if(legacySnap.exists()&&!rows.some(item=>item.id===legacySnap.id)){
+          const legacyData=legacySnap.data()||{};
+          if(legacyData.ownerId===user.uid||legacyData.operatorId===user.uid||legacyData.userId===user.uid) rows.push({id:legacySnap.id,...legacyData});
         }
-      });
+      } catch(legacyError) { console.warn("Legacy equipment record was not readable; continuing with owner-scoped equipment rows.",legacyError); }
       managerEquipmentCache=rows;
       if(!rows.length){list.innerHTML='<div class="mam-card mam-empty">لا توجد معدات مسجلة حتى الآن. اضغط «إضافة معدة جديدة» للبدء.</div>';return;}
       list.innerHTML=rows.map(item=>{
@@ -13273,9 +13255,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const user=await getUser();
     if(!user?.uid){say(financeMode==='owner'?'ownerInvoiceFeedback':'contractorPaymentFeedback','سجّل الدخول أولًا لعرض الفواتير.',true);return;}
     if(!window.ma3daDB || typeof window.ma3daGetDocs!=='function' || typeof window.ma3daCollection!=='function') throw new Error('Firebase is not ready');
+    const projectFields=financeMode==='owner'?['ownerId','userId']:financeMode==='contractor'?['contractorId','ownerId','userId']:[];
+    const requestFields=financeMode==='owner'?['equipmentOwnerId','ownerId','operatorId']:financeMode==='customer'?['customerId','requesterId']:['contractorId','requesterId'];
+    const invoiceFields=financeMode==='owner'?['ownerId','equipmentOwnerId']:financeMode==='customer'?['customerId']:['contractorId'];
+    const paymentFields=financeMode==='customer'?['customerId','submittedBy']:financeMode==='owner'?['ownerId','submittedBy']:['contractorId','submittedBy'];
+    const phaseFields=financeMode==='owner'?['ownerId']:['contractorId'];
     const [projects,invoices,payments,requests,phaseRows]=await Promise.all([
-      readAll('projects'),readAll('projectInvoices'),readAll('projectInvoicePayments'),readAll('requests'),
-      readAll('projectPhaseTasks').catch(err=>{console.warn('Project phase tasks are not readable yet; check Firestore rules.',err);return [];})
+      projectFields.length?ma3daReadUserRows('projects',projectFields,user.uid):Promise.resolve([]),
+      ma3daReadUserRows('projectInvoices',invoiceFields,user.uid),
+      ma3daReadUserRows('projectInvoicePayments',paymentFields,user.uid).catch(err=>{console.warn('Related payment rows are not readable yet.',err);return []; }),
+      ma3daReadUserRows('requests',requestFields,user.uid),
+      ma3daReadUserRows('projectPhaseTasks',phaseFields,user.uid).catch(err=>{console.warn('Project phase tasks are not readable yet; check Firestore rules.',err);return [];})
     ]);
     cachedProjects=projects.filter(p=>(p.contractorId||p.ownerId||p.userId)===user.uid);
     cachedAllRequests=requests;
