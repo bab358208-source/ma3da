@@ -5,16 +5,18 @@ async function ma3daReadUserRows(collectionName, fields, uid){
   }
   const collectionRef=window.ma3daCollection(window.ma3daDB,collectionName);
   // نفصل نتائج الاستعلامات: فشل حقل قديم/غير مسموح لا يلغي نتائج الحقول الأخرى.
-  const results=await Promise.allSettled([...new Set(fields)].map(field=>
-    window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))
-  ));
+  const uniqueFields=[...new Set(fields)];
+  const results=await Promise.allSettled(uniqueFields.map(field=>{
+    const operator=field==="visibleToOwnerIds"?"array-contains":"==";
+    return window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,operator,uid)));
+  }));
   const rowsById=new Map();
   let succeeded=0;
   const failures=[];
   results.forEach((result,index)=>{
     if(result.status!=="fulfilled"){
-      failures.push({field:[...new Set(fields)][index],error:result.reason});
-      console.warn(`تعذر الاستعلام عن ${collectionName}.${[...new Set(fields)][index]} للمستخدم الحالي:`,result.reason);
+      failures.push({field:uniqueFields[index],error:result.reason});
+      console.warn(`تعذر الاستعلام عن ${collectionName}.${uniqueFields[index]} للمستخدم الحالي:`,result.reason);
       return;
     }
     succeeded++;
@@ -1601,46 +1603,151 @@ async function openOperatorScreen(){
 /* LOAD CUSTOMER REQUEST FOR OPERATOR */
  
 async function loadLatestCustomerRequest(){
-  // النظام الجديد لا يقرأ مجموعة requests كاملة؛ يقرأ الطلبات الموجهة لهذا الحساب فقط.
+ 
   try{
-    const user = await getOperatorCurrentUser();
-    if(!user?.uid) return false;
-    const rows = await ma3daReadUserRows(
-      "requests",
-      ["equipmentOwnerId", "ownerId", "operatorId"],
-      user.uid
-    );
-    const latestRequest = rows
-      .filter(data =>
-        data &&
-        (data.equipmentOwnerId === user.uid ||
-         data.ownerId === user.uid ||
-         data.operatorId === user.uid) &&
-        data.status === "searching" &&
-        !data.projectId &&
-        !data.contractorId
-      )
-      .sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))[0];
-    if(!latestRequest){
-      console.log("لا توجد طلبات عملاء جديدة موجهة إلى صاحب المعدة الحالي");
+ 
+    if(!window.ma3daDB){
+ 
+      console.error(
+        "Firebase غير متصل"
+      );
+ 
       return false;
+ 
     }
+ 
+    if(!window.ma3daGetDocs){
+ 
+      console.error(
+        "ma3daGetDocs غير موجود"
+      );
+ 
+      return false;
+ 
+    }
+ 
+    const requestsRef =
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      );
+ 
+    const snapshot =
+      await window.ma3daGetDocs(
+        requestsRef
+      );
+ 
+    if(snapshot.empty){
+ 
+      console.log(
+        "لا توجد طلبات عملاء"
+      );
+ 
+      return false;
+ 
+    }
+ 
+    let latestRequest = null;
+ 
+    snapshot.forEach(
+      docSnapshot => {
+ 
+        const data =
+          docSnapshot.data();
+ 
+        if(
+          data.status ===
+          "searching"
+        ){
+ 
+          if(
+            !latestRequest ||
+            Number(data.createdAt || 0) >
+            Number(
+              latestRequest.createdAt || 0
+            )
+          ){
+ 
+            latestRequest = {
+ 
+              id:
+                docSnapshot.id,
+ 
+              ...data
+ 
+            };
+ 
+          }
+ 
+        }
+ 
+      }
+    );
+ 
+    if(!latestRequest){
+ 
+      console.log(
+        "لا يوجد طلب searching حالي"
+      );
+ 
+      return false;
+ 
+    }
+ 
     order = {
-      location: latestRequest.location || "",
-      equipment: latestRequest.equipment || latestRequest.equipmentType || "",
-      duration: latestRequest.duration || "",
-      operator: latestRequest.operator || "",
-      notes: latestRequest.notes || "",
-      price: Number(latestRequest.price || 0)
+ 
+      location:
+        latestRequest.location || "",
+ 
+      equipment:
+        latestRequest.equipment || "",
+ 
+      duration:
+        latestRequest.duration || "",
+ 
+      operator:
+        latestRequest.operator || "",
+ 
+      notes:
+        latestRequest.notes || "",
+ 
+      price:
+        Number(
+          latestRequest.price || 0
+        )
+ 
     };
-    localStorage.setItem("currentOrder", JSON.stringify(order));
-    localStorage.setItem("currentRequestId", latestRequest.id);
+ 
+    localStorage.setItem(
+      "currentOrder",
+      JSON.stringify(order)
+    );
+ 
+    localStorage.setItem(
+      "currentRequestId",
+      latestRequest.id
+    );
+ 
     updateOperatorScreen();
+ 
+    console.log(
+      "تم تحميل طلب العميل من Firebase:",
+      latestRequest
+    );
+ 
     return true;
+ 
   }catch(error){
-    console.error("تعذر تحميل الطلبات الموجهة لصاحب المعدة:", error);
+ 
+    console.error(
+      "تعذر تحميل طلب العميل:",
+      error
+    );
+ 
     return false;
+ 
   }
+ 
 }
 const acceptRequestBtn =
   document.getElementById("acceptRequestBtn");
@@ -5590,18 +5697,17 @@ async function loadOperatorNewRequests(){
       if(projectList) projectList.innerHTML=message;
       return;
     }
-    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
+    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId", "visibleToOwnerIds"], user.uid);
     const customerRequests=[];
     const projectRequests=[];
     ownerRequestRows.forEach(data=>{
       data = data || {};
       const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
       if(!eligibleStatus) return;
-      const ownerMatches =
-        data.equipmentOwnerId === user.uid ||
-        data.ownerId === user.uid ||
-        data.operatorId === user.uid;
-      // لا نعرض طلبًا غير معيّن لصاحب المعدة اعتمادًا على نوع المعدة فقط.
+      const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
+      const visibleOwners = Array.isArray(data.visibleToOwnerIds) ? data.visibleToOwnerIds : [];
+      // لا نعرض الطلب إلا إذا عيّنه الخادم لهذا الحساب أو كان ضمن قائمة الاستلام الآمنة.
+      const ownerMatches = targetedOwner ? targetedOwner === user.uid : visibleOwners.includes(user.uid);
       if(!ownerMatches) return;
       const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
@@ -5955,12 +6061,15 @@ async function rejectOperatorRequest(
     if(!snap.exists()){alert('الطلب غير موجود.');return;}
     const data=snap.data()||{};
     const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
-    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
+    const visibleOwners=Array.isArray(data.visibleToOwnerIds)?data.visibleToOwnerIds:[];
+    if(targetedOwner ? targetedOwner!==user.uid : !visibleOwners.includes(user.uid)){
+      alert('لا تملك صلاحية رفض هذا الطلب.');return;
+    }
     if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
     await window.ma3daUpdateDoc(
       requestRef,
       {
-        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
+        status:'rejected',operatorId:user.uid,agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
         rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
       }
     );
@@ -7109,67 +7218,166 @@ async function loadOperatorIncome(){
 /* OPERATOR RATINGS */
  
 async function loadOperatorRatings(){
-  const user = await getOperatorCurrentUser();
-  if(!user?.uid) return;
-
-  // لا تُقرأ إلا الطلبات التي تحمل معرّف صاحب المعدة الحالي.
-  const rows = await ma3daReadUserRows(
-    "requests",
-    ["equipmentOwnerId", "ownerId", "operatorId"],
-    user.uid
-  );
-
-  let total = 0;
-  let count = 0;
-  const ratings = [];
-
-  rows.forEach(data=>{
-    if(!data ||
-       !(data.equipmentOwnerId === user.uid ||
-         data.ownerId === user.uid ||
-         data.operatorId === user.uid) ||
-       data.status !== "completed") return;
-
-    const rating = Number(data.rating || 0);
-    if(rating >= 1 && rating <= 5){
-      total += rating;
-      count++;
-      ratings.push(data);
+ 
+  const user =
+    await getOperatorCurrentUser();
+ 
+  if(!user)
+    return;
+ 
+  const snapshot =
+    await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "requests"
+      )
+    );
+ 
+  let total =
+    0;
+ 
+  let count =
+    0;
+ 
+  const ratings =
+    [];
+ 
+  snapshot.forEach(
+    docSnap=>{
+ 
+      const data =
+        docSnap.data();
+ 
+      if(
+        data.operatorId === user.uid &&
+        data.status === "completed"
+      ){
+ 
+        const rating =
+          Number(
+            data.rating || 0
+          );
+ 
+        if(
+          rating >= 1 &&
+          rating <= 5
+        ){
+ 
+          total +=
+            rating;
+ 
+          count++;
+ 
+          ratings.push(
+            data
+          );
+ 
+        }
+ 
+      }
+ 
     }
-  });
-
-  const average = count ? (total / count).toFixed(1) : "0.0";
-  const averageElement = document.getElementById("operatorAverageRating");
-  const countElement = document.getElementById("operatorRatingCount");
-  if(averageElement) averageElement.textContent = average;
-  if(countElement) countElement.textContent = `${count} تقييم`;
-
-  const list = document.getElementById("operatorRatingsList");
-  if(!list) return;
-  list.innerHTML = "";
-
+  );
+ 
+  const average =
+    count
+      ? (
+          total /
+          count
+        ).toFixed(1)
+      : "0.0";
+ 
+  const averageElement =
+    document.getElementById("operatorAverageRating");
+ 
+  const countElement =
+    document.getElementById("operatorRatingCount");
+ 
+  if(averageElement)
+    averageElement.textContent =
+      average;
+ 
+  if(countElement)
+    countElement.textContent =
+      `${count} تقييم`;
+ 
+  const list =
+    document.getElementById("operatorRatingsList");
+ 
+  if(!list)
+    return;
+ 
+  list.innerHTML =
+    "";
+ 
   if(!ratings.length){
+ 
     list.innerHTML = `
       <div class="card center">
-        <p>لا توجد تقييمات حتى الآن.</p>
+        <p>
+          لا توجد تقييمات حتى الآن.
+        </p>
       </div>
     `;
+ 
     return;
+ 
   }
-
-  ratings.sort((a,b)=>Number(b.ratedAt || 0)-Number(a.ratedAt || 0))
-    .forEach(rating=>{
-      const card = document.createElement("div");
-      card.className = "card";
-      const value = Number(rating.rating || 0);
-      card.innerHTML = `
-        <div class="info-row">
-          <span>تقييم العميل</span>
-          <strong>${"⭐".repeat(Math.min(5, value))}</strong>
-        </div>
-      `;
-      list.appendChild(card);
-    });
+ 
+  ratings
+    .sort(
+      (a,b)=>
+        Number(
+          b.ratedAt || 0
+        ) -
+        Number(
+          a.ratedAt || 0
+        )
+    )
+    .forEach(
+      rating=>{
+ 
+        const card =
+          document.createElement(
+            "div"
+          );
+ 
+        card.className =
+          "card";
+ 
+        const value =
+          Number(
+            rating.rating || 0
+          );
+ 
+        card.innerHTML = `
+ 
+          <div class="info-row">
+ 
+            <span>
+              تقييم العميل
+            </span>
+ 
+            <strong>
+              ${"⭐".repeat(
+                Math.min(
+                  5,
+                  value
+                )
+              )}
+            </strong>
+ 
+          </div>
+ 
+        `;
+ 
+        list.appendChild(
+          card
+        );
+ 
+      }
+    );
+ 
 }
  
 /* OPERATOR EQUIPMENT EDITOR */
