@@ -6123,7 +6123,64 @@ window.ma3daOrderBy =
 </div>
 
 
+<!-- مساعد مِعدة الذكي -->
+<div id="ma3daAiLauncher" class="ma3da-ai-launcher" dir="rtl">
+  <button
+    id="ma3daAiToggle"
+    class="ma3da-ai-orb"
+    type="button"
+    aria-label="فتح مساعد مِعدة الذكي"
+    aria-expanded="false"
+  >
+    <span class="ma3da-ai-orb-core">✦</span>
+  </button>
+  <span class="ma3da-ai-launcher-label">مساعد مِعدة الذكي</span>
+</div>
 
+<section
+  id="ma3daAiPanel"
+  class="ma3da-ai-panel"
+  dir="rtl"
+  aria-label="محادثة المساعد الذكي"
+  hidden
+>
+  <header class="ma3da-ai-head">
+    <div>
+      <strong>مساعد مِعدة الذكي</strong>
+      <small>كيف أستطيع مساعدتك؟</small>
+    </div>
+    <button
+      id="ma3daAiClose"
+      type="button"
+      aria-label="إغلاق المساعد"
+    >×</button>
+  </header>
+
+  <div
+    id="ma3daAiMessages"
+    class="ma3da-ai-messages"
+    aria-live="polite"
+  >
+    <div class="ma3da-ai-message assistant">
+      أهلًا بك في مِعدة. اكتب سؤالك وسأبحث في الإجابات المعتمدة.
+      إذا لم أجد إجابة موثوقة، سأحوّل سؤالك إلى فريق الدعم.
+    </div>
+  </div>
+
+  <p id="ma3daAiStatus" class="ma3da-ai-status" role="status"></p>
+
+  <form id="ma3daAiForm" class="ma3da-ai-form">
+    <input
+      id="ma3daAiInput"
+      type="text"
+      maxlength="1000"
+      placeholder="اكتب سؤالك هنا..."
+      autocomplete="off"
+      required
+    >
+    <button id="ma3daAiSend" type="submit">إرسال</button>
+  </form>
+</section>
 
 </body>
 
