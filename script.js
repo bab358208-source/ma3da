@@ -5,18 +5,16 @@ async function ma3daReadUserRows(collectionName, fields, uid){
   }
   const collectionRef=window.ma3daCollection(window.ma3daDB,collectionName);
   // نفصل نتائج الاستعلامات: فشل حقل قديم/غير مسموح لا يلغي نتائج الحقول الأخرى.
-  const uniqueFields=[...new Set(fields)];
-  const results=await Promise.allSettled(uniqueFields.map(field=>{
-    const operator=field==="visibleToOwnerIds"?"array-contains":"==";
-    return window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,operator,uid)));
-  }));
+  const results=await Promise.allSettled([...new Set(fields)].map(field=>
+    window.ma3daGetDocs(window.ma3daQuery(collectionRef,window.ma3daWhere(field,"==",uid)))
+  ));
   const rowsById=new Map();
   let succeeded=0;
   const failures=[];
   results.forEach((result,index)=>{
     if(result.status!=="fulfilled"){
-      failures.push({field:uniqueFields[index],error:result.reason});
-      console.warn(`تعذر الاستعلام عن ${collectionName}.${uniqueFields[index]} للمستخدم الحالي:`,result.reason);
+      failures.push({field:[...new Set(fields)][index],error:result.reason});
+      console.warn(`تعذر الاستعلام عن ${collectionName}.${[...new Set(fields)][index]} للمستخدم الحالي:`,result.reason);
       return;
     }
     succeeded++;
@@ -5697,7 +5695,7 @@ async function loadOperatorNewRequests(){
       if(projectList) projectList.innerHTML=message;
       return;
     }
-    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId", "visibleToOwnerIds"], user.uid);
+    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
     const customerRequests=[];
     const projectRequests=[];
     ownerRequestRows.forEach(data=>{
@@ -5705,9 +5703,7 @@ async function loadOperatorNewRequests(){
       const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
       if(!eligibleStatus) return;
       const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
-      const visibleOwners = Array.isArray(data.visibleToOwnerIds) ? data.visibleToOwnerIds : [];
-      // لا نعرض الطلب إلا إذا عيّنه الخادم لهذا الحساب أو كان ضمن قائمة الاستلام الآمنة.
-      const ownerMatches = targetedOwner ? targetedOwner === user.uid : visibleOwners.includes(user.uid);
+      const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name);
       if(!ownerMatches) return;
       const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
@@ -5956,6 +5952,16 @@ async function acceptOperatorRequest(
  
     const equipment =
       await getOperatorEquipment();
+
+    // تحقق إضافي من أن المعدة المسجلة تخص المستخدم ومقبولة لدى الدعم.
+    if(!equipment || ![user.uid].includes(equipment.ownerId || equipment.operatorId || equipment.userId)){
+      alert("لم يتم العثور على معدة مسجلة تخص حسابك.");
+      return;
+    }
+    if(equipment.equipmentStatus === "cancelled" || equipment.availability === "unavailable" || (equipment.verificationStatus && !["verified","approved"].includes(equipment.verificationStatus))){
+      alert("لا يمكن قبول الطلب؛ تأكد أن معدتك معتمدة ومتاحة.");
+      return;
+    }
  
     const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
     const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
@@ -5966,48 +5972,45 @@ async function acceptOperatorRequest(
       alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
     }
     const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_installments'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
-    await window.ma3daUpdateDoc(
-      requestRef,
-      {
- 
-        status:
-          "accepted",
-        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
- 
-        operatorId:
-          user.uid,
- 
-        operatorName:
-          operatorData.name ||
-          "صاحب المعدة",
- 
-        operatorPhone:
-          operatorData.phone ||
-          "",
-        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
- 
-        operatorRating:
-          Number(
-            operatorData.rating || 5
-          ),
- 
-        operatorEquipment:
-          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
-        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
-        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
-        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
- 
-        acceptedAt:
-          Date.now(),
-        agreedDuration: request.duration || "",
-        agreedPrice: Number(request.price || 0),
-        agreedHourlyPrice: Number(request.hourlyPrice || 0),
-        agreementVersion: 1,
-        extensionStatus: "none",
-        workStatus: "scheduled"
- 
+    const acceptancePatch = {
+      status: "accepted",
+      ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
+      operatorId: user.uid,
+      equipmentOwnerId: user.uid,
+      equipmentId: equipment.id || request.equipmentId || "",
+      operatorName: operatorData.name || "صاحب المعدة",
+      operatorPhone: operatorData.phone || "",
+      customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
+      operatorRating: Number(operatorData.rating || 5),
+      operatorEquipment: equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
+      equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
+      equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
+      equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
+      acceptedAt: Date.now(),
+      agreedDuration: request.duration || "",
+      agreedPrice: Number(request.price || 0),
+      agreedHourlyPrice: Number(request.hourlyPrice || 0),
+      agreementVersion: 1,
+      extensionStatus: "none",
+      workStatus: "scheduled"
+    };
+
+    // المعاملة تجعل قرار القبول ذريًا: إذا سبق مستخدم آخر، تُرفض المحاولة بعد إعادة قراءة الحالة.
+    if(typeof window.ma3daRunTransaction !== "function") throw new Error("ميزة القبول الآمن غير متاحة؛ حدّث طبقة Firebase أولًا.");
+    await window.ma3daRunTransaction(async tx => {
+      const freshSnap = await tx.get(requestRef);
+      if(!freshSnap.exists()) throw new Error("الطلب غير موجود.");
+      const freshRequest = freshSnap.data() || {};
+      if(freshRequest.status !== "searching") throw new Error("سبق صاحب معدة آخر إلى قبول الطلب؛ لم يعد متاحًا.");
+      const assignedOwner = freshRequest.equipmentOwnerId || freshRequest.ownerId || freshRequest.operatorId || "";
+      if(assignedOwner && assignedOwner !== user.uid) throw new Error("هذا الطلب مخصص لصاحب معدة آخر.");
+      if(!isProjectRequest){
+        const requestedType = String(freshRequest.equipment || freshRequest.equipmentType || "").trim().toLocaleLowerCase("ar");
+        const ownedType = String(equipment.type || equipment.equipmentType || equipment.name || "").trim().toLocaleLowerCase("ar");
+        if(requestedType && ownedType && requestedType !== ownedType) throw new Error("نوع معدتك لا يطابق نوع المعدة المطلوبة.");
       }
-    );
+      tx.update(requestRef, acceptancePatch);
+    });
     if(isProjectRequest){
       const acceptedSchedule=(acceptedPaymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||index===0&&request.paymentPlan==='four_installments')?'due':item.status||'not_due'}));
       await window.ma3daCreateSharedProjectInvoices(requestId,{...request,operatorId:user.uid},acceptedSchedule);
@@ -6061,15 +6064,12 @@ async function rejectOperatorRequest(
     if(!snap.exists()){alert('الطلب غير موجود.');return;}
     const data=snap.data()||{};
     const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
-    const visibleOwners=Array.isArray(data.visibleToOwnerIds)?data.visibleToOwnerIds:[];
-    if(targetedOwner ? targetedOwner!==user.uid : !visibleOwners.includes(user.uid)){
-      alert('لا تملك صلاحية رفض هذا الطلب.');return;
-    }
+    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
     if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
     await window.ma3daUpdateDoc(
       requestRef,
       {
-        status:'rejected',operatorId:user.uid,agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
+        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
         rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
       }
     );
