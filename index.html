@@ -5258,6 +5258,9 @@
     <div class="support-nav" aria-label="أقسام مركز الدعم">
       <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
       <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة تعديلات المعدات</button>
+      <button class="support-btn" data-support-section="aiQuestions" type="button">
+  أسئلة المساعد الذكي
+</button>
       <button class="support-btn" data-support-section="projectClosures" type="button">إنهاء مبكر للمشاريع</button>
       <button class="support-btn" data-support-section="completedTickets" type="button">طلبات الدعم المكتملة</button>
       <button class="support-btn" data-support-section="ratings" type="button">تقييمي</button>
@@ -5266,6 +5269,66 @@
     </div>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
+    <!-- أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم -->
+<div id="supportSectionAiQuestions"
+     class="support-section support-panel">
+
+  <h2>أسئلة المساعد الذكي</h2>
+  <p>
+    هنا تظهر الأسئلة التي لم يجد المساعد لها إجابة معتمدة.
+    أجب عن السؤال، ثم أغلقه بعد حلّه.
+    لا تُعتمد إجابتك في قاعدة المعرفة إلا بموافقة المالك.
+  </p>
+
+  <button id="ma3daAiSupportRefresh"
+          class="support-btn"
+          type="button">
+    تحديث الأسئلة
+  </button>
+
+  <div id="ma3daAiSupportList"
+       class="support-list">
+    جارٍ تحميل الأسئلة...
+  </div>
+
+  <div id="ma3daAiReplyBox"
+       class="support-panel"
+       hidden>
+
+    <h3 id="ma3daAiReplyTitle">الرد على السؤال</h3>
+
+    <p id="ma3daAiReplyQuestion"></p>
+
+    <label for="ma3daAiReplyText">الرد</label>
+    <textarea id="ma3daAiReplyText"
+              class="support-input"
+              rows="4"
+              maxlength="1500"
+              placeholder="اكتب ردك على السؤال"></textarea>
+
+    <label>
+      <input id="ma3daAiSuggestKnowledge"
+             type="checkbox">
+      اقتراح الرد للمالك لاعتماده ضمن إجابات المساعد
+    </label>
+
+    <p id="ma3daAiSupportFeedback"
+       role="status"
+       aria-live="polite"></p>
+
+    <button id="ma3daAiSendReply"
+            class="support-btn support-primary"
+            type="button">
+      حفظ الرد
+    </button>
+
+    <button id="ma3daAiCloseQuestion"
+            class="support-btn"
+            type="button">
+      إغلاق السؤال
+    </button>
+  </div>
+</div>
     <div id="supportSectionProjectClosures" class="support-section support-panel"><h2>إنهاء مبكر للمشاريع</h2><p>مراجعة طلبات الإنهاء واتخاذ القرار وفق الصلاحيات الحالية. لا يُنفذ هذا القسم دفعًا أو استردادًا تلقائيًا.</p><div id="supportProjectClosuresList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionCompletedTickets" class="support-section support-panel"><h2>طلبات الدعم المكتملة</h2><p>أرشيف الشكاوى التي انتهت معالجتها وأُغلقت.</p><div id="supportCompletedTicketsList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionRatings" class="support-section support-panel"><h2>تقييمي</h2><p>تظهر هنا تقييمات وملاحظات مقدمي الشكاوى على موظف الدعم عند توفر بيانات التقييم المرتبطة في النظام.</p><div id="supportRatingsList" class="support-list"><div class="support-empty">سيتم عرض التقييمات المسجلة هنا.</div></div></div>
