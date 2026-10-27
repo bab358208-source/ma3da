@@ -5952,16 +5952,6 @@ async function acceptOperatorRequest(
  
     const equipment =
       await getOperatorEquipment();
-
-    // تحقق إضافي من أن المعدة المسجلة تخص المستخدم ومقبولة لدى الدعم.
-    if(!equipment || ![user.uid].includes(equipment.ownerId || equipment.operatorId || equipment.userId)){
-      alert("لم يتم العثور على معدة مسجلة تخص حسابك.");
-      return;
-    }
-    if(equipment.equipmentStatus === "cancelled" || equipment.availability === "unavailable" || (equipment.verificationStatus && !["verified","approved"].includes(equipment.verificationStatus))){
-      alert("لا يمكن قبول الطلب؛ تأكد أن معدتك معتمدة ومتاحة.");
-      return;
-    }
  
     const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
     const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
@@ -5972,45 +5962,48 @@ async function acceptOperatorRequest(
       alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
     }
     const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_installments'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
-    const acceptancePatch = {
-      status: "accepted",
-      ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
-      operatorId: user.uid,
-      equipmentOwnerId: user.uid,
-      equipmentId: equipment.id || request.equipmentId || "",
-      operatorName: operatorData.name || "صاحب المعدة",
-      operatorPhone: operatorData.phone || "",
-      customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
-      operatorRating: Number(operatorData.rating || 5),
-      operatorEquipment: equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
-      equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
-      equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
-      equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
-      acceptedAt: Date.now(),
-      agreedDuration: request.duration || "",
-      agreedPrice: Number(request.price || 0),
-      agreedHourlyPrice: Number(request.hourlyPrice || 0),
-      agreementVersion: 1,
-      extensionStatus: "none",
-      workStatus: "scheduled"
-    };
-
-    // المعاملة تجعل قرار القبول ذريًا: إذا سبق مستخدم آخر، تُرفض المحاولة بعد إعادة قراءة الحالة.
-    if(typeof window.ma3daRunTransaction !== "function") throw new Error("ميزة القبول الآمن غير متاحة؛ حدّث طبقة Firebase أولًا.");
-    await window.ma3daRunTransaction(async tx => {
-      const freshSnap = await tx.get(requestRef);
-      if(!freshSnap.exists()) throw new Error("الطلب غير موجود.");
-      const freshRequest = freshSnap.data() || {};
-      if(freshRequest.status !== "searching") throw new Error("سبق صاحب معدة آخر إلى قبول الطلب؛ لم يعد متاحًا.");
-      const assignedOwner = freshRequest.equipmentOwnerId || freshRequest.ownerId || freshRequest.operatorId || "";
-      if(assignedOwner && assignedOwner !== user.uid) throw new Error("هذا الطلب مخصص لصاحب معدة آخر.");
-      if(!isProjectRequest){
-        const requestedType = String(freshRequest.equipment || freshRequest.equipmentType || "").trim().toLocaleLowerCase("ar");
-        const ownedType = String(equipment.type || equipment.equipmentType || equipment.name || "").trim().toLocaleLowerCase("ar");
-        if(requestedType && ownedType && requestedType !== ownedType) throw new Error("نوع معدتك لا يطابق نوع المعدة المطلوبة.");
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+ 
+        status:
+          "accepted",
+        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
+ 
+        operatorId:
+          user.uid,
+ 
+        operatorName:
+          operatorData.name ||
+          "صاحب المعدة",
+ 
+        operatorPhone:
+          operatorData.phone ||
+          "",
+        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
+ 
+        operatorRating:
+          Number(
+            operatorData.rating || 5
+          ),
+ 
+        operatorEquipment:
+          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
+        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
+        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
+        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
+ 
+        acceptedAt:
+          Date.now(),
+        agreedDuration: request.duration || "",
+        agreedPrice: Number(request.price || 0),
+        agreedHourlyPrice: Number(request.hourlyPrice || 0),
+        agreementVersion: 1,
+        extensionStatus: "none",
+        workStatus: "scheduled"
+ 
       }
-      tx.update(requestRef, acceptancePatch);
-    });
+    );
     if(isProjectRequest){
       const acceptedSchedule=(acceptedPaymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||index===0&&request.paymentPlan==='four_installments')?'due':item.status||'not_due'}));
       await window.ma3daCreateSharedProjectInvoices(requestId,{...request,operatorId:user.uid},acceptedSchedule);
