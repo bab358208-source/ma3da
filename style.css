@@ -3370,3 +3370,56 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     align-items: flex-start;
   }
 }
+/* مساعد مِعدة الذكي — لوحة المالك */
+#ownerAssistantKnowledgeSection {
+  direction: rtl;
+  text-align: right;
+  margin-top: 24px;
+}
+
+#ownerAssistantKnowledgeSection label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: 700;
+}
+
+#ownerAssistantKnowledgeSection input,
+#ownerAssistantKnowledgeSection textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #eadfc5;
+  border-radius: 10px;
+  background: #fffdf8;
+  color: #171717;
+  font: inherit;
+}
+
+#ownerAssistantKnowledgeSection button {
+  margin: 6px 4px 6px 0;
+}
+
+#ownerAssistantList .owner-admin-record {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid #eadfc5;
+  border-radius: 12px;
+  background: #fffdf8;
+  overflow-wrap: anywhere;
+}
+
+#ownerAssistantKnowledgeSection [role="status"] {
+  margin-top: 10px;
+  color: #746b5b;
+}
+
+@media (max-width: 600px) {
+  #ownerAssistantKnowledgeSection input,
+  #ownerAssistantKnowledgeSection textarea {
+    font-size: 16px;
+  }
+
+  #ownerAssistantKnowledgeSection button {
+    max-width: 100%;
+  }
+}
