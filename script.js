@@ -14173,326 +14173,687 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 /* =====================================================
-   مساعد مِعدة — صندوق الدعم ولوحة إدارة المالك
-   الأسئلة منفصلة تمامًا عن supportTickets
+   مساعد مِعدة — ربط صندوق الدعم وإدارة المالك
+   متوافق مع معرّفات index الحالية
+   الأسئلة منفصلة عن supportTickets
    ===================================================== */
 (function ma3daAiAdminModule() {
   if (window.__ma3daAiAdminBound) return;
   window.__ma3daAiAdminBound = true;
 
   const $ = (id) => document.getElementById(id);
+
   let selectedQuestionId = null;
-  let supportStatus = "open";
   let knowledgeCache = [];
 
-  function db() {
+  const QUESTIONS = "ma3daAssistantQuestions";
+  const KNOWLEDGE = "ma3daAssistantKnowledge";
+
+  function getDb() {
     if (!window.ma3daDB || !window.ma3daAuth?.currentUser) {
       throw new Error("يجب تسجيل الدخول أولًا.");
     }
     return window.ma3daDB;
   }
 
-  function helpers() {
-    const required = [
-      "ma3daCollection", "ma3daDoc", "ma3daGetDocs",
-      "ma3daAddDoc", "ma3daUpdateDoc", "ma3daDeleteDoc"
+  function getHelpers() {
+    const names = [
+      "ma3daCollection",
+      "ma3daDoc",
+      "ma3daGetDocs",
+      "ma3daAddDoc",
+      "ma3daUpdateDoc",
+      "ma3daDeleteDoc"
     ];
-    const missing = required.filter((name) => typeof window[name] !== "function");
+
+    const missing = names.filter(
+      (name) => typeof window[name] !== "function"
+    );
+
     if (missing.length) {
-      throw new Error("دوال قاعدة البيانات غير متاحة: " + missing.join("، "));
+      throw new Error(
+        "دوال Firebase غير متاحة: " + missing.join("، ")
+      );
     }
+
     return window;
   }
 
   async function getAll(collectionName) {
-    const h = helpers();
-    const snap = await h.ma3daGetDocs(
-      h.ma3daCollection(db(), collectionName)
+    const h = getHelpers();
+    const snapshot = await h.ma3daGetDocs(
+      h.ma3daCollection(getDb(), collectionName)
     );
+
     const result = [];
-    snap.forEach((item) => result.push({ id: item.id, ...item.data() }));
+    snapshot.forEach((doc) => {
+      result.push({ id: doc.id, ...doc.data() });
+    });
+
     return result;
   }
 
-  async function add(collectionName, data) {
-    const h = helpers();
+  async function addRecord(collectionName, data) {
+    const h = getHelpers();
+
     return h.ma3daAddDoc(
-      h.ma3daCollection(db(), collectionName),
+      h.ma3daCollection(getDb(), collectionName),
       data
     );
   }
 
-  async function update(collectionName, id, data) {
-    const h = helpers();
+  async function updateRecord(collectionName, id, data) {
+    const h = getHelpers();
+
     return h.ma3daUpdateDoc(
-      h.ma3daDoc(db(), collectionName, id),
+      h.ma3daDoc(getDb(), collectionName, id),
       data
     );
   }
 
-  async function remove(collectionName, id) {
-    const h = helpers();
-    return h.ma3daDeleteDoc(
-      h.ma3daDoc(db(), collectionName, id)
-    );
-  }
+  async function deleteRecord(collectionName, id) {
+    const h = getHelpers();
 
-  async function getConversationMessages(questionId) {
-    const h = helpers();
-    const ref = h.ma3daCollection(
-      db(), "ma3daAssistantQuestions", questionId, "messages"
-    );
-    const snap = await h.ma3daGetDocs(ref);
-    const result = [];
-    snap.forEach((item) => result.push({ id: item.id, ...item.data() }));
-    return result.sort((a, b) =>
-      (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)
+    return h.ma3daDeleteDoc(
+      h.ma3daDoc(getDb(), collectionName, id)
     );
   }
 
   function isOwner() {
-    // يجب أن يكون حساب المالك موثقًا في سجل موظفي الدعم.
-    return window.supportEmployee?.role === "owner";
+    /*
+     * يدعم سجل المالك إن كان متاحًا.
+     * ظهور صفحة المالك وحده ليس بديلًا عن قواعد
+     * صلاحيات Firestore؛ يجب أن تمنع القواعد غير المالك.
+     */
+    const employee = window.supportEmployee;
+    const ownerScreen = $("ownerPortalDashboardScreen");
+    const ownerScreenActive =
+      ownerScreen?.classList.contains("active");
+
+    return Boolean(
+      employee?.role === "owner" ||
+      (
+        ownerScreenActive &&
+        window.ma3daAuth?.currentUser
+      )
+    );
   }
 
   function isSupportStaff() {
     const employee = window.supportEmployee;
-    return Boolean(employee && employee.role && employee.role !== "owner");
+
+    return Boolean(
+      employee?.role &&
+      employee.role !== "owner"
+    );
   }
 
-  function showPage(pageId) {
-    $("ma3daAiSupportPage").hidden = pageId !== "ma3daAiSupportPage";
-    $("ma3daAiOwnerPage").hidden = pageId !== "ma3daAiOwnerPage";
-    if ($("ma3daAiLauncher")) $("ma3daAiLauncher").hidden = true;
+  function canUseSupport() {
+    return isOwner() || isSupportStaff();
   }
 
-  window.ma3daAiCloseAdminPages = function () {
-    $("ma3daAiSupportPage").hidden = true;
-    $("ma3daAiOwnerPage").hidden = true;
-    if ($("ma3daAiLauncher")) $("ma3daAiLauncher").hidden = false;
-    selectedQuestionId = null;
-  };
+  function showFeedback(message) {
+    const target = $("ma3daAiSupportFeedback");
+    if (target) target.textContent = message || "";
+  }
 
-  window.ma3daAiOpenSupport = async function () {
-    if (!isSupportStaff() && !isOwner()) {
-      alert("هذه الصفحة مخصصة لموظفي الدعم.");
-      return;
+  function makeButton(text, onClick, className = "support-btn") {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = text;
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  function makeCard() {
+    const card = document.createElement("article");
+    card.className = "support-row ma3da-ai-admin-card";
+    return card;
+  }
+
+  function formatDate(value) {
+    if (!value) return "غير محدد";
+
+    const date = value?.toDate
+      ? value.toDate()
+      : value instanceof Date
+        ? value
+        : value?.seconds
+          ? new Date(value.seconds * 1000)
+          : null;
+
+    return date && !Number.isNaN(date.getTime())
+      ? date.toLocaleString("ar-SA")
+      : "غير محدد";
+  }
+
+  /* -----------------------------------------------------
+     1 — ربط قائمة التنقل بقسم الأسئلة الموجود في index
+     ----------------------------------------------------- */
+
+  function setupSupportNavigation() {
+    const screen = $("supportDashboardScreen");
+    const section = $("supportSectionAiQuestions");
+
+    if (!screen || !section) return;
+
+    let navButton = screen.querySelector(
+      '[data-support-section="aiQuestions"]'
+    );
+
+    if (!navButton) {
+      const equipmentButton = screen.querySelector(
+        '[data-support-section="equipmentEdits"]'
+      );
+
+      navButton = makeButton(
+        "أسئلة المساعد الذكي",
+        () => activateSupportSection(),
+        "support-btn"
+      );
+
+      navButton.dataset.supportSection = "aiQuestions";
+
+      if (equipmentButton?.parentElement) {
+        equipmentButton.insertAdjacentElement(
+          "afterend",
+          navButton
+        );
+      } else {
+        screen.querySelector(".support-nav")?.appendChild(navButton);
+      }
     }
-    showPage("ma3daAiSupportPage");
-    await window.ma3daAiLoadSupportQuestions("open");
-  };
 
-  window.ma3daAiOpenOwner = async function () {
-    if (!isOwner()) {
-      alert("غير مصرح لك بدخول إدارة المساعد الذكي.");
-      return;
+    navButton.addEventListener("click", () => {
+      activateSupportSection();
+    });
+
+    function activateSupportSection() {
+      if (!canUseSupport()) {
+        alert("هذه الصفحة مخصصة لموظفي الدعم.");
+        return;
+      }
+
+      screen.querySelectorAll(".support-section").forEach((item) => {
+        item.classList.toggle("active", item === section);
+      });
+
+      screen.querySelectorAll("[data-support-section]").forEach((item) => {
+        item.classList.toggle(
+          "active",
+          item.dataset.supportSection === "aiQuestions"
+        );
+      });
+
+      loadSupportQuestions();
     }
-    showPage("ma3daAiOwnerPage");
-    await refreshOwnerPage();
-  };
 
-  window.ma3daAiLoadSupportQuestions = async function (statusValue) {
-    if (!isSupportStaff() && !isOwner()) {
-      alert("غير مصرح لك بعرض أسئلة المستخدمين.");
-      return;
-    }
+    // توحيد معرّفات الأزرار مع عناصر index الحالية.
+    $("ma3daAiSupportRefresh")?.addEventListener(
+      "click",
+      loadSupportQuestions
+    );
 
-    supportStatus = statusValue || "open";
+    $("ma3daAiSendReply")?.addEventListener(
+      "click",
+      sendSupportReply
+    );
+
+    $("ma3daAiCloseQuestion")?.addEventListener(
+      "click",
+      closeSupportQuestion
+    );
+
+    window.ma3daAiOpenSupport = activateSupportSection;
+  }
+
+  /* -----------------------------------------------------
+     2 — قائمة الأسئلة التي تحتاج إلى رد موظف الدعم
+     ----------------------------------------------------- */
+
+  async function loadSupportQuestions() {
     const target = $("ma3daAiSupportList");
+    if (!target) return;
+
+    if (!canUseSupport()) {
+      target.textContent = "غير مصرح لك بعرض هذه الأسئلة.";
+      return;
+    }
+
     target.textContent = "جارٍ تحميل الأسئلة...";
 
     try {
-      const records = await getAll("ma3daAssistantQuestions");
+      const records = await getAll(QUESTIONS);
+
       const filtered = records
-        .filter((item) => (item.status || "open") === supportStatus)
-        .sort((a, b) =>
-          (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-        );
+        .filter((item) => {
+          const status = item.status || "open";
+          return status === "open" || status === "answered";
+        })
+        .sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        });
 
       target.replaceChildren();
 
       if (!filtered.length) {
-        target.textContent = "لا توجد أسئلة في هذا القسم.";
+        target.textContent = "لا توجد أسئلة مفتوحة حاليًا.";
+        clearReplyForm();
         return;
       }
 
       filtered.forEach((item) => {
-        const card = document.createElement("article");
-        card.className = "ma3da-ai-admin-card";
+        const card = makeCard();
 
         const title = document.createElement("strong");
         title.textContent = item.question || "سؤال بدون نص";
 
         const meta = document.createElement("p");
         meta.textContent =
-          "الدور: " + (item.role || "غير محدد") +
-          " — الحالة: " + (item.status || "open");
+          "نوع الحساب: " + (item.role || "غير محدد") +
+          " — الحالة: " + (item.status || "open") +
+          " — تاريخ السؤال: " + formatDate(item.createdAt);
 
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = "فتح المحادثة";
-        button.addEventListener("click", () => {
-          window.ma3daAiOpenConversation(item.id, item.question || "");
-        });
+        const lastAnswer = document.createElement("p");
+        lastAnswer.textContent = item.lastAnswer
+          ? "آخر رد: " + item.lastAnswer
+          : "لم يُرسل رد بعد.";
 
-        card.append(title, meta, button);
+        const openButton = makeButton(
+          "الرد على هذا السؤال",
+          () => selectQuestion(item)
+        );
+
+        card.append(title, meta, lastAnswer, openButton);
         target.appendChild(card);
       });
     } catch (error) {
-      console.error(error);
-      target.textContent = error.message || "تعذر تحميل الأسئلة.";
+      console.error("Ma3da AI support questions:", error);
+      target.textContent =
+        error.message || "تعذر تحميل الأسئلة.";
     }
-  };
+  }
 
-  window.ma3daAiOpenConversation = async function (questionId, question) {
-    if (!isSupportStaff() && !isOwner()) {
-      alert("غير مصرح لك.");
+  function selectQuestion(item) {
+    selectedQuestionId = item.id;
+
+    const box = $("ma3daAiReplyBox");
+    const title = $("ma3daAiReplyTitle");
+    const question = $("ma3daAiReplyQuestion");
+    const reply = $("ma3daAiReplyText");
+    const suggest = $("ma3daAiSuggestKnowledge");
+
+    if (!box || !title || !question || !reply || !suggest) {
+      alert("عناصر الرد غير مكتملة في index.");
       return;
     }
 
-    selectedQuestionId = questionId;
-    $("ma3daAiSupportConversation").hidden = false;
-    $("ma3daAiSupportQuestionTitle").textContent = question;
-    const box = $("ma3daAiSupportMessages");
-    box.replaceChildren();
-    box.textContent = "جارٍ تحميل المحادثة...";
+    title.textContent = "الرد على السؤال";
+    question.textContent = item.question || "";
+    reply.value = item.lastAnswer || item.answer || "";
+    suggest.checked = false;
+    box.hidden = false;
+    showFeedback("");
 
-    try {
-      const record = (await getAll("ma3daAssistantQuestions"))
-        .find((item) => item.id === questionId);
-
-      box.replaceChildren();
-      if (record?.question) {
-        appendChatMessage(box, record.question, "user");
-      }
-
-      const messages = await getConversationMessages(questionId);
-      messages.forEach((message) => {
-        appendChatMessage(
-          box,
-          message.text || message.message || "",
-          message.senderRole === "support" ? "assistant" : "user"
-        );
-      });
-
-      box.scrollTop = box.scrollHeight;
-    } catch (error) {
-      console.error(error);
-      box.textContent = "تعذر تحميل تفاصيل المحادثة.";
-    }
-  };
-
-  function appendChatMessage(parent, text, role) {
-    const item = document.createElement("div");
-    item.className = "ma3da-ai-message " + role;
-    item.textContent = text;
-    parent.appendChild(item);
+    box.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
   }
 
-  $("ma3daAiSupportReplyForm")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!selectedQuestionId) return;
+  function clearReplyForm() {
+    selectedQuestionId = null;
 
-    if (!isSupportStaff() && !isOwner()) {
+    if ($("ma3daAiReplyBox")) {
+      $("ma3daAiReplyBox").hidden = true;
+    }
+
+    if ($("ma3daAiReplyText")) {
+      $("ma3daAiReplyText").value = "";
+    }
+
+    if ($("ma3daAiSuggestKnowledge")) {
+      $("ma3daAiSuggestKnowledge").checked = false;
+    }
+  }
+
+  /* -----------------------------------------------------
+     3 — حفظ رد الدعم دون اعتماده تلقائيًا
+     ----------------------------------------------------- */
+
+  async function sendSupportReply() {
+    if (!canUseSupport()) {
       alert("غير مصرح لك بإرسال الرد.");
       return;
     }
 
-    const text = $("ma3daAiSupportReply").value.trim();
-    if (!text) return;
-
-    const user = window.ma3daAuth?.currentUser;
-    if (!user) {
-      alert("انتهت جلسة الدخول. سجل الدخول مرة أخرى.");
+    if (!selectedQuestionId) {
+      showFeedback("اختر سؤالًا من القائمة أولًا.");
       return;
     }
 
+    const reply = $("ma3daAiReplyText");
+    const suggest = $("ma3daAiSuggestKnowledge");
+
+    const text = reply?.value.trim() || "";
+    if (!text) {
+      showFeedback("اكتب الرد قبل الحفظ.");
+      reply?.focus();
+      return;
+    }
+
+    const user = window.ma3daAuth?.currentUser;
+    if (!user) {
+      showFeedback("انتهت جلسة الدخول. سجل الدخول مرة أخرى.");
+      return;
+    }
+
+    const questionId = selectedQuestionId;
+    showFeedback("جارٍ حفظ الرد...");
+
     try {
-      await add(
-        "ma3daAssistantQuestions/" + selectedQuestionId + "/messages",
-        {
-          text,
-          senderId: user.uid,
-          senderRole: "support",
-          createdAt: new Date()
-        }
+      const questionRecords = await getAll(QUESTIONS);
+      const record = questionRecords.find(
+        (item) => item.id === questionId
       );
+
+      if (!record) {
+        throw new Error("السؤال غير موجود.");
+      }
 
       const patch = {
         status: "answered",
         lastAnswer: text,
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        lastAnsweredBy: user.uid
       };
 
-      if ($("ma3daAiSuggestAnswer").checked) {
+      // لا نضع الإجابة في قاعدة المعرفة المعتمدة.
+      // نحفظها كاقتراح ينتظر موافقة المالك فقط.
+      if (suggest?.checked) {
         patch.pendingAnswer = {
           text,
           submittedBy: user.uid,
-          status: "pending"
+          status: "pending",
+          submittedAt: new Date()
         };
       }
 
-      await update(
-        "ma3daAssistantQuestions",
-        selectedQuestionId,
-        patch
+      await updateRecord(QUESTIONS, questionId, patch);
+
+      showFeedback(
+        suggest?.checked
+          ? "تم حفظ الرد وإرساله للمالك كمقترح غير معتمد."
+          : "تم حفظ الرد. لم تتم إضافته إلى قاعدة المعرفة."
       );
 
-      $("ma3daAiSupportReply").value = "";
-      $("ma3daAiSuggestAnswer").checked = false;
-
-      await window.ma3daAiOpenConversation(
-        selectedQuestionId,
-        $("ma3daAiSupportQuestionTitle").textContent
-      );
-
-      await window.ma3daAiLoadSupportQuestions("answered");
+      await loadSupportQuestions();
     } catch (error) {
-      console.error(error);
-      alert("تعذر إرسال الرد: " + error.message);
+      console.error("Ma3da AI save reply:", error);
+      showFeedback(error.message || "تعذر حفظ الرد.");
     }
-  });
+  }
 
-  window.ma3daAiCloseQuestion = async function () {
-    if (!selectedQuestionId) return;
-    if (!isSupportStaff() && !isOwner()) return;
+  /* -----------------------------------------------------
+     4 — إغلاق السؤال دون حذفه
+     ----------------------------------------------------- */
+
+  async function closeSupportQuestion() {
+    if (!canUseSupport()) {
+      alert("غير مصرح لك بإغلاق السؤال.");
+      return;
+    }
+
+    if (!selectedQuestionId) {
+      showFeedback("اختر سؤالًا أولًا.");
+      return;
+    }
 
     try {
-      await update("ma3daAssistantQuestions", selectedQuestionId, {
+      await updateRecord(QUESTIONS, selectedQuestionId, {
         status: "closed",
         updatedAt: new Date()
       });
 
-      $("ma3daAiSupportConversation").hidden = true;
-      await window.ma3daAiLoadSupportQuestions("closed");
+      showFeedback("تم إغلاق السؤال.");
+      clearReplyForm();
+      await loadSupportQuestions();
     } catch (error) {
-      alert("تعذر إغلاق المحادثة: " + error.message);
+      console.error(error);
+      showFeedback(error.message || "تعذر إغلاق السؤال.");
     }
-  };
+  }
+
+  /* -----------------------------------------------------
+     5 — إنشاء إدارة المساعد داخل لوحة المالك الموجودة
+     ----------------------------------------------------- */
+
+  function setupOwnerPage() {
+    const ownerScreen = $("ownerPortalDashboardScreen");
+    if (!ownerScreen) return;
+
+    let section = $("ma3daAiOwnerSection");
+
+    if (!section) {
+      section = document.createElement("section");
+      section.id = "ma3daAiOwnerSection";
+      section.className = "owner-admin-details";
+      section.hidden = true;
+
+      section.innerHTML = `
+        <div class="owner-admin-details-head">
+          <h2>إدارة المساعد الذكي</h2>
+          <button type="button"
+                  class="support-btn"
+                  id="ma3daAiOwnerClose">
+            إغلاق
+          </button>
+        </div>
+
+        <p class="support-subtitle">
+          إدارة الإجابات المعتمدة ومراجعة اقتراحات موظفي الدعم.
+          لا تُنشر الإجابات المقترحة إلا بعد موافقة المالك.
+        </p>
+
+        <div class="owner-admin-subcards">
+          <div class="owner-admin-subcard">
+            إجمالي الأسئلة
+            <strong id="ma3daAiStatQuestions">0</strong>
+          </div>
+          <div class="owner-admin-subcard">
+            اقتراحات تنتظر الموافقة
+            <strong id="ma3daAiStatPending">0</strong>
+          </div>
+          <div class="owner-admin-subcard">
+            إجابات معتمدة ونشطة
+            <strong id="ma3daAiStatKnowledge">0</strong>
+          </div>
+        </div>
+
+        <h3>اقتراحات موظفي الدعم</h3>
+        <div id="ma3daAiPendingAnswers" class="support-list">
+          جارٍ التحميل...
+        </div>
+
+        <hr>
+
+        <h3>إضافة إجابة أو تعديل إجابة موجودة</h3>
+        <form id="ma3daAiKnowledgeForm">
+          <input type="hidden" id="ma3daAiKnowledgeId">
+
+          <label for="ma3daAiKnowledgeQuestion">السؤال</label>
+          <input id="ma3daAiKnowledgeQuestion"
+                 class="support-input"
+                 maxlength="500"
+                 required>
+
+          <label for="ma3daAiKnowledgeAnswer">الإجابة</label>
+          <textarea id="ma3daAiKnowledgeAnswer"
+                    class="support-input"
+                    rows="5"
+                    maxlength="5000"
+                    required></textarea>
+
+          <label for="ma3daAiKnowledgeAliases">
+            كلمات أو صيغ بديلة (افصل بينها بفاصلة)
+          </label>
+          <input id="ma3daAiKnowledgeAliases"
+                 class="support-input"
+                 placeholder="مثال: كيف أطلب معدة، طلب معدة">
+
+          <button type="submit" class="support-btn support-primary">
+            حفظ الإجابة المعتمدة
+          </button>
+
+          <button type="button"
+                  class="support-btn"
+                  id="ma3daAiKnowledgeReset">
+            إلغاء التعديل
+          </button>
+        </form>
+
+        <hr>
+
+        <h3>قاعدة المعرفة</h3>
+        <label for="ma3daAiKnowledgeSearch">البحث في الأسئلة والإجابات</label>
+        <input id="ma3daAiKnowledgeSearch"
+               class="support-input"
+               placeholder="اكتب كلمة للبحث">
+
+        <div id="ma3daAiKnowledgeList" class="support-list">
+          جارٍ تحميل الإجابات...
+        </div>
+
+        <p id="ma3daAiOwnerFeedback" role="status" aria-live="polite"></p>
+      `;
+
+      const grid = ownerScreen.querySelector(".owner-admin-grid");
+      const details = $("ownerAdminDetails");
+
+      if (details) {
+        details.insertAdjacentElement("afterend", section);
+      } else if (grid) {
+        grid.insertAdjacentElement("afterend", section);
+      } else {
+        ownerScreen.querySelector(".owner-admin-card")
+          ?.appendChild(section);
+      }
+    }
+
+    let entry = $("ma3daAiOwnerEntry");
+
+    if (!entry) {
+      entry = makeButton(
+        "إدارة المساعد الذكي",
+        openOwnerPanel,
+        "owner-admin-cardlink"
+      );
+      entry.id = "ma3daAiOwnerEntry";
+
+      const label = document.createElement("span");
+      label.innerHTML =
+        "<strong>إدارة المساعد الذكي</strong>" +
+        "<small>الأسئلة والإجابات والاعتمادات</small>";
+
+      entry.replaceChildren(label);
+
+      const grid = ownerScreen.querySelector(".owner-admin-grid");
+      grid?.appendChild(entry);
+    }
+
+    $("ma3daAiOwnerClose")?.addEventListener("click", () => {
+      section.hidden = true;
+    });
+
+    $("ma3daAiKnowledgeForm")?.addEventListener(
+      "submit",
+      saveKnowledge
+    );
+
+    $("ma3daAiKnowledgeReset")?.addEventListener(
+      "click",
+      resetKnowledgeForm
+    );
+
+    $("ma3daAiKnowledgeSearch")?.addEventListener(
+      "input",
+      () => renderKnowledge(knowledgeCache)
+    );
+
+    window.ma3daAiOpenOwner = openOwnerPanel;
+  }
+
+  async function openOwnerPanel() {
+    if (!isOwner()) {
+      alert(
+        "تعذر التحقق من صلاحية المالك. افتح لوحة المالك من تسجيل الدخول المخصص لها."
+      );
+      return;
+    }
+
+    const section = $("ma3daAiOwnerSection");
+    if (!section) {
+      alert("تعذر العثور على قسم إدارة المساعد في لوحة المالك.");
+      return;
+    }
+
+    section.hidden = false;
+
+    try {
+      await refreshOwnerPage();
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    } catch (error) {
+      console.error(error);
+      const feedback = $("ma3daAiOwnerFeedback");
+      if (feedback) {
+        feedback.textContent =
+          error.message || "تعذر تحميل إدارة المساعد.";
+      }
+    }
+  }
 
   async function refreshOwnerPage() {
-    if (!isOwner()) throw new Error("صلاحيات المالك مطلوبة.");
+    if (!isOwner()) {
+      throw new Error("صلاحيات المالك مطلوبة.");
+    }
 
     const [questions, knowledge] = await Promise.all([
-      getAll("ma3daAssistantQuestions"),
-      getAll("ma3daAssistantKnowledge")
+      getAll(QUESTIONS),
+      getAll(KNOWLEDGE)
     ]);
 
     knowledgeCache = knowledge;
+
     $("ma3daAiStatQuestions").textContent = questions.length;
+
     $("ma3daAiStatPending").textContent = questions.filter(
       (item) => item.pendingAnswer?.status === "pending"
     ).length;
+
     $("ma3daAiStatKnowledge").textContent = knowledge.filter(
-      (item) => item.status === "approved" && item.active !== false
+      (item) =>
+        item.status === "approved" &&
+        item.active !== false
     ).length;
 
     renderPendingAnswers(questions);
     renderKnowledge(knowledge);
   }
 
+  /* -----------------------------------------------------
+     6 — اعتماد اقتراح الدعم بعد موافقة المالك
+     ----------------------------------------------------- */
+
   function renderPendingAnswers(questions) {
     const target = $("ma3daAiPendingAnswers");
+    if (!target) return;
+
     target.replaceChildren();
 
     const pending = questions.filter(
@@ -14500,206 +14861,313 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     );
 
     if (!pending.length) {
-      target.textContent = "لا توجد إجابات تنتظر الاعتماد.";
+      target.textContent = "لا توجد اقتراحات تنتظر الموافقة.";
       return;
     }
 
     pending.forEach((item) => {
-      const card = document.createElement("article");
-      card.className = "ma3da-ai-admin-card";
+      const card = makeCard();
 
-      const question = document.createElement("p");
-      question.textContent = "سؤال المستخدم: " + (item.question || "");
+      const question = document.createElement("strong");
+      question.textContent = "السؤال: " + (item.question || "");
 
       const answer = document.createElement("p");
-      answer.textContent = "إجابة الدعم: " + item.pendingAnswer.text;
+      answer.textContent =
+        "اقتراح موظف الدعم: " + (item.pendingAnswer.text || "");
 
-      const approve = document.createElement("button");
-      approve.type = "button";
-      approve.textContent = "اعتماد ونشر الإجابة";
-      approve.addEventListener("click", async () => {
-        if (!isOwner()) return alert("هذه العملية للمالك فقط.");
+      const approve = makeButton(
+        "الموافقة والنشر",
+        async () => {
+          if (!isOwner()) {
+            alert("الموافقة متاحة للمالك فقط.");
+            return;
+          }
 
-        const approvedQuestion = item.question || "";
-        const approvedAnswer = item.pendingAnswer.text;
+          const approvedAnswer = item.pendingAnswer.text;
+          const approvedQuestion = item.question || "";
 
-        try {
-          await add("ma3daAssistantKnowledge", {
-            question: approvedQuestion,
-            answer: approvedAnswer,
-            aliases: [],
-            status: "approved",
-            active: true,
-            approvedBy: window.ma3daAuth.currentUser.uid,
-            approvedAt: new Date(),
-            createdAt: new Date()
-          });
+          if (!approvedQuestion.trim() || !approvedAnswer.trim()) {
+            alert("السؤال أو الإجابة فارغ.");
+            return;
+          }
 
-          await update("ma3daAssistantQuestions", item.id, {
-            "pendingAnswer.status": "approved",
-            updatedAt: new Date()
-          });
+          try {
+            await addRecord(KNOWLEDGE, {
+              question: approvedQuestion,
+              answer: approvedAnswer,
+              aliases: [],
+              status: "approved",
+              active: true,
+              approvedBy: window.ma3daAuth.currentUser.uid,
+              approvedAt: new Date(),
+              createdAt: new Date()
+            });
 
-          await refreshOwnerPage();
-        } catch (error) {
-          alert("تعذر اعتماد الإجابة: " + error.message);
+            await updateRecord(QUESTIONS, item.id, {
+              pendingAnswer: {
+                ...item.pendingAnswer,
+                status: "approved",
+                reviewedBy: window.ma3daAuth.currentUser.uid,
+                reviewedAt: new Date()
+              },
+              updatedAt: new Date()
+            });
+
+            await refreshOwnerPage();
+
+            $("ma3daAiOwnerFeedback").textContent =
+              "تم اعتماد الإجابة وإضافتها إلى قاعدة المعرفة.";
+          } catch (error) {
+            alert("تعذر اعتماد الإجابة: " + error.message);
+          }
+        },
+        "support-btn support-primary"
+      );
+
+      const reject = makeButton(
+        "رفض الاقتراح",
+        async () => {
+          if (!isOwner()) {
+            alert("رفض الاقتراح متاح للمالك فقط.");
+            return;
+          }
+
+          try {
+            await updateRecord(QUESTIONS, item.id, {
+              pendingAnswer: {
+                ...item.pendingAnswer,
+                status: "rejected",
+                reviewedBy: window.ma3daAuth.currentUser.uid,
+                reviewedAt: new Date()
+              },
+              updatedAt: new Date()
+            });
+
+            await refreshOwnerPage();
+
+            $("ma3daAiOwnerFeedback").textContent =
+              "تم رفض الاقتراح. لم يُنشر ضمن الإجابات.";
+          } catch (error) {
+            alert("تعذر رفض الاقتراح: " + error.message);
+          }
         }
-      });
+      );
 
-      card.append(question, answer, approve);
+      card.append(question, answer, approve, reject);
       target.appendChild(card);
     });
   }
 
+  /* -----------------------------------------------------
+     7 — عرض الإجابات المعتمدة والتحكم بها
+     ----------------------------------------------------- */
+
   function renderKnowledge(records) {
     const target = $("ma3daAiKnowledgeList");
-    const search = ($("ma3daAiKnowledgeSearch")?.value || "").trim().toLowerCase();
+    if (!target) return;
+
+    const search = (
+      $("ma3daAiKnowledgeSearch")?.value || ""
+    ).trim().toLowerCase();
+
     target.replaceChildren();
 
-    const filtered = records.filter((item) =>
-      ((item.question || "") + " " + (item.answer || ""))
-        .toLowerCase().includes(search)
-    );
+    const filtered = records.filter((item) => {
+      const text = (
+        (item.question || "") + " " +
+        (item.answer || "") + " " +
+        (Array.isArray(item.aliases) ? item.aliases.join(" ") : "")
+      ).toLowerCase();
+
+      return text.includes(search);
+    });
 
     if (!filtered.length) {
-      target.textContent = "لا توجد أسئلة مطابقة.";
+      target.textContent = "لا توجد إجابات مطابقة.";
       return;
     }
 
     filtered.forEach((item) => {
-      const card = document.createElement("article");
-      card.className = "ma3da-ai-admin-card";
+      const card = makeCard();
 
       const question = document.createElement("strong");
-      question.textContent = item.question || "";
+      question.textContent = item.question || "سؤال بدون عنوان";
 
       const answer = document.createElement("p");
       answer.textContent = item.answer || "";
 
-      const edit = document.createElement("button");
-      edit.type = "button";
-      edit.textContent = "تعديل";
-      edit.addEventListener("click", () => {
+      const status = document.createElement("p");
+      status.textContent =
+        "الحالة: " +
+        (item.status === "approved" ? "معتمدة" : "غير معتمدة") +
+        " — " +
+        (item.active === false ? "متوقفة" : "نشطة");
+
+      const edit = makeButton("تعديل", () => {
+        if (!isOwner()) {
+          alert("التعديل متاح للمالك فقط.");
+          return;
+        }
+
         $("ma3daAiKnowledgeId").value = item.id;
         $("ma3daAiKnowledgeQuestion").value = item.question || "";
         $("ma3daAiKnowledgeAnswer").value = item.answer || "";
         $("ma3daAiKnowledgeAliases").value =
-          Array.isArray(item.aliases) ? item.aliases.join("، ") : "";
+          Array.isArray(item.aliases)
+            ? item.aliases.join("، ")
+            : "";
+
+        $("ma3daAiKnowledgeForm").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
       });
 
-      const deactivate = document.createElement("button");
-      deactivate.type = "button";
-      deactivate.textContent = item.active === false ? "تفعيل" : "إيقاف";
-      deactivate.addEventListener("click", async () => {
-        if (!isOwner()) return alert("هذه العملية للمالك فقط.");
-        try {
-          await update("ma3daAssistantKnowledge", item.id, {
-            active: item.active === false,
-            updatedAt: new Date()
-          });
-          await refreshOwnerPage();
-        } catch (error) {
-          alert("تعذر تغيير الحالة: " + error.message);
+      const toggleActive = makeButton(
+        item.active === false ? "تفعيل الإجابة" : "إيقاف الإجابة",
+        async () => {
+          if (!isOwner()) {
+            alert("تغيير الحالة متاح للمالك فقط.");
+            return;
+          }
+
+          try {
+            await updateRecord(KNOWLEDGE, item.id, {
+              active: item.active === false,
+              updatedAt: new Date()
+            });
+
+            await refreshOwnerPage();
+          } catch (error) {
+            alert("تعذر تغيير حالة الإجابة: " + error.message);
+          }
         }
-      });
+      );
 
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.textContent = "حذف";
-      deleteButton.addEventListener("click", async () => {
-        if (!isOwner()) return alert("هذه العملية للمالك فقط.");
-        if (!confirm("هل تريد حذف هذا السؤال والإجابة نهائيًا؟")) return;
+      const deleteButton = makeButton(
+        "حذف",
+        async () => {
+          if (!isOwner()) {
+            alert("الحذف متاح للمالك فقط.");
+            return;
+          }
 
-        try {
-          await remove("ma3daAssistantKnowledge", item.id);
-          await refreshOwnerPage();
-        } catch (error) {
-          alert("تعذر الحذف: " + error.message);
-        }
-      });
+          if (!confirm("هل تريد حذف هذه الإجابة نهائيًا؟")) return;
 
-      card.append(question, answer, edit, deactivate, deleteButton);
+          try {
+            await deleteRecord(KNOWLEDGE, item.id);
+            await refreshOwnerPage();
+          } catch (error) {
+            alert("تعذر حذف الإجابة: " + error.message);
+          }
+        },
+        "support-btn support-danger"
+      );
+
+      card.append(
+        question,
+        answer,
+        status,
+        edit,
+        toggleActive,
+        deleteButton
+      );
+
       target.appendChild(card);
     });
   }
 
-  $("ma3daAiKnowledgeSearch")?.addEventListener("input", () => {
-    renderKnowledge(knowledgeCache);
-  });
+  /* -----------------------------------------------------
+     8 — إضافة إجابة أو حفظ تعديل المالك
+     ----------------------------------------------------- */
 
-  window.ma3daAiResetKnowledgeForm = function () {
-    $("ma3daAiKnowledgeForm")?.reset();
-    $("ma3daAiKnowledgeId").value = "";
-  };
-
-  $("ma3daAiKnowledgeForm")?.addEventListener("submit", async (event) => {
+  async function saveKnowledge(event) {
     event.preventDefault();
 
     if (!isOwner()) {
-      alert("إضافة وتعديل قاعدة المعرفة متاحة للمالك فقط.");
+      alert("إضافة وتعديل الإجابات متاحان للمالك فقط.");
       return;
     }
 
     const id = $("ma3daAiKnowledgeId").value.trim();
     const question = $("ma3daAiKnowledgeQuestion").value.trim();
     const answer = $("ma3daAiKnowledgeAnswer").value.trim();
-    const aliases = $("ma3daAiKnowledgeAliases").value
-      .split(/[،,]/).map((part) => part.trim()).filter(Boolean);
 
-    if (!question || !answer) return;
+    const aliases = $("ma3daAiKnowledgeAliases").value
+      .split(/[،,]/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (!question || !answer) {
+      $("ma3daAiOwnerFeedback").textContent =
+        "أدخل السؤال والإجابة أولًا.";
+      return;
+    }
 
     try {
+      const data = {
+        question,
+        answer,
+        aliases,
+        status: "approved",
+        active: true,
+        updatedAt: new Date()
+      };
+
       if (id) {
-        await update("ma3daAssistantKnowledge", id, {
-          question, answer, aliases,
-          status: "approved",
-          active: true,
-          updatedAt: new Date()
-        });
+        await updateRecord(KNOWLEDGE, id, data);
       } else {
-        await add("ma3daAssistantKnowledge", {
-          question, answer, aliases,
-          status: "approved",
-          active: true,
+        await addRecord(KNOWLEDGE, {
+          ...data,
           approvedBy: window.ma3daAuth.currentUser.uid,
           approvedAt: new Date(),
           createdAt: new Date()
         });
       }
 
-      window.ma3daAiResetKnowledgeForm();
+      resetKnowledgeForm();
       await refreshOwnerPage();
-      alert("تم حفظ الإجابة في قاعدة المعرفة.");
+
+      $("ma3daAiOwnerFeedback").textContent =
+        id
+          ? "تم تعديل الإجابة المعتمدة."
+          : "تمت إضافة الإجابة واعتمادها.";
     } catch (error) {
-      alert("تعذر الحفظ: " + error.message);
-    }
-  });
-
-  // إضافة مداخل واضحة داخل صفحة الدعم ولوحة المالك الحالية.
-  function addEntryButtons() {
-    const supportScreen = $("supportDashboardScreen");
-    if (supportScreen && ! $("ma3daAiSupportEntry")) {
-      const button = document.createElement("button");
-      button.id = "ma3daAiSupportEntry";
-      button.type = "button";
-      button.className = "ma3da-ai-entry-button";
-      button.textContent = "صندوق أسئلة المساعد الذكي";
-      button.addEventListener("click", window.ma3daAiOpenSupport);
-      supportScreen.prepend(button);
-    }
-
-    const ownerScreen = $("ownerInformationCenterScreen");
-    if (ownerScreen && ! $("ma3daAiOwnerEntry")) {
-      const button = document.createElement("button");
-      button.id = "ma3daAiOwnerEntry";
-      button.type = "button";
-      button.className = "ma3da-ai-entry-button";
-      button.textContent = "إدارة المساعد الذكي";
-      button.addEventListener("click", window.ma3daAiOpenOwner);
-      ownerScreen.prepend(button);
+      console.error(error);
+      $("ma3daAiOwnerFeedback").textContent =
+        error.message || "تعذر حفظ الإجابة.";
     }
   }
 
-  addEntryButtons();
-  document.addEventListener("DOMContentLoaded", addEntryButtons);
+  function resetKnowledgeForm() {
+    $("ma3daAiKnowledgeForm")?.reset();
+
+    if ($("ma3daAiKnowledgeId")) {
+      $("ma3daAiKnowledgeId").value = "";
+    }
+
+    if ($("ma3daAiOwnerFeedback")) {
+      $("ma3daAiOwnerFeedback").textContent = "";
+    }
+  }
+
+  window.ma3daAiResetKnowledgeForm = resetKnowledgeForm;
+  window.ma3daAiLoadSupportQuestions = loadSupportQuestions;
+
+  /* -----------------------------------------------------
+     9 — التشغيل وربط عناصر index
+     ----------------------------------------------------- */
+
+  function init() {
+    setupSupportNavigation();
+    setupOwnerPage();
+  }
+
+  init();
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  // بعض الصفحات قد تُنشأ لاحقًا بعد تسجيل الدخول.
+  window.addEventListener("load", init);
 })();
+
