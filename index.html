@@ -6181,7 +6181,91 @@ window.ma3daOrderBy =
     <button id="ma3daAiSend" type="submit">إرسال</button>
   </form>
 </section>
+<!-- صفحة صندوق أسئلة المساعد لموظفي الدعم -->
+<section id="ma3daAiSupportPage" class="ma3da-ai-admin-page" hidden dir="rtl">
+  <header class="ma3da-ai-admin-header">
+    <div>
+      <h2>أسئلة المساعد الذكي</h2>
+      <p>الأسئلة التي لم يجد المساعد لها إجابة معتمدة</p>
+    </div>
+    <button type="button" onclick="ma3daAiCloseAdminPages()">رجوع</button>
+  </header>
 
+  <div class="ma3da-ai-admin-tabs">
+    <button type="button" onclick="ma3daAiLoadSupportQuestions('open')">
+      الأسئلة الجديدة
+    </button>
+    <button type="button" onclick="ma3daAiLoadSupportQuestions('answered')">
+      تم الرد
+    </button>
+    <button type="button" onclick="ma3daAiLoadSupportQuestions('closed')">
+      المغلقة
+    </button>
+  </div>
+
+  <div id="ma3daAiSupportList"></div>
+
+  <div id="ma3daAiSupportConversation" hidden>
+    <h3 id="ma3daAiSupportQuestionTitle"></h3>
+    <div id="ma3daAiSupportMessages" class="ma3da-ai-messages"></div>
+    <form id="ma3daAiSupportReplyForm">
+      <textarea id="ma3daAiSupportReply" required
+        placeholder="اكتب ردك للمستخدم"></textarea>
+      <button type="submit">إرسال الرد</button>
+      <button type="button" onclick="ma3daAiCloseQuestion()">إغلاق المحادثة</button>
+    </form>
+    <label>
+      <input type="checkbox" id="ma3daAiSuggestAnswer">
+      إرسال الرد للمالك لمراجعته كإجابة مقترحة لقاعدة المعرفة
+    </label>
+  </div>
+</section>
+
+<!-- صفحة إدارة المالك فقط -->
+<section id="ma3daAiOwnerPage" class="ma3da-ai-admin-page" hidden dir="rtl">
+  <header class="ma3da-ai-admin-header">
+    <div>
+      <h2>إدارة المساعد الذكي</h2>
+      <p>إدارة قاعدة المعرفة واعتماد إجابات الدعم</p>
+    </div>
+    <button type="button" onclick="ma3daAiCloseAdminPages()">رجوع</button>
+  </header>
+
+  <div class="ma3da-ai-admin-stats">
+    <article>
+      <strong id="ma3daAiStatQuestions">—</strong>
+      <span>الأسئلة المحوّلة للدعم</span>
+    </article>
+    <article>
+      <strong id="ma3daAiStatPending">—</strong>
+      <span>إجابات تنتظر اعتمادك</span>
+    </article>
+    <article>
+      <strong id="ma3daAiStatKnowledge">—</strong>
+      <span>الإجابات المعتمدة</span>
+    </article>
+  </div>
+
+  <h3>إضافة سؤال وإجابة</h3>
+  <form id="ma3daAiKnowledgeForm" class="ma3da-ai-knowledge-form">
+    <input id="ma3daAiKnowledgeId" type="hidden">
+    <label for="ma3daAiKnowledgeQuestion">السؤال</label>
+    <input id="ma3daAiKnowledgeQuestion" required maxlength="500">
+    <label for="ma3daAiKnowledgeAnswer">الإجابة</label>
+    <textarea id="ma3daAiKnowledgeAnswer" required maxlength="5000"></textarea>
+    <label for="ma3daAiKnowledgeAliases">أسئلة بديلة (افصل بينها بفاصلة)</label>
+    <input id="ma3daAiKnowledgeAliases">
+    <button type="submit">حفظ واعتماد الإجابة</button>
+    <button type="button" onclick="ma3daAiResetKnowledgeForm()">إلغاء التعديل</button>
+  </form>
+
+  <h3>إجابات الدعم بانتظار اعتمادك</h3>
+  <div id="ma3daAiPendingAnswers"></div>
+
+  <h3>قاعدة المعرفة</h3>
+  <input id="ma3daAiKnowledgeSearch" placeholder="ابحث في الأسئلة والإجابات">
+  <div id="ma3daAiKnowledgeList"></div>
+</section>
 </body>
 
 </html>
