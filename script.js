@@ -13936,3 +13936,238 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   document.addEventListener('change',event=>{if(event.target?.id!=='supportThemeSelect')return;const theme=event.target.value==='light'?'light':'gold';try{localStorage.setItem('ma3daSupportTheme',theme);}catch(_){}apply(theme);});
   document.addEventListener('DOMContentLoaded',()=>{let theme='gold';try{theme=localStorage.getItem('ma3daSupportTheme')||'gold';}catch(_){}const select=document.getElementById('supportThemeSelect');if(select)select.value=theme;apply(theme);});
 })();
+/* ==========================================
+   مساعد مِعدة الذكي — الجزء الأول
+   قاعدة المعرفة والأسئلة المحوّلة للدعم
+   ========================================== */
+(function ma3daSmartAssistant() {
+  if (window.__ma3daSmartAssistantBound) return;
+  window.__ma3daSmartAssistantBound = true;
+
+  const $ = (id) => document.getElementById(id);
+
+  const launcher = $("ma3daAiLauncher");
+  const panel = $("ma3daAiPanel");
+  const toggle = $("ma3daAiToggle");
+  const close = $("ma3daAiClose");
+  const form = $("ma3daAiForm");
+  const input = $("ma3daAiInput");
+  const messages = $("ma3daAiMessages");
+  const status = $("ma3daAiStatus");
+  const send = $("ma3daAiSend");
+
+  if (!launcher || !panel || !form || !input || !messages) {
+    console.error("مساعد مِعدة: عناصر الواجهة غير موجودة في index.");
+    return;
+  }
+
+  const escapeText = (value) =>
+    String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+
+  function addMessage(text, type = "assistant") {
+    const item = document.createElement("div");
+    item.className = "ma3da-ai-message " + type;
+    item.textContent = text;
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+    return item;
+  }
+
+  function setStatus(text) {
+    status.textContent = text || "";
+  }
+
+  function normalize(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[ًٌٍَُِّْـ]/g, "")
+      .replace(/[أإآ]/g, "ا")
+      .replace(/ى/g, "ي")
+      .replace(/[؟?!.,،؛:]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function similarity(first, second) {
+    const a = new Set(normalize(first).split(" ").filter(Boolean));
+    const b = new Set(normalize(second).split(" ").filter(Boolean));
+
+    if (!a.size || !b.size) return 0;
+
+    let common = 0;
+    for (const word of a) {
+      if (b.has(word)) common++;
+    }
+
+    return common / (a.size + b.size - common);
+  }
+
+  function currentRole() {
+    const active = document.querySelector(".screen.active");
+
+    if (active?.id === "customerHomeScreen") return "customer";
+    if (active?.id === "operatorHomeScreen") return "operator";
+    if (active?.id === "contractorHomeScreen") return "contractor";
+
+    return "user";
+  }
+
+  function getDatabaseHelpers() {
+    const db = window.ma3daDB;
+    const user = window.ma3daAuth?.currentUser;
+
+    if (
+      !db ||
+      !user ||
+      typeof window.ma3daCollection !== "function" ||
+      typeof window.ma3daGetDocs !== "function" ||
+      typeof window.ma3daAddDoc !== "function"
+    ) {
+      throw new Error(
+        "تعذر الاتصال بقاعدة البيانات. تأكد من تسجيل الدخول وجاهزية Firebase."
+      );
+    }
+
+    return { db, user };
+  }
+
+  async function readCollection(collectionName) {
+    const { db } = getDatabaseHelpers();
+    const collection = window.ma3daCollection(db, collectionName);
+    const snapshot = await window.ma3daGetDocs(collection);
+    const results = [];
+
+    snapshot.forEach((document) => {
+      results.push({
+        id: document.id,
+        ...document.data()
+      });
+    });
+
+    return results;
+  }
+
+  async function forwardToSupport(question) {
+    const { db, user } = getDatabaseHelpers();
+
+    const record = {
+      question,
+      role: currentRole(),
+      requesterId: user.uid,
+      requesterEmail: user.email || "",
+      status: "open",
+      source: "smart-assistant",
+      answer: "",
+      knowledgeSuggestion: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const reference = await window.ma3daAddDoc(
+      window.ma3daCollection(db, "ma3daAssistantQuestions"),
+      record
+    );
+
+    return reference.id;
+  }
+
+  async function answerQuestion(question) {
+    send.disabled = true;
+    setStatus("جارٍ البحث في الإجابات المعتمدة...");
+
+    try {
+      const records = await readCollection("ma3daAssistantKnowledge");
+
+      const approved = records.filter((record) =>
+        record.status === "approved" &&
+        record.active !== false &&
+        String(record.answer || "").trim()
+      );
+
+      let bestMatch = null;
+      let bestScore = 0;
+
+      for (const record of approved) {
+        const alternatives = [
+          record.question || "",
+          ...(Array.isArray(record.aliases) ? record.aliases : [])
+        ];
+
+        for (const alternative of alternatives) {
+          const score = similarity(question, alternative);
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatch = record;
+          }
+        }
+      }
+
+      // لا نجيب إلا من قاعدة المعرفة المعتمدة.
+      if (bestMatch && bestScore >= 0.42) {
+        addMessage(bestMatch.answer, "assistant");
+        setStatus("الإجابة من قاعدة المعرفة المعتمدة.");
+        return;
+      }
+
+      // السؤال غير المعروف يتحول تلقائيًا إلى الدعم.
+      addMessage(
+        "لم أجد إجابة معتمدة لسؤالك. سأحوّله تلقائيًا إلى فريق الدعم.",
+        "assistant"
+      );
+
+      setStatus("جارٍ تحويل السؤال إلى فريق الدعم...");
+
+      const questionId = await forwardToSupport(question);
+
+      addMessage(
+        "تم تسجيل سؤالك. رقم المتابعة: " + questionId,
+        "assistant"
+      );
+
+      setStatus("تم إرسال السؤال إلى صندوق أسئلة المساعد المستقل.");
+
+    } catch (error) {
+      console.error("Ma3da Smart Assistant:", error);
+
+      addMessage(
+        error.message || "تعذر إكمال الطلب. حاول مرة أخرى لاحقًا.",
+        "assistant"
+      );
+
+      setStatus("تعذر إتمام العملية.");
+    } finally {
+      send.disabled = false;
+    }
+  }
+
+  toggle?.addEventListener("click", () => {
+    panel.hidden = !panel.hidden;
+    toggle.setAttribute("aria-expanded", String(!panel.hidden));
+
+    if (!panel.hidden) input.focus();
+  });
+
+  close?.addEventListener("click", () => {
+    panel.hidden = true;
+    toggle?.setAttribute("aria-expanded", "false");
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const question = input.value.trim();
+    if (!question) return;
+
+    addMessage(question, "user");
+    input.value = "";
+
+    await answerQuestion(question);
+  });
+})();
