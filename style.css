@@ -2994,4 +2994,208 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     font-size: 21px;
   }
 }
+/* ==========================================
+   مساعد مِعدة الذكي — الهوية الذهبية والسوداء
+   ========================================== */
 
+.ma3da-ai-launcher {
+  position: fixed;
+  z-index: 9990;
+  left: 18px;
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: rtl;
+}
+
+.ma3da-ai-orb {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid #e6ca83;
+  background: radial-gradient(
+    circle at 35% 25%,
+    #fff4ce 0,
+    #d8b45e 22%,
+    #201c13 65%,
+    #090909 100%
+  );
+  box-shadow: 0 0 0 5px #c8a45b22, 0 8px 25px #0003;
+  color: #fff4ce;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  animation: ma3daAiPulse 3s ease-in-out infinite;
+}
+
+.ma3da-ai-orb-core {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #f8e6b3;
+  border-radius: 50%;
+  font-size: 25px;
+}
+
+.ma3da-ai-launcher-label {
+  background: #151515;
+  color: #f2d99b;
+  border: 1px solid #c8a45b;
+  border-radius: 18px;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+
+.ma3da-ai-panel {
+  position: fixed;
+  z-index: 9991;
+  left: 18px;
+  bottom: 94px;
+  width: min(370px, calc(100vw - 28px));
+  height: min(520px, calc(100dvh - 130px));
+  background: #fffdf8;
+  border: 1px solid #d9bd78;
+  border-radius: 20px;
+  box-shadow: 0 18px 55px #0003;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  direction: rtl;
+  color: #171717;
+}
+
+.ma3da-ai-panel[hidden] {
+  display: none !important;
+}
+
+.ma3da-ai-head {
+  background: linear-gradient(120deg, #101112, #28231a);
+  color: #f5e2b5;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #c8a45b;
+}
+
+.ma3da-ai-head strong,
+.ma3da-ai-head small {
+  display: block;
+}
+
+.ma3da-ai-head small {
+  font-size: 11px;
+  color: #eee0bd;
+  margin-top: 4px;
+}
+
+.ma3da-ai-head button {
+  background: transparent;
+  border: 1px solid #c8a45b;
+  border-radius: 50%;
+  color: #f5e2b5;
+  font-size: 23px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+
+.ma3da-ai-messages {
+  padding: 13px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ma3da-ai-message {
+  max-width: 92%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ma3da-ai-message.assistant {
+  align-self: flex-start;
+  background: #f4ead2;
+  border: 1px solid #ead9ad;
+}
+
+.ma3da-ai-message.user {
+  align-self: flex-end;
+  background: #1b1b1b;
+  color: #fff4d7;
+}
+
+.ma3da-ai-form {
+  display: flex;
+  gap: 7px;
+  padding: 10px;
+  border-top: 1px solid #eadfc5;
+}
+
+.ma3da-ai-form input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d8cfbc;
+  border-radius: 12px;
+  padding: 11px;
+  font: inherit;
+  background: #fff;
+}
+
+.ma3da-ai-form button {
+  border: 1px solid #c8a45b;
+  background: #171819;
+  color: #f5e2b5;
+  border-radius: 12px;
+  padding: 0 14px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ma3da-ai-form button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.ma3da-ai-status {
+  font-size: 11px;
+  color: #766747;
+  margin: 0;
+  padding: 0 12px 8px;
+}
+
+@keyframes ma3daAiPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px #c8a45b22, 0 8px 25px #0003;
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px #c8a45b12, 0 8px 30px #c8a45b33;
+  }
+}
+
+@media (max-width: 560px) {
+  .ma3da-ai-launcher {
+    left: 12px;
+    bottom: 14px;
+  }
+
+  .ma3da-ai-panel {
+    left: 10px;
+    bottom: 82px;
+    width: calc(100vw - 20px);
+    height: min(500px, calc(100dvh - 105px));
+  }
+
+  .ma3da-ai-launcher-label {
+    font-size: 11px;
+  }
+}
