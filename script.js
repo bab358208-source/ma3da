@@ -14259,13 +14259,22 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     );
   }
 
+  function getCurrentSupportEmployee() {
+    // supportEmployee مُعرّف كمتغير عام في script.js وليس مضمونًا
+    // أن يكون منشورًا على window؛ اقرأ المصدرين لتفادي رفض الصلاحية خطأً.
+    return (
+      (typeof supportEmployee !== "undefined" && supportEmployee) ||
+      window.supportEmployee ||
+      null
+    );
+  }
+
   function isOwner() {
     /*
-     * يدعم سجل المالك إن كان متاحًا.
-     * ظهور صفحة المالك وحده ليس بديلًا عن قواعد
-     * صلاحيات Firestore؛ يجب أن تمنع القواعد غير المالك.
+     * يعتمد التحقق أولًا على الدور الذي أثبته تسجيل الدخول المخصص للمالك.
+     * بقاء تحقق Firestore الأمني مطلوبًا لحماية قاعدة البيانات.
      */
-    const employee = window.supportEmployee;
+    const employee = getCurrentSupportEmployee();
     const ownerScreen = $("ownerPortalDashboardScreen");
     const ownerScreenActive =
       ownerScreen?.classList.contains("active");
@@ -14280,7 +14289,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
 
   function isSupportStaff() {
-    const employee = window.supportEmployee;
+    const employee = getCurrentSupportEmployee();
 
     return Boolean(
       employee?.role &&
@@ -15170,4 +15179,3 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   // بعض الصفحات قد تُنشأ لاحقًا بعد تسجيل الدخول.
   window.addEventListener("load", init);
 })();
-
