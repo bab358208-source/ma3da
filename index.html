@@ -5360,6 +5360,7 @@
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   collection,
   onSnapshot,
   query,
@@ -5634,7 +5635,9 @@
   window.ma3daUpdateDoc =
     updateDoc;
 
-
+  // تمكين وحدة المساعد الذكي من حذف الأسئلة/الإجابات عند توفر الصلاحية.
+  window.ma3daDeleteDoc =
+    deleteDoc;
 
   window.ma3daCollection =
     collection;
@@ -6332,3 +6335,4 @@ window.ma3daOrderBy =
 </body>
 
 </html>
+
