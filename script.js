@@ -15336,51 +15336,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.addEventListener("load", init);
 })();
 
-/* =========================================================
-   ATHAR — الهوية البصرية للصفحات التعريفية والرئيسية
-   يستخدم صورة الملصق المعتمدة بدون علم السعودية.
-   إضافة مستقلة لا تغيّر مسارات الطلبات أو إعدادات Firebase.
-========================================================= */
-(function initAtharBrandingAcrossScreens() {
-  if (window.__ma3daAtharBrandingAcrossScreensBound) return;
-  window.__ma3daAtharBrandingAcrossScreensBound = true;
 
-  const targets = [
-    "introScreen", "whyMa3daScreen", "howMa3daScreen", "howWorksScreen",
-    "customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen",
-    "projectsScreen", "contractorProjectsScreen"
-  ];
+/* MA3DA — ATHAR RIYADH BRAND IMAGE FIX */
+(function installMa3daAtharBrandImage(){
+  if (window.__ma3daAtharBrandImageInstalled) return;
+  window.__ma3daAtharBrandImageInstalled = true;
 
-  function addBranding() {
-    targets.forEach((id) => {
-      const screen = document.getElementById(id);
-      if (!screen || screen.querySelector('.athar-branding-banner')) return;
-
-      const banner = document.createElement('div');
-      banner.className = 'athar-branding-banner';
-      banner.setAttribute('dir', 'rtl');
-      banner.style.cssText = 'width:min(calc(100% - 24px),1100px);margin:12px auto 20px;padding:0;box-sizing:border-box;text-align:center;';
-
-      const image = document.createElement('img');
-      // مسار الصورة يُحسب نسبةً إلى ملف script.js نفسه، وليس إلى مسار الصفحة الحالية.
-       const ma3daScriptUrl = document.currentScript && document.currentScript.src
-         ? document.currentScript.src
-         : new URL('./script.js', window.location.href).href;
-       image.src = new URL('./athar-brand-poster.png', ma3daScriptUrl).href;
-      image.alt = 'أثار ATHAR للمعدات الثقيلة — من إرث الحضارة إلى بناء المستقبل';
-      image.loading = 'lazy';
-      image.decoding = 'async';
-      image.style.cssText = 'display:block;width:100%;height:auto;max-height:clamp(150px,32vh,360px);object-fit:cover;object-position:center;border-radius:16px;border:1px solid #c8a45b;box-shadow:0 8px 24px rgba(30,24,14,.14);';
-      banner.appendChild(image);
-
-      const heading = screen.querySelector('h1, .intro-title, .hero-title, .customer-header, .operator-header, .contractor-header');
-      if (heading && heading.parentElement) heading.insertAdjacentElement('afterend', banner);
-      else screen.insertBefore(banner, screen.firstChild);
-    });
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addBranding, { once: true });
-  else addBranding();
-  // بعض لوحات الأدوار تُبنى بعد تسجيل الدخول؛ أعد المحاولة عند تبديل الشاشات.
-  document.addEventListener('click', () => { window.setTimeout(addBranding, 250); }, true);
-})();
+  // صورة الهوية مضمّنة داخل script.js لتفادي اختلاف اسم الملف أو مساره.
+  const atharImage = "data
