@@ -3457,3 +3457,134 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 #ownerDailyNoteSaveBtn {
   margin-top: 8px;
 }
+/* =========================================
+   MA3DA — مركز إدارة المعلومات
+   تنسيقات الأقسام والتصعيدات والملاحظات
+   ========================================= */
+
+/* بطاقات سجلات مركز إدارة المعلومات */
+.owner-admin-record {
+  direction: rtl;
+  text-align: right;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 12px 0;
+  padding: 16px;
+  background: #fffdf7;
+  border: 1px solid rgba(184, 145, 67, 0.28);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* عناوين الحقول */
+.owner-admin-record label {
+  display: block;
+  margin: 10px 0 6px;
+  color: #29251d;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* حقول الإدخال والملاحظات */
+.owner-admin-record input,
+.owner-admin-record select,
+.owner-admin-record textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+  color: #29251d;
+  background: #fff;
+  border: 1px solid #ded5c1;
+  border-radius: 10px;
+  font: inherit;
+  text-align: right;
+}
+
+.owner-admin-record textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.7;
+}
+
+/* أزرار السجلات */
+.owner-admin-record button {
+  margin: 8px 0 0 6px;
+  border-radius: 10px;
+}
+
+/* قائمة تعديلات المعدات في الدعم الفني */
+#supportEquipmentEditsList .support-row {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 10px 0;
+  padding: 14px;
+  background: #fffdf7;
+  border: 1px solid rgba(184, 145, 67, 0.3);
+  border-radius: 12px;
+  text-align: right;
+  direction: rtl;
+}
+
+/* زر حفظ الملاحظات اليومية */
+#ownerDailyNoteSaveBtn {
+  margin-top: 12px;
+}
+
+/* حقول الملاحظات اليومية */
+#ownerDailyNotes,
+#ownerDailyNote,
+#ownerDailyNoteText,
+#ownerDailyNotesText {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  line-height: 1.8;
+  text-align: right;
+  direction: rtl;
+}
+
+/* عرض التصعيدات داخل قسم الشكاوى وموظفي الدعم */
+#ownerEscalationsList,
+#supportEscalationsList,
+[data-owner-view="escalations"] {
+  direction: rtl;
+  text-align: right;
+}
+
+#ownerEscalationsList > *,
+#supportEscalationsList > * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* منع تجاوز المحتوى عرض الشاشة */
+.owner-admin-record *,
+#supportEquipmentEditsList * {
+  overflow-wrap: anywhere;
+}
+
+/* توافق مع الآيفون */
+@media (max-width: 600px) {
+  .owner-admin-record {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .owner-admin-record input,
+  .owner-admin-record select,
+  .owner-admin-record textarea,
+  #ownerDailyNotes,
+  #ownerDailyNote,
+  #ownerDailyNoteText,
+  #ownerDailyNotesText {
+    font-size: 16px;
+  }
+
+  .owner-admin-record button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
