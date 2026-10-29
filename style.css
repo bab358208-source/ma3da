@@ -3423,3 +3423,37 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     max-width: 100%;
   }
 }
+/* =========================================================
+   إضافات اعتماد المعدات والتصعيد وملاحظات مالك التطبيق
+   ========================================================= */
+
+/* 01 — قائمة مراجعة المعدات */
+#supportEquipmentEditsList .support-row {
+  border: 1px solid #e6d6b2;
+  border-radius: 16px;
+  background: #fffdf8;
+}
+
+/* 02 — حقول الملاحظات والتصعيد في لوحة مالك التطبيق */
+.owner-admin-record textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #d8cfbc;
+  border-radius: 10px;
+  font: inherit;
+  margin: 8px 0;
+  background: #fff;
+}
+
+/* 03 — عناوين حقول الملاحظات */
+.owner-admin-record label {
+  display: block;
+  font-weight: 700;
+  margin-top: 12px;
+}
+
+/* 04 — زر حفظ الملاحظة اليومية */
+#ownerDailyNoteSaveBtn {
+  margin-top: 8px;
+}
