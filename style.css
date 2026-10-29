@@ -1,33 +1,33 @@
 * {
   box-sizing: border-box;
 }
- 
+
 html {
   scroll-behavior: smooth;
 }
- 
+
 body {
   margin: 0;
   font-family: Arial, Tahoma, sans-serif;
   background: #f5f5f5;
   color: #111;
 }
- 
+
 button,
 input,
 select,
 textarea {
   font-family: inherit;
 }
- 
+
 button {
   cursor: pointer;
 }
- 
+
 /* =========================================================
    HEADER
 ========================================================= */
- 
+
 .header {
   height: 70px;
   background: #111;
@@ -37,12 +37,12 @@ button {
   justify-content: space-between;
   padding: 0 20px;
 }
- 
+
 .logo {
   font-size: 28px;
   font-weight: bold;
 }
- 
+
 .login-btn {
   background: #fff;
   color: #111;
@@ -51,43 +51,43 @@ button {
   border-radius: 12px;
   font-weight: bold;
 }
- 
+
 /* =========================================================
    GENERAL
 ========================================================= */
- 
+
 main {
   min-height: calc(100vh - 70px);
 }
- 
+
 .screen {
   display: none;
   padding: 30px 16px 50px;
 }
- 
+
 .screen.active {
   display: block;
 }
- 
+
 .hero {
   max-width: 520px;
   margin: 30px auto 20px;
   text-align: center;
 }
- 
+
 .hero-icon {
   font-size: 70px;
 }
- 
+
 .hero h1 {
   font-size: 32px;
   margin: 10px 0;
 }
- 
+
 .hero p {
   color: #666;
 }
- 
+
 .card {
   width: 100%;
   max-width: 520px;
@@ -97,13 +97,13 @@ main {
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,.07);
 }
- 
+
 .card label {
   display: block;
   margin: 17px 0 7px;
   font-weight: bold;
 }
- 
+
 input,
 select,
 textarea {
@@ -114,12 +114,12 @@ textarea {
   background: #fff;
   font-size: 16px;
 }
- 
+
 textarea {
   min-height: 90px;
   resize: vertical;
 }
- 
+
 .main-btn {
   width: 100%;
   border: 0;
@@ -131,32 +131,32 @@ textarea {
   font-size: 17px;
   font-weight: bold;
 }
- 
+
 .center-screen,
 .center {
   text-align: center;
 }
- 
+
 /* =========================================================
    LOADING / SUCCESS
 ========================================================= */
- 
+
 .loader {
   font-size: 70px;
   margin-top: 70px;
   animation: bounce 1s infinite alternate;
 }
- 
+
 @keyframes bounce {
   from {
     transform: translateY(0);
   }
- 
+
   to {
     transform: translateY(-12px);
   }
 }
- 
+
 .success-icon {
   width: 70px;
   height: 70px;
@@ -169,11 +169,11 @@ textarea {
   justify-content: center;
   font-size: 35px;
 }
- 
+
 /* =========================================================
    DRIVER / ORDER INFO
 ========================================================= */
- 
+
 .driver-card {
   display: flex;
   align-items: center;
@@ -183,7 +183,7 @@ textarea {
   border-radius: 15px;
   margin: 20px 0;
 }
- 
+
 .driver-avatar {
   width: 52px;
   height: 52px;
@@ -196,24 +196,24 @@ textarea {
   font-size: 23px;
   font-weight: bold;
 }
- 
+
 .driver-card span {
   display: block;
   color: #777;
   margin-top: 4px;
 }
- 
+
 .info-row {
   display: flex;
   justify-content: space-between;
   padding: 15px 0;
   border-bottom: 1px solid #eee;
 }
- 
+
 /* =========================================================
    MAP / TRACKING
 ========================================================= */
- 
+
 .map {
   position: relative;
   height: 330px;
@@ -237,13 +237,13 @@ textarea {
   border-radius: 18px;
   overflow: hidden;
 }
- 
+
 .road {
   position: absolute;
   background: #fff;
   border: 2px solid #ddd;
 }
- 
+
 .road1 {
   width: 140%;
   height: 35px;
@@ -251,7 +251,7 @@ textarea {
   left: -20%;
   transform: rotate(-20deg);
 }
- 
+
 .road2 {
   width: 120%;
   height: 30px;
@@ -259,72 +259,72 @@ textarea {
   left: -10%;
   transform: rotate(25deg);
 }
- 
+
 .map-point {
   position: absolute;
   z-index: 2;
   font-size: 30px;
 }
- 
+
 .customer {
   right: 12%;
   bottom: 12%;
 }
- 
+
 .equipment {
   right: 55%;
   top: 18%;
   transition: all 1.2s ease;
 }
- 
+
 .tracking-info {
   display: flex;
   justify-content: space-between;
   font-size: 20px;
 }
- 
+
 #trackingStatus {
   color: #666;
 }
- 
+
 .work-icon {
   font-size: 65px;
 }
- 
+
 .timer {
   font-size: 46px;
   font-weight: bold;
   margin: 25px 0;
   direction: ltr;
 }
- 
+
 /* =========================================================
    PAYMENT / RATING
 ========================================================= */
- 
+
 .price-box {
   background: #f5f5f5;
   padding: 20px;
   border-radius: 15px;
   margin-top: 20px;
 }
- 
+
 .price-box span {
   display: block;
   color: #666;
   margin-bottom: 8px;
 }
- 
+
 .price-box strong {
   font-size: 30px;
 }
- 
+
 .payment-options {
   display: grid;
   gap: 12px;
   margin-top: 20px;
 }
- 
+
 .payment-option {
   border: 1px solid #ddd;
   background: #fff;
@@ -333,12 +333,12 @@ textarea {
   text-align: right;
   font-size: 17px;
 }
- 
+
 .payment-option.selected {
   border: 2px solid #111;
   background: #f5f5f5;
 }
- 
+
 .stars {
   display: flex;
   justify-content: center;
@@ -346,32 +346,32 @@ textarea {
   direction: ltr;
   margin: 25px 0;
 }
- 
+
 .stars button {
   border: 0;
   background: transparent;
   font-size: 42px;
   color: #ccc;
 }
- 
+
 .stars button.selected {
   color: #111;
 }
- 
+
 /* =========================================================
    OPERATOR SCREEN
 ========================================================= */
- 
+
 #operatorScreen {
   padding: 25px 16px 40px;
 }
- 
+
 .operator-page {
   width: 100%;
   max-width: 520px;
   margin: auto;
 }
- 
+
 .operator-header {
   display: flex;
   align-items: center;
@@ -382,17 +382,17 @@ textarea {
   margin-bottom: 18px;
   box-shadow: 0 8px 25px rgba(0,0,0,.06);
 }
- 
+
 .operator-header strong {
   display: block;
   font-size: 20px;
   margin-bottom: 4px;
 }
- 
+
 .operator-header small {
   color: #777;
 }
- 
+
 .live-dot {
   width: 13px;
   height: 13px;
@@ -400,14 +400,14 @@ textarea {
   border-radius: 50%;
   display: block;
 }
- 
+
 .operator-request-card {
   background: #fff;
   border-radius: 24px;
   padding: 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
 }
- 
+
 .request-title {
   display: flex;
   align-items: center;
@@ -415,7 +415,7 @@ textarea {
   padding-bottom: 20px;
   border-bottom: 1px solid #eee;
 }
- 
+
 .request-title > span {
   width: 58px;
   height: 58px;
@@ -426,21 +426,21 @@ textarea {
   justify-content: center;
   font-size: 30px;
 }
- 
+
 .request-title h2 {
   margin: 0 0 5px;
   font-size: 23px;
 }
- 
+
 .request-title p {
   margin: 0;
   color: #777;
 }
- 
+
 .operator-info {
   padding: 8px 0;
 }
- 
+
 .operator-info-row {
   display: flex;
   justify-content: space-between;
@@ -449,40 +449,40 @@ textarea {
   border-bottom: 1px solid #f0f0f0;
   gap: 15px;
 }
- 
+
 .operator-info-row span {
   color: #666;
 }
- 
+
 .operator-info-row strong {
   text-align: left;
 }
- 
+
 .operator-notes {
   margin-top: 18px;
   padding: 15px;
   background: #f8f8f8;
   border-radius: 14px;
 }
- 
+
 .operator-notes span {
   display: block;
   font-weight: bold;
   margin-bottom: 8px;
 }
- 
+
 .operator-notes p {
   margin: 0;
   color: #666;
   line-height: 1.7;
 }
- 
+
 .operator-buttons {
   display: flex;
   gap: 12px;
   margin-top: 22px;
 }
- 
+
 .operator-buttons button {
   flex: 1;
   border: 0;
@@ -491,17 +491,17 @@ textarea {
   font-size: 16px;
   font-weight: bold;
 }
- 
+
 .reject-btn {
   background: #f1f1f1;
   color: #333;
 }
- 
+
 .accept-btn {
   background: #111;
   color: #fff;
 }
- 
+
 .operator-status {
   margin-top: 18px;
   background: #fff;
@@ -512,30 +512,30 @@ textarea {
   gap: 12px;
   box-shadow: 0 8px 25px rgba(0,0,0,.05);
 }
- 
+
 .operator-status strong {
   display: block;
   margin-bottom: 4px;
 }
- 
+
 .operator-status small {
   color: #777;
 }
- 
+
 /* =========================================================
    CHAT
 ========================================================= */
- 
+
 #chatScreen {
   padding: 0 !important;
 }
- 
+
 #chatScreen.active {
   display: block;
   padding: 0 !important;
   height: calc(100vh - 70px);
 }
- 
+
 #chatScreen .chat-page {
   width: 100%;
   height: 100%;
@@ -543,7 +543,7 @@ textarea {
   flex-direction: column;
   background: #f5f5f5;
 }
- 
+
 #chatScreen .chat-header {
   flex-shrink: 0;
   display: flex;
@@ -553,19 +553,19 @@ textarea {
   background: #fff;
   border-bottom: 1px solid #ddd;
 }
- 
+
 #chatScreen .chat-back {
   border: 0;
   background: none;
   font-size: 28px;
 }
- 
+
 #chatScreen .chat-driver-info {
   display: flex;
   align-items: center;
   gap: 10px;
 }
- 
+
 #chatScreen .chat-avatar {
   width: 44px;
   height: 44px;
@@ -577,24 +577,24 @@ textarea {
   font-size: 20px;
   font-weight: bold;
 }
- 
+
 #chatScreen .chat-driver-info strong,
 #chatScreen .chat-driver-info span {
   display: block;
 }
- 
+
 #chatScreen .chat-driver-info span {
   font-size: 13px;
   color: #22a447;
   margin-top: 3px;
 }
- 
+
 #chatScreen .chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: 20px 16px;
 }
- 
+
 #chatScreen .message {
   max-width: 75%;
   padding: 10px 14px;
@@ -602,17 +602,17 @@ textarea {
   border-radius: 14px;
   line-height: 1.5;
 }
- 
+
 #chatScreen .message.received {
   background: #fff;
   margin-right: auto;
 }
- 
+
 #chatScreen .message.sent {
   background: #d9fdd3;
   margin-left: auto;
 }
- 
+
 #chatScreen .chat-input-row {
   flex-shrink: 0;
   display: flex;
@@ -621,22 +621,22 @@ textarea {
   background: #fff;
   border-top: 1px solid #ddd;
 }
- 
+
 #chatScreen .chat-input-row input {
   flex: 1;
   padding: 12px;
 }
- 
+
 #chatScreen .chat-input-row .main-btn {
   width: auto;
   margin: 0;
   padding: 10px 16px;
 }
- 
+
 /* =========================================================
    INTRO SCREENS
 ========================================================= */
- 
+
 #introScreen,
 #whyMa3daScreen,
 #howMa3daScreen,
@@ -648,14 +648,14 @@ textarea {
   padding: 40px 20px 25px;
   text-align: center;
 }
- 
+
 #introScreen.active,
 #whyMa3daScreen.active,
 #howMa3daScreen.active,
 #howWorksScreen.active {
   display: flex;
 }
- 
+
 #introScreen .hero,
 #whyMa3daScreen .hero,
 #howMa3daScreen .hero,
@@ -669,7 +669,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
- 
+
 #introScreen .hero-icon,
 #whyMa3daScreen .hero-icon,
 #howMa3daScreen .hero-icon,
@@ -685,7 +685,7 @@ textarea {
   background: #f3f3f3;
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
 }
- 
+
 #introScreen h1,
 #whyMa3daScreen h1,
 #howMa3daScreen h1,
@@ -694,7 +694,7 @@ textarea {
   font-size: 32px;
   font-weight: 800;
 }
- 
+
 #introScreen .hero p,
 #whyMa3daScreen .hero p,
 #howMa3daScreen .hero p,
@@ -704,7 +704,7 @@ textarea {
   line-height: 1.8;
   font-weight: 700;
 }
- 
+
 #introScreen .intro-description,
 #whyMa3daScreen .intro-description,
 #howMa3daScreen .intro-description,
@@ -714,7 +714,7 @@ textarea {
   line-height: 1.8;
   opacity: .65;
 }
- 
+
 #introScreen .card,
 #whyMa3daScreen .card,
 #howMa3daScreen .card,
@@ -726,7 +726,7 @@ textarea {
   background: transparent;
   box-shadow: none;
 }
- 
+
 #introScreen .intro-progress,
 #whyMa3daScreen .intro-progress,
 #howMa3daScreen .intro-progress,
@@ -736,7 +736,7 @@ textarea {
   gap: 8px;
   margin-bottom: 22px;
 }
- 
+
 #introScreen .intro-progress span,
 #whyMa3daScreen .intro-progress span,
 #howMa3daScreen .intro-progress span,
@@ -746,7 +746,7 @@ textarea {
   border-radius: 50%;
   background: #d0d0d0;
 }
- 
+
 #introScreen .intro-progress span.active,
 #whyMa3daScreen .intro-progress span.active,
 #howMa3daScreen .intro-progress span.active,
@@ -755,7 +755,7 @@ textarea {
   border-radius: 10px;
   background: #222;
 }
- 
+
 #introScreen .main-btn,
 #whyMa3daScreen .main-btn,
 #howMa3daScreen .main-btn,
@@ -767,7 +767,7 @@ textarea {
   font-size: 18px;
   font-weight: 800;
 }
- 
+
 #howMa3daScreen #howMa3daSkipBtn,
 #howMa3daScreen #howMa3daBackBtn {
   margin-top: 12px;
@@ -776,15 +776,15 @@ textarea {
   font-size: 15px;
   opacity: .65;
 }
- 
+
 #howMa3daScreen #howMa3daBackBtn {
   display: none;
 }
- 
+
 /* =========================================================
    CUSTOMER HOME
 ========================================================= */
- 
+
 #customerHomeScreen {
   min-height: 100vh;
   padding: 0;
@@ -794,7 +794,7 @@ textarea {
     linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
   color: #111;
 }
- 
+
 #customerHomeScreen .home-page {
   width: 100%;
   max-width: 560px;
@@ -802,7 +802,7 @@ textarea {
   margin: 0 auto;
   padding: 24px 18px 36px;
 }
- 
+
 #customerHomeScreen .home-header {
   display: flex;
   align-items: center;
@@ -810,11 +810,11 @@ textarea {
   gap: 15px;
   margin-bottom: 24px;
 }
- 
+
 #customerHomeScreen .home-header-text {
   min-width: 0;
 }
- 
+
 #customerHomeScreen .home-greeting {
   display: block;
   margin-bottom: 5px;
@@ -822,7 +822,7 @@ textarea {
   color: #777;
   font-weight: 700;
 }
- 
+
 #customerHomeScreen .home-header h1 {
   margin: 0;
   font-size: 30px;
@@ -830,7 +830,7 @@ textarea {
   font-weight: 900;
   letter-spacing: -.7px;
 }
- 
+
 #customerHomeScreen .home-avatar {
   width: 54px;
   height: 54px;
@@ -844,7 +844,7 @@ textarea {
   font-size: 23px;
   box-shadow: 0 10px 25px rgba(0,0,0,.13);
 }
- 
+
 #customerHomeScreen .home-request-card {
   position: relative;
   min-height: 222px;
@@ -856,7 +856,7 @@ textarea {
   color: #fff;
   box-shadow: 0 20px 40px rgba(0,0,0,.17);
 }
- 
+
 #customerHomeScreen .home-request-card::before {
   content: "";
   position: absolute;
@@ -867,9 +867,9 @@ textarea {
   border-radius: 50%;
   background: rgba(255,255,255,.045);
 }
- 
+
 #customerHomeScreen .home-request-card::after {
-  content: "Ã°ÂÂÂ";
+  content: "ÃÂ°ÃÂÃÂÃÂ";
   position: absolute;
   left: -12px;
   bottom: -31px;
@@ -878,7 +878,7 @@ textarea {
   transform: rotate(-7deg);
   pointer-events: none;
 }
- 
+
 #customerHomeScreen .home-request-icon {
   position: relative;
   z-index: 2;
@@ -892,12 +892,12 @@ textarea {
   background: rgba(255,255,255,.12);
   font-size: 29px;
 }
- 
+
 #customerHomeScreen .home-request-content {
   position: relative;
   z-index: 2;
 }
- 
+
 #customerHomeScreen .home-request-content h2 {
   margin: 0 0 6px;
   font-size: 26px;
@@ -905,14 +905,14 @@ textarea {
   font-weight: 900;
   letter-spacing: -.5px;
 }
- 
+
 #customerHomeScreen .home-request-content p {
   margin: 0;
   color: rgba(255,255,255,.67);
   font-size: 14px;
   line-height: 1.6;
 }
- 
+
 #customerHomeScreen .home-request-btn {
   position: relative;
   z-index: 2;
@@ -927,31 +927,31 @@ textarea {
   font-weight: 900;
   transition: transform .15s ease, box-shadow .15s ease;
 }
- 
+
 #customerHomeScreen .home-request-btn span {
   margin-right: 7px;
   font-size: 18px;
 }
- 
+
 #customerHomeScreen .home-request-btn:active {
   transform: scale(.98);
 }
- 
+
 #customerHomeScreen .home-request-btn:hover {
   box-shadow: 0 8px 20px rgba(0,0,0,.18);
 }
- 
+
 #customerHomeScreen .home-section {
   margin-bottom: 25px;
 }
- 
+
 #customerHomeScreen .home-section h2 {
   margin: 0 4px 11px;
   font-size: 17px;
   line-height: 1.4;
   font-weight: 900;
 }
- 
+
 #customerHomeScreen .home-menu-item {
   position: relative;
   width: 100%;
@@ -969,12 +969,12 @@ textarea {
   box-shadow: 0 7px 20px rgba(0,0,0,.045);
   transition: transform .15s ease, box-shadow .15s ease;
 }
- 
+
 #customerHomeScreen .home-menu-item:active {
   transform: scale(.985);
   box-shadow: 0 4px 12px rgba(0,0,0,.035);
 }
- 
+
 #customerHomeScreen .home-menu-item::before {
   content: "";
   width: 44px;
@@ -983,22 +983,22 @@ textarea {
   border-radius: 14px;
   background: #f0f1f3;
 }
- 
+
 #customerHomeScreen .home-menu-item::after {
-  content: "Ã¢ÂÂ";
+  content: "ÃÂ¢ÃÂÃÂ";
   position: absolute;
   left: 16px;
   color: #999;
   font-size: 18px;
 }
- 
+
 #customerHomeScreen .home-features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin: 5px 0 27px;
 }
- 
+
 #customerHomeScreen .home-feature {
   min-height: 108px;
   display: flex;
@@ -1012,12 +1012,12 @@ textarea {
   text-align: center;
   box-shadow: 0 5px 16px rgba(0,0,0,.03);
 }
- 
+
 #customerHomeScreen .home-feature-icon {
   margin-bottom: 8px;
   font-size: 24px;
 }
- 
+
 #customerHomeScreen .home-feature strong {
   display: block;
   margin-bottom: 3px;
@@ -1025,14 +1025,14 @@ textarea {
   line-height: 1.45;
   font-weight: 900;
 }
- 
+
 #customerHomeScreen .home-feature span {
   display: block;
   color: #888;
   font-size: 10px;
   line-height: 1.4;
 }
- 
+
 #customerHomeScreen .home-logout-btn {
   width: 100%;
   min-height: 53px;
@@ -1044,19 +1044,19 @@ textarea {
   font-size: 14px;
   font-weight: 800;
 }
- 
+
 #customerHomeScreen .home-logout-btn span {
   margin-left: 7px;
 }
- 
+
 #customerHomeScreen .home-logout-btn:active {
   transform: scale(.985);
 }
- 
+
 /* =========================================================
    OPERATOR DASHBOARD
 ========================================================= */
- 
+
 #operatorHomeScreen {
   min-height: 100vh;
   padding: 0;
@@ -1064,7 +1064,7 @@ textarea {
     radial-gradient(circle at 100% 0%, rgba(0,0,0,.055), transparent 30%),
     linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
 }
- 
+
 .operator-dashboard {
   width: 100%;
   max-width: 560px;
@@ -1072,7 +1072,7 @@ textarea {
   margin: 0 auto;
   padding: 24px 18px 35px;
 }
- 
+
 .operator-dashboard-header {
   display: flex;
   align-items: center;
@@ -1080,7 +1080,7 @@ textarea {
   gap: 15px;
   margin-bottom: 22px;
 }
- 
+
 .operator-greeting {
   display: block;
   margin-bottom: 5px;
@@ -1088,13 +1088,13 @@ textarea {
   font-size: 14px;
   font-weight: 700;
 }
- 
+
 .operator-dashboard-header h1 {
   margin: 0;
   font-size: 29px;
   font-weight: 900;
 }
- 
+
 .operator-dashboard-avatar {
   width: 56px;
   height: 56px;
@@ -1108,7 +1108,7 @@ textarea {
   font-size: 25px;
   box-shadow: 0 10px 25px rgba(0,0,0,.13);
 }
- 
+
 .operator-online-card {
   display: flex;
   align-items: center;
@@ -1120,7 +1120,7 @@ textarea {
   border: 1px solid rgba(0,0,0,.05);
   box-shadow: 0 8px 22px rgba(0,0,0,.05);
 }
- 
+
 .operator-online-icon {
   width: 43px;
   height: 43px;
@@ -1130,47 +1130,47 @@ textarea {
   border-radius: 14px;
   background: #f0f7f1;
 }
- 
+
 .operator-online-card strong {
   display: block;
   margin-bottom: 4px;
 }
- 
+
 .operator-online-card span {
   display: block;
   color: #777;
   font-size: 13px;
 }
- 
+
 .operator-dashboard-section {
   margin-bottom: 27px;
 }
- 
+
 .operator-dashboard-section > h2,
 .operator-section-title-row h2 {
   margin: 0 4px 11px;
   font-size: 17px;
   font-weight: 900;
 }
- 
+
 .operator-section-title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 11px;
 }
- 
+
 .operator-section-title-row h2 {
   margin-bottom: 0;
 }
- 
+
 .operator-small-btn {
   border: 0;
   background: transparent;
   color: #555;
   font-weight: 800;
 }
- 
+
 .operator-menu-card {
   position: relative;
   width: 100%;
@@ -1187,11 +1187,11 @@ textarea {
   text-align: right;
   box-shadow: 0 7px 20px rgba(0,0,0,.045);
 }
- 
+
 .operator-menu-card:active {
   transform: scale(.985);
 }
- 
+
 .operator-menu-icon {
   width: 45px;
   height: 45px;
@@ -1203,72 +1203,72 @@ textarea {
   background: #f0f1f3;
   font-size: 22px;
 }
- 
+
 .operator-menu-content {
   min-width: 0;
   flex: 1;
 }
- 
+
 .operator-menu-content strong {
   display: block;
   margin-bottom: 4px;
   font-size: 15px;
   font-weight: 900;
 }
- 
+
 .operator-menu-content span {
   display: block;
   color: #888;
   font-size: 12px;
   line-height: 1.5;
 }
- 
+
 .operator-menu-arrow {
   color: #999;
   font-size: 18px;
 }
- 
+
 .operator-equipment-dashboard-card {
   overflow: hidden;
   border-radius: 23px;
   background: #fff;
   box-shadow: 0 9px 25px rgba(0,0,0,.06);
 }
- 
+
 .operator-equipment-image-wrap {
   width: 100%;
   height: 190px;
   background: #eee;
 }
- 
+
 .operator-equipment-image-wrap img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
- 
+
 .operator-equipment-data {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
- 
+
 .operator-equipment-data > div {
   padding: 14px;
   border-bottom: 1px solid #eee;
 }
- 
+
 .operator-equipment-data span {
   display: block;
   margin-bottom: 5px;
   color: #888;
   font-size: 11px;
 }
- 
+
 .operator-equipment-data strong {
   font-size: 14px;
 }
- 
+
 .operator-logout-btn {
   width: 100%;
   min-height: 53px;
@@ -1280,11 +1280,11 @@ textarea {
   font-size: 14px;
   font-weight: 800;
 }
- 
+
 /* =========================================================
    OPERATOR REQUEST / ORDER
 ========================================================= */
- 
+
 .operator-current-status {
   display: flex;
   align-items: center;
@@ -1294,15 +1294,15 @@ textarea {
   border-radius: 15px;
   background: #f5f5f5;
 }
- 
+
 .operator-current-status strong {
   font-size: 15px;
 }
- 
+
 .operator-new-request-card {
   margin-bottom: 15px;
 }
- 
+
 .operator-equipment-large-image {
   width: 100%;
   height: 220px;
@@ -1311,17 +1311,17 @@ textarea {
   border-radius: 18px;
   background: #eee;
 }
- 
+
 .operator-equipment-large-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
- 
+
 /* =========================================================
    OPERATOR STATS
 ========================================================= */
- 
+
 .operator-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1329,7 +1329,7 @@ textarea {
   max-width: 560px;
   margin: 0 auto 20px;
 }
- 
+
 .operator-stat-card {
   min-height: 125px;
   padding: 15px 8px;
@@ -1342,44 +1342,44 @@ textarea {
   text-align: center;
   box-shadow: 0 7px 20px rgba(0,0,0,.05);
 }
- 
+
 .operator-stat-card > span {
   font-size: 22px;
   margin-bottom: 7px;
 }
- 
+
 .operator-stat-card strong {
   display: block;
   font-size: 16px;
   font-weight: 900;
 }
- 
+
 .operator-stat-card small {
   display: block;
   margin-top: 5px;
   color: #888;
   font-size: 10px;
 }
- 
+
 .operator-rating-number strong {
   display: block;
   font-size: 48px;
   font-weight: 900;
 }
- 
+
 .operator-rating-number div {
   margin: 5px 0;
   font-size: 22px;
 }
- 
+
 .operator-rating-number small {
   color: #888;
 }
- 
+
 /* =========================================================
    SUPPORT STAFF PORTAL
 ========================================================= */
- 
+
 .support-screen {
   display: none;
   width: 100%;
@@ -1393,11 +1393,11 @@ textarea {
     radial-gradient(circle at 100% 0%, rgba(0,0,0,.055), transparent 30%),
     linear-gradient(180deg, #fafafa 0%, #f1f2f4 100%);
 }
- 
+
 .support-screen.active {
   display: block !important;
 }
- 
+
 .support-wrap {
   width: 100%;
   max-width: 720px;
@@ -1405,7 +1405,7 @@ textarea {
   margin: 0 auto;
   padding: 24px 18px 35px;
 }
- 
+
 .support-topbar {
   display: flex;
   align-items: center;
@@ -1413,12 +1413,12 @@ textarea {
   gap: 12px;
   margin-bottom: 18px;
 }
- 
+
 .support-brand {
   font-weight: 800;
   font-size: 22px;
 }
- 
+
 .support-badge {
   font-size: 12px;
   padding: 6px 10px;
@@ -1426,7 +1426,7 @@ textarea {
   background: #eef6ff;
   color: #1769aa;
 }
- 
+
 .support-card {
   background: #fff;
   border-radius: 18px;
@@ -1434,24 +1434,24 @@ textarea {
   margin-bottom: 14px;
   box-shadow: 0 6px 24px rgba(0,0,0,.07);
 }
- 
+
 .support-login-card {
   width: 100%;
   max-width: 440px;
   margin: 0 auto 14px;
 }
- 
+
 .support-title {
   margin: 0 0 8px;
   font-size: 25px;
 }
- 
+
 .support-subtitle {
   margin: 0 0 18px;
   color: #6b7280;
   line-height: 1.7;
 }
- 
+
 .support-input {
   width: 100%;
   padding: 14px;
@@ -1460,7 +1460,7 @@ textarea {
   font-size: 16px;
   margin: 7px 0 12px;
 }
- 
+
 .support-btn {
   width: 100%;
   border: 0;
@@ -1470,22 +1470,22 @@ textarea {
   font-weight: 700;
   margin-top: 8px;
 }
- 
+
 .support-primary {
   background: #111827;
   color: #fff;
 }
- 
+
 .support-secondary {
   background: #f3f4f6;
   color: #111827;
 }
- 
+
 .support-danger {
   background: #fee2e2;
   color: #991b1b;
 }
- 
+
 .support-link {
   background: none;
   border: 0;
@@ -1493,20 +1493,20 @@ textarea {
   padding: 10px 0;
   font-size: 14px;
 }
- 
+
 .support-error {
   color: #b91c1c;
   min-height: 20px;
   font-size: 13px;
   margin: 6px 0;
 }
- 
+
 .support-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
- 
+
 .support-menu {
   display: flex;
   gap: 8px;
@@ -1515,7 +1515,7 @@ textarea {
   margin-bottom: 14px;
   -webkit-overflow-scrolling: touch;
 }
- 
+
 .support-menu button {
   white-space: nowrap;
   border: 1px solid #e5e7eb;
@@ -1523,32 +1523,32 @@ textarea {
   border-radius: 12px;
   padding: 10px 13px;
 }
- 
+
 .support-menu button.active {
   background: #111827;
   color: #fff;
   border-color: #111827;
 }
- 
+
 .support-stat {
   font-size: 28px;
   font-weight: 800;
   margin: 5px 0;
 }
- 
+
 .support-label {
   color: #6b7280;
   font-size: 13px;
 }
- 
+
 .support-section {
   display: none;
 }
- 
+
 .support-section.active {
   display: block;
 }
- 
+
 .support-row {
   display: flex;
   justify-content: space-between;
@@ -1556,43 +1556,43 @@ textarea {
   padding: 13px 0;
   border-bottom: 1px solid #eee;
 }
- 
+
 .support-row:last-child {
   border-bottom: 0;
 }
- 
+
 .support-empty {
   color: #6b7280;
   text-align: center;
   padding: 20px 8px;
 }
- 
+
 .support-header-actions {
   display: flex;
   gap: 8px;
 }
- 
+
 .support-header-actions .support-btn {
   width: auto;
   margin: 0;
 }
- 
+
 /* =========================================================
    CONTRACTOR
 ========================================================= */
- 
+
 .contractor-screen {
   min-height: 100vh;
   padding: 24px 18px 40px;
   background: #f7f8fa;
 }
- 
+
 .contractor-container {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
- 
+
 .contractor-header {
   display: flex;
   align-items: center;
@@ -1600,20 +1600,20 @@ textarea {
   gap: 12px;
   margin-bottom: 24px;
 }
- 
+
 .contractor-header h1 {
   margin: 0;
   font-size: 26px;
   font-weight: 800;
   color: #111827;
 }
- 
+
 .contractor-header p {
   margin: 6px 0 0;
   color: #6b7280;
   font-size: 14px;
 }
- 
+
 .contractor-card,
 .contractor-request-box,
 .contractor-details-card,
@@ -1624,29 +1624,29 @@ textarea {
   border: 1px solid #eef0f2;
   box-shadow: 0 7px 22px rgba(0,0,0,.05);
 }
- 
+
 .contractor-card {
   margin-bottom: 16px;
 }
- 
+
 .contractor-card h2 {
   margin: 0 0 8px;
   color: #111827;
   font-size: 20px;
   font-weight: 800;
 }
- 
+
 .contractor-card p {
   color: #6b7280;
   line-height: 1.7;
 }
- 
+
 /* CONTRACTOR FORM */
- 
+
 .contractor-form-group {
   margin-bottom: 16px;
 }
- 
+
 .contractor-form-group label {
   display: block;
   margin-bottom: 7px;
@@ -1654,7 +1654,7 @@ textarea {
   font-weight: 700;
   color: #374151;
 }
- 
+
 .contractor-form-group input,
 .contractor-form-group select,
 .contractor-form-group textarea {
@@ -1668,21 +1668,21 @@ textarea {
   outline: none;
   transition: .2s;
 }
- 
+
 .contractor-form-group textarea {
   min-height: 110px;
   resize: vertical;
 }
- 
+
 .contractor-form-group input:focus,
 .contractor-form-group select:focus,
 .contractor-form-group textarea:focus {
   border-color: #111827;
   box-shadow: 0 0 0 3px rgba(17,24,39,.07);
 }
- 
+
 /* CONTRACTOR BUTTONS */
- 
+
 .contractor-btn {
   width: 100%;
   border: 0;
@@ -1692,28 +1692,28 @@ textarea {
   font-weight: 800;
   transition: .2s;
 }
- 
+
 .contractor-btn:active {
   transform: scale(.98);
 }
- 
+
 .contractor-btn-primary {
   background: #111827;
   color: #fff;
 }
- 
+
 .contractor-btn-secondary {
   background: #f1f3f5;
   color: #111827;
 }
- 
+
 .contractor-btn-danger {
   background: #fff0f0;
   color: #c62828;
 }
- 
+
 /* CONTRACTOR DASHBOARD */
- 
+
 .contractor-welcome {
   background: #111827;
   color: #fff;
@@ -1721,25 +1721,25 @@ textarea {
   padding: 24px 20px;
   margin-bottom: 20px;
 }
- 
+
 .contractor-welcome h1 {
   margin: 0;
   font-size: 25px;
   font-weight: 900;
 }
- 
+
 .contractor-welcome p {
   margin: 8px 0 0;
   color: #d1d5db;
   font-size: 14px;
 }
- 
+
 .contractor-menu {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
- 
+
 .contractor-menu-btn {
   min-height: 105px;
   border: 1px solid #eceff2;
@@ -1751,39 +1751,39 @@ textarea {
   box-shadow: 0 5px 18px rgba(0,0,0,.04);
   transition: .2s;
 }
- 
+
 .contractor-menu-btn:active {
   transform: scale(.97);
 }
- 
+
 .contractor-menu-btn .icon {
   display: block;
   font-size: 28px;
   margin-bottom: 9px;
 }
- 
+
 .contractor-menu-btn .title {
   display: block;
   color: #111827;
   font-size: 14px;
   font-weight: 800;
 }
- 
+
 .contractor-menu-btn .description {
   display: block;
   margin-top: 4px;
   color: #6b7280;
   font-size: 11px;
 }
- 
+
 /* CONTRACTOR ORDERS */
- 
+
 .contractor-orders-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
- 
+
 .contractor-order-card {
   background: #fff;
   border: 1px solid #eceff2;
@@ -1792,19 +1792,19 @@ textarea {
   box-shadow: 0 5px 18px rgba(0,0,0,.04);
   cursor: pointer;
 }
- 
+
 .contractor-order-card h3 {
   margin: 0 0 8px;
   color: #111827;
   font-size: 17px;
 }
- 
+
 .contractor-order-card p {
   margin: 5px 0;
   color: #6b7280;
   font-size: 13px;
 }
- 
+
 .contractor-order-status {
   display: inline-block;
   margin-bottom: 10px;
@@ -1815,9 +1815,9 @@ textarea {
   font-size: 12px;
   font-weight: 800;
 }
- 
+
 /* CONTRACTOR DETAILS */
- 
+
 .contractor-detail-row {
   display: flex;
   justify-content: space-between;
@@ -1826,25 +1826,25 @@ textarea {
   padding: 13px 0;
   border-bottom: 1px solid #f0f1f3;
 }
- 
+
 .contractor-detail-row:last-child {
   border-bottom: 0;
 }
- 
+
 .contractor-detail-label {
   color: #6b7280;
   font-size: 13px;
 }
- 
+
 .contractor-detail-value {
   color: #111827;
   font-size: 14px;
   font-weight: 800;
   text-align: left;
 }
- 
+
 /* CONTRACTOR PROJECTS */
- 
+
 .contractor-project-card {
   background: #fff;
   border-radius: 18px;
@@ -1853,21 +1853,21 @@ textarea {
   border: 1px solid #eceff2;
   box-shadow: 0 5px 18px rgba(0,0,0,.04);
 }
- 
+
 .contractor-project-card h3 {
   margin: 0 0 8px;
   font-size: 17px;
   color: #111827;
 }
- 
+
 .contractor-project-card p {
   margin: 5px 0;
   color: #6b7280;
   font-size: 13px;
 }
- 
+
 /* CONTRACTOR SUPPORT */
- 
+
 .contractor-support-card {
   text-align: center;
   background: #fff;
@@ -1876,26 +1876,26 @@ textarea {
   border: 1px solid #eceff2;
   box-shadow: 0 7px 22px rgba(0,0,0,.05);
 }
- 
+
 .contractor-support-icon {
   font-size: 45px;
   margin-bottom: 12px;
 }
- 
+
 .contractor-support-card h2 {
   margin: 0 0 8px;
   font-size: 21px;
   color: #111827;
 }
- 
+
 .contractor-support-card p {
   margin: 0 0 20px;
   color: #6b7280;
   line-height: 1.8;
 }
- 
+
 /* CONTRACTOR EMPTY */
- 
+
 .contractor-empty {
   text-align: center;
   padding: 45px 20px;
@@ -1903,26 +1903,26 @@ textarea {
   border-radius: 20px;
   border: 1px dashed #d9dde2;
 }
- 
+
 .contractor-empty .icon {
   font-size: 42px;
   margin-bottom: 12px;
 }
- 
+
 .contractor-empty h3 {
   margin: 0 0 7px;
   color: #111827;
   font-size: 18px;
 }
- 
+
 .contractor-empty p {
   margin: 0;
   color: #6b7280;
   font-size: 13px;
 }
- 
+
 /* CONTRACTOR BACK */
- 
+
 .contractor-back-btn {
   border: 0;
   background: #fff;
@@ -1933,17 +1933,17 @@ textarea {
   font-weight: 800;
   box-shadow: 0 4px 12px rgba(0,0,0,.05);
 }
- 
+
 /* =========================================================
    ROLE SCREEN
 ========================================================= */
- 
+
 #roleScreen {
   background: #f7f1e5;
   min-height: 100vh;
   padding: 0;
 }
- 
+
 .role-page {
   width: 100%;
   max-width: 520px;
@@ -1954,7 +1954,7 @@ textarea {
   flex-direction: column;
   align-items: center;
 }
- 
+
 .role-equipment-image {
   width: 100%;
   height: 190px;
@@ -1963,7 +1963,7 @@ textarea {
   justify-content: center;
   margin-bottom: 10px;
 }
- 
+
 .role-equipment-image img {
   width: 100%;
   max-width: 390px;
@@ -1971,20 +1971,20 @@ textarea {
   object-fit: contain;
   display: block;
 }
- 
+
 .role-header {
   width: 100%;
   text-align: center;
   margin-bottom: 25px;
 }
- 
+
 .role-logo {
   margin-bottom: 8px;
   font-size: 24px;
   font-weight: 900;
   color: #171717;
 }
- 
+
 .role-header h1 {
   margin: 0 0 8px;
   font-size: 27px;
@@ -1992,20 +1992,20 @@ textarea {
   font-weight: 900;
   color: #171717;
 }
- 
+
 .role-header p {
   margin: 0;
   font-size: 14px;
   color: #777;
 }
- 
+
 .role-options {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 13px;
 }
- 
+
 .role-option {
   width: 100%;
   min-height: 78px;
@@ -2025,17 +2025,17 @@ textarea {
     border-color .2s ease,
     box-shadow .2s ease;
 }
- 
+
 .role-option:hover {
   transform: translateY(-2px);
   border-color: #c79b3b;
   box-shadow: 0 8px 20px rgba(0,0,0,.08);
 }
- 
+
 .role-option:active {
   transform: scale(.98);
 }
- 
+
 .role-option-icon {
   width: 49px;
   height: 49px;
@@ -2047,7 +2047,7 @@ textarea {
   background: #f3e5bd;
   font-size: 23px;
 }
- 
+
 .role-option-text {
   flex: 1;
   min-width: 0;
@@ -2055,19 +2055,19 @@ textarea {
   flex-direction: column;
   gap: 3px;
 }
- 
+
 .role-option-text strong {
   font-size: 17px;
   font-weight: 800;
   color: #171717;
 }
- 
+
 .role-option-text span {
   font-size: 12px;
   line-height: 1.5;
   color: #777;
 }
- 
+
 .role-arrow {
   width: 32px;
   height: 32px;
@@ -2081,11 +2081,11 @@ textarea {
   font-size: 17px;
   font-weight: 900;
 }
- 
+
 .role-spacer {
   flex: 1;
 }
- 
+
 .role-support-area {
   width: 100%;
   min-height: 185px;
@@ -2094,7 +2094,7 @@ textarea {
   align-items: center;
   justify-content: center;
 }
- 
+
 .role-support-content {
   width: 100%;
   max-width: 520px;
@@ -2103,7 +2103,7 @@ textarea {
   flex-direction: column;
   align-items: center;
 }
- 
+
 .support-subtle-link {
   display: block;
   width: 100%;
@@ -2114,31 +2114,31 @@ textarea {
   text-decoration: none;
   transition: color .2s ease;
 }
- 
+
 .support-subtle-link:hover {
   color: #d0ae67;
 }
- 
+
 .support-line {
   width: 100%;
   height: 1px;
   background: #333;
 }
- 
+
 /* =========================================================
    GENERAL DARK MODE
 ========================================================= */
- 
+
 html[data-theme="dark"] body {
   background: #111;
   color: #f5f5f5;
 }
- 
+
 html[data-theme="dark"] .card {
   background: #1e1e1e;
   color: #f5f5f5;
 }
- 
+
 html[data-theme="dark"] input,
 html[data-theme="dark"] select,
 html[data-theme="dark"] textarea {
@@ -2146,54 +2146,54 @@ html[data-theme="dark"] textarea {
   color: #f5f5f5;
   border-color: #444;
 }
- 
+
 html[data-theme="dark"] .hero p {
   color: #aaa;
 }
- 
+
 html[data-theme="dark"] .driver-card {
   background: #1e1e1e;
 }
- 
+
 html[data-theme="dark"] .operator-header,
 html[data-theme="dark"] .operator-request-card,
 html[data-theme="dark"] .operator-status {
   background: #1e1e1e;
   color: #f5f5f5;
 }
- 
+
 html[data-theme="dark"] .operator-notes,
 html[data-theme="dark"] .price-box {
   background: #292929;
 }
- 
+
 html[data-theme="dark"] .payment-option {
   background: #1e1e1e;
   color: #f5f5f5;
   border-color: #444;
 }
- 
+
 /* CUSTOMER DARK */
- 
+
 html[data-theme="dark"] #customerHomeScreen {
   background:
     radial-gradient(circle at 100% 0%, rgba(255,255,255,.045), transparent 30%),
     linear-gradient(180deg, #171717 0%, #101010 100%);
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-greeting {
   color: #888;
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-avatar {
   background: #242424;
   box-shadow: none;
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-request-card {
   background: linear-gradient(145deg, #1d1d1d, #121212);
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-menu-item,
 html[data-theme="dark"] #customerHomeScreen .home-feature {
   background: #1d1d1d;
@@ -2201,34 +2201,34 @@ html[data-theme="dark"] #customerHomeScreen .home-feature {
   color: #f5f5f5;
   box-shadow: none;
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-menu-item::before {
   background: #292929;
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-menu-item::after,
 html[data-theme="dark"] #customerHomeScreen .home-feature span {
   color: #888;
 }
- 
+
 html[data-theme="dark"] #customerHomeScreen .home-logout-btn {
   background: #1d1d1d;
   border-color: #2a2a2a;
   color: #aaa;
 }
- 
+
 /* OPERATOR DARK */
- 
+
 html[data-theme="dark"] #operatorHomeScreen {
   background:
     radial-gradient(circle at 100% 0%, rgba(255,255,255,.04), transparent 30%),
     linear-gradient(180deg, #171717 0%, #101010 100%);
 }
- 
+
 html[data-theme="dark"] .operator-dashboard-avatar {
   background: #242424;
 }
- 
+
 html[data-theme="dark"] .operator-online-card,
 html[data-theme="dark"] .operator-menu-card,
 html[data-theme="dark"] .operator-equipment-dashboard-card,
@@ -2238,171 +2238,171 @@ html[data-theme="dark"] .operator-stat-card {
   border-color: #292929;
   box-shadow: none;
 }
- 
+
 html[data-theme="dark"] .operator-menu-icon {
   background: #292929;
 }
- 
+
 html[data-theme="dark"] .operator-online-card span,
 html[data-theme="dark"] .operator-menu-content span,
 html[data-theme="dark"] .operator-equipment-data span,
 html[data-theme="dark"] .operator-greeting {
   color: #888;
 }
- 
+
 html[data-theme="dark"] .operator-current-status {
   background: #292929;
 }
- 
+
 html[data-theme="dark"] .operator-logout-btn {
   background: #1d1d1d;
   border-color: #292929;
   color: #aaa;
 }
- 
+
 /* =========================================================
    MOBILE
 ========================================================= */
- 
+
 @media (max-width: 600px) {
- 
+
   .hero h1 {
     font-size: 27px;
   }
- 
+
   .card {
     padding: 20px;
   }
- 
+
   .operator-request-card {
     padding: 18px;
   }
- 
+
   .operator-buttons button {
     padding: 15px 8px;
   }
- 
+
   /* CUSTOMER */
- 
+
   #customerHomeScreen .home-page {
     padding: 22px 16px 30px;
   }
- 
+
   #customerHomeScreen .home-header {
     margin-bottom: 22px;
   }
- 
+
   #customerHomeScreen .home-header h1 {
     font-size: 28px;
   }
- 
+
   #customerHomeScreen .home-avatar {
     width: 50px;
     height: 50px;
     border-radius: 17px;
   }
- 
+
   #customerHomeScreen .home-request-card {
     min-height: 211px;
     padding: 22px 19px 19px;
     border-radius: 25px;
   }
- 
+
   #customerHomeScreen .home-request-content h2 {
     font-size: 24px;
   }
- 
+
   #customerHomeScreen .home-request-btn {
     min-height: 52px;
   }
- 
+
   #customerHomeScreen .home-menu-item {
     min-height: 66px;
     border-radius: 17px;
   }
- 
+
   #customerHomeScreen .home-features {
     gap: 7px;
   }
- 
+
   #customerHomeScreen .home-feature {
     min-height: 103px;
     border-radius: 17px;
   }
- 
+
   /* OPERATOR */
- 
+
   .operator-dashboard {
     padding: 22px 16px 30px;
   }
- 
+
   .operator-dashboard-header h1 {
     font-size: 27px;
   }
- 
+
   .operator-equipment-image-wrap {
     height: 175px;
   }
- 
+
   /* SUPPORT */
- 
+
   .support-screen {
     padding: 0 !important;
   }
- 
+
   .support-wrap {
     min-height: 100vh;
     padding: 22px 16px 30px;
   }
- 
+
   .support-login-card {
     margin-top: 0;
   }
- 
+
   .support-grid {
     grid-template-columns: 1fr;
   }
- 
+
   .support-topbar {
     align-items: flex-start;
   }
- 
+
   .support-header-actions {
     flex-direction: column;
   }
- 
+
   .support-header-actions .support-btn {
     width: 100%;
   }
- 
+
   /* CONTRACTOR */
- 
+
   .contractor-screen {
     padding: 20px 14px 35px;
   }
- 
+
   .contractor-header h1 {
     font-size: 23px;
   }
- 
+
   .contractor-welcome {
     padding: 21px 17px;
     border-radius: 20px;
   }
- 
+
   .contractor-welcome h1 {
     font-size: 22px;
   }
- 
+
   .contractor-menu {
     gap: 10px;
   }
- 
+
   .contractor-menu-btn {
     min-height: 100px;
     padding: 15px 9px;
   }
- 
+
   .contractor-card,
   .contractor-request-box,
   .contractor-details-card,
@@ -2410,181 +2410,178 @@ html[data-theme="dark"] .operator-logout-btn {
     padding: 17px;
     border-radius: 18px;
   }
- 
+
   /* ROLE */
- 
+
   .role-page {
     padding: 22px 16px 20px;
     min-height: calc(100vh - 175px);
   }
- 
+
   .role-equipment-image {
     height: 165px;
   }
- 
+
   .role-equipment-image img {
     height: 165px;
   }
- 
+
   .role-header {
     margin-bottom: 21px;
   }
- 
+
   .role-header h1 {
     font-size: 24px;
   }
- 
+
   .role-header p {
     font-size: 13px;
   }
- 
+
   .role-option {
     min-height: 74px;
     padding: 10px 12px;
   }
- 
+
   .role-option-icon {
     width: 46px;
     height: 46px;
     font-size: 21px;
   }
- 
+
   .role-option-text strong {
     font-size: 16px;
   }
- 
+
   .role-option-text span {
     font-size: 11px;
   }
- 
+
   .role-arrow {
     width: 30px;
     height: 30px;
   }
- 
+
   .role-support-area {
     min-height: 175px;
   }
- 
+
   .role-support-content {
     padding: 20px 18px 22px;
   }
 }
- 
+
 /* =========================================================
    SMALL PHONES
 ========================================================= */
- 
+
 @media (max-width: 380px) {
- 
+
   #customerHomeScreen .home-page {
     padding-left: 13px;
     padding-right: 13px;
   }
- 
+
   #customerHomeScreen .home-header h1 {
     font-size: 25px;
   }
- 
+
   #customerHomeScreen .home-request-card {
     padding: 20px;
     border-radius: 23px;
   }
- 
+
   #customerHomeScreen .home-request-content h2 {
     font-size: 22px;
   }
- 
+
   #customerHomeScreen .home-request-content p {
     font-size: 13px;
   }
- 
+
   #customerHomeScreen .home-feature {
     min-height: 98px;
   }
- 
+
   #customerHomeScreen .home-feature strong {
     font-size: 11px;
   }
- 
+
   #customerHomeScreen .home-feature span {
     font-size: 9px;
   }
- 
+
   /* OPERATOR */
- 
+
   .operator-dashboard {
     padding-left: 13px;
     padding-right: 13px;
   }
- 
+
   .operator-menu-card {
     min-height: 68px;
   }
- 
+
   .operator-stat-card {
     min-height: 112px;
   }
- 
+
   .operator-stat-card strong {
     font-size: 14px;
   }
- 
+
   /* CONTRACTOR */
- 
+
   .contractor-menu {
     grid-template-columns: 1fr;
   }
- 
+
   .contractor-menu-btn {
     min-height: 85px;
   }
- 
+
   .contractor-header h1 {
     font-size: 21px;
   }
- 
+
   /* ROLE */
- 
+
   .role-equipment-image {
     height: 145px;
   }
- 
+
   .role-equipment-image img {
     height: 145px;
   }
- 
+
   .role-header h1 {
     font-size: 22px;
   }
- 
+
   .role-option {
     min-height: 70px;
   }
 }
- 
+
 /* =========================================================
-   MA3DA Ã¢ÂÂ MY SUPPORT TICKETS
-   ÃÂµÃÂÃÂ­ÃÂ© ÃÂ´ÃÂÃÂ§ÃÂÃÂ§ÃÂ ÃÂÃÂ±ÃÂ¯ÃÂÃÂ¯ ÃÂ§ÃÂÃÂ¯ÃÂ¹ÃÂ
- 
-   ÃÂ¥ÃÂ¶ÃÂ§ÃÂÃÂ© ÃÂ
-ÃÂ³ÃÂªÃÂÃÂÃÂ© ÃÂÃÂ¢ÃÂ
-ÃÂÃÂ© ÃÂ¹ÃÂ ÃÂ§ÃÂÃÂªÃÂÃÂ³ÃÂÃÂÃÂ§ÃÂª ÃÂ§ÃÂÃÂ­ÃÂ§ÃÂÃÂÃÂ©
+   MA3DA ÃÂ¢ÃÂÃÂ MY SUPPORT TICKETS
+   ÃÂÃÂµÃÂÃÂÃÂÃÂ­ÃÂÃÂ© ÃÂÃÂ´ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ§ÃÂÃÂ ÃÂÃÂÃÂÃÂ±ÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¯ ÃÂÃÂ§ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¹ÃÂÃÂ
+   ÃÂÃÂ¥ÃÂÃÂ¶ÃÂÃÂ§ÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ³ÃÂÃÂªÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂ¹ÃÂÃÂ ÃÂÃÂ§ÃÂÃÂÃÂÃÂªÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂª ÃÂÃÂ§ÃÂÃÂÃÂÃÂ­ÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂ©
 ========================================================= */
- 
+
 .ma3da-my-tickets-screen {
   min-height: 100vh;
   padding: 24px 16px 40px;
   background: #f5f5f5;
   color: #111;
 }
- 
+
 .ma3da-my-tickets-screen .ma3da-my-tickets-header {
   width: 100%;
   max-width: 600px;
   margin: 0 auto 22px;
 }
- 
+
 .ma3da-my-tickets-screen .ma3da-tickets-back {
   width: auto;
   min-width: 110px;
@@ -2592,21 +2589,21 @@ html[data-theme="dark"] .operator-logout-btn {
   padding: 12px 18px;
   font-size: 14px;
 }
- 
+
 .ma3da-my-tickets-screen h1 {
   margin: 0 0 9px;
   font-size: 26px;
   line-height: 1.5;
   font-weight: 900;
 }
- 
+
 .ma3da-my-tickets-screen .ma3da-my-tickets-header p {
   margin: 0;
   color: #737373;
   font-size: 14px;
   line-height: 1.8;
 }
- 
+
 .ma3da-my-tickets-actions,
 .ma3da-tickets-feedback,
 .ma3da-my-tickets-list {
@@ -2615,17 +2612,17 @@ html[data-theme="dark"] .operator-logout-btn {
   margin-right: auto;
   margin-left: auto;
 }
- 
+
 .ma3da-my-tickets-actions {
   margin-bottom: 14px;
 }
- 
+
 .ma3da-my-tickets-actions .main-btn {
   margin-top: 0;
   min-height: 48px;
   font-size: 15px;
 }
- 
+
 .ma3da-tickets-feedback {
   min-height: 22px;
   margin-top: 12px;
@@ -2634,7 +2631,7 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 13px;
   line-height: 1.8;
 }
- 
+
 .ma3da-ticket-empty {
   padding: 28px 18px;
   border: 1px dashed #d5d5d5;
@@ -2644,7 +2641,7 @@ html[data-theme="dark"] .operator-logout-btn {
   text-align: center;
   line-height: 1.9;
 }
- 
+
 .ma3da-ticket-card {
   margin-bottom: 14px;
   padding: 18px;
@@ -2654,13 +2651,13 @@ html[data-theme="dark"] .operator-logout-btn {
   box-shadow: 0 6px 20px rgba(0, 0, 0, .045);
   overflow-wrap: anywhere;
 }
- 
+
 .ma3da-ticket-card h2 {
   margin: 0 0 12px;
   font-size: 17px;
   line-height: 1.7;
 }
- 
+
 .ma3da-ticket-meta {
   display: flex;
   flex-wrap: wrap;
@@ -2670,7 +2667,7 @@ html[data-theme="dark"] .operator-logout-btn {
   color: #777;
   font-size: 12px;
 }
- 
+
 .ma3da-ticket-status {
   display: inline-block;
   padding: 6px 11px;
@@ -2680,17 +2677,17 @@ html[data-theme="dark"] .operator-logout-btn {
   font-size: 12px;
   font-weight: 800;
 }
- 
+
 .ma3da-ticket-status.is-replied {
   background: #e8f5e9;
   color: #23723a;
 }
- 
+
 .ma3da-ticket-status.is-pending {
   background: #fff4dc;
   color: #8a5a00;
 }
- 
+
 .ma3da-ticket-message {
   padding: 14px;
   border-radius: 13px;
@@ -2701,7 +2698,7 @@ html[data-theme="dark"] .operator-logout-btn {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
- 
+
 .ma3da-ticket-reply {
   margin-top: 14px;
   padding: 15px;
@@ -2710,13 +2707,13 @@ html[data-theme="dark"] .operator-logout-btn {
   background: #fff9ec;
   color: #28231a;
 }
- 
+
 .ma3da-ticket-reply h3 {
   margin: 0 0 8px;
   font-size: 15px;
   font-weight: 900;
 }
- 
+
 .ma3da-ticket-reply p {
   margin: 0;
   font-size: 14px;
@@ -2724,65 +2721,62 @@ html[data-theme="dark"] .operator-logout-btn {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
- 
+
 .ma3da-ticket-reply time {
   display: block;
   margin-top: 9px;
   color: #777;
   font-size: 11px;
 }
- 
+
 html[data-theme="dark"] .ma3da-my-tickets-screen {
   background: #111;
   color: #f5f5f5;
 }
- 
+
 html[data-theme="dark"] .ma3da-ticket-card,
 html[data-theme="dark"] .ma3da-ticket-empty {
   background: #1e1e1e;
   border-color: #333;
   color: #eee;
 }
- 
+
 html[data-theme="dark"] .ma3da-ticket-message {
   background: #292929;
   color: #eee;
 }
- 
+
 html[data-theme="dark"] .ma3da-ticket-reply {
   background: #30291c;
   color: #f5e9cf;
 }
- 
+
 html[data-theme="dark"] .ma3da-ticket-meta,
 html[data-theme="dark"] .ma3da-tickets-feedback {
   color: #aaa;
 }
- 
+
 @media (max-width: 600px) {
   .ma3da-my-tickets-screen {
     padding: 20px 14px 32px;
   }
- 
+
   .ma3da-my-tickets-screen h1 {
     font-size: 23px;
   }
- 
+
   .ma3da-ticket-card {
     padding: 15px;
     border-radius: 16px;
   }
 }
- 
- 
-/* ÃÂ
-ÃÂ±ÃÂ§ÃÂ¬ÃÂ¹ÃÂ© ÃÂ
-ÃÂ±ÃÂ§ÃÂ­ÃÂ ÃÂ§ÃÂÃÂ
-ÃÂ´ÃÂ§ÃÂ±ÃÂÃÂ¹ ÃÂÃÂ§ÃÂÃÂÃÂÃÂ§ÃÂªÃÂÃÂ± */
+
+
+/* ÃÂÃÂÃÂÃÂ±ÃÂÃÂ§ÃÂÃÂ¬ÃÂÃÂ¹ÃÂÃÂ© ÃÂÃÂÃÂÃÂ±ÃÂÃÂ§ÃÂÃÂ­ÃÂÃÂ ÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂ´ÃÂÃÂ§ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¹ ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂªÃÂÃÂÃÂÃÂ± */
 .owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 #ownerInvoiceIssueFields{margin-top:16px}
 #ownerInvoiceIssueFields[hidden]{display:none}
- 
+
 /* Project equipment tracking - additive styles */
 #contractorEquipmentPickerScreen .contractor-project-overview-card,
 #contractorEquipmentPickerScreen .contractor-equipment-tracking-card{border:1px solid #dfd0a8;background:linear-gradient(135deg,#fffdf8,#f8f0dc);border-radius:16px;padding:16px;margin:12px 0}
@@ -2794,7 +2788,7 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 #contractorProjectEquipmentTracking .contractor-tracking-item a,
 .operator-new-request-card a{color:#775716;font-weight:700;text-decoration:underline}
 #contractorScheduledStartAt{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;font:inherit;margin:8px 0 12px}
- 
+
 /* Owner incoming requests: customer/project tabs */
 .operator-request-toolbar{margin:12px 0 16px;}
 .operator-request-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
@@ -2803,7 +2797,7 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 #refreshOperatorRequestsBtn{font:inherit;padding:10px 14px;border:1px solid #d8cfbc;border-radius:10px;background:#fff;color:#171717;cursor:pointer;}
 #operatorRequestsLastUpdated{font-size:12px;margin:8px 0;color:#6b665b;}
 #operatorCustomerRequestsPanel[hidden],#operatorProjectRequestsPanel[hidden]{display:none!important;}
- 
+
 /* Owner incoming request tabs: customer requests and project requests */
 .operator-request-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 12px}
 .operator-request-tab{min-height:48px;padding:12px 10px;border:1px solid #d7c6a0;border-radius:12px;background:#fffaf0;color:#27231d;font:inherit;font-weight:700;cursor:pointer}
@@ -2812,8 +2806,8 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 .operator-requests-toolbar span{font-size:.85rem;color:#6d6557}
 #operatorProjectRequestsPanel[hidden],#operatorCustomerRequestsPanel[hidden]{display:none!important}
 @media(max-width:420px){.operator-request-tabs{gap:7px}.operator-request-tab{font-size:.88rem;padding:10px 6px}}
- 
-/* MA3DA premium client identity â charcoal, gold and warm ivory */
+
+/* MA3DA premium client identity Ã¢ÂÂ charcoal, gold and warm ivory */
 :root{--ma3da-gold:#bd8a2d;--ma3da-gold-light:#e7c77f;--ma3da-ink:#191919;--ma3da-cream:#fbf6eb;--ma3da-sand:#f2e7d3;--ma3da-line:#e8dac0}
 body{background:linear-gradient(145deg,#fbf8f1 0%,#f4ead8 100%);color:var(--ma3da-ink)}
 .screen{color:var(--ma3da-ink)}
@@ -2840,8 +2834,7 @@ body{background:linear-gradient(145deg,#fbf8f1 0%,#f4ead8 100%);color:var(--ma3d
 .home-menu-text span{color:#766d60}
 /* Keep one simple navigation arrow; hide any decorative question/help mark beside it. */
 .home-arrow{color:#a87927;font-size:20px;font-weight:800;line-height:1}
-.home-menu-item .fa-circle-question,.home-menu-item .question-mark,.home-menu-item [aria-label*="Ù
-Ø³Ø§Ø¹Ø¯Ø©"]{display:none!important}
+.home-menu-item .fa-circle-question,.home-menu-item .question-mark,.home-menu-item [aria-label*="ÃÂÃÂ³ÃÂ§ÃÂ¹ÃÂ¯ÃÂ©"]{display:none!important}
 .home-features{gap:10px}
 .home-feature{background:#fffaf0;border:1px solid var(--ma3da-line);padding:13px 8px}
 .home-feature-icon{color:var(--ma3da-gold)}
@@ -2857,22 +2850,22 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 #customerSupportTicketForm h2{text-align:center;font-size:23px;color:#171717}
 #customerSupportTicketForm{border-top:3px solid #c99a3e}
 @media(max-width:480px){.home-page{padding-left:10px;padding-right:10px}.home-header{margin-left:-10px;margin-right:-10px}.home-menu-item{padding:12px;gap:10px}.home-menu-text strong{font-size:15px}.home-menu-text span{font-size:12px}}
- 
-/* مركز إدارة المعلومات — هوية مِعدة الذهبية */
- 
+
+/* ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª â ÙÙÙØ© ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙØ¨ÙØ© */
+
 #supportSectionOwnerInfo {
   color: #211b12;
   background: linear-gradient(135deg, #fffaf0, #f6eedf);
   border: 1px solid #ead9b8;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-heading {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 18px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-shield {
   width: 52px;
   height: 52px;
@@ -2883,26 +2876,26 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #e6bd70;
   font-size: 25px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-heading h2 {
   margin: 0 0 5px;
   font-size: 25px;
   color: #211b12;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-heading p {
   margin: 0;
   color: #786b56;
   font-size: 13px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 16px 0;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-stat {
   min-width: 0;
   padding: 17px 13px;
@@ -2911,14 +2904,14 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border-radius: 16px;
   box-shadow: 0 5px 16px rgba(65, 45, 12, 0.05);
 }
- 
+
 #supportSectionOwnerInfo .owner-info-stat span {
   display: block;
   color: #786b56;
   font-size: 13px;
   margin-bottom: 10px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-stat strong {
   display: block;
   font-size: 21px;
@@ -2926,21 +2919,21 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   overflow-wrap: anywhere;
   color: #211b12;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-stat small {
   display: block;
   margin-top: 5px;
   color: #95866e;
   font-size: 11px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-menu {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 16px 0;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-menu-item {
   border: 1px solid #e9d8b8;
   border-radius: 13px;
@@ -2950,7 +2943,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #2c2417;
   font-weight: 700;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-menu-item span {
   display: block;
   font-size: 12px;
@@ -2958,7 +2951,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #8b7b60;
   margin-top: 5px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-note {
   padding: 12px 14px;
   background: #f8edda;
@@ -2967,7 +2960,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font-size: 12px;
   line-height: 1.7;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-activity-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -2975,36 +2968,36 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   padding: 12px 0;
   border-bottom: 1px solid #eee2ce;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-activity-row span,
 #supportSectionOwnerInfo .owner-info-activity-row small {
   color: #81745f;
   font-size: 12px;
 }
- 
+
 #supportSectionOwnerInfo .owner-info-activity-row small {
   grid-column: 1 / -1;
 }
- 
-/* تنسيق الشاشات الصغيرة */
- 
+
+/* ØªÙØ³ÙÙ Ø§ÙØ´Ø§Ø´Ø§Øª Ø§ÙØµØºÙØ±Ø© */
+
 @media (max-width: 560px) {
   #supportSectionOwnerInfo .owner-info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
- 
+
   #supportSectionOwnerInfo .owner-info-menu {
     grid-template-columns: 1fr;
   }
- 
+
   #supportSectionOwnerInfo .owner-info-heading h2 {
     font-size: 21px;
   }
 }
 /* ==========================================
-   مساعد مِعدة الذكي — الهوية الذهبية والسوداء
+   ÙØ³Ø§Ø¹Ø¯ ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙÙ â Ø§ÙÙÙÙØ© Ø§ÙØ°ÙØ¨ÙØ© ÙØ§ÙØ³ÙØ¯Ø§Ø¡
    ========================================== */
- 
+
 .ma3da-ai-launcher {
   position: fixed;
   z-index: 9990;
@@ -3015,7 +3008,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   gap: 10px;
   direction: rtl;
 }
- 
+
 .ma3da-ai-orb {
   width: 58px;
   height: 58px;
@@ -3035,7 +3028,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   place-items: center;
   animation: ma3daAiPulse 3s ease-in-out infinite;
 }
- 
+
 .ma3da-ai-orb-core {
   display: grid;
   place-items: center;
@@ -3045,7 +3038,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border-radius: 50%;
   font-size: 25px;
 }
- 
+
 .ma3da-ai-launcher-label {
   background: #151515;
   color: #f2d99b;
@@ -3054,7 +3047,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   padding: 7px 11px;
   font-size: 12px;
 }
- 
+
 .ma3da-ai-panel {
   position: fixed;
   z-index: 9991;
@@ -3072,11 +3065,11 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   direction: rtl;
   color: #171717;
 }
- 
+
 .ma3da-ai-panel[hidden] {
   display: none !important;
 }
- 
+
 .ma3da-ai-head {
   background: linear-gradient(120deg, #101112, #28231a);
   color: #f5e2b5;
@@ -3086,18 +3079,18 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   justify-content: space-between;
   border-bottom: 2px solid #c8a45b;
 }
- 
+
 .ma3da-ai-head strong,
 .ma3da-ai-head small {
   display: block;
 }
- 
+
 .ma3da-ai-head small {
   font-size: 11px;
   color: #eee0bd;
   margin-top: 4px;
 }
- 
+
 .ma3da-ai-head button {
   background: transparent;
   border: 1px solid #c8a45b;
@@ -3108,7 +3101,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   height: 34px;
   cursor: pointer;
 }
- 
+
 .ma3da-ai-messages {
   padding: 13px;
   flex: 1;
@@ -3117,7 +3110,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   flex-direction: column;
   gap: 10px;
 }
- 
+
 .ma3da-ai-message {
   max-width: 92%;
   white-space: pre-wrap;
@@ -3127,26 +3120,26 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font-size: 14px;
   line-height: 1.7;
 }
- 
+
 .ma3da-ai-message.assistant {
   align-self: flex-start;
   background: #f4ead2;
   border: 1px solid #ead9ad;
 }
- 
+
 .ma3da-ai-message.user {
   align-self: flex-end;
   background: #1b1b1b;
   color: #fff4d7;
 }
- 
+
 .ma3da-ai-form {
   display: flex;
   gap: 7px;
   padding: 10px;
   border-top: 1px solid #eadfc5;
 }
- 
+
 .ma3da-ai-form input {
   flex: 1;
   min-width: 0;
@@ -3156,7 +3149,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font: inherit;
   background: #fff;
 }
- 
+
 .ma3da-ai-form button {
   border: 1px solid #c8a45b;
   background: #171819;
@@ -3166,47 +3159,47 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font: inherit;
   cursor: pointer;
 }
- 
+
 .ma3da-ai-form button:disabled {
   opacity: 0.55;
   cursor: wait;
 }
- 
+
 .ma3da-ai-status {
   font-size: 11px;
   color: #766747;
   margin: 0;
   padding: 0 12px 8px;
 }
- 
+
 @keyframes ma3daAiPulse {
   0%, 100% {
     box-shadow: 0 0 0 4px #c8a45b22, 0 8px 25px #0003;
   }
- 
+
   50% {
     box-shadow: 0 0 0 8px #c8a45b12, 0 8px 30px #c8a45b33;
   }
 }
- 
+
 @media (max-width: 560px) {
   .ma3da-ai-launcher {
     left: 12px;
     bottom: 14px;
   }
- 
+
   .ma3da-ai-panel {
     left: 10px;
     bottom: 82px;
     width: calc(100vw - 20px);
     height: min(500px, calc(100dvh - 105px));
   }
- 
+
   .ma3da-ai-launcher-label {
     font-size: 11px;
   }
 }
-/* صفحات إدارة المساعد الذكي */
+/* ØµÙØ­Ø§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ³Ø§Ø¹Ø¯ Ø§ÙØ°ÙÙ */
 .ma3da-ai-admin-page {
   position: fixed;
   inset: 0;
@@ -3217,11 +3210,11 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #191919;
   direction: rtl;
 }
- 
+
 .ma3da-ai-admin-page[hidden] {
   display: none !important;
 }
- 
+
 .ma3da-ai-admin-header {
   display: flex;
   justify-content: space-between;
@@ -3233,16 +3226,16 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border-bottom: 3px solid #c8a45b;
   border-radius: 14px;
 }
- 
+
 .ma3da-ai-admin-header h2 {
   margin: 0 0 6px;
 }
- 
+
 .ma3da-ai-admin-header p {
   margin: 0;
   font-size: 13px;
 }
- 
+
 .ma3da-ai-admin-page button {
   cursor: pointer;
   padding: 10px 14px;
@@ -3253,14 +3246,14 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #f2d99b;
   font: inherit;
 }
- 
+
 .ma3da-ai-admin-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin: 18px 0;
 }
- 
+
 .ma3da-ai-admin-card {
   padding: 15px;
   margin: 12px 0;
@@ -3269,18 +3262,18 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   background: #fff;
   overflow-wrap: anywhere;
 }
- 
+
 .ma3da-ai-admin-card p {
   line-height: 1.8;
 }
- 
+
 .ma3da-ai-admin-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin: 18px 0;
 }
- 
+
 .ma3da-ai-admin-stats article {
   display: flex;
   flex-direction: column;
@@ -3292,15 +3285,15 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border: 1px solid #c8a45b;
   border-radius: 12px;
 }
- 
+
 .ma3da-ai-admin-stats strong {
   font-size: 25px;
 }
- 
+
 .ma3da-ai-admin-stats span {
   font-size: 12px;
 }
- 
+
 .ma3da-ai-knowledge-form {
   display: flex;
   flex-direction: column;
@@ -3310,7 +3303,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border: 1px solid #e0d2ae;
   border-radius: 14px;
 }
- 
+
 .ma3da-ai-knowledge-form input,
 .ma3da-ai-knowledge-form textarea,
 #ma3daAiKnowledgeSearch,
@@ -3324,13 +3317,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #191919;
   font: inherit;
 }
- 
+
 .ma3da-ai-knowledge-form textarea,
 #ma3daAiSupportReply {
   min-height: 110px;
   resize: vertical;
 }
- 
+
 #ma3daAiSupportConversation {
   padding: 15px;
   margin-top: 18px;
@@ -3338,19 +3331,19 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border: 1px solid #e0d2ae;
   border-radius: 14px;
 }
- 
+
 #ma3daAiSupportMessages {
   min-height: 100px;
   max-height: 45vh;
   overflow-y: auto;
 }
- 
+
 #ma3daAiSupportReplyForm {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
- 
+
 .ma3da-ai-entry-button {
   display: block;
   width: calc(100% - 20px);
@@ -3363,33 +3356,33 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font: inherit;
   cursor: pointer;
 }
- 
+
 @media (max-width: 560px) {
   .ma3da-ai-admin-page {
     padding: 10px;
   }
- 
+
   .ma3da-ai-admin-stats {
     grid-template-columns: 1fr;
   }
- 
+
   .ma3da-ai-admin-header {
     align-items: flex-start;
   }
 }
-/* مساعد مِعدة الذكي — لوحة المالك */
+/* ÙØ³Ø§Ø¹Ø¯ ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙÙ â ÙÙØ­Ø© Ø§ÙÙØ§ÙÙ */
 #ownerAssistantKnowledgeSection {
   direction: rtl;
   text-align: right;
   margin-top: 24px;
 }
- 
+
 #ownerAssistantKnowledgeSection label {
   display: block;
   margin: 12px 0 6px;
   font-weight: 700;
 }
- 
+
 #ownerAssistantKnowledgeSection input,
 #ownerAssistantKnowledgeSection textarea {
   box-sizing: border-box;
@@ -3401,11 +3394,11 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   color: #171717;
   font: inherit;
 }
- 
+
 #ownerAssistantKnowledgeSection button {
   margin: 6px 4px 6px 0;
 }
- 
+
 #ownerAssistantList .owner-admin-record {
   margin: 12px 0;
   padding: 14px;
@@ -3414,34 +3407,34 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   background: #fffdf8;
   overflow-wrap: anywhere;
 }
- 
+
 #ownerAssistantKnowledgeSection [role="status"] {
   margin-top: 10px;
   color: #746b5b;
 }
- 
+
 @media (max-width: 600px) {
   #ownerAssistantKnowledgeSection input,
   #ownerAssistantKnowledgeSection textarea {
     font-size: 16px;
   }
- 
+
   #ownerAssistantKnowledgeSection button {
     max-width: 100%;
   }
 }
 /* =========================================================
-   إضافات اعتماد المعدات والتصعيد وملاحظات مالك التطبيق
+   Ø¥Ø¶Ø§ÙØ§Øª Ø§Ø¹ØªÙØ§Ø¯ Ø§ÙÙØ¹Ø¯Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ
    ========================================================= */
- 
-/* 01 — قائمة مراجعة المعدات */
+
+/* 01 â ÙØ§Ø¦ÙØ© ÙØ±Ø§Ø¬Ø¹Ø© Ø§ÙÙØ¹Ø¯Ø§Øª */
 #supportEquipmentEditsList .support-row {
   border: 1px solid #e6d6b2;
   border-radius: 16px;
   background: #fffdf8;
 }
- 
-/* 02 — حقول الملاحظات والتصعيد في لوحة مالك التطبيق */
+
+/* 02 â Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙ ÙÙØ­Ø© ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ */
 .owner-admin-record textarea {
   width: 100%;
   box-sizing: border-box;
@@ -3452,24 +3445,24 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   margin: 8px 0;
   background: #fff;
 }
- 
-/* 03 — عناوين حقول الملاحظات */
+
+/* 03 â Ø¹ÙØ§ÙÙÙ Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª */
 .owner-admin-record label {
   display: block;
   font-weight: 700;
   margin-top: 12px;
 }
- 
-/* 04 — زر حفظ الملاحظة اليومية */
+
+/* 04 â Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø© Ø§ÙÙÙÙÙØ© */
 #ownerDailyNoteSaveBtn {
   margin-top: 8px;
 }
 /* =========================================
-   MA3DA — مركز إدارة المعلومات
-   تنسيقات الأقسام والتصعيدات والملاحظات
+   MA3DA â ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª
+   ØªÙØ³ÙÙØ§Øª Ø§ÙØ£ÙØ³Ø§Ù ÙØ§ÙØªØµØ¹ÙØ¯Ø§Øª ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª
    ========================================= */
- 
-/* بطاقات سجلات مركز إدارة المعلومات */
+
+/* Ø¨Ø·Ø§ÙØ§Øª Ø³Ø¬ÙØ§Øª ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª */
 .owner-admin-record {
   direction: rtl;
   text-align: right;
@@ -3482,8 +3475,8 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   border-radius: 14px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
 }
- 
-/* عناوين الحقول */
+
+/* Ø¹ÙØ§ÙÙÙ Ø§ÙØ­ÙÙÙ */
 .owner-admin-record label {
   display: block;
   margin: 10px 0 6px;
@@ -3491,8 +3484,8 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font-weight: 700;
   text-align: right;
 }
- 
-/* حقول الإدخال والملاحظات */
+
+/* Ø­ÙÙÙ Ø§ÙØ¥Ø¯Ø®Ø§Ù ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª */
 .owner-admin-record input,
 .owner-admin-record select,
 .owner-admin-record textarea {
@@ -3509,20 +3502,20 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font: inherit;
   text-align: right;
 }
- 
+
 .owner-admin-record textarea {
   min-height: 110px;
   resize: vertical;
   line-height: 1.7;
 }
- 
-/* أزرار السجلات */
+
+/* Ø£Ø²Ø±Ø§Ø± Ø§ÙØ³Ø¬ÙØ§Øª */
 .owner-admin-record button {
   margin: 8px 0 0 6px;
   border-radius: 10px;
 }
- 
-/* قائمة تعديلات المعدات في الدعم الفني */
+
+/* ÙØ§Ø¦ÙØ© ØªØ¹Ø¯ÙÙØ§Øª Ø§ÙÙØ¹Ø¯Ø§Øª ÙÙ Ø§ÙØ¯Ø¹Ù Ø§ÙÙÙÙ */
 #supportEquipmentEditsList .support-row {
   box-sizing: border-box;
   width: 100%;
@@ -3534,13 +3527,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   text-align: right;
   direction: rtl;
 }
- 
-/* زر حفظ الملاحظات اليومية */
+
+/* Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
 #ownerDailyNoteSaveBtn {
   margin-top: 12px;
 }
- 
-/* حقول الملاحظات اليومية */
+
+/* Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
 #ownerDailyNotes,
 #ownerDailyNote,
 #ownerDailyNoteText,
@@ -3552,34 +3545,34 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   text-align: right;
   direction: rtl;
 }
- 
-/* عرض التصعيدات داخل قسم الشكاوى وموظفي الدعم */
+
+/* Ø¹Ø±Ø¶ Ø§ÙØªØµØ¹ÙØ¯Ø§Øª Ø¯Ø§Ø®Ù ÙØ³Ù Ø§ÙØ´ÙØ§ÙÙ ÙÙÙØ¸ÙÙ Ø§ÙØ¯Ø¹Ù */
 #ownerEscalationsList,
 #supportEscalationsList,
 [data-owner-view="escalations"] {
   direction: rtl;
   text-align: right;
 }
- 
+
 #ownerEscalationsList > *,
 #supportEscalationsList > * {
   box-sizing: border-box;
   max-width: 100%;
 }
- 
-/* منع تجاوز المحتوى عرض الشاشة */
+
+/* ÙÙØ¹ ØªØ¬Ø§ÙØ² Ø§ÙÙØ­ØªÙÙ Ø¹Ø±Ø¶ Ø§ÙØ´Ø§Ø´Ø© */
 .owner-admin-record *,
 #supportEquipmentEditsList * {
   overflow-wrap: anywhere;
 }
- 
-/* توافق مع الآيفون */
+
+/* ØªÙØ§ÙÙ ÙØ¹ Ø§ÙØ¢ÙÙÙÙ */
 @media (max-width: 600px) {
   .owner-admin-record {
     padding: 12px;
     border-radius: 12px;
   }
- 
+
   .owner-admin-record input,
   .owner-admin-record select,
   .owner-admin-record textarea,
@@ -3589,130 +3582,151 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   #ownerDailyNotesText {
     font-size: 16px;
   }
- 
+
   .owner-admin-record button {
     max-width: 100%;
     white-space: normal;
   }
 }
- 
- 
-/* =========================================================
-   ATHAR | الهوية البصرية المعتمدة
-   تغييرات تصميمية فقط، دون تغيير سلوك عناصر التطبيق.
-========================================================= */
-.athar-brand-strip {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  margin: 0 auto 18px;
-  text-align: center;
-  color: #111;
-  line-height: 1.1;
-}
-.athar-brand-ar {
-  font-size: clamp(32px, 7vw, 46px);
-  font-weight: 950;
-  letter-spacing: .2px;
-  background: linear-gradient(115deg, #8d6320 0%, #e7c36d 38%, #a87825 72%, #f0d68d 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 2px 12px rgba(181,137,55,.12);
-}
-.athar-brand-en {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .42em;
-  padding-left: .42em;
-  color: #8d692a;
-}
-.athar-brand-tagline {
-  margin-top: 7px;
-  color: #242424;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.6;
-}
-.athar-intro-logo {
-  width: min(190px, 48vw) !important;
-  height: auto !important;
-  aspect-ratio: 2 / 3;
-  padding: 0 !important;
-  overflow: hidden;
-  border-radius: 20px !important;
-  background: #080a0c !important;
-  box-shadow: 0 14px 36px rgba(0,0,0,.18) !important;
-  margin: 0 auto 18px !important;
-}
-.athar-intro-logo img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-#introScreen, #whyMa3daScreen, #howMa3daScreen, #howWorksScreen {
-  padding-top: max(18px, env(safe-area-inset-top));
-}
-#introScreen .athar-brand-strip,
-#whyMa3daScreen .athar-brand-strip,
-#howMa3daScreen .athar-brand-strip,
-#howWorksScreen .athar-brand-strip { flex: 0 0 auto; margin-bottom: 5px; }
-#introScreen .hero, #whyMa3daScreen .hero, #howMa3daScreen .hero, #howWorksScreen .hero { flex: 1 1 auto; }
-#customerHomeScreen, #operatorHomeScreen, #contractorHomeScreen {
-  position: relative;
+
+
+/* ATHAR BRANDING â additive visual layer only */
+:root { --athar-gold: #d6b15e; --athar-gold-light: #f3dfaa; }
+#customerHomeScreen,
+#operatorHomeScreen,
+#contractorHomeScreen {
+  position: relative !important;
   isolation: isolate;
   overflow: hidden;
-  color: #111;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background:
+    linear-gradient(180deg, rgba(8,9,10,.68) 0%, rgba(8,9,10,.50) 48%, rgba(8,9,10,.78) 100%),
+    url("./athar-logo.png") center 28% / cover no-repeat,
+    #101010 !important;
+  color: #fff !important;
 }
-#customerHomeScreen::before, #operatorHomeScreen::before, #contractorHomeScreen::before {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  background-image: url("athar-logo.png");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: min(88vw, 420px) auto;
-  opacity: .075;
-}
-#customerHomeScreen .athar-home-brand,
-#operatorHomeScreen .athar-home-brand,
-#contractorHomeScreen .athar-home-brand { margin-bottom: 20px; }
-#customerHomeScreen .home-header { margin-bottom: 22px; }
-#customerHomeScreen .home-header h1,
-#customerHomeScreen .home-section h2,
-#customerHomeScreen .home-menu-item strong,
-#customerHomeScreen .home-feature strong,
-#operatorHomeScreen .operator-dashboard-header h1,
-#operatorHomeScreen .operator-dashboard-section > h2,
-#operatorHomeScreen .operator-section-title-row h2,
-#operatorHomeScreen .operator-menu-content strong,
-#contractorHomeScreen .hero h1,
-#contractorHomeScreen .contractor-action strong {
-  color: #080808;
-  font-weight: 950;
-}
+#customerHomeScreen > *,
+#operatorHomeScreen > *,
+#contractorHomeScreen > * { position: relative; z-index: 1; }
+#customerHomeScreen .home-page,
+#operatorHomeScreen .operator-dashboard { background: transparent !important; }
+#customerHomeScreen .home-header,
+#operatorHomeScreen .operator-dashboard-header { color: #fff !important; }
 #customerHomeScreen .home-greeting,
-#customerHomeScreen .home-menu-text span,
-#customerHomeScreen .home-feature span,
 #operatorHomeScreen .operator-greeting,
-#operatorHomeScreen .operator-menu-content span,
-#contractorHomeScreen .contractor-action span { color: #242424; }
+#customerHomeScreen .home-header h1,
+#operatorHomeScreen .operator-dashboard-header h1,
+#contractorHomeScreen > .hero h1,
+#contractorHomeScreen > .hero p { color: var(--athar-gold-light) !important; text-shadow: 0 2px 12px #000; }
+#customerHomeScreen::before,
+#operatorHomeScreen::before,
+#contractorHomeScreen::before {
+  display: block;
+  content: "Ø¢Ø«Ø§Ø±";
+  position: relative;
+  z-index: 2;
+  margin: 8px auto 2px;
+  text-align: center;
+  color: var(--athar-gold-light);
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-shadow: 0 3px 16px #000;
+}
+#customerHomeScreen::after,
+#operatorHomeScreen::after,
+#contractorHomeScreen::after {
+  display: block;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin: 0 auto 18px;
+  padding: 0 16px;
+  color: #fff0c6;
+  font-size: .95rem;
+  line-height: 1.8;
+  text-shadow: 0 2px 10px #000;
+}
+#customerHomeScreen::after { content: "ÙØ¹Ø¯Ø§ØªÙ Ø£ÙØ±Ø¨ ÙÙØ´Ø±ÙØ¹ÙØ ÙØ®Ø·ÙØªÙ Ø§ÙÙØ§Ø¯ÙØ© ØªØ¨Ø¯Ø£ ÙÙ Ø¢Ø«Ø§Ø±"; }
+#operatorHomeScreen::after { content: "Ø®ÙÙ ÙØ¹Ø¯Ø§ØªÙ ØªØµÙØ¹ Ø§ÙÙØ±ÙØ ÙØ±ØµÙ ÙÙØ´Ø§Ø±ÙØ¹Ù ØªØ¨Ø¯Ø£ ÙÙ Ø¢Ø«Ø§Ø±"; }
+#contractorHomeScreen::after { content: "ÙÙ ÙÙØ±Ø© Ø§ÙÙØ´Ø±ÙØ¹ Ø¥ÙÙ Ø¥ÙØ¬Ø§Ø²ÙØ Ø¢Ø«Ø§Ø± ØªØ¬ÙØ¹Ù Ø¨Ø§ÙÙØ¹Ø¯Ø© Ø§ÙÙÙØ§Ø³Ø¨Ø©"; }
+
+#customerHomeScreen .home-request-card,
 #customerHomeScreen .home-menu-item,
 #customerHomeScreen .home-feature,
-#operatorHomeScreen .operator-menu-card,
 #operatorHomeScreen .operator-online-card,
-#contractorHomeScreen .contractor-action { background-color: rgba(255,255,255,.94); }
-#contractorHomeScreen .athar-home-brand { padding-top: 8px; }
-#contractorHomeScreen .hero-icon { display: none; }
-@media (max-width: 380px) {
-  .athar-intro-logo { width: min(150px, 42vw) !important; }
-  .athar-brand-ar { font-size: 32px; }
-  .athar-brand-tagline { font-size: 11px; }
+#operatorHomeScreen .operator-dashboard-section,
+#operatorHomeScreen .operator-equipment-dashboard-card,
+#contractorHomeScreen .contractor-action,
+#contractorHomeScreen .hero {
+  background: rgba(15,16,17,.80) !important;
+  color: #fff !important;
+  border: 1px solid rgba(214,177,94,.58) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.25) !important;
+  backdrop-filter: blur(8px);
+}
+#customerHomeScreen .home-request-content h2,
+#customerHomeScreen .home-request-content p,
+#customerHomeScreen .home-menu-item *,
+#customerHomeScreen .home-feature *,
+#operatorHomeScreen .operator-dashboard-section *,
+#operatorHomeScreen .operator-online-card *,
+#operatorHomeScreen .operator-equipment-dashboard-card *,
+#contractorHomeScreen .contractor-action *,
+#contractorHomeScreen .hero p { color: #fff !important; }
+#customerHomeScreen .home-request-btn,
+#customerHomeScreen .home-logout-btn,
+#contractorHomeScreen .contractor-primary {
+  background: linear-gradient(135deg,#d8b45f,#9d7628) !important;
+  color: #111 !important;
+  border-color: #f0d995 !important;
+}
+
+/* Intro/onboarding pages: compact original ATHAR poster where the old equipment icon was */
+#introScreen .hero-icon,
+#whyMa3daScreen .hero-icon,
+#howMa3daScreen .hero-icon {
+  width: 112px !important;
+  height: 112px !important;
+  margin: 0 auto 14px !important;
+  border-radius: 18px !important;
+  background: url("./athar-logo.png") center 17% / cover no-repeat !important;
+  border: 1px solid var(--athar-gold) !important;
+  box-shadow: 0 8px 24px #0002 !important;
+  font-size: 0 !important;
+  overflow: hidden;
+}
+#introScreen .athar-banner,
+#whyMa3daScreen .athar-banner,
+#howMa3daScreen .athar-banner { display: none !important; }
+
+/* Login and password screens: same approved original image as a page background */
+.screen:has(.login-container) {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg,rgba(7,8,9,.58),rgba(7,8,9,.82)),
+    url("./athar-logo.png") center 28% / cover fixed no-repeat,
+    #101010 !important;
+  color: #fff !important;
+}
+.screen:has(.login-container) .login-container {
+  background: rgba(12,13,14,.78) !important;
+  color: #fff !important;
+  border: 1px solid rgba(214,177,94,.65) !important;
+  border-radius: 20px;
+  box-shadow: 0 18px 50px #0005;
+  backdrop-filter: blur(9px);
+}
+.screen:has(.login-container) .login-container h1,
+.screen:has(.login-container) .login-container h2,
+.screen:has(.login-container) .login-container p { color: #fff0c6 !important; }
+
+@media (max-width: 600px) {
+  #customerHomeScreen, #operatorHomeScreen, #contractorHomeScreen {
+    background-position: center top !important;
+    background-size: auto 100vh !important;
+  }
 }
