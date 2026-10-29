@@ -9893,7 +9893,7 @@ async function loadOwnerInformationCenter(){
     const empty=msg=>`<div class="owner-admin-empty">${safe(msg)}</div>`;
     const listHtml=(rows,headingFn,subFn,extraFn,emptyMsg)=>rows.length?rows.map(x=>record(headingFn(x),subFn?subFn(x):"",extraFn?extraFn(x):dateText(x))).join(""):empty(emptyMsg);
     const subcard=(label,value,view)=>`<button type="button" class="owner-admin-subcard" data-owner-view="${safe(view)}">${safe(label)}<strong>${safe(value)}</strong></button>`;
-    const openView=view=>{
+    const openView=async view=>{
       if(!details||!title||!content)return;
       details.hidden=false;let html="";
       if(view==="users"){
@@ -9914,7 +9914,29 @@ async function loadOwnerInformationCenter(){
       }else if(view==="tickets"){
         title.textContent="الشكاوى";html=listHtml(ticketRows,x=>x.subject||x.title||x.category||"شكوى",x=>x.message||x.description||"لا يوجد وصف مسجل",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد شكاوى مسجلة أو تعذرت قراءتها.");
       }else if(view==="staff"){
-        title.textContent="موظفو الدعم وتقييماتهم وملاحظات الجمهور";html=listHtml(staffRows.filter(x=>x.role!=="owner"),x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>`التقييم: ${x.rating??x.averageRating??x.supportRating??"غير مسجل"}`,x=>`ملاحظات الجمهور: ${x.publicFeedback||x.feedback||x.notes||x.customerFeedback||"لا توجد ملاحظات مسجلة"} · الحالة: ${x.active===false?"غير نشط":"نشط"}`,"لا توجد بيانات موظفي دعم أو تعذرت قراءتها.");
+        title.textContent="إحصائيات موظفي الدعم وتقييماتهم";const staffOnly=staffRows.filter(x=>x.role!=="owner");html=staffOnly.length?staffOnly.map(x=>{const sid=x.id||x.uid;const solved=ticketRows.filter(t=>String(t.closedBy||t.assignedTo||t.supportStaffId||"")===String(sid)&&(String(t.status||"").toLowerCase().match(/closed|resolved|complete|completed|مغلقة|مغلق|تم الحل/))).length;const rated=ticketRows.filter(t=>String(t.supportStaffId||t.closedBy||t.assignedTo||"")===String(sid)&&Number(t.supportRating)>0);const avg=rated.length?(rated.reduce((s,t)=>s+Number(t.supportRating),0)/rated.length).toFixed(2):"لا توجد تقييمات";return record(x.name||x.fullName||x.displayName||x.email||sid,`الشكاوى التي حلّها: ${solved} · متوسط التقييم: ${avg}${rated.length?" / 5":""}`,`عدد التقييمات: ${rated.length} · ملاحظات الجمهور: ${x.publicFeedback||x.feedback||x.notes||x.customerFeedback||"لا توجد ملاحظات مسجلة"} · الحالة: ${x.active===false?"غير نشط":"نشط"}`)}).join(""):empty("لا توجد بيانات موظفي دعم أو تعذرت قراءتها.");
+      }else if(view==="notes"){
+        title.textContent="الملاحظات اليومية لمالك التطبيق";
+        html='<div class="owner-admin-record"><label for="ownerDailyNoteInput">ملاحظة اليوم</label><textarea id="ownerDailyNoteInput" rows="4" maxlength="5000" placeholder="اكتب ملاحظاتك عن أداء العمل أو التطبيق..."></textarea><button id="ownerDailyNoteSaveBtn" class="support-btn support-primary" type="button">حفظ الملاحظة</button><p id="ownerDailyNoteFeedback" role="status"></p></div><div id="ownerDailyNotesList" class="owner-admin-record">جارٍ تحميل الملاحظات...</div>';
+        content.innerHTML=html;
+        try{
+          const ns=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"ownerDailyNotes"));
+          const notes=[];ns.forEach(d=>notes.push({id:d.id,...(d.data()||{})}));
+          notes.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
+          const list=document.getElementById("ownerDailyNotesList");
+          if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString("ar-SA"):"")}</strong><span style="white-space:pre-wrap">${safe(n.text||"")}</span></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
+          const save=document.getElementById("ownerDailyNoteSaveBtn");
+          if(save)save.onclick=async()=>{const field=document.getElementById("ownerDailyNoteInput"),feedback=document.getElementById("ownerDailyNoteFeedback"),textValue=(field?.value||"").trim();if(!textValue){if(feedback)feedback.textContent="اكتب الملاحظة أولًا.";return;}try{const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error("يجب تسجيل الدخول كمالك المنصة.");await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,"ownerDailyNotes"),{text:textValue,createdBy:u.uid,createdByEmail:u.email||"",createdAt:new Date(),createdAtMs:Date.now()});if(feedback)feedback.textContent="تم حفظ الملاحظة.";openView("notes");}catch(e){if(feedback)feedback.textContent="تعذر الحفظ؛ تحقق من صلاحيات Firebase.";console.error(e);}};
+        }catch(e){const list=document.getElementById("ownerDailyNotesList");if(list)list.textContent="تعذر تحميل الملاحظات. تحقق من صلاحيات Firebase.";}
+        details.scrollIntoView({behavior:"smooth",block:"start"});return;
+      }else if(view==="escalations"){
+        title.textContent="التصعيدات الواردة من موظفي الدعم";
+        try{
+          const es=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"supportEscalations"));
+          const rows=[];es.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
+          rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
+          html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString("ar-SA"):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة"></textarea><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}">حفظ الملاحظة</button></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
+        }catch(e){html='<div class="owner-admin-empty">تعذر تحميل التصعيدات. تحقق من صلاحيات Firebase.</div>';}
       }else if(view==="requests"){
         title.textContent="الطلبات الناجحة وغير الناجحة";html=`<div class="owner-admin-subcards">${subcard("عدد الطلبات الناجحة",successful.length.toLocaleString("ar-SA"),"requestsSuccess")}${subcard("عدد الطلبات غير الناجحة",failed.length.toLocaleString("ar-SA"),"requestsFailed")}</div>`;
       }else if(view==="requestsSuccess"||view==="requestsFailed"){
@@ -9932,7 +9954,7 @@ async function loadOwnerInformationCenter(){
     const refresh=document.getElementById("ownerPortalRefreshBtn");if(refresh&&refresh.dataset.ownerBound!=='1'){refresh.dataset.ownerBound='1';refresh.addEventListener('click',()=>loadOwnerInformationCenter());}
     // Attach handlers to nested detail cards rendered after the first click.
     if(content&&content.dataset.ownerDelegation!=='1'){
-      content.dataset.ownerDelegation='1';content.addEventListener('click',e=>{const b=e.target.closest('[data-owner-view]');if(b)openView(b.dataset.ownerView);});
+      content.dataset.ownerDelegation='1';content.addEventListener('click',async e=>{const b=e.target.closest('[data-owner-view]');if(b){openView(b.dataset.ownerView);return;}const saveEsc=e.target.closest('[data-save-escalation-note]');if(saveEsc){try{const id=saveEsc.dataset.saveEscalationNote;const field=content.querySelector(`[data-escalation-note="${id}"]`);const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error("يجب تسجيل الدخول كمالك المنصة.");await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,"supportEscalations",id),{ownerNote:(field?.value||"").trim(),ownerNoteBy:u.uid,ownerNoteAt:new Date(),status:"reviewed"});alert("تم حفظ ملاحظة التصعيد.");}catch(err){console.error(err);alert("تعذر حفظ الملاحظة. تحقق من صلاحيات Firebase.");}}});
     }
   }catch(error){
     console.error("Owner information center load failed:",error);
@@ -11490,6 +11512,24 @@ async function openContractorHome() {
   }
   window.ma3daCreateSharedProjectInvoices=ma3daCreateSharedProjectInvoices;
 
+  async function escalateActiveTicket(){
+    if(!activeTicket) { alert('افتح شكوى أولًا قبل التصعيد.'); return; }
+    const reason=prompt('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:');
+    if(reason===null)return;
+    if(!reason.trim()){alert('اكتب سبب التصعيد قبل الإرسال.');return;}
+    try{
+      const user=await getUser();
+      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'supportEscalations'),{
+        ticketId:activeTicket.id, ticketSubject:activeTicket.subject||activeTicket.title||'شكوى',
+        ticketDescription:activeTicket.message||activeTicket.description||'',
+        requesterId:activeTicket.requesterId||activeTicket.userId||'',
+        staffId:user.uid, staffEmail:user.email||'', staffName:supportEmployee?.data?.name||user.email||'موظف الدعم',
+        reason:reason.trim(), status:'open', createdAt:new Date(), createdAtMs:Date.now()
+      });
+      alert('تم تصعيد الشكوى إلى مالك التطبيق.');
+    }catch(err){console.error('تعذر تصعيد الشكوى:',err);alert(err.code==='permission-denied'?'قواعد Firebase لا تسمح بإنشاء تصعيد. يلزم إضافة صلاحية supportEscalations.':'تعذر إرسال التصعيد.');}
+  }
+
   document.addEventListener('click',async event=>{
     const chooseButton=event.target.closest('[data-contractor-choose-equipment]');
     const submitButton=event.target.closest('#contractorSubmitProjectEquipmentRequestBtn');
@@ -12488,7 +12528,7 @@ document.addEventListener("click", function(event){
       list.innerHTML=rows.map(item=>{
         const cancelled=item.equipmentStatus==="cancelled";
         const availability=item.availability==="available"&&!cancelled;
-        const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.editStatus==="rejected"?"رُفض التعديل — البيانات السابقة محفوظة":(item.editStatus==="approved"?"تم اعتماد آخر تعديل":(item.verificationStatus==="verified"?"موثقة":"قيد المراجعة")));
+        const review=item.editStatus==="pending"?"يوجد تعديل بانتظار المراجعة":(item.editStatus==="rejected"?"رُفض التعديل — "+(item.editReviewNote||"راجع الدعم"):item.verificationStatus==="rejected"?"رُفضت الإضافة — "+(item.verificationReviewNote||"راجع الدعم"):item.verificationStatus==="verified"?"تم اعتماد المعدة":item.editStatus==="approved"?"تم اعتماد آخر تعديل":"قيد المراجعة");
         const photo=item.image?`<img class="mam-photo" src="${managerEscape(item.image)}" alt="صورة المعدة">`:'<div class="mam-photo" style="display:flex;align-items:center;justify-content:center">🚜</div>';
         return `<article class="mam-card"><div class="mam-equipment">${photo}<div><h3>${managerEscape(item.type||"معدة")}${item.model?" — "+managerEscape(item.model):""}</h3><div class="mam-muted">السنة: ${managerEscape(item.year||"—")} · المدينة: ${managerEscape(item.city||"—")}</div><div class="mam-muted">رقم المعدة: ${managerEscape(item.plateNumber||item.equipmentNumber||"غير مسجل")}</div><div class="mam-muted">السعر: ${managerEscape(item.hourlyPrice||0)} ريال/ساعة</div><span class="mam-status">${cancelled?"ملغاة":(availability?"متاحة":"غير متاحة")}</span> <span class="mam-status">${managerEscape(review)}</span></div></div><div class="mam-actions"><button type="button" class="mam-btn mam-secondary" data-mam-action="edit" data-id="${managerEscape(item.id)}">تعديل</button>${cancelled?"":`<button type="button" class="mam-btn mam-secondary" data-mam-action="toggle" data-id="${managerEscape(item.id)}">${availability?"جعلها غير متاحة":"جعلها متاحة"}</button><button type="button" class="mam-btn mam-danger" data-mam-action="cancel" data-id="${managerEscape(item.id)}">إلغاء المعدة</button>`}</div></article>`;
       }).join("");
@@ -12660,7 +12700,7 @@ document.addEventListener("click", function(event){
     panel.className='support-panel';
     panel.hidden=true;
     panel.style.cssText='margin-top:16px;padding:18px;';
-    panel.innerHTML='<h2 id="supportTicketConversationTitle">محادثة الشكوى</h2><p id="supportTicketConversationMeta"></p><p id="supportTicketConversationDescription" style="white-space:pre-wrap"></p><div id="supportTicketConversationMessages" class="ma3da-ticket-thread" aria-live="polite"></div><label for="supportTicketReplyInput">الرد على مقدم الشكوى</label><textarea id="supportTicketReplyInput" class="support-input" rows="3" maxlength="4000" placeholder="اكتب ردك هنا..."></textarea><p id="supportTicketReplyFeedback" role="status" aria-live="polite"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="supportTicketSendReplyBtn" class="support-btn support-primary" type="button">إرسال الرد</button><button id="supportTicketCloseBtn" class="support-btn support-danger" type="button">إغلاق الشكوى</button><button id="supportTicketConversationHideBtn" class="support-btn" type="button">إخفاء المحادثة</button></div>';
+    panel.innerHTML='<h2 id="supportTicketConversationTitle">محادثة الشكوى</h2><p id="supportTicketConversationMeta"></p><p id="supportTicketConversationDescription" style="white-space:pre-wrap"></p><div id="supportTicketConversationMessages" class="ma3da-ticket-thread" aria-live="polite"></div><label for="supportTicketReplyInput">الرد على مقدم الشكوى</label><textarea id="supportTicketReplyInput" class="support-input" rows="3" maxlength="4000" placeholder="اكتب ردك هنا..."></textarea><p id="supportTicketReplyFeedback" role="status" aria-live="polite"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="supportTicketSendReplyBtn" class="support-btn support-primary" type="button">إرسال الرد</button><button id="supportTicketEscalateBtn" class="support-btn" type="button">تصعيد إلى مالك التطبيق</button><button id="supportTicketCloseBtn" class="support-btn support-danger" type="button">إغلاق الشكوى</button><button id="supportTicketConversationHideBtn" class="support-btn" type="button">إخفاء المحادثة</button></div>';
     dashboard.appendChild(panel);
     return panel;
   }
@@ -12985,15 +13025,16 @@ async function staffTicketRows(){
     try{
       await waitForFirebase();
       const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment'));
-      const rows=[];snap.forEach(d=>{const x=d.data()||{};if(x.editStatus==='pending'&&x.pendingChanges)rows.push({id:d.id,...x});});
-      rows.sort((a,b)=>(Number(b.editRequestedAt||b.requestedAt||0)-Number(a.editRequestedAt||a.requestedAt||0)));
+      const rows=[];snap.forEach(d=>{const x=d.data()||{};if((x.editStatus==='pending'&&x.pendingChanges)||((x.verificationStatus==='pending'||!x.verificationStatus)&&!x.pendingChanges&&x.equipmentStatus!=='cancelled'))rows.push({id:d.id,...x,_reviewKind:x.pendingChanges?'edit':'new'});});
+      rows.sort((a,b)=>(Number(b.editRequestedAt||b.createdAt||b.requestedAt||0)-Number(a.editRequestedAt||a.createdAt||a.requestedAt||0)));
       target.innerHTML=rows.length?rows.map(x=>{
-        const c=x.pendingChanges||{};
+        const c=x.pendingChanges||x;
         const fields=[['نوع المعدة','type'],['الموديل','model'],['سنة الصنع','year'],['المدينة','city'],['رقم المعدة/اللوحة','plateNumber'],['السعر بالساعة','hourlyPrice'],['التوفر','availability'],['الصورة','image']];
-        const changes=fields.filter(([label,key])=>c[key]!==undefined && (key!=='image'||c[key]!==x.image)).map(([label,key])=>`<p><strong>${escapeHtml(label)}:</strong> ${key==='image'?(c[key]?'تم إرفاق صورة جديدة':'لم تُرفق صورة'):escapeHtml(key==='availability'?(c[key]==='available'?'متاحة':'غير متاحة'):c[key])}</p>`).join('');
-        const photo=c.image?`<img src="${escapeHtml(c.image)}" alt="الصورة المقترحة" style="max-width:180px;max-height:120px;object-fit:contain;border-radius:10px">`:'';
-        return `<article class="support-row" style="display:block;margin:12px 0;padding:16px"><h3>${escapeHtml(x.type||'معدة')} — ${escapeHtml(x.model||'')}</h3><p>صاحب المعدة: ${escapeHtml(x.ownerEmail||x.ownerId||'—')}</p><p>البيانات الحالية تبقى كما هي حتى الموافقة.</p><h4>التعديلات المقترحة</h4>${changes||'<p>لم يتم العثور على فروقات واضحة.</p>'}${photo}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="support-btn support-primary" type="button" data-approve-equipment-edit="${escapeHtml(x.id)}">الموافقة على التعديل</button><button class="support-btn support-danger" type="button" data-reject-equipment-edit="${escapeHtml(x.id)}">رفض التعديل</button></div></article>`;
-      }).join(''):'<div class="support-empty">لا توجد تعديلات معدات بانتظار المراجعة.</div>';
+        const changes=fields.filter(([label,key])=>c[key]!==undefined && (key!=='image'||c[key]!==x.image)).map(([label,key])=>`<p><strong>${escapeHtml(label)}:</strong> ${key==='image'?(c[key]?'تم إرفاق صورة':'لم تُرفق صورة'):escapeHtml(key==='availability'?(c[key]==='available'?'متاحة':'غير متاحة'):c[key])}</p>`).join('');
+        const photo=c.image?`<img src="${escapeHtml(c.image)}" alt="صورة المعدة المقترحة" style="max-width:180px;max-height:120px;object-fit:contain;border-radius:10px">`:'';
+        const isEdit=x._reviewKind==='edit';
+        return `<article class="support-row" style="display:block;margin:12px 0;padding:16px"><h3>${escapeHtml(x.type||'معدة')} — ${escapeHtml(x.model||'')}</h3><p>صاحب المعدة: ${escapeHtml(x.ownerEmail||x.ownerId||'—')}</p><p>${isEdit?'مراجعة تعديل بيانات معدة موجودة.':'طلب إضافة معدة جديدة؛ لن تصبح معتمدة قبل موافقة الدعم.'}</p><h4>${isEdit?'التعديلات المقترحة':'بيانات المعدة'}</h4>${changes||'<p>لا توجد بيانات إضافية.</p>'}${photo}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${isEdit?`<button class="support-btn support-primary" type="button" data-approve-equipment-edit="${escapeHtml(x.id)}">الموافقة على التعديل</button><button class="support-btn support-danger" type="button" data-reject-equipment-edit="${escapeHtml(x.id)}">رفض التعديل</button>`:`<button class="support-btn support-primary" type="button" data-approve-new-equipment="${escapeHtml(x.id)}">اعتماد المعدة</button><button class="support-btn support-danger" type="button" data-reject-new-equipment="${escapeHtml(x.id)}">رفض الإضافة</button>`}</div></article>`;
+      }).join(''):'<div class="support-empty">لا توجد إضافات أو تعديلات معدات بانتظار المراجعة.</div>';
     }catch(err){console.error('تعذر تحميل تعديلات المعدات:',err);target.innerHTML='<div class="support-empty">تعذر تحميل التعديلات. تحقق من صلاحيات قراءة equipment في Firebase.</div>';}
   }
   async function decideEquipmentEdit(id,approve){
@@ -13012,12 +13053,33 @@ async function staffTicketRows(){
         await window.ma3daUpdateDoc(ref,{...allowed,pendingChanges:null,editStatus:'approved',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:'تمت الموافقة على التعديل',updatedAt:Date.now()});
         alert('تمت الموافقة على التعديل وتحديث بيانات المعدة المعتمدة.');
       }else{
-        await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:'تم رفض التعديل؛ بقيت البيانات السابقة دون تغيير.'});
-        alert('تم رفض التعديل. بقيت بيانات المعدة الأصلية كما هي.');
+        const reason=prompt('اكتب سبب رفض التعديل ليظهر لصاحب المعدة:');
+        if(reason===null)return;
+        if(!reason.trim())throw new Error('سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.');
+        await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:reason.trim(),ownerNotice:{type:'equipment_edit_rejected',message:reason.trim(),createdAt:now,read:false}});
+        alert('تم رفض التعديل وإرسال سبب الرفض لصاحب المعدة.');
       }
       await loadPendingEquipmentEdits();
       if(typeof loadSupportEquipment==='function')await loadSupportEquipment();
     }catch(err){console.error('تعذر اتخاذ قرار تعديل المعدة:',err);alert(err.code==='permission-denied'?'رفضت قواعد Firebase حفظ قرار الدعم. يلزم السماح لموظف الدعم المصرح له بتحديث مستند المعدة.':(err.message||'تعذر حفظ القرار.'));}
+  }
+
+  async function decideNewEquipment(id,approve){
+    try{
+      const user=await getUser();
+      const ref=window.ma3daDoc(window.ma3daDB,'equipment',id);
+      const snap=await window.ma3daGetDoc(ref);
+      if(!snap.exists())throw new Error('المعدة غير موجودة.');
+      const item=snap.data()||{};
+      if(item.pendingChanges || (item.verificationStatus!=='pending' && item.verificationStatus==='verified'))throw new Error('هذه المعدة لم تعد بانتظار الاعتماد.');
+      let reason='';
+      if(!approve){reason=prompt('اكتب سبب رفض إضافة المعدة ليظهر لصاحبها:');if(reason===null)return;if(!reason.trim())throw new Error('سبب الرفض مطلوب.');}
+      const now=new Date();
+      await window.ma3daUpdateDoc(ref,approve?{verificationStatus:'verified',equipmentStatus:'active',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:'تم اعتماد المعدة',ownerNotice:{type:'equipment_approved',message:'تم اعتماد معدتك من الدعم الفني.',createdAt:now,read:false}}:{verificationStatus:'rejected',equipmentStatus:'rejected',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:reason.trim(),ownerNotice:{type:'equipment_rejected',message:reason.trim(),createdAt:now,read:false}});
+      alert(approve?'تم اعتماد المعدة وأصبحت موثقة.':'تم رفض إضافة المعدة وإرسال السبب لصاحبها.');
+      await loadPendingEquipmentEdits();
+      if(typeof loadSupportEquipment==='function')await loadSupportEquipment();
+    }catch(err){console.error('تعذر مراجعة إضافة المعدة:',err);alert(err.message||'تعذر حفظ قرار الدعم.');}
   }
 
   window.ma3daLoadPendingEquipmentEdits = loadPendingEquipmentEdits;
@@ -13069,6 +13131,9 @@ async function staffTicketRows(){
     if(el.id==='supportEquipmentEditsRefreshBtn'){await loadPendingEquipmentEdits();return;}
     if(el.matches('[data-approve-equipment-edit]')){await decideEquipmentEdit(el.dataset.approveEquipmentEdit,true);return;}
     if(el.matches('[data-reject-equipment-edit]')){await decideEquipmentEdit(el.dataset.rejectEquipmentEdit,false);return;}
+    if(el.matches('[data-approve-new-equipment]')){await decideNewEquipment(el.dataset.approveNewEquipment,true);return;}
+    if(el.matches('[data-reject-new-equipment]')){await decideNewEquipment(el.dataset.rejectNewEquipment,false);return;}
+    if(el.id==='supportTicketEscalateBtn'){await escalateActiveTicket();return;}
     if(el.id==='supportTicketSendReplyBtn'){await sendStaffReply();return;}
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
     if(el.id==='supportTicketConversationHideBtn'){const panel=$('supportTicketConversation');if(panel)panel.hidden=true;stopStaffListener();return;}
