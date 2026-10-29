@@ -15337,80 +15337,46 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 /* =========================================================
-   ATHAR — الهوية البصرية الموحدة
-   الشاشات التعريفية + الرئيسية للعميل وصاحب المعدة والمشاريع.
-   لا يغيّر وظائف الطلبات أو الدعم أو Firebase.
-   ضع athar-brand-poster.png بجانب index.html و script.js.
+   ATHAR — الهوية البصرية للصفحات التعريفية والرئيسية
+   يستخدم صورة الملصق المعتمدة بدون علم السعودية.
+   إضافة مستقلة لا تغيّر مسارات الطلبات أو إعدادات Firebase.
 ========================================================= */
-(function initAtharGlobalBranding() {
-  if (window.__ma3daAtharGlobalBrandingBound) return;
-  window.__ma3daAtharGlobalBrandingBound = true;
+(function initAtharBrandingAcrossScreens() {
+  if (window.__ma3daAtharBrandingAcrossScreensBound) return;
+  window.__ma3daAtharBrandingAcrossScreensBound = true;
 
-  const BRAND_SCREENS = [
-    // الصفحات التعريفية
-    "introScreen", "whyMa3daScreen", "howMa3daScreen", "howWorksScreen", "roleScreen",
-    // الصفحات الرئيسية
-    "customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen"
+  const targets = [
+    "introScreen", "whyMa3daScreen", "howMa3daScreen", "howWorksScreen",
+    "customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen",
+    "projectsScreen", "contractorProjectsScreen"
   ];
 
-  function addBrandingToScreen(screen) {
-    if (!screen || screen.querySelector(":scope > #atharBrandingHeader")) return;
+  function addBranding() {
+    targets.forEach((id) => {
+      const screen = document.getElementById(id);
+      if (!screen || screen.querySelector('.athar-branding-banner')) return;
 
-    const header = document.createElement("div");
-    header.id = "atharBrandingHeader";
-    header.className = "athar-branding-header";
-    header.setAttribute("dir", "rtl");
-    header.setAttribute("aria-label", "أثار ATHAR للمعدات الثقيلة");
-    header.style.cssText = [
-      "width:min(100%,1100px)",
-      "margin:0 auto 14px",
-      "padding:10px 12px 0",
-      "box-sizing:border-box",
-      "text-align:center",
-      "position:relative",
-      "z-index:1"
-    ].join(";");
+      const banner = document.createElement('div');
+      banner.className = 'athar-branding-banner';
+      banner.setAttribute('dir', 'rtl');
+      banner.style.cssText = 'width:min(calc(100% - 24px),1100px);margin:12px auto 20px;padding:0;box-sizing:border-box;text-align:center;';
 
-    const image = document.createElement("img");
-    image.src = "./athar-brand-poster.png";
-    image.alt = "أثار ATHAR للمعدات الثقيلة — من إرث الحضارة إلى بناء المستقبل";
-    image.loading = "lazy";
-    image.decoding = "async";
-    image.style.cssText = [
-      "display:block",
-      "width:100%",
-      "height:auto",
-      "max-height:clamp(112px,22vw,220px)",
-      "object-fit:contain",
-      "object-position:center",
-      "border-radius:16px",
-      "border:1px solid rgba(200,164,91,.72)",
-      "background:#fbf7ee",
-      "box-shadow:0 5px 18px rgba(30,24,14,.10)"
-    ].join(";");
-    image.onerror = function () {
-      header.hidden = true;
-      console.warn("تعذر تحميل صورة هوية أثار: تأكد من وجود athar-brand-poster.png بجانب ملفات التطبيق.");
-    };
-    header.appendChild(image);
+      const image = document.createElement('img');
+      image.src = './athar-brand-poster.png';
+      image.alt = 'أثار ATHAR للمعدات الثقيلة — من إرث الحضارة إلى بناء المستقبل';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.style.cssText = 'display:block;width:100%;height:auto;max-height:clamp(150px,32vh,360px);object-fit:cover;object-position:center;border-radius:16px;border:1px solid #c8a45b;box-shadow:0 8px 24px rgba(30,24,14,.14);';
+      banner.appendChild(image);
 
-    // ضع الهوية أعلى محتوى الشاشة مع إبقاء عناصر الشاشة الحالية كما هي.
-    screen.insertBefore(header, screen.firstChild);
+      const heading = screen.querySelector('h1, .intro-title, .hero-title, .customer-header, .operator-header, .contractor-header');
+      if (heading && heading.parentElement) heading.insertAdjacentElement('afterend', banner);
+      else screen.insertBefore(banner, screen.firstChild);
+    });
   }
 
-  function applyBranding() {
-    BRAND_SCREENS.forEach(id => addBrandingToScreen(document.getElementById(id)));
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyBranding, { once: true });
-  } else {
-    applyBranding();
-  }
-
-  // بعض الشاشات قد تُنشأ لاحقًا؛ راقب إضافتها فقط دون لمس محتواها.
-  if (typeof MutationObserver === "function" && document.documentElement) {
-    const observer = new MutationObserver(() => applyBranding());
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addBranding, { once: true });
+  else addBranding();
+  // بعض لوحات الأدوار تُبنى بعد تسجيل الدخول؛ أعد المحاولة عند تبديل الشاشات.
+  document.addEventListener('click', () => { window.setTimeout(addBranding, 250); }, true);
 })();
