@@ -3730,3 +3730,118 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     background-size: auto 100vh !important;
   }
 }
+
+
+/* =========================================================
+   Ø¢Ø«Ø§Ø± â Ø®ÙÙÙØ© Ø§ÙÙÙÙØ© Ø§ÙÙØ§ØªØ­Ø© ÙÙØµÙØ­Ø§Øª Ø§ÙØ±Ø¦ÙØ³ÙØ© ÙØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ
+   ÙØ¹ØªÙØ¯ Ø¹ÙÙ ÙÙÙ athar-logo.png Ø¨Ø¬Ø§ÙØ¨ index.html Ù style.css
+   ========================================================= */
+:root {
+  --athar-gold: #b58a35;
+  --athar-ink: #26221a;
+}
+
+/* Ø§ÙØ®ÙÙÙØ© Ø§ÙØ£ØµÙÙØ© ÙØ¢Ø«Ø§Ø± ÙØ¹ Ø·Ø¨ÙØ© ÙØ§ØªØ­Ø© Ø­ØªÙ ØªØ¨ÙÙ Ø§ÙÙØµÙØµ ÙÙØ±ÙØ¡Ø© */
+#customerHomeScreen,
+#operatorHomeScreen,
+#contractorHomeScreen,
+#roleScreen,
+#phoneScreen,
+#otpScreen {
+  background-image: linear-gradient(rgba(255, 252, 242, .78), rgba(255, 252, 242, .84)), url("athar-logo.png");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-color: #f7f0df;
+}
+
+/* ØªØ«Ø¨ÙØª Ø·Ø¨ÙØ© Ø§ÙØ®ÙÙÙØ© Ø¯Ø§Ø®Ù Ø§ÙØµÙØ­Ø© ÙØ¹ Ø¹Ø¯Ù ØªØºÙÙØ± ØªØ¯ÙÙ Ø£Ù ÙØ¸Ø§Ø¦Ù Ø§ÙØªØ·Ø¨ÙÙ */
+#customerHomeScreen,
+#operatorHomeScreen,
+#contractorHomeScreen {
+  min-height: 100vh;
+  color: var(--athar-ink);
+}
+
+/* Ø¨Ø·Ø§ÙØ§Øª ÙØ§ØªØ­Ø© Ø´ÙØ§ÙØ© ÙÙÙÙÙØ§ ÙØªØ¸ÙØ± Ø§ÙØ®ÙÙÙØ© Ø®ÙÙ Ø§ÙÙØ­ØªÙÙ */
+#customerHomeScreen .home-page,
+#customerHomeScreen .home-header,
+#customerHomeScreen .home-request-card,
+#operatorHomeScreen .card,
+#contractorHomeScreen .card,
+#contractorHomeScreen .contractor-action {
+  background-color: rgba(255, 253, 247, .88);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+/* Ø¥Ø¨Ø±Ø§Ø² Ø§Ø³Ù Ø¢Ø«Ø§Ø± ÙØ§ÙØ¹Ø¨Ø§Ø±Ø§Øª Ø§ÙÙÙØ§Ø³Ø¨Ø© ÙÙÙ ÙØ¦Ø© Ø£Ø¹ÙÙ Ø§ÙØµÙØ­Ø© */
+#customerHomeScreen .home-header::before {
+  content: "Ø¢Ø«Ø§Ø± â Ø­ÙÙÙÙ ÙÙÙØ¹Ø¯Ø§Øª ØªØ¨Ø¯Ø£ ÙÙ ÙÙØ§";
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  color: var(--athar-gold);
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  text-align: center;
+}
+#operatorHomeScreen::before {
+  content: "Ø¢Ø«Ø§Ø± â ÙÙØµØªÙ ÙØ¥Ø¯Ø§Ø±Ø© ÙØ¹Ø¯Ø§ØªÙ";
+  display: block;
+  padding: 18px 12px 8px;
+  color: var(--athar-gold);
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  text-align: center;
+}
+#contractorHomeScreen::before {
+  content: "Ø¢Ø«Ø§Ø± â Ø£ÙØ¬Ø² ÙØ´Ø§Ø±ÙØ¹Ù Ø¨Ø«ÙØ©";
+  display: block;
+  padding: 18px 12px 8px;
+  color: var(--athar-gold);
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Ø§ÙØ´Ø¹Ø§Ø± Ø§ÙØ£ØµÙÙ Ø¨Ø­Ø¬Ù ØµØºÙØ± ÙÙ Ø§ÙØµÙØ­Ø© Ø§ÙØªØ¹Ø±ÙÙÙØ© Ø¨Ø¯Ù Ø£ÙÙÙÙØ© Ø§ÙÙØ¹Ø¯Ø© */
+#introScreen .athar-intro-logo {
+  width: min(180px, 46vw);
+  height: auto;
+  margin: 0 auto 16px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: 0 8px 28px rgba(90, 66, 20, .12);
+}
+#introScreen .athar-intro-logo-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Ø¯Ø¹Ù Ø´Ø§Ø´Ø§Øª Ø§ÙØ¯Ø®ÙÙ Ø§ÙØ¥Ø¶Ø§ÙÙØ© Ø¯ÙÙ ÙÙØ³ Ø³ÙÙÙ ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ */
+#ownerPortalLoginScreen,
+#supportLoginScreen {
+  background-image: linear-gradient(rgba(255, 252, 242, .80), rgba(255, 252, 242, .86)), url("athar-logo.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #f7f0df;
+}
+
+@media (max-width: 600px) {
+  #customerHomeScreen,
+  #operatorHomeScreen,
+  #contractorHomeScreen,
+  #roleScreen,
+  #phoneScreen,
+  #otpScreen,
+  #ownerPortalLoginScreen,
+  #supportLoginScreen {
+    background-position: center top;
+  }
+}
