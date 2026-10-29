@@ -9910,7 +9910,7 @@ async function loadOwnerInformationCenter(){
       }else if(view==="projectsCurrent"||view==="projectsPrevious"||view==="projects"){
         const previous=view==="projectsPrevious";title.textContent=previous?"المشاريع السابقة":"المشاريع القائمة";const rows=projectRows.filter(x=>{const done=['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase());return view==="projects"?true:previous?done:!done;});html=listHtml(rows,x=>x.name||x.title||x.projectName||x.id,x=>`الحالة: ${x.status||"غير محددة"}`,x=>`المعرّف: ${x.id}`,"لا توجد مشاريع ضمن هذا القسم.");
       }else if(view==="complaints"){
-        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}</div><p>اختر عدد الشكاوى أو موظفي الدعم لعرض التفاصيل.</p>`;
+        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}${subcard("التصعيدات الواردة","عرض التصعيدات","escalations")}</div><p>اختر الشكاوى أو موظفي الدعم أو التصعيدات الواردة لعرض التفاصيل.</p>`;
       }else if(view==="tickets"){
         title.textContent="الشكاوى";html=listHtml(ticketRows,x=>x.subject||x.title||x.category||"شكوى",x=>x.message||x.description||"لا يوجد وصف مسجل",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد شكاوى مسجلة أو تعذرت قراءتها.");
       }else if(view==="staff"){
@@ -9919,15 +9919,34 @@ async function loadOwnerInformationCenter(){
         title.textContent="الملاحظات اليومية لمالك التطبيق";
         html='<div class="owner-admin-record"><label for="ownerDailyNoteInput">ملاحظة اليوم</label><textarea id="ownerDailyNoteInput" rows="4" maxlength="5000" placeholder="اكتب ملاحظاتك عن أداء العمل أو التطبيق..."></textarea><button id="ownerDailyNoteSaveBtn" class="support-btn support-primary" type="button">حفظ الملاحظة</button><p id="ownerDailyNoteFeedback" role="status"></p></div><div id="ownerDailyNotesList" class="owner-admin-record">جارٍ تحميل الملاحظات...</div>';
         content.innerHTML=html;
+        // اربط زر الحفظ قبل قراءة السجل؛ فتعذر القراءة لا يجب أن يعطّل الزر نفسه.
+        const save=document.getElementById("ownerDailyNoteSaveBtn");
+        if(save)save.onclick=async()=>{
+          const field=document.getElementById("ownerDailyNoteInput"),feedback=document.getElementById("ownerDailyNoteFeedback"),textValue=(field?.value||"").trim();
+          if(!textValue){if(feedback)feedback.textContent="اكتب الملاحظة أولًا.";return;}
+          save.disabled=true;
+          try{
+            const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
+            if(!u)throw new Error("يجب تسجيل الدخول كمالك المنصة.");
+            await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,"ownerDailyNotes"),{text:textValue,createdBy:u.uid,createdByEmail:u.email||"",createdAt:new Date(),createdAtMs:Date.now()});
+            if(feedback)feedback.textContent="تم حفظ الملاحظة.";
+            openView("notes");
+          }catch(e){
+            console.error("تعذر حفظ الملاحظة اليومية:",e);
+            if(feedback)feedback.textContent=e.code==="permission-denied"?"رفضت قواعد Firebase حفظ الملاحظة (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة ownerDailyNotes.":(e.message||"تعذر حفظ الملاحظة.");
+          }finally{save.disabled=false;}
+        };
         try{
           const ns=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"ownerDailyNotes"));
           const notes=[];ns.forEach(d=>notes.push({id:d.id,...(d.data()||{})}));
           notes.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
           const list=document.getElementById("ownerDailyNotesList");
           if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString("ar-SA"):"")}</strong><span style="white-space:pre-wrap">${safe(n.text||"")}</span></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
-          const save=document.getElementById("ownerDailyNoteSaveBtn");
-          if(save)save.onclick=async()=>{const field=document.getElementById("ownerDailyNoteInput"),feedback=document.getElementById("ownerDailyNoteFeedback"),textValue=(field?.value||"").trim();if(!textValue){if(feedback)feedback.textContent="اكتب الملاحظة أولًا.";return;}try{const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error("يجب تسجيل الدخول كمالك المنصة.");await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,"ownerDailyNotes"),{text:textValue,createdBy:u.uid,createdByEmail:u.email||"",createdAt:new Date(),createdAtMs:Date.now()});if(feedback)feedback.textContent="تم حفظ الملاحظة.";openView("notes");}catch(e){if(feedback)feedback.textContent="تعذر الحفظ؛ تحقق من صلاحيات Firebase.";console.error(e);}};
-        }catch(e){const list=document.getElementById("ownerDailyNotesList");if(list)list.textContent="تعذر تحميل الملاحظات. تحقق من صلاحيات Firebase.";}
+        }catch(e){
+          console.error("تعذر تحميل الملاحظات اليومية:",e);
+          const list=document.getElementById("ownerDailyNotesList");
+          if(list)list.textContent=e.code==="permission-denied"?"رفضت قواعد Firebase قراءة الملاحظات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة ownerDailyNotes.":"تعذر تحميل الملاحظات اليومية: "+(e.message||"خطأ غير معروف.");
+        }
         details.scrollIntoView({behavior:"smooth",block:"start"});return;
       }else if(view==="escalations"){
         title.textContent="التصعيدات الواردة من موظفي الدعم";
@@ -9936,7 +9955,10 @@ async function loadOwnerInformationCenter(){
           const rows=[];es.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
           rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
           html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString("ar-SA"):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة"></textarea><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}">حفظ الملاحظة</button></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
-        }catch(e){html='<div class="owner-admin-empty">تعذر تحميل التصعيدات. تحقق من صلاحيات Firebase.</div>';}
+        }catch(e){
+          console.error("تعذر تحميل التصعيدات:",e);
+          html=`<div class="owner-admin-empty">${safe(e.code==="permission-denied"?"رفضت قواعد Firebase قراءة التصعيدات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة supportEscalations.":"تعذر تحميل التصعيدات: "+(e.message||"خطأ غير معروف."))}</div>`;
+        }
       }else if(view==="requests"){
         title.textContent="الطلبات الناجحة وغير الناجحة";html=`<div class="owner-admin-subcards">${subcard("عدد الطلبات الناجحة",successful.length.toLocaleString("ar-SA"),"requestsSuccess")}${subcard("عدد الطلبات غير الناجحة",failed.length.toLocaleString("ar-SA"),"requestsFailed")}</div>`;
       }else if(view==="requestsSuccess"||view==="requestsFailed"){
@@ -11513,12 +11535,14 @@ async function openContractorHome() {
   window.ma3daCreateSharedProjectInvoices=ma3daCreateSharedProjectInvoices;
 
   async function escalateActiveTicket(){
-    if(!activeTicket) { alert('افتح شكوى أولًا قبل التصعيد.'); return; }
+    if(!activeTicket?.id) { setFeedback('supportTicketReplyFeedback','افتح شكوى من القائمة أولًا قبل التصعيد.'); return; }
     const reason=prompt('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:');
     if(reason===null)return;
-    if(!reason.trim()){alert('اكتب سبب التصعيد قبل الإرسال.');return;}
+    if(!reason.trim()){setFeedback('supportTicketReplyFeedback','اكتب سبب التصعيد قبل الإرسال.');return;}
+    const button=$('supportTicketEscalateBtn');if(button){button.disabled=true;button.textContent='جارٍ إرسال التصعيد...';}
     try{
       const user=await getUser();
+      if(!window.ma3daDB||typeof window.ma3daAddDoc!=='function'||typeof window.ma3daCollection!=='function')throw new Error('خدمة Firebase غير جاهزة.');
       await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'supportEscalations'),{
         ticketId:activeTicket.id, ticketSubject:activeTicket.subject||activeTicket.title||'شكوى',
         ticketDescription:activeTicket.message||activeTicket.description||'',
@@ -11526,8 +11550,13 @@ async function openContractorHome() {
         staffId:user.uid, staffEmail:user.email||'', staffName:supportEmployee?.data?.name||user.email||'موظف الدعم',
         reason:reason.trim(), status:'open', createdAt:new Date(), createdAtMs:Date.now()
       });
+      setFeedback('supportTicketReplyFeedback','تم إرسال التصعيد إلى مالك التطبيق.');
       alert('تم تصعيد الشكوى إلى مالك التطبيق.');
-    }catch(err){console.error('تعذر تصعيد الشكوى:',err);alert(err.code==='permission-denied'?'قواعد Firebase لا تسمح بإنشاء تصعيد. يلزم إضافة صلاحية supportEscalations.':'تعذر إرسال التصعيد.');}
+    }catch(err){
+      console.error('تعذر تصعيد الشكوى:',err);
+      const msg=err.code==='permission-denied'?'رفضت قواعد Firebase إنشاء التصعيد (permission-denied). يلزم السماح لموظف الدعم النشط بإنشاء مستند في supportEscalations.':(err.message||'تعذر إرسال التصعيد.');
+      setFeedback('supportTicketReplyFeedback',msg);alert(msg);
+    }finally{if(button){button.disabled=false;button.textContent='تصعيد إلى مالك التطبيق';}}
   }
 
   document.addEventListener('click',async event=>{
