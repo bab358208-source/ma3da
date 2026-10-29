@@ -15401,3 +15401,430 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   });
   observer.observe(document.documentElement, { childList:true, subtree:true });
 })();
+
+/* =====================================================
+   مِعدة | إدارة خلفيات التطبيق — إضافة مستقلة
+   ===================================================== */
+(function () {
+  "use strict";
+
+  const COLLECTION = "ma3daSettings";
+  const DOC_ID = "brandBackground";
+  const PAGE_ID = "ma3daOwnerBackgroundScreen";
+  let selectedImage = "";
+  let savedImage = "";
+
+  const $ = id => document.getElementById(id);
+
+  function addStyles() {
+    if ($("ma3daOwnerBackgroundStyles")) return;
+
+    const style = document.createElement("style");
+    style.id = "ma3daOwnerBackgroundStyles";
+    style.textContent = `
+      #${PAGE_ID} {
+        direction: rtl;
+        text-align: right;
+        padding: 20px;
+        overflow: auto;
+      }
+      #${PAGE_ID} .bg-panel {
+        max-width: 720px;
+        margin: 20px auto;
+        padding: 22px;
+        border: 1px solid #c9aa62;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 10px 30px #0001;
+      }
+      #${PAGE_ID} .bg-preview {
+        height: 230px;
+        margin: 15px 0;
+        border: 1px dashed #b8954a;
+        border-radius: 14px;
+        background: #f5f0e5 center/cover no-repeat;
+        display: grid;
+        place-items: center;
+      }
+      #${PAGE_ID} button {
+        font: inherit;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 18px;
+        margin: 6px 3px;
+        cursor: pointer;
+      }
+      #${PAGE_ID} .bg-publish {
+        background: #b8954a;
+        color: white;
+      }
+      #${PAGE_ID} .bg-back {
+        background: #222;
+        color: white;
+      }
+      #${PAGE_ID} .bg-status {
+        min-height: 25px;
+        margin-top: 12px;
+      }
+      .ma3da-published-background {
+        background-image:
+          linear-gradient(
+            rgba(255,255,255,var(--ma3da-bg-overlay,.84)),
+            rgba(255,255,255,var(--ma3da-bg-overlay,.84))
+          ),
+          var(--ma3da-published-bg) !important;
+        background-position: center !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function status(message) {
+    const el = $("ma3daBgStatus");
+    if (el) el.textContent = message;
+  }
+
+  // التحقق من صلاحية المالك من قاعدة البيانات نفسها
+  async function verifyOwner() {
+    const user = window.ma3daAuth?.currentUser;
+
+    if (!user) {
+      throw new Error("سجّل الدخول أولًا.");
+    }
+
+    const ref = window.ma3daDoc(
+      window.ma3daDB,
+      "supportStaff",
+      user.uid
+    );
+
+    const snapshot = await window.ma3daGetDoc(ref);
+    const data = snapshot.exists() ? snapshot.data() : {};
+
+    if (data.role !== "owner" || data.active === false) {
+      throw new Error("هذه الميزة مخصصة لمالك التطبيق فقط.");
+    }
+
+    return user;
+  }
+
+  function applyBackground(image, opacity = 16) {
+    if (!image) return;
+
+    document.documentElement.style.setProperty(
+      "--ma3da-published-bg",
+      'url("' + image + '")'
+    );
+
+    document.documentElement.style.setProperty(
+      "--ma3da-bg-overlay",
+      String(1 - Number(opacity) / 100)
+    );
+
+    document.querySelectorAll(".screen").forEach(screen => {
+      if (screen.id !== PAGE_ID) {
+        screen.classList.add("ma3da-published-background");
+      }
+    });
+  }
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onerror = reject;
+
+      reader.onload = () => {
+        const image = new Image();
+
+        image.onerror = reject;
+
+        image.onload = () => {
+          const maxSize = 1200;
+          const scale = Math.min(
+            1,
+            maxSize / Math.max(image.width, image.height)
+          );
+
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(image.width * scale);
+          canvas.height = Math.round(image.height * scale);
+
+          canvas.getContext("2d").drawImage(
+            image, 0, 0, canvas.width, canvas.height
+          );
+
+          let quality = 0.75;
+          let result = canvas.toDataURL("image/jpeg", quality);
+
+          while (result.length > 650000 && quality > 0.35) {
+            quality -= 0.08;
+            result = canvas.toDataURL("image/jpeg", quality);
+          }
+
+          if (result.length > 650000) {
+            reject(new Error("حجم الصورة كبير؛ اختر صورة أصغر."));
+            return;
+          }
+
+          resolve(result);
+        };
+
+        image.src = reader.result;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function loadSavedBackground() {
+    try {
+      await window.ma3daFirebaseReady;
+
+      if (
+        !window.ma3daDB ||
+        !window.ma3daDoc ||
+        !window.ma3daGetDoc
+      ) return;
+
+      const ref = window.ma3daDoc(
+        window.ma3daDB,
+        COLLECTION,
+        DOC_ID
+      );
+
+      const snapshot = await window.ma3daGetDoc(ref);
+
+      if (!snapshot.exists()) return;
+
+      const data = snapshot.data() || {};
+
+      savedImage = data.imageData || "";
+
+      if (savedImage) {
+        applyBackground(savedImage, data.opacity ?? 16);
+      }
+    } catch (error) {
+      console.warn("تعذر تحميل خلفية مِعدة:", error);
+    }
+  }
+
+  async function publishBackground() {
+    const button = $("ma3daBgPublish");
+
+    try {
+      await verifyOwner();
+
+      if (!selectedImage) {
+        status("اختر صورة أولًا.");
+        return;
+      }
+
+      button.disabled = true;
+      status("جارٍ حفظ الخلفية...");
+
+      const ref = window.ma3daDoc(
+        window.ma3daDB,
+        COLLECTION,
+        DOC_ID
+      );
+
+      const opacity = Number($("ma3daBgOpacity").value);
+
+      await window.ma3daSetDoc(ref, {
+        imageData: selectedImage,
+        opacity,
+        allPages: true,
+        updatedAtMs: Date.now(),
+        updatedBy: window.ma3daAuth.currentUser.uid
+      }, { merge: true });
+
+      savedImage = selectedImage;
+      applyBackground(savedImage, opacity);
+      status("تم حفظ الخلفية وتطبيقها على الصفحات المفتوحة.");
+    } catch (error) {
+      console.error("Background publish error:", error);
+      status(error.message || "تعذر الحفظ. تحقق من صلاحيات Firebase.");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async function openBackgroundPage() {
+    try {
+      await verifyOwner();
+    } catch (error) {
+      alert(error.message);
+      return;
+    }
+
+    let page = $(PAGE_ID);
+
+    if (!page) {
+      page = document.createElement("section");
+      page.id = PAGE_ID;
+      page.className = "screen support-screen";
+
+      page.innerHTML = `
+        <div class="bg-panel">
+          <h2 style="text-align:center;color:#a98638">
+            مِعدة | إدارة خلفيات التطبيق
+          </h2>
+
+          <p>ارفع الصورة التي تريد استخدامها خلفية لصفحات التطبيق.</p>
+
+          <label for="ma3daBgFile">اختر صورة</label>
+          <input
+            id="ma3daBgFile"
+            type="file"
+            accept="image/*"
+            style="display:block;width:100%;margin:12px 0"
+          >
+
+          <div id="ma3daBgPreview" class="bg-preview">
+            ستظهر معاينة الصورة هنا
+          </div>
+
+          <label for="ma3daBgOpacity">
+            درجة وضوح الصورة:
+            <span id="ma3daBgOpacityValue">16%</span>
+          </label>
+
+          <input
+            id="ma3daBgOpacity"
+            type="range"
+            min="5"
+            max="45"
+            value="16"
+            style="display:block;width:100%"
+          >
+
+          <div>
+            <button id="ma3daBgPublish" class="bg-publish">
+              نشر الخلفية
+            </button>
+
+            <button id="ma3daBgRestore">
+              معاينة الخلفية المحفوظة
+            </button>
+
+            <button id="ma3daBgBack" class="bg-back">
+              رجوع
+            </button>
+          </div>
+
+          <div id="ma3daBgStatus" class="bg-status" role="status"></div>
+        </div>
+      `;
+
+      document.body.appendChild(page);
+
+      $("ma3daBgFile").addEventListener("change", async event => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+          status("الملف المحدد ليس صورة.");
+          return;
+        }
+
+        try {
+          selectedImage = await compressImage(file);
+          $("ma3daBgPreview").style.backgroundImage =
+            'url("' + selectedImage + '")';
+          $("ma3daBgPreview").textContent = "";
+          status("تم تجهيز الصورة للمعاينة.");
+        } catch (error) {
+          status(error.message || "تعذر تجهيز الصورة.");
+        }
+      });
+
+      $("ma3daBgOpacity").addEventListener("input", event => {
+        const value = Number(event.target.value);
+        $("ma3daBgOpacityValue").textContent = value + "%";
+
+        if (selectedImage) applyBackground(selectedImage, value);
+      });
+
+      $("ma3daBgPublish").addEventListener(
+        "click", publishBackground
+      );
+
+      $("ma3daBgRestore").addEventListener("click", () => {
+        if (!savedImage) {
+          status("لا توجد خلفية محفوظة.");
+          return;
+        }
+
+        selectedImage = savedImage;
+        $("ma3daBgPreview").style.backgroundImage =
+          'url("' + savedImage + '")';
+        $("ma3daBgPreview").textContent = "";
+        status("تمت معاينة الخلفية المحفوظة.");
+      });
+
+      $("ma3daBgBack").addEventListener("click", () => {
+        page.classList.remove("active");
+
+        const dashboard = $("ownerPortalDashboardScreen");
+
+        if (dashboard) dashboard.classList.add("active");
+      });
+    }
+
+    document.querySelectorAll(".screen").forEach(screen => {
+      screen.classList.remove("active");
+    });
+
+    page.classList.add("active");
+    await loadSavedBackground();
+  }
+
+  function addOwnerButton() {
+    const dashboard = $("ownerPortalDashboardScreen");
+
+    if (!dashboard || dashboard.dataset.ma3daBgButton) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "support-btn support-primary";
+    button.textContent = "إدارة خلفيات التطبيق";
+    button.style.cssText = "width:100%;margin:10px 0";
+
+    button.addEventListener("click", openBackgroundPage);
+
+    const target =
+      dashboard.querySelector(".owner-admin-grid") ||
+      dashboard.querySelector(".owner-admin-details") ||
+      dashboard;
+
+    target.prepend(button);
+    dashboard.dataset.ma3daBgButton = "1";
+  }
+
+  function initialize() {
+    addStyles();
+    addOwnerButton();
+    loadSavedBackground();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, {
+      once: true
+    });
+  } else {
+    initialize();
+  }
+
+  // محاولة إضافة الزر عند فتح لوحة المالك، دون مراقبة مستمرة للصفحة
+  document.addEventListener("click", event => {
+    if (event.target.closest("#ownerPortalDashboardScreen")) {
+      addOwnerButton();
+    }
+  });
+
+  window.addEventListener("load", addOwnerButton, { once: true });
+})();
+
