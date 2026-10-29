@@ -3424,17 +3424,17 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   }
 }
 /* =========================================================
-   Ø¥Ø¶Ø§ÙØ§Øª Ø§Ø¹ØªÙØ§Ø¯ Ø§ÙÙØ¹Ø¯Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ
+   إضافات اعتماد المعدات والتصعيد وملاحظات مالك التطبيق
    ========================================================= */
 
-/* 01 â ÙØ§Ø¦ÙØ© ÙØ±Ø§Ø¬Ø¹Ø© Ø§ÙÙØ¹Ø¯Ø§Øª */
+/* 01 — قائمة مراجعة المعدات */
 #supportEquipmentEditsList .support-row {
   border: 1px solid #e6d6b2;
   border-radius: 16px;
   background: #fffdf8;
 }
 
-/* 02 â Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙ ÙÙØ­Ø© ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ */
+/* 02 — حقول الملاحظات والتصعيد في لوحة مالك التطبيق */
 .owner-admin-record textarea {
   width: 100%;
   box-sizing: border-box;
@@ -3446,23 +3446,23 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   background: #fff;
 }
 
-/* 03 â Ø¹ÙØ§ÙÙÙ Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª */
+/* 03 — عناوين حقول الملاحظات */
 .owner-admin-record label {
   display: block;
   font-weight: 700;
   margin-top: 12px;
 }
 
-/* 04 â Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø© Ø§ÙÙÙÙÙØ© */
+/* 04 — زر حفظ الملاحظة اليومية */
 #ownerDailyNoteSaveBtn {
   margin-top: 8px;
 }
 /* =========================================
-   MA3DA â ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª
-   ØªÙØ³ÙÙØ§Øª Ø§ÙØ£ÙØ³Ø§Ù ÙØ§ÙØªØµØ¹ÙØ¯Ø§Øª ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª
+   MA3DA — مركز إدارة المعلومات
+   تنسيقات الأقسام والتصعيدات والملاحظات
    ========================================= */
 
-/* Ø¨Ø·Ø§ÙØ§Øª Ø³Ø¬ÙØ§Øª ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª */
+/* بطاقات سجلات مركز إدارة المعلومات */
 .owner-admin-record {
   direction: rtl;
   text-align: right;
@@ -3476,7 +3476,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* Ø¹ÙØ§ÙÙÙ Ø§ÙØ­ÙÙÙ */
+/* عناوين الحقول */
 .owner-admin-record label {
   display: block;
   margin: 10px 0 6px;
@@ -3485,7 +3485,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   text-align: right;
 }
 
-/* Ø­ÙÙÙ Ø§ÙØ¥Ø¯Ø®Ø§Ù ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª */
+/* حقول الإدخال والملاحظات */
 .owner-admin-record input,
 .owner-admin-record select,
 .owner-admin-record textarea {
@@ -3509,13 +3509,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   line-height: 1.7;
 }
 
-/* Ø£Ø²Ø±Ø§Ø± Ø§ÙØ³Ø¬ÙØ§Øª */
+/* أزرار السجلات */
 .owner-admin-record button {
   margin: 8px 0 0 6px;
   border-radius: 10px;
 }
 
-/* ÙØ§Ø¦ÙØ© ØªØ¹Ø¯ÙÙØ§Øª Ø§ÙÙØ¹Ø¯Ø§Øª ÙÙ Ø§ÙØ¯Ø¹Ù Ø§ÙÙÙÙ */
+/* قائمة تعديلات المعدات في الدعم الفني */
 #supportEquipmentEditsList .support-row {
   box-sizing: border-box;
   width: 100%;
@@ -3528,12 +3528,12 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   direction: rtl;
 }
 
-/* Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
+/* زر حفظ الملاحظات اليومية */
 #ownerDailyNoteSaveBtn {
   margin-top: 12px;
 }
 
-/* Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
+/* حقول الملاحظات اليومية */
 #ownerDailyNotes,
 #ownerDailyNote,
 #ownerDailyNoteText,
@@ -3546,7 +3546,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   direction: rtl;
 }
 
-/* Ø¹Ø±Ø¶ Ø§ÙØªØµØ¹ÙØ¯Ø§Øª Ø¯Ø§Ø®Ù ÙØ³Ù Ø§ÙØ´ÙØ§ÙÙ ÙÙÙØ¸ÙÙ Ø§ÙØ¯Ø¹Ù */
+/* عرض التصعيدات داخل قسم الشكاوى وموظفي الدعم */
 #ownerEscalationsList,
 #supportEscalationsList,
 [data-owner-view="escalations"] {
@@ -3560,13 +3560,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   max-width: 100%;
 }
 
-/* ÙÙØ¹ ØªØ¬Ø§ÙØ² Ø§ÙÙØ­ØªÙÙ Ø¹Ø±Ø¶ Ø§ÙØ´Ø§Ø´Ø© */
+/* منع تجاوز المحتوى عرض الشاشة */
 .owner-admin-record *,
 #supportEquipmentEditsList * {
   overflow-wrap: anywhere;
 }
 
-/* ØªÙØ§ÙÙ ÙØ¹ Ø§ÙØ¢ÙÙÙÙ */
+/* توافق مع الآيفون */
 @media (max-width: 600px) {
   .owner-admin-record {
     padding: 12px;
@@ -3586,262 +3586,5 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   .owner-admin-record button {
     max-width: 100%;
     white-space: normal;
-  }
-}
-
-
-/* ATHAR BRANDING â additive visual layer only */
-:root { --athar-gold: #d6b15e; --athar-gold-light: #f3dfaa; }
-#customerHomeScreen,
-#operatorHomeScreen,
-#contractorHomeScreen {
-  position: relative !important;
-  isolation: isolate;
-  overflow: hidden;
-  min-height: 100vh;
-  box-sizing: border-box;
-  background:
-    linear-gradient(180deg, rgba(8,9,10,.68) 0%, rgba(8,9,10,.50) 48%, rgba(8,9,10,.78) 100%),
-    url("./athar-logo.png") center 28% / cover no-repeat,
-    #101010 !important;
-  color: #fff !important;
-}
-#customerHomeScreen > *,
-#operatorHomeScreen > *,
-#contractorHomeScreen > * { position: relative; z-index: 1; }
-#customerHomeScreen .home-page,
-#operatorHomeScreen .operator-dashboard { background: transparent !important; }
-#customerHomeScreen .home-header,
-#operatorHomeScreen .operator-dashboard-header { color: #fff !important; }
-#customerHomeScreen .home-greeting,
-#operatorHomeScreen .operator-greeting,
-#customerHomeScreen .home-header h1,
-#operatorHomeScreen .operator-dashboard-header h1,
-#contractorHomeScreen > .hero h1,
-#contractorHomeScreen > .hero p { color: var(--athar-gold-light) !important; text-shadow: 0 2px 12px #000; }
-#customerHomeScreen::before,
-#operatorHomeScreen::before,
-#contractorHomeScreen::before {
-  display: block;
-  content: "Ø¢Ø«Ø§Ø±";
-  position: relative;
-  z-index: 2;
-  margin: 8px auto 2px;
-  text-align: center;
-  color: var(--athar-gold-light);
-  font-size: clamp(1.8rem, 5vw, 2.6rem);
-  font-weight: 900;
-  letter-spacing: .04em;
-  text-shadow: 0 3px 16px #000;
-}
-#customerHomeScreen::after,
-#operatorHomeScreen::after,
-#contractorHomeScreen::after {
-  display: block;
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  margin: 0 auto 18px;
-  padding: 0 16px;
-  color: #fff0c6;
-  font-size: .95rem;
-  line-height: 1.8;
-  text-shadow: 0 2px 10px #000;
-}
-#customerHomeScreen::after { content: "ÙØ¹Ø¯Ø§ØªÙ Ø£ÙØ±Ø¨ ÙÙØ´Ø±ÙØ¹ÙØ ÙØ®Ø·ÙØªÙ Ø§ÙÙØ§Ø¯ÙØ© ØªØ¨Ø¯Ø£ ÙÙ Ø¢Ø«Ø§Ø±"; }
-#operatorHomeScreen::after { content: "Ø®ÙÙ ÙØ¹Ø¯Ø§ØªÙ ØªØµÙØ¹ Ø§ÙÙØ±ÙØ ÙØ±ØµÙ ÙÙØ´Ø§Ø±ÙØ¹Ù ØªØ¨Ø¯Ø£ ÙÙ Ø¢Ø«Ø§Ø±"; }
-#contractorHomeScreen::after { content: "ÙÙ ÙÙØ±Ø© Ø§ÙÙØ´Ø±ÙØ¹ Ø¥ÙÙ Ø¥ÙØ¬Ø§Ø²ÙØ Ø¢Ø«Ø§Ø± ØªØ¬ÙØ¹Ù Ø¨Ø§ÙÙØ¹Ø¯Ø© Ø§ÙÙÙØ§Ø³Ø¨Ø©"; }
-
-#customerHomeScreen .home-request-card,
-#customerHomeScreen .home-menu-item,
-#customerHomeScreen .home-feature,
-#operatorHomeScreen .operator-online-card,
-#operatorHomeScreen .operator-dashboard-section,
-#operatorHomeScreen .operator-equipment-dashboard-card,
-#contractorHomeScreen .contractor-action,
-#contractorHomeScreen .hero {
-  background: rgba(15,16,17,.80) !important;
-  color: #fff !important;
-  border: 1px solid rgba(214,177,94,.58) !important;
-  box-shadow: 0 10px 28px rgba(0,0,0,.25) !important;
-  backdrop-filter: blur(8px);
-}
-#customerHomeScreen .home-request-content h2,
-#customerHomeScreen .home-request-content p,
-#customerHomeScreen .home-menu-item *,
-#customerHomeScreen .home-feature *,
-#operatorHomeScreen .operator-dashboard-section *,
-#operatorHomeScreen .operator-online-card *,
-#operatorHomeScreen .operator-equipment-dashboard-card *,
-#contractorHomeScreen .contractor-action *,
-#contractorHomeScreen .hero p { color: #fff !important; }
-#customerHomeScreen .home-request-btn,
-#customerHomeScreen .home-logout-btn,
-#contractorHomeScreen .contractor-primary {
-  background: linear-gradient(135deg,#d8b45f,#9d7628) !important;
-  color: #111 !important;
-  border-color: #f0d995 !important;
-}
-
-/* Intro/onboarding pages: compact original ATHAR poster where the old equipment icon was */
-#introScreen .hero-icon,
-#whyMa3daScreen .hero-icon,
-#howMa3daScreen .hero-icon {
-  width: 112px !important;
-  height: 112px !important;
-  margin: 0 auto 14px !important;
-  border-radius: 18px !important;
-  background: url("./athar-logo.png") center 17% / cover no-repeat !important;
-  border: 1px solid var(--athar-gold) !important;
-  box-shadow: 0 8px 24px #0002 !important;
-  font-size: 0 !important;
-  overflow: hidden;
-}
-#introScreen .athar-banner,
-#whyMa3daScreen .athar-banner,
-#howMa3daScreen .athar-banner { display: none !important; }
-
-/* Login and password screens: same approved original image as a page background */
-.screen:has(.login-container) {
-  position: relative;
-  isolation: isolate;
-  min-height: 100vh;
-  background:
-    linear-gradient(180deg,rgba(7,8,9,.58),rgba(7,8,9,.82)),
-    url("./athar-logo.png") center 28% / cover fixed no-repeat,
-    #101010 !important;
-  color: #fff !important;
-}
-.screen:has(.login-container) .login-container {
-  background: rgba(12,13,14,.78) !important;
-  color: #fff !important;
-  border: 1px solid rgba(214,177,94,.65) !important;
-  border-radius: 20px;
-  box-shadow: 0 18px 50px #0005;
-  backdrop-filter: blur(9px);
-}
-.screen:has(.login-container) .login-container h1,
-.screen:has(.login-container) .login-container h2,
-.screen:has(.login-container) .login-container p { color: #fff0c6 !important; }
-
-@media (max-width: 600px) {
-  #customerHomeScreen, #operatorHomeScreen, #contractorHomeScreen {
-    background-position: center top !important;
-    background-size: auto 100vh !important;
-  }
-}
-
-
-/* =========================================================
-   Ø¢Ø«Ø§Ø± â Ø®ÙÙÙØ© Ø§ÙÙÙÙØ© Ø§ÙÙØ§ØªØ­Ø© ÙÙØµÙØ­Ø§Øª Ø§ÙØ±Ø¦ÙØ³ÙØ© ÙØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ
-   ÙØ¹ØªÙØ¯ Ø¹ÙÙ ÙÙÙ athar-logo.png Ø¨Ø¬Ø§ÙØ¨ index.html Ù style.css
-   ========================================================= */
-:root {
-  --athar-gold: #b58a35;
-  --athar-ink: #26221a;
-}
-
-/* Ø§ÙØ®ÙÙÙØ© Ø§ÙØ£ØµÙÙØ© ÙØ¢Ø«Ø§Ø± ÙØ¹ Ø·Ø¨ÙØ© ÙØ§ØªØ­Ø© Ø­ØªÙ ØªØ¨ÙÙ Ø§ÙÙØµÙØµ ÙÙØ±ÙØ¡Ø© */
-#customerHomeScreen,
-#operatorHomeScreen,
-#contractorHomeScreen,
-#roleScreen,
-#phoneScreen,
-#otpScreen {
-  background-image: linear-gradient(rgba(255, 252, 242, .78), rgba(255, 252, 242, .84)), url("athar-logo.png");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-  background-color: #f7f0df;
-}
-
-/* ØªØ«Ø¨ÙØª Ø·Ø¨ÙØ© Ø§ÙØ®ÙÙÙØ© Ø¯Ø§Ø®Ù Ø§ÙØµÙØ­Ø© ÙØ¹ Ø¹Ø¯Ù ØªØºÙÙØ± ØªØ¯ÙÙ Ø£Ù ÙØ¸Ø§Ø¦Ù Ø§ÙØªØ·Ø¨ÙÙ */
-#customerHomeScreen,
-#operatorHomeScreen,
-#contractorHomeScreen {
-  min-height: 100vh;
-  color: var(--athar-ink);
-}
-
-/* Ø¨Ø·Ø§ÙØ§Øª ÙØ§ØªØ­Ø© Ø´ÙØ§ÙØ© ÙÙÙÙÙØ§ ÙØªØ¸ÙØ± Ø§ÙØ®ÙÙÙØ© Ø®ÙÙ Ø§ÙÙØ­ØªÙÙ */
-#customerHomeScreen .home-page,
-#customerHomeScreen .home-header,
-#customerHomeScreen .home-request-card,
-#operatorHomeScreen .card,
-#contractorHomeScreen .card,
-#contractorHomeScreen .contractor-action {
-  background-color: rgba(255, 253, 247, .88);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-}
-
-/* Ø¥Ø¨Ø±Ø§Ø² Ø§Ø³Ù Ø¢Ø«Ø§Ø± ÙØ§ÙØ¹Ø¨Ø§Ø±Ø§Øª Ø§ÙÙÙØ§Ø³Ø¨Ø© ÙÙÙ ÙØ¦Ø© Ø£Ø¹ÙÙ Ø§ÙØµÙØ­Ø© */
-#customerHomeScreen .home-header::before {
-  content: "Ø¢Ø«Ø§Ø± â Ø­ÙÙÙÙ ÙÙÙØ¹Ø¯Ø§Øª ØªØ¨Ø¯Ø£ ÙÙ ÙÙØ§";
-  display: block;
-  width: 100%;
-  margin: 0 0 12px;
-  color: var(--athar-gold);
-  font-size: clamp(20px, 4vw, 28px);
-  font-weight: 800;
-  text-align: center;
-}
-#operatorHomeScreen::before {
-  content: "Ø¢Ø«Ø§Ø± â ÙÙØµØªÙ ÙØ¥Ø¯Ø§Ø±Ø© ÙØ¹Ø¯Ø§ØªÙ";
-  display: block;
-  padding: 18px 12px 8px;
-  color: var(--athar-gold);
-  font-size: clamp(20px, 4vw, 28px);
-  font-weight: 800;
-  text-align: center;
-}
-#contractorHomeScreen::before {
-  content: "Ø¢Ø«Ø§Ø± â Ø£ÙØ¬Ø² ÙØ´Ø§Ø±ÙØ¹Ù Ø¨Ø«ÙØ©";
-  display: block;
-  padding: 18px 12px 8px;
-  color: var(--athar-gold);
-  font-size: clamp(20px, 4vw, 28px);
-  font-weight: 800;
-  text-align: center;
-}
-
-/* Ø§ÙØ´Ø¹Ø§Ø± Ø§ÙØ£ØµÙÙ Ø¨Ø­Ø¬Ù ØµØºÙØ± ÙÙ Ø§ÙØµÙØ­Ø© Ø§ÙØªØ¹Ø±ÙÙÙØ© Ø¨Ø¯Ù Ø£ÙÙÙÙØ© Ø§ÙÙØ¹Ø¯Ø© */
-#introScreen .athar-intro-logo {
-  width: min(180px, 46vw);
-  height: auto;
-  margin: 0 auto 16px;
-  overflow: hidden;
-  border-radius: 18px;
-  background: transparent;
-  box-shadow: 0 8px 28px rgba(90, 66, 20, .12);
-}
-#introScreen .athar-intro-logo-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-/* Ø¯Ø¹Ù Ø´Ø§Ø´Ø§Øª Ø§ÙØ¯Ø®ÙÙ Ø§ÙØ¥Ø¶Ø§ÙÙØ© Ø¯ÙÙ ÙÙØ³ Ø³ÙÙÙ ØªØ³Ø¬ÙÙ Ø§ÙØ¯Ø®ÙÙ */
-#ownerPortalLoginScreen,
-#supportLoginScreen {
-  background-image: linear-gradient(rgba(255, 252, 242, .80), rgba(255, 252, 242, .86)), url("athar-logo.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #f7f0df;
-}
-
-@media (max-width: 600px) {
-  #customerHomeScreen,
-  #operatorHomeScreen,
-  #contractorHomeScreen,
-  #roleScreen,
-  #phoneScreen,
-  #otpScreen,
-  #ownerPortalLoginScreen,
-  #supportLoginScreen {
-    background-position: center top;
   }
 }
