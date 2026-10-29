@@ -15362,7 +15362,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       banner.style.cssText = 'width:min(calc(100% - 24px),1100px);margin:12px auto 20px;padding:0;box-sizing:border-box;text-align:center;';
 
       const image = document.createElement('img');
-      image.src = './athar-brand-poster.png';
+      // مسار الصورة يُحسب نسبةً إلى ملف script.js نفسه، وليس إلى مسار الصفحة الحالية.
+       const ma3daScriptUrl = document.currentScript && document.currentScript.src
+         ? document.currentScript.src
+         : new URL('./script.js', window.location.href).href;
+       image.src = new URL('./athar-brand-poster.png', ma3daScriptUrl).href;
       image.alt = 'أثار ATHAR للمعدات الثقيلة — من إرث الحضارة إلى بناء المستقبل';
       image.loading = 'lazy';
       image.decoding = 'async';
