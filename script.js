@@ -15343,4 +15343,61 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.__ma3daAtharBrandImageInstalled = true;
 
   // صورة الهوية مضمّنة داخل script.js لتفادي اختلاف اسم الملف أو مساره.
-  const atharImage = "data
+  const atharImage = "8268CD44-F38B-4DC9-AD13-0854C60A304F.png";
+  const style = document.createElement("style");
+  style.id = "ma3daAtharBrandImageStyles";
+  style.textContent = `
+    .ma3da-athar-intro-image {
+      display:block; width:min(100%, 560px); height:auto; max-height:340px;
+      object-fit:contain; margin:0 auto 18px; border-radius:18px;
+      filter:drop-shadow(0 10px 22px rgba(0,0,0,.18));
+    }
+    .ma3da-athar-bg { position:relative !important; isolation:isolate; }
+    .ma3da-athar-bg::before {
+      content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+      background-image:var(--ma3da-athar-background); background-repeat:no-repeat;
+      background-position:center; background-size:cover; opacity:.14;
+    }
+  `;
+  (document.head || document.documentElement).appendChild(style);
+
+  function applyAtharBrandImage() {
+    // الصفحات التعريفية الأربع: الصورة بدل أيقونة المعدة الحالية.
+    ["introScreen", "whyMa3daScreen", "howMa3daScreen", "howWorksScreen"].forEach(id => {
+      const screen = document.getElementById(id);
+      if (!screen) return;
+      const heroIcon = screen.querySelector(".hero-icon");
+      if (!heroIcon || heroIcon.querySelector(".ma3da-athar-intro-image")) return;
+      const image = document.createElement("img");
+      image.className = "ma3da-athar-intro-image";
+      image.src = atharImage;
+      image.alt = "هوية آثار السينمائية — الرياض وجبال طويق والمعدات الثقيلة";
+      heroIcon.replaceWith(image);
+    });
+
+    // خلفية سينمائية شفافة للصفحات الرئيسية المطلوبة، دون حجب عناصر الواجهة.
+    ["customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen"].forEach(id => {
+      const screen = document.getElementById(id);
+      if (!screen) return;
+      screen.classList.add("ma3da-athar-bg");
+      screen.style.setProperty("--ma3da-athar-background", `url("${atharImage}")`);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyAtharBrandImage, { once:true });
+  } else {
+    applyAtharBrandImage();
+  }
+  // إعادة التطبيق عند ظهور الصفحات إذا كانت بعض عناصرها تُنشأ لاحقًا.
+  let atharApplyQueued = false;
+  const observer = new MutationObserver(() => {
+    if (atharApplyQueued) return;
+    atharApplyQueued = true;
+    Promise.resolve().then(() => {
+      atharApplyQueued = false;
+      applyAtharBrandImage();
+    });
+  });
+  observer.observe(document.documentElement, { childList:true, subtree:true });
+})();
