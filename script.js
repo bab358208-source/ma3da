@@ -15335,3 +15335,82 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   // بعض الصفحات قد تُنشأ لاحقًا بعد تسجيل الدخول.
   window.addEventListener("load", init);
 })();
+
+/* =========================================================
+   ATHAR — الهوية البصرية الموحدة
+   الشاشات التعريفية + الرئيسية للعميل وصاحب المعدة والمشاريع.
+   لا يغيّر وظائف الطلبات أو الدعم أو Firebase.
+   ضع athar-brand-poster.png بجانب index.html و script.js.
+========================================================= */
+(function initAtharGlobalBranding() {
+  if (window.__ma3daAtharGlobalBrandingBound) return;
+  window.__ma3daAtharGlobalBrandingBound = true;
+
+  const BRAND_SCREENS = [
+    // الصفحات التعريفية
+    "introScreen", "whyMa3daScreen", "howMa3daScreen", "howWorksScreen", "roleScreen",
+    // الصفحات الرئيسية
+    "customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen"
+  ];
+
+  function addBrandingToScreen(screen) {
+    if (!screen || screen.querySelector(":scope > #atharBrandingHeader")) return;
+
+    const header = document.createElement("div");
+    header.id = "atharBrandingHeader";
+    header.className = "athar-branding-header";
+    header.setAttribute("dir", "rtl");
+    header.setAttribute("aria-label", "أثار ATHAR للمعدات الثقيلة");
+    header.style.cssText = [
+      "width:min(100%,1100px)",
+      "margin:0 auto 14px",
+      "padding:10px 12px 0",
+      "box-sizing:border-box",
+      "text-align:center",
+      "position:relative",
+      "z-index:1"
+    ].join(";");
+
+    const image = document.createElement("img");
+    image.src = "./athar-brand-poster.png";
+    image.alt = "أثار ATHAR للمعدات الثقيلة — من إرث الحضارة إلى بناء المستقبل";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.style.cssText = [
+      "display:block",
+      "width:100%",
+      "height:auto",
+      "max-height:clamp(112px,22vw,220px)",
+      "object-fit:contain",
+      "object-position:center",
+      "border-radius:16px",
+      "border:1px solid rgba(200,164,91,.72)",
+      "background:#fbf7ee",
+      "box-shadow:0 5px 18px rgba(30,24,14,.10)"
+    ].join(";");
+    image.onerror = function () {
+      header.hidden = true;
+      console.warn("تعذر تحميل صورة هوية أثار: تأكد من وجود athar-brand-poster.png بجانب ملفات التطبيق.");
+    };
+    header.appendChild(image);
+
+    // ضع الهوية أعلى محتوى الشاشة مع إبقاء عناصر الشاشة الحالية كما هي.
+    screen.insertBefore(header, screen.firstChild);
+  }
+
+  function applyBranding() {
+    BRAND_SCREENS.forEach(id => addBrandingToScreen(document.getElementById(id)));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyBranding, { once: true });
+  } else {
+    applyBranding();
+  }
+
+  // بعض الشاشات قد تُنشأ لاحقًا؛ راقب إضافتها فقط دون لمس محتواها.
+  if (typeof MutationObserver === "function" && document.documentElement) {
+    const observer = new MutationObserver(() => applyBranding());
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();
