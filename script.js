@@ -13003,7 +13003,8 @@ async function staffTicketRows(){
     try{
       const rows=await staffTicketRows();const ticket=rows.find(t=>t.id===ticketId);if(!ticket)throw new Error('الشكوى غير موجودة.');
       activeTicket={...ticket};
-      const panel=$('supportTicketConversation');if(panel){panel.hidden=false;panel.classList.add('active');}
+      const panel=$('supportTicketConversation');
+      if(panel){panel.hidden=false;panel.classList.add('active');bindStaffConversationActions();}
       setText('supportTicketConversationTitle',ticket.subject||ticket.title||'محادثة الشكوى');
       setText('supportTicketConversationMeta',`رقم الشكوى: ${ticket.id} · ${ticket.requesterEmail||ticket.requesterId||''} · ${statusLabel(ticket)}`);
       setText('supportTicketConversationDescription',`${ticket.category||''}${ticket.orderNumber?' · رقم الطلب: '+ticket.orderNumber:''}\n${ticket.message||''}`);
@@ -13015,6 +13016,67 @@ async function staffTicketRows(){
       panel?.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){setFeedback('supportTicketReplyFeedback',err.message||'تعذر فتح المحادثة.');}
   }
+  // ربط مباشر لأزرار محادثة موظف الدعم؛ يمنع اعتمادها على مستمع النقر العام فقط.
+  function bindStaffConversationActions(){
+    const actions={
+      supportTicketSendReplyBtn:sendStaffReply,
+      supportTicketEscalateBtn:escalateStaffTicket,
+      supportTicketCloseBtn:closeStaffTicket,
+      supportTicketConversationHideBtn:()=>{
+        const panel=$('supportTicketConversation');
+        if(panel){panel.hidden=true;panel.classList.remove('active');}
+        stopStaffListener();
+      }
+    };
+    Object.entries(actions).forEach(([id,action])=>{
+      const button=$(id);if(!button)return;
+      button.onclick=async event=>{
+        event.preventDefault();event.stopPropagation();
+        if(button.dataset.processing==='true')return;
+        button.dataset.processing='true';
+        try{await action();}
+        catch(error){
+          console.error('خطأ في زر محادثة الدعم:',id,error);
+          setFeedback('supportTicketReplyFeedback',error?.message||'تعذر تنفيذ العملية.');
+        }finally{button.dataset.processing='false';}
+      };
+    });
+  }
+
+  // التصعيد ضمن نطاق مركز الدعم حتى يستخدم الشكوى المفتوحة الحالية فعليًا.
+  async function escalateStaffTicket(){
+    if(!activeTicket?.id){setFeedback('supportTicketReplyFeedback','افتح شكوى من القائمة أولًا قبل التصعيد.');return;}
+    const reason=prompt('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:');
+    if(reason===null)return;
+    if(!reason.trim()){setFeedback('supportTicketReplyFeedback','اكتب سبب التصعيد قبل الإرسال.');return;}
+    const button=$('supportTicketEscalateBtn');
+    if(button){button.disabled=true;button.textContent='جارٍ إرسال التصعيد...';}
+    try{
+      const user=await getUser();
+      await waitForFirebase();
+      if(!window.ma3daDB||typeof window.ma3daAddDoc!=='function'||typeof window.ma3daCollection!=='function')throw new Error('خدمة Firebase غير جاهزة.');
+      await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'supportEscalations'),{
+        ticketId:activeTicket.id,
+        ticketSubject:activeTicket.subject||activeTicket.title||'شكوى',
+        ticketDescription:activeTicket.message||activeTicket.description||'',
+        requesterId:activeTicket.requesterId||activeTicket.userId||'',
+        staffId:user.uid,staffEmail:user.email||'',
+        staffName:supportEmployee?.data?.name||user.email||'موظف الدعم',
+        reason:reason.trim(),status:'open',createdAt:new Date(),createdAtMs:Date.now()
+      });
+      setFeedback('supportTicketReplyFeedback','تم إرسال التصعيد إلى مالك التطبيق.');
+      alert('تم تصعيد الشكوى إلى مالك التطبيق.');
+    }catch(err){
+      console.error('تعذر تصعيد الشكوى:',err);
+      const msg=err?.code==='permission-denied'
+        ?'رفضت قواعد Firebase إنشاء التصعيد. تأكد من السماح لموظف الدعم بإنشاء مستند في supportEscalations.'
+        :(err?.message||'تعذر إرسال التصعيد.');
+      setFeedback('supportTicketReplyFeedback',msg);alert(msg);
+    }finally{
+      if(button){button.disabled=false;button.textContent='تصعيد إلى مالك التطبيق';}
+    }
+  }
+
   async function sendStaffReply(){
     const input=$('supportTicketReplyInput');const text=(input?.value||'').trim();
     if(!activeTicket||!text){setFeedback('supportTicketReplyFeedback','اكتب الرد أولًا.');return;}
@@ -13162,10 +13224,10 @@ async function staffTicketRows(){
     if(el.matches('[data-reject-equipment-edit]')){await decideEquipmentEdit(el.dataset.rejectEquipmentEdit,false);return;}
     if(el.matches('[data-approve-new-equipment]')){await decideNewEquipment(el.dataset.approveNewEquipment,true);return;}
     if(el.matches('[data-reject-new-equipment]')){await decideNewEquipment(el.dataset.rejectNewEquipment,false);return;}
-    if(el.id==='supportTicketEscalateBtn'){await escalateActiveTicket();return;}
+    if(el.id==='supportTicketEscalateBtn'){await escalateStaffTicket();return;}
     if(el.id==='supportTicketSendReplyBtn'){await sendStaffReply();return;}
     if(el.id==='supportTicketCloseBtn'){await closeStaffTicket();return;}
-    if(el.id==='supportTicketConversationHideBtn'){const panel=$('supportTicketConversation');if(panel)panel.hidden=true;stopStaffListener();return;}
+    if(el.id==='supportTicketConversationHideBtn'){const panel=$('supportTicketConversation');if(panel){panel.hidden=true;panel.classList.remove('active');}stopStaffListener();return;}
     if(el.matches('[data-support-rating]')){selectedSupportRating=Number(el.dataset.supportRating)||0;document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=selectedSupportRating?'★':'☆';star.style.color=n<=selectedSupportRating?'#b88922':'#777';star.style.fontSize='24px';});return;}
     if(el.id==='ma3daSubmitSupportRatingBtn'){await submitRequesterSupportRating();return;}
   });
