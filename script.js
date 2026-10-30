@@ -15415,8 +15415,47 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   let savedImage = "";
   let initializedPanel = false;
   let savedPageBackgrounds = {};
+  const CACHE_KEY = "ma3da_brand_background_cache_v1";
 
   const $ = id => document.getElementById(id);
+
+  function cacheBackground(data) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        imageData: data.imageData || "",
+        opacity: data.opacity ?? 16,
+        allPages: data.allPages !== false,
+        pageBackgrounds: data.pageBackgrounds || {}
+      }));
+    } catch (error) {
+      console.warn("تعذر تخزين نسخة محلية من الخلفيات:", error);
+    }
+  }
+
+  function applyBackgroundSettings(data) {
+    if (!data) return;
+    savedImage = data.imageData || "";
+    savedPageBackgrounds = data.pageBackgrounds || {};
+    if (data.allPages === false || !savedImage) {
+      // لا نمسح الخلفيات المخصصة عند تعطيل الخلفية العامة.
+      if (data.allPages === false) clearBackground("all");
+    } else {
+      applyBackground(savedImage, data.opacity ?? 16, "all");
+    }
+    Object.entries(savedPageBackgrounds).forEach(([pageId, entry]) => {
+      if (entry?.imageData) applyBackground(entry.imageData, entry.opacity ?? 16, pageId);
+      else clearBackground(pageId);
+    });
+  }
+
+  function loadCachedBackground() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) applyBackgroundSettings(JSON.parse(raw));
+    } catch (error) {
+      console.warn("تعذر استعادة الخلفيات المحفوظة محليًا:", error);
+    }
+  }
 
   function addStyles() {
     if ($("ma3daOwnerBackgroundStyles")) return;
@@ -15623,19 +15662,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if (!snapshot.exists()) return;
 
       const data = snapshot.data() || {};
-      savedImage = data.imageData || "";
-      savedPageBackgrounds = data.pageBackgrounds || {};
-      if (savedImage && data.allPages !== false) {
-        applyBackground(savedImage, data.opacity ?? 16, "all");
-      }
-      Object.entries(savedPageBackgrounds).forEach(([pageId, entry]) => {
-        if (entry?.imageData) applyBackground(entry.imageData, entry.opacity ?? 16, pageId);
-        else clearBackground(pageId);
-      });
+      cacheBackground(data);
+      applyBackgroundSettings(data);
       if (savedImage && data.allPages !== false) {
         const preview = $("ma3daBgPreview");
         if (preview) {
-          preview.style.backgroundImage = 'url("' + savedImage + '")';
+          preview.style.backgroundImage = 'url("' + image + '")';
           preview.textContent = "";
         }
         const opacity = $("ma3daBgOpacity");
@@ -15672,6 +15704,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
         }, { merge: true });
         savedImage = selectedImage;
+        cacheBackground({ imageData: savedImage, opacity, allPages: true, pageBackgrounds });
         applyBackground(savedImage, opacity, "all");
         status("تم حفظ الخلفية وتطبيقها على جميع الصفحات.");
       } else {
@@ -15680,6 +15713,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
         }, { merge: true });
         savedPageBackgrounds = pageBackgrounds;
+        cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
         applyBackground(selectedImage, opacity, pageId);
         status("تم حفظ الخلفية للصفحة المحددة فقط.");
       }
@@ -15797,7 +15831,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const value = Number(event.target.value);
         const valueLabel = $("ma3daBgOpacityValue");
         if (valueLabel) valueLabel.textContent = value + "%";
-        if (selectedImage) applyBackground(selectedImage, value);
+        if (selectedImage) {
+          const pageId = $("ma3daBgPageSelect")?.value || "all";
+          applyBackground(selectedImage, value, pageId);
+        }
       });
 
       const pageSelect = $("ma3daBgPageSelect");
@@ -15837,11 +15874,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
             await window.ma3daSetDoc(ref, { imageData: "", allPages: false, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedImage = "";
             clearBackground("all");
+            cacheBackground({ imageData: "", allPages: false, pageBackgrounds });
           } else {
             pageBackgrounds[pageId] = { imageData: "", opacity: Number($("ma3daBgOpacity")?.value || 16) };
             await window.ma3daSetDoc(ref, { pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedPageBackgrounds = pageBackgrounds;
             clearBackground(pageId);
+            cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
           }
           const preview = $("ma3daBgPreview");
           if (preview) { preview.style.backgroundImage = ""; preview.textContent = "لا توجد خلفية محفوظة لهذه الصفحة"; }
@@ -15854,14 +15893,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       $("ma3daBgPublish")?.addEventListener("click", publishBackground);
 
       $("ma3daBgRestore")?.addEventListener("click", () => {
-        if (!savedImage) {
-          status("لا توجد خلفية محفوظة.");
+        const pageId = $("ma3daBgPageSelect")?.value || "all";
+        const entry = pageId === "all" ? null : savedPageBackgrounds[pageId];
+        const image = pageId === "all" ? savedImage : (entry?.imageData || "");
+        if (!image) {
+          status("لا توجد خلفية محفوظة لهذه الصفحة.");
           return;
         }
-        selectedImage = savedImage;
+        selectedImage = image;
         const preview = $("ma3daBgPreview");
         if (preview) {
-          preview.style.backgroundImage = 'url("' + savedImage + '")';
+          preview.style.backgroundImage = 'url("' + image + '")';
           preview.textContent = "";
         }
         status("تمت معاينة الخلفية المحفوظة.");
@@ -15892,9 +15934,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.ma3daEnsureBackgroundPanel = ensureBackgroundPanel;
 
   function initialize() {
-    // لا نقرأ إعدادات الخلفية عند تشغيل التطبيق؛ القراءة تتم فقط
-    // بعد التحقق من صلاحية المالك عند فتح تبويب إدارة الخلفيات.
     addStyles();
+    // استعادة الخلفية فور بدء التطبيق حتى تبقى بعد تسجيل الخروج.
+    loadCachedBackground();
+    // تحديث النسخة المحلية من Firestore متى كانت القراءة متاحة.
+    loadSavedBackground();
   }
 
   if (document.readyState === "loading") {
