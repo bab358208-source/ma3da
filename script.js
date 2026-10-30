@@ -15814,8 +15814,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.ma3daEnsureBackgroundPanel = ensureBackgroundPanel;
 
   function initialize() {
+    // لا نقرأ إعدادات الخلفية عند تشغيل التطبيق؛ القراءة تتم فقط
+    // بعد التحقق من صلاحية المالك عند فتح تبويب إدارة الخلفيات.
     addStyles();
-    loadSavedBackground();
   }
 
   if (document.readyState === "loading") {
