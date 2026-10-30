@@ -5203,6 +5203,220 @@
       <button type="button" class="owner-admin-cardlink" data-owner-view="requests"><span class="owner-admin-icon">📋</span><span><strong>الطلبات</strong><small>الطلبات الناجحة والطلبات غير الناجحة</small></span><span class="owner-admin-arrow">←</span></button>
       <button type="button" class="owner-admin-cardlink" data-owner-view="notes"><span class="owner-admin-icon">📝</span><span><strong>الملاحظات اليومية</strong><small>سجل يومي لمراجعة أداء التطبيق والعمل</small></span><span class="owner-admin-arrow">←</span></button>
     </div>
+    <!-- =====================================================
+     مِعدة | مركز التحكم الشامل لمالك التطبيق
+===================================================== -->
+
+<div id="ma3daControlCenterEntryWrap">
+  <button id="ma3daControlCenterOpen"
+          class="owner-admin-cardlink ma3da-control-entry"
+          type="button">
+    <span class="owner-admin-icon">⚙️</span>
+    <span>
+      <strong>مركز التحكم الشامل</strong>
+      <small>إدارة التصميم والنصوص والأسعار والفواتير والحملات</small>
+    </span>
+    <span class="owner-admin-arrow">←</span>
+  </button>
+</div>
+
+<section id="ma3daControlCenter" hidden>
+
+  <div class="ma3da-cc-header">
+    <div>
+      <span>MA3DA · OWNER CONTROL</span>
+      <h2>مركز التحكم الشامل</h2>
+      <p>جميع إعدادات منصة مِعدة في مكان واحد</p>
+    </div>
+    <button id="ma3daCCBack" type="button">العودة ←</button>
+  </div>
+
+  <div class="ma3da-cc-tabs">
+    <button type="button" data-cc-tab="texts">النصوص</button>
+    <button type="button" data-cc-tab="design">التصميم</button>
+    <button type="button" data-cc-tab="prices">الأسعار</button>
+    <button type="button" data-cc-tab="finance">المالية والفواتير</button>
+    <button type="button" data-cc-tab="campaigns">الإشعارات والتسويق</button>
+    <button type="button" data-cc-tab="history">سجل التعديلات</button>
+  </div>
+
+  <!-- النصوص -->
+  <div class="ma3da-cc-panel" data-cc-panel="texts">
+
+    <h3>إدارة نصوص التطبيق</h3>
+    <p>غيّر العبارات الرئيسية دون تعديل ملفات التطبيق.</p>
+
+    <label>عنوان مقدمة التطبيق</label>
+    <input id="ccIntroTitle" maxlength="100">
+
+    <label>عنوان الصفحة الرئيسية للعميل</label>
+    <input id="ccCustomerTitle" maxlength="100">
+
+    <label>عنوان الصفحة الرئيسية لصاحب المعدة</label>
+    <input id="ccOperatorTitle" maxlength="100">
+
+    <label>عنوان صفحة الدعم الفني</label>
+    <input id="ccSupportTitle" maxlength="100">
+
+    <button type="button" id="ccPreviewTexts">معاينة النصوص</button>
+
+  </div>
+
+  <!-- التصميم -->
+  <div class="ma3da-cc-panel" data-cc-panel="design" hidden>
+
+    <h3>الهوية البصرية</h3>
+
+    <label>اللون الأساسي</label>
+    <input type="color" id="ccPrimaryColor" value="#111111">
+
+    <label>اللون الذهبي</label>
+    <input type="color" id="ccGoldColor" value="#c8a45b">
+
+    <label>حجم الخط</label>
+    <select id="ccFontScale">
+      <option value="0.95">صغير</option>
+      <option value="1">متوسط</option>
+      <option value="1.05">كبير</option>
+      <option value="1.1">كبير جداً</option>
+    </select>
+
+    <label>استدارة البطاقات</label>
+    <select id="ccCardRadius">
+      <option value="10">10</option>
+      <option value="16">16</option>
+      <option value="22">22</option>
+      <option value="28">28</option>
+    </select>
+
+    <div id="ccDesignPreview">
+      معاينة الهوية البصرية لمِعدة
+    </div>
+
+  </div>
+
+  <!-- الأسعار -->
+  <div class="ma3da-cc-panel" data-cc-panel="prices" hidden>
+
+    <h3>إدارة أسعار المعدات</h3>
+    <p>الأسعار بالريال السعودي، وتُحفظ كإعدادات مركزية.</p>
+
+    <label>البوكلين — سعر الساعة</label>
+    <input id="ccPriceBackhoe" type="number" min="0" step="0.01">
+
+    <label>الشيول — سعر الساعة</label>
+    <input id="ccPriceLoader" type="number" min="0" step="0.01">
+
+    <label>القلاب — سعر الساعة</label>
+    <input id="ccPriceTruck" type="number" min="0" step="0.01">
+
+    <label>الكرين — سعر الساعة</label>
+    <input id="ccPriceCrane" type="number" min="0" step="0.01">
+
+    <label>الحفار — سعر الساعة</label>
+    <input id="ccPriceExcavator" type="number" min="0" step="0.01">
+
+    <label>البلدوزر — سعر الساعة</label>
+    <input id="ccPriceBulldozer" type="number" min="0" step="0.01">
+
+  </div>
+
+  <!-- المالية والفواتير -->
+  <div class="ma3da-cc-panel" data-cc-panel="finance" hidden>
+
+    <h3>السياسة المالية</h3>
+
+    <label>عمولة تطبيق مِعدة (%)</label>
+    <input id="ccCommission" type="number" min="0" max="100" step="0.01">
+
+    <label>ضريبة القيمة المضافة (%)</label>
+    <input id="ccVat" type="number" min="0" max="100" step="0.01">
+
+    <label>بادئة رقم الفاتورة</label>
+    <input id="ccInvoicePrefix" maxlength="20">
+
+    <label>ملاحظة أسفل الفاتورة</label>
+    <textarea id="ccInvoiceFooter" rows="3" maxlength="500"></textarea>
+
+    <p class="ma3da-cc-warning">
+      هذه إعدادات السياسة المستقبلية. لن تتغير الفواتير القديمة أو
+      تُعاد حساباتها تلقائياً عند تعديل هذه القيم.
+    </p>
+
+  </div>
+
+  <!-- الحملات والإشعارات -->
+  <div class="ma3da-cc-panel" data-cc-panel="campaigns" hidden>
+
+    <h3>مركز الحملات التسويقية</h3>
+
+    <label>عنوان الإعلان</label>
+    <input id="ccCampaignTitle" maxlength="100"
+           placeholder="مثلاً: عروض مِعدة الجديدة">
+
+    <label>نص الإعلان</label>
+    <textarea id="ccCampaignBody" rows="4" maxlength="500"
+              placeholder="اكتب رسالتك التسويقية هنا"></textarea>
+
+    <label>الجمهور المستهدف</label>
+    <select id="ccCampaignAudience">
+      <option value="all">جميع المستخدمين</option>
+      <option value="customers">العملاء</option>
+      <option value="operators">أصحاب المعدات</option>
+      <option value="contractors">مديرو المشاريع</option>
+    </select>
+
+    <label>رابط الصفحة عند الضغط على الإشعار</label>
+    <input id="ccCampaignLink" maxlength="300"
+           placeholder="اختياري">
+
+    <button type="button" id="ccCampaignPublish">
+      نشر الحملة
+    </button>
+
+    <p id="ccCampaignStatus" role="status" aria-live="polite"></p>
+
+    <div class="ma3da-cc-warning">
+      يتطلب التسليم الفعلي إلى شاشة الجوال ربط Firebase Cloud Messaging
+      وخادم إرسال آمن وتسجيل رموز أجهزة المستخدمين. حفظ الحملة هنا
+      لا يعني أنها أُرسلت بالفعل.
+    </div>
+
+  </div>
+
+  <!-- السجل -->
+  <div class="ma3da-cc-panel" data-cc-panel="history" hidden>
+
+    <h3>سجل التعديلات</h3>
+    <p>مراجعة الإعدادات السابقة ومن قام بالتعديل.</p>
+
+    <button type="button" id="ccRefreshHistory">
+      تحديث السجل
+    </button>
+
+    <div id="ccHistoryList">
+      لا توجد تعديلات معروضة.
+    </div>
+
+  </div>
+
+  <div class="ma3da-cc-actions">
+
+    <button type="button" id="ccSaveSettings">
+      حفظ واعتماد الإعدادات
+    </button>
+
+    <button type="button" id="ccResetPreview">
+      إلغاء المعاينة
+    </button>
+
+    <p id="ccMainStatus" role="status" aria-live="polite"></p>
+
+  </div>
+
+</section>
+
+<!-- نهاية مركز التحكم الشامل -->
     <section id="ownerAdminDetails" class="owner-admin-details" hidden aria-live="polite"><div class="owner-admin-details-head"><h2 id="ownerAdminDetailsTitle">التفاصيل</h2><button type="button" class="support-btn" id="ownerAdminDetailsClose">إغلاق ✕</button></div><div id="ownerAdminDetailsContent"></div></section>
   </div></div>
 </section>
