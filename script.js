@@ -15414,6 +15414,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   let selectedImage = "";
   let savedImage = "";
   let initializedPanel = false;
+  let savedPageBackgrounds = {};
 
   const $ = id => document.getElementById(id);
 
@@ -15549,22 +15550,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     return user;
   }
 
-  function applyBackground(image, opacity = 16) {
+  function applyBackground(image, opacity = 16, pageId = "all") {
     if (!image) return;
+    const screens = document.querySelectorAll(".screen[id]");
+    const targets = pageId === "all"
+      ? screens
+      : Array.from(screens).filter(screen => screen.id === pageId);
+    targets.forEach(screen => {
+      if (screen.id === PANEL_ID || screen.id === "ma3daControlCenter") return;
+      screen.style.setProperty("--ma3da-published-bg", 'url("' + image + '")');
+      screen.style.setProperty("--ma3da-bg-overlay", String(1 - Number(opacity) / 100));
+      screen.classList.add("ma3da-published-background");
+    });
+  }
 
-    document.documentElement.style.setProperty(
-      "--ma3da-published-bg",
-      'url("' + image + '")'
-    );
-    document.documentElement.style.setProperty(
-      "--ma3da-bg-overlay",
-      String(1 - Number(opacity) / 100)
-    );
-
-    document.querySelectorAll(".screen").forEach(screen => {
-      if (screen.id !== PANEL_ID) {
-        screen.classList.add("ma3da-published-background");
-      }
+  function clearBackground(pageId = "all") {
+    const targets = pageId === "all"
+      ? document.querySelectorAll(".screen[id]")
+      : Array.from(document.querySelectorAll(".screen[id]")).filter(screen => screen.id === pageId);
+    targets.forEach(screen => {
+      screen.classList.remove("ma3da-published-background");
+      screen.style.removeProperty("--ma3da-published-bg");
+      screen.style.removeProperty("--ma3da-bg-overlay");
     });
   }
 
@@ -15617,8 +15624,15 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       const data = snapshot.data() || {};
       savedImage = data.imageData || "";
-      if (savedImage) {
-        applyBackground(savedImage, data.opacity ?? 16);
+      savedPageBackgrounds = data.pageBackgrounds || {};
+      if (savedImage && data.allPages !== false) {
+        applyBackground(savedImage, data.opacity ?? 16, "all");
+      }
+      Object.entries(savedPageBackgrounds).forEach(([pageId, entry]) => {
+        if (entry?.imageData) applyBackground(entry.imageData, entry.opacity ?? 16, pageId);
+        else clearBackground(pageId);
+      });
+      if (savedImage && data.allPages !== false) {
         const preview = $("ma3daBgPreview");
         if (preview) {
           preview.style.backgroundImage = 'url("' + savedImage + '")';
@@ -15648,18 +15662,27 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
       const opacity = Number($("ma3daBgOpacity")?.value || 16);
-
-      await window.ma3daSetDoc(ref, {
-        imageData: selectedImage,
-        opacity,
-        allPages: true,
-        updatedAtMs: Date.now(),
-        updatedBy: user.uid
-      }, { merge: true });
-
-      savedImage = selectedImage;
-      applyBackground(savedImage, opacity);
-      status("تم حفظ الخلفية وتطبيقها على الصفحات.");
+      const pageId = $("ma3daBgPageSelect")?.value || "all";
+      const snap = await window.ma3daGetDoc(ref);
+      const existing = snap.exists() ? (snap.data() || {}) : {};
+      const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
+      if (pageId === "all") {
+        await window.ma3daSetDoc(ref, {
+          imageData: selectedImage, opacity, allPages: true,
+          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
+        }, { merge: true });
+        savedImage = selectedImage;
+        applyBackground(savedImage, opacity, "all");
+        status("تم حفظ الخلفية وتطبيقها على جميع الصفحات.");
+      } else {
+        pageBackgrounds[pageId] = { imageData: selectedImage, opacity };
+        await window.ma3daSetDoc(ref, {
+          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
+        }, { merge: true });
+        savedPageBackgrounds = pageBackgrounds;
+        applyBackground(selectedImage, opacity, pageId);
+        status("تم حفظ الخلفية للصفحة المحددة فقط.");
+      }
     } catch (error) {
       console.error("Background publish error:", error);
       status(error.message || "تعذر الحفظ. تحقق من صلاحيات Firebase.");
@@ -15713,8 +15736,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           <h3 style="text-align:center;color:#a98638;margin-top:0">
             مِعدة | إدارة خلفيات التطبيق
           </h3>
-          <p>اختر الصورة التي تريد استخدامها خلفية لصفحات التطبيق، ثم عاينها وانشرها.</p>
-
+          <p>اختر الصفحة أولًا. يمكنك تطبيق الخلفية على صفحة واحدة أو على جميع الصفحات.</p>
+          <label for="ma3daBgPageSelect">الصفحة المستهدفة</label>
+          <select id="ma3daBgPageSelect" style="display:block;width:100%;margin:8px 0 14px;padding:10px;border-radius:10px;border:1px solid #d9c79c;background:#fff;color:#242424">
+            <option value="all">جميع الصفحات</option>
+          </select>
+          <button id="ma3daBgDelete" type="button">حذف خلفية الصفحة المحددة</button>
           <label for="ma3daBgFile">اختر صورة الخلفية</label>
           <input id="ma3daBgFile" type="file" accept="image/*"
             style="display:block;width:100%;margin:12px 0">
@@ -15771,6 +15798,57 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const valueLabel = $("ma3daBgOpacityValue");
         if (valueLabel) valueLabel.textContent = value + "%";
         if (selectedImage) applyBackground(selectedImage, value);
+      });
+
+      const pageSelect = $("ma3daBgPageSelect");
+      if (pageSelect) {
+        const seen = new Set(Array.from(pageSelect.options).map(option => option.value));
+        document.querySelectorAll(".screen[id]").forEach(screen => {
+          if (!screen.id || screen.id === PANEL_ID || screen.id === "ma3daControlCenter" || seen.has(screen.id)) return;
+          const option = document.createElement("option");
+          option.value = screen.id;
+          option.textContent = (screen.getAttribute("aria-label") || screen.querySelector("h1,h2")?.textContent || screen.id).trim().slice(0, 80);
+          pageSelect.appendChild(option);
+          seen.add(screen.id);
+        });
+        pageSelect.addEventListener("change", async () => {
+          const pageId = pageSelect.value;
+          const entry = pageId === "all" ? null : savedPageBackgrounds[pageId];
+          const image = pageId === "all" ? savedImage : (entry?.imageData || "");
+          const preview = $("ma3daBgPreview");
+          if (preview) {
+            preview.style.backgroundImage = image ? 'url("' + image + '")' : "";
+            preview.textContent = image ? "" : "لا توجد خلفية محفوظة لهذه الصفحة";
+          }
+          if (entry?.opacity != null && $("ma3daBgOpacity")) $("ma3daBgOpacity").value = String(entry.opacity);
+          if ($("ma3daBgOpacityValue") && $("ma3daBgOpacity")) $("ma3daBgOpacityValue").textContent = $("ma3daBgOpacity").value + "%";
+        });
+      }
+
+      $("ma3daBgDelete")?.addEventListener("click", async () => {
+        try {
+          const user = await verifyOwner();
+          const pageId = $("ma3daBgPageSelect")?.value || "all";
+          const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
+          const snap = await window.ma3daGetDoc(ref);
+          const existing = snap.exists() ? (snap.data() || {}) : {};
+          const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
+          if (pageId === "all") {
+            await window.ma3daSetDoc(ref, { imageData: "", allPages: false, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            savedImage = "";
+            clearBackground("all");
+          } else {
+            pageBackgrounds[pageId] = { imageData: "", opacity: Number($("ma3daBgOpacity")?.value || 16) };
+            await window.ma3daSetDoc(ref, { pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            savedPageBackgrounds = pageBackgrounds;
+            clearBackground(pageId);
+          }
+          const preview = $("ma3daBgPreview");
+          if (preview) { preview.style.backgroundImage = ""; preview.textContent = "لا توجد خلفية محفوظة لهذه الصفحة"; }
+          status(pageId === "all" ? "تم حذف الخلفية العامة فقط." : "تم حذف خلفية الصفحة المحددة فقط.");
+        } catch (error) {
+          status(error.message || "تعذر حذف الخلفية.");
+        }
       });
 
       $("ma3daBgPublish")?.addEventListener("click", publishBackground);
@@ -15937,7 +16015,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         vat: 15,
         invoicePrefix: "M3",
         invoiceFooter: ""
-      }
+      },
+      pageCustomization: {}
     };
   }
 
@@ -15950,7 +16029,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       texts: { ...defaults.texts, ...(data?.texts || {}) },
       design: { ...defaults.design, ...(data?.design || {}) },
       prices: { ...defaults.prices, ...(data?.prices || {}) },
-      finance: { ...defaults.finance, ...(data?.finance || {}) }
+      finance: { ...defaults.finance, ...(data?.finance || {}) },
+      pageCustomization: { ...(data?.pageCustomization || {}) }
     };
   }
 
@@ -16020,6 +16100,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     applyTexts(currentSettings.texts);
     applyDesign(currentSettings.design);
     applyPrices(currentSettings.prices);
+    applyPageCustomizations(currentSettings.pageCustomization);
 
     window.ma3daControlSettings = currentSettings;
   }
@@ -16049,6 +16130,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         radius: $("ccCardRadius")?.value || "16"
       },
       prices,
+      pageCustomization: { ...(currentSettings.pageCustomization || {}) },
       finance: {
         commission: Math.max(
           0,
@@ -16108,6 +16190,173 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
   }
 
+  const PAGE_CATEGORIES = [
+    { label: "المقدمة", test: id => /intro|whyMa3da|howMa3da|howWorks|startMa3da/i.test(id) },
+    { label: "صفحات العميل", test: id => /customer|matched|request|order|previousOrders/i.test(id) },
+    { label: "صفحات صاحب المعدة", test: id => /operator|owner|equipment/i.test(id) },
+    { label: "صفحات المشاريع", test: id => /contractor|project/i.test(id) },
+    { label: "الدخول والتسجيل", test: id => /login|register|signup|phone|password|auth/i.test(id) }
+  ];
+  let pageDraft = {};
+  let selectedPageId = "";
+  let selectedElementSelector = "";
+
+  function editableElements(page) {
+    if (!page) return [];
+    return Array.from(page.querySelectorAll("h1,h2,h3,h4,p,label,button,a,[role='button'],.hero-title,.support-title,.support-subtitle"))
+      .filter(el => !el.closest("#ma3daControlCenter") && !el.closest("#ma3daControlCenterBackgroundPanel") && (el.textContent || "").trim())
+      .slice(0, 250);
+  }
+
+  function stableSelector(el, root) {
+    if (el.id) return "#" + CSS.escape(el.id);
+    const parts = [];
+    let node = el;
+    while (node && node !== root && parts.length < 8) {
+      let part = node.tagName.toLowerCase();
+      if (node.classList.length) part += "." + Array.from(node.classList).slice(0, 2).map(c => CSS.escape(c)).join(".");
+      const siblings = node.parentElement ? Array.from(node.parentElement.children).filter(x => x.tagName === node.tagName) : [];
+      if (siblings.length > 1) part += `:nth-of-type(${siblings.indexOf(node) + 1})`;
+      parts.unshift(part);
+      node = node.parentElement;
+    }
+    return "#" + CSS.escape(root.id) + " " + parts.join(" > ");
+  }
+
+  function pageLabel(page) {
+    return (page.getAttribute("aria-label") || page.querySelector("h1,h2")?.textContent || page.id).trim().replace(/\s+/g, " ").slice(0, 80);
+  }
+
+  function applyPageCustomizations(all) {
+    Object.entries(all || {}).forEach(([pageId, config]) => {
+      const page = document.getElementById(pageId);
+      if (!page || !config) return;
+      Object.entries(config.elements || {}).forEach(([selector, item]) => {
+        let el;
+        try { el = document.querySelector(selector); } catch (_) { return; }
+        if (!el || !page.contains(el)) return;
+        if (typeof item.text === "string") el.textContent = item.text;
+        if (item.fontFamily) el.style.fontFamily = item.fontFamily;
+        if (item.fontSize) el.style.fontSize = item.fontSize + "px";
+        if (item.color) el.style.color = item.color;
+        if (item.bold != null) el.style.fontWeight = item.bold ? "800" : "400";
+        if (item.italic != null) el.style.fontStyle = item.italic ? "italic" : "normal";
+        if (item.align) el.style.textAlign = item.align;
+      });
+    });
+  }
+
+  function ensurePageCustomizationPanel() {
+    const center = $("ma3daControlCenter");
+    if (!center) return;
+    let tab = center.querySelector('[data-cc-tab="page-customization"]');
+    if (!tab) {
+      tab = document.createElement("button");
+      tab.type = "button";
+      tab.dataset.ccTab = "page-customization";
+      tab.textContent = "تخصيص الصفحات";
+      center.querySelector(".ma3da-cc-tabs")?.appendChild(tab);
+      tab.addEventListener("click", () => activateTab("page-customization"));
+    }
+    let panel = center.querySelector('[data-cc-panel="page-customization"]');
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.className = "ma3da-cc-panel";
+      panel.dataset.ccPanel = "page-customization";
+      panel.hidden = true;
+      panel.innerHTML = `
+        <h3>تخصيص كل صفحة بشكل مستقل</h3>
+        <p>اختر المجموعة ثم الصفحة والعنصر. التعديلات هنا خاصة بالصفحة المختارة ولا تغيّر بقية الصفحات.</p>
+        <label for="ccPageCategory">مجموعة الصفحات</label><select id="ccPageCategory" style="display:block;width:100%;padding:10px;margin:6px 0 12px"></select>
+        <label for="ccPageSelect">الصفحة</label><select id="ccPageSelect" style="display:block;width:100%;padding:10px;margin:6px 0 12px"></select>
+        <label for="ccElementSelect">العنصر المراد تعديله</label><select id="ccElementSelect" style="display:block;width:100%;padding:10px;margin:6px 0 12px"></select>
+        <label for="ccElementText">النص</label><textarea id="ccElementText" rows="3" maxlength="1500" style="width:100%;padding:10px;margin:6px 0 12px"></textarea>
+        <label for="ccElementFont">نوع الخط</label><select id="ccElementFont" style="display:block;width:100%;padding:10px;margin:6px 0 12px"><option value="inherit">خط التطبيق الحالي</option><option value="Arial, sans-serif">Arial</option><option value="Tahoma, sans-serif">Tahoma</option><option value="'Cairo', sans-serif">Cairo</option><option value="'Noto Sans Arabic', sans-serif">Noto Sans Arabic</option><option value="serif">Serif</option></select>
+        <label for="ccElementSize">حجم الخط (px)</label><input id="ccElementSize" type="number" min="8" max="72" value="16" style="display:block;width:100%;padding:10px;margin:6px 0 12px">
+        <label for="ccElementColor">لون النص</label><input id="ccElementColor" type="color" value="#242424" style="display:block;margin:6px 0 12px">
+        <label><input id="ccElementBold" type="checkbox"> عريض</label> <label><input id="ccElementItalic" type="checkbox"> مائل</label>
+        <label for="ccElementAlign">محاذاة النص</label><select id="ccElementAlign" style="display:block;width:100%;padding:10px;margin:6px 0 12px"><option value="right">يمين</option><option value="center">وسط</option><option value="left">يسار</option></select>
+        <button type="button" id="ccPagePreview">معاينة العنصر</button> <button type="button" id="ccPageSave">حفظ تخصيص هذه الصفحة</button>
+        <p id="ccPageStatus" role="status" aria-live="polite"></p>`;
+      center.appendChild(panel);
+    }
+    const category = $("ccPageCategory"), pageSelect = $("ccPageSelect");
+    if (!category || !pageSelect || category.dataset.ready === "1") return;
+    category.dataset.ready = "1";
+    PAGE_CATEGORIES.forEach((item, index) => {
+      const option = document.createElement("option"); option.value = String(index); option.textContent = item.label; category.appendChild(option);
+    });
+    const pages = Array.from(document.querySelectorAll(".screen[id]"))
+      .filter(page => page.id !== "ma3daControlCenter" && page.id !== "ma3daControlCenterBackgroundPanel" && !page.id.startsWith("ma3daControlCenter"));
+    function refreshPages() {
+      const cat = PAGE_CATEGORIES[Number(category.value)] || PAGE_CATEGORIES[0];
+      pageSelect.replaceChildren();
+      pages.filter(page => cat.test(page.id)).forEach(page => {
+        const option = document.createElement("option"); option.value = page.id; option.textContent = pageLabel(page); pageSelect.appendChild(option);
+      });
+      if (!pageSelect.options.length) pages.forEach(page => { const o = document.createElement("option"); o.value = page.id; o.textContent = pageLabel(page); pageSelect.appendChild(o); });
+      selectedPageId = pageSelect.value || ""; refreshElements();
+    }
+    function loadElement() {
+      const page = document.getElementById(pageSelect.value);
+      selectedPageId = pageSelect.value;
+      selectedElementSelector = $("ccElementSelect")?.value || "";
+      const el = page && selectedElementSelector ? (() => { try { return document.querySelector(selectedElementSelector); } catch (_) { return null; } })() : null;
+      const saved = pageDraft[selectedPageId]?.elements?.[selectedElementSelector] || {};
+      if ($("ccElementText")) $("ccElementText").value = saved.text ?? el?.textContent ?? "";
+      if ($("ccElementFont")) $("ccElementFont").value = saved.fontFamily || "inherit";
+      if ($("ccElementSize")) $("ccElementSize").value = saved.fontSize || parseInt(el?.style.fontSize, 10) || 16;
+      if ($("ccElementColor")) $("ccElementColor").value = saved.color || el?.style.color || "#242424";
+      if ($("ccElementBold")) $("ccElementBold").checked = saved.bold ?? (el?.style.fontWeight === "800" || el?.style.fontWeight === "bold");
+      if ($("ccElementItalic")) $("ccElementItalic").checked = saved.italic ?? (el?.style.fontStyle === "italic");
+      if ($("ccElementAlign")) $("ccElementAlign").value = saved.align || el?.style.textAlign || "right";
+    }
+    function refreshElements() {
+      const page = document.getElementById(pageSelect.value), select = $("ccElementSelect");
+      if (!select) return;
+      select.replaceChildren();
+      editableElements(page).forEach(el => {
+        const selector = stableSelector(el, page);
+        const option = document.createElement("option"); option.value = selector;
+        option.textContent = `${el.tagName.toLowerCase()} — ${(el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 70)}`;
+        select.appendChild(option);
+      });
+      loadElement();
+    }
+    category.addEventListener("change", refreshPages);
+    pageSelect.addEventListener("change", refreshElements);
+    $("ccElementSelect")?.addEventListener("change", loadElement);
+    function readElementEditor() {
+      return { text: $("ccElementText")?.value || "", fontFamily: $("ccElementFont")?.value || "inherit", fontSize: Math.max(8, Math.min(72, Number($("ccElementSize")?.value || 16))), color: $("ccElementColor")?.value || "#242424", bold: !!$("ccElementBold")?.checked, italic: !!$("ccElementItalic")?.checked, align: $("ccElementAlign")?.value || "right" };
+    }
+    function applyEditorPreview() {
+      const page = document.getElementById(pageSelect.value); let el;
+      try { el = document.querySelector($("ccElementSelect")?.value || ""); } catch (_) {}
+      if (!page || !el || !page.contains(el)) return;
+      const data = readElementEditor(); el.textContent = data.text; el.style.fontFamily = data.fontFamily; el.style.fontSize = data.fontSize + "px"; el.style.color = data.color; el.style.fontWeight = data.bold ? "800" : "400"; el.style.fontStyle = data.italic ? "italic" : "normal"; el.style.textAlign = data.align;
+      const statusEl = $("ccPageStatus"); if (statusEl) statusEl.textContent = "معاينة محلية فقط؛ اضغط حفظ لاعتمادها.";
+    }
+    $("ccPagePreview")?.addEventListener("click", applyEditorPreview);
+    $("ccPageSave")?.addEventListener("click", async () => {
+      try {
+        const user = await getOwner(); const pageId = pageSelect.value; const selector = $("ccElementSelect")?.value || "";
+        if (!pageId || !selector) throw new Error("اختر صفحة وعنصرًا أولًا.");
+        const page = document.getElementById(pageId); let el;
+        try { el = document.querySelector(selector); } catch (_) {}
+        if (!page || !el || !page.contains(el)) throw new Error("تعذر العثور على العنصر داخل الصفحة المختارة.");
+        const updated = { ...(currentSettings.pageCustomization || {}) };
+        const pageConfig = { ...(updated[pageId] || {}), elements: { ...((updated[pageId] || {}).elements || {}) } };
+        pageConfig.elements[selector] = readElementEditor(); updated[pageId] = pageConfig;
+        const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
+        await window.ma3daSetDoc(ref, { pageCustomization: updated, updatedBy: user.uid, updatedByEmail: user.email || "", updatedAt: new Date(), updatedAtMs: Date.now() }, { merge: true });
+        currentSettings = mergeSettings({ ...currentSettings, pageCustomization: updated }); pageDraft = updated; applyPageCustomizations(updated); window.ma3daControlSettings = currentSettings;
+        const statusEl = $("ccPageStatus"); if (statusEl) statusEl.textContent = `تم حفظ تخصيص صفحة «${pageLabel(page)}» فقط.`;
+      } catch (error) { const statusEl = $("ccPageStatus"); if (statusEl) statusEl.textContent = error.message || "تعذر حفظ تخصيص الصفحة."; }
+    });
+    pageDraft = { ...(currentSettings.pageCustomization || {}) };
+    refreshPages();
+  }
+
   async function loadSettings() {
     await getOwner();
 
@@ -16125,6 +16374,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
     fillForm(settings);
     applySettings(settings);
+    pageDraft = { ...(mergeSettings(settings).pageCustomization || {}) };
+    ensurePageCustomizationPanel();
 
     status("تم تحميل إعدادات مركز التحكم.");
   }
@@ -16404,6 +16655,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       page.hidden = false;
       await loadSettings();
+      ensurePageCustomizationPanel();
       activateTab("texts");
 
       // تجهيز تبويب الخلفيات داخل المركز، مع الإبقاء على الصفحة الحالية.
