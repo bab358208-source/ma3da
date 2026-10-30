@@ -15403,16 +15403,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 /* =====================================================
-   مِعدة | إدارة خلفيات التطبيق — إضافة مستقلة
+   مِعدة | إدارة خلفيات التطبيق — مدمجة داخل مركز التحكم الشامل
    ===================================================== */
-(function () {
+(function Ma3daBackgroundManager() {
   "use strict";
 
   const COLLECTION = "ma3daSettings";
   const DOC_ID = "brandBackground";
-  const PAGE_ID = "ma3daOwnerBackgroundScreen";
+  const PANEL_ID = "ma3daControlCenterBackgroundPanel";
   let selectedImage = "";
   let savedImage = "";
+  let initializedPanel = false;
 
   const $ = id => document.getElementById(id);
 
@@ -15422,49 +15423,89 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const style = document.createElement("style");
     style.id = "ma3daOwnerBackgroundStyles";
     style.textContent = `
-      #${PAGE_ID} {
+      /* الهوية البيضاء والذهبية لمركز التحكم الشامل */
+      #ma3daControlCenter {
+        direction: rtl !important;
+        color: #242424 !important;
+        background: #fff !important;
+        border: 1px solid #d7bd82 !important;
+        border-radius: 22px !important;
+        box-shadow: 0 14px 38px rgba(30, 24, 12, .08) !important;
+      }
+      #ma3daControlCenter [data-cc-panel],
+      #ma3daControlCenter .ma3da-cc-card,
+      #ma3daControlCenter .ma3da-cc-section,
+      #ma3daControlCenter .ma3da-cc-history-item,
+      #${PANEL_ID},
+      #${PANEL_ID} .bg-panel {
+        color: #242424 !important;
+        background: #fff !important;
+        border: 1px solid #e5d7b5 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 6px 20px rgba(30, 24, 12, .045) !important;
+      }
+      #ma3daControlCenter [data-cc-tab] {
+        color: #5c4a25 !important;
+        background: #fff !important;
+        border: 1px solid #d7bd82 !important;
+        border-radius: 12px !important;
+      }
+      #ma3daControlCenter [data-cc-tab].active {
+        color: #fff !important;
+        background: #b8954a !important;
+        border-color: #b8954a !important;
+      }
+      #ma3daControlCenter input:not([type="range"]),
+      #ma3daControlCenter select,
+      #ma3daControlCenter textarea {
+        color: #242424 !important;
+        background: #fff !important;
+        border: 1px solid #d9c79c !important;
+        border-radius: 10px !important;
+      }
+      #ma3daControlCenter button {
+        border-color: #c5a45e;
+      }
+      #${PANEL_ID} {
         direction: rtl;
         text-align: right;
+        padding: 18px;
+        margin-top: 14px;
+      }
+      #${PANEL_ID} .bg-panel {
+        max-width: 760px;
+        margin: 0 auto;
         padding: 20px;
-        overflow: auto;
       }
-      #${PAGE_ID} .bg-panel {
-        max-width: 720px;
-        margin: 20px auto;
-        padding: 22px;
-        border: 1px solid #c9aa62;
-        border-radius: 20px;
-        background: #fff;
-        box-shadow: 0 10px 30px #0001;
-      }
-      #${PAGE_ID} .bg-preview {
+      #${PANEL_ID} .bg-preview {
         height: 230px;
         margin: 15px 0;
         border: 1px dashed #b8954a;
         border-radius: 14px;
-        background: #f5f0e5 center/cover no-repeat;
+        background: #fffdf8 center/cover no-repeat;
         display: grid;
         place-items: center;
+        color: #6d5a32;
       }
-      #${PAGE_ID} button {
+      #${PANEL_ID} button {
         font: inherit;
-        border: 0;
-        border-radius: 10px;
-        padding: 12px 18px;
+        border: 1px solid #c5a45e;
+        border-radius: 11px;
+        padding: 11px 16px;
         margin: 6px 3px;
         cursor: pointer;
+        background: #fff;
+        color: #5c4a25;
       }
-      #${PAGE_ID} .bg-publish {
+      #${PANEL_ID} .bg-publish {
         background: #b8954a;
-        color: white;
+        border-color: #b8954a;
+        color: #fff;
       }
-      #${PAGE_ID} .bg-back {
-        background: #222;
-        color: white;
-      }
-      #${PAGE_ID} .bg-status {
+      #${PANEL_ID} .bg-status {
         min-height: 25px;
         margin-top: 12px;
+        color: #5c4a25;
       }
       .ma3da-published-background {
         background-image:
@@ -15486,27 +15527,25 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if (el) el.textContent = message;
   }
 
-  // التحقق من صلاحية المالك من قاعدة البيانات نفسها
   async function verifyOwner() {
-    const user = window.ma3daAuth?.currentUser;
+    await window.ma3daFirebaseReady;
+    const user = window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
 
-    if (!user) {
-      throw new Error("سجّل الدخول أولًا.");
-    }
+    if (!user?.uid) throw new Error("سجّل الدخول بحساب مالك التطبيق أولًا.");
 
     const ref = window.ma3daDoc(
       window.ma3daDB,
       "supportStaff",
       user.uid
     );
-
     const snapshot = await window.ma3daGetDoc(ref);
     const data = snapshot.exists() ? snapshot.data() : {};
 
     if (data.role !== "owner" || data.active === false) {
-      throw new Error("هذه الميزة مخصصة لمالك التطبيق فقط.");
+      throw new Error("إدارة الخلفيات مخصصة لمالك التطبيق فقط.");
     }
-
     return user;
   }
 
@@ -15517,14 +15556,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       "--ma3da-published-bg",
       'url("' + image + '")'
     );
-
     document.documentElement.style.setProperty(
       "--ma3da-bg-overlay",
       String(1 - Number(opacity) / 100)
     );
 
     document.querySelectorAll(".screen").forEach(screen => {
-      if (screen.id !== PAGE_ID) {
+      if (screen.id !== PANEL_ID) {
         screen.classList.add("ma3da-published-background");
       }
     });
@@ -15533,48 +15571,37 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function compressImage(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-
       reader.onerror = reject;
-
       reader.onload = () => {
         const image = new Image();
-
         image.onerror = reject;
-
         image.onload = () => {
           const maxSize = 1200;
           const scale = Math.min(
             1,
             maxSize / Math.max(image.width, image.height)
           );
-
           const canvas = document.createElement("canvas");
           canvas.width = Math.round(image.width * scale);
           canvas.height = Math.round(image.height * scale);
-
           canvas.getContext("2d").drawImage(
             image, 0, 0, canvas.width, canvas.height
           );
 
           let quality = 0.75;
           let result = canvas.toDataURL("image/jpeg", quality);
-
           while (result.length > 650000 && quality > 0.35) {
             quality -= 0.08;
             result = canvas.toDataURL("image/jpeg", quality);
           }
-
           if (result.length > 650000) {
             reject(new Error("حجم الصورة كبير؛ اختر صورة أصغر."));
             return;
           }
-
           resolve(result);
         };
-
         image.src = reader.result;
       };
-
       reader.readAsDataURL(file);
     });
   }
@@ -15582,29 +15609,25 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function loadSavedBackground() {
     try {
       await window.ma3daFirebaseReady;
+      if (!window.ma3daDB || !window.ma3daDoc || !window.ma3daGetDoc) return;
 
-      if (
-        !window.ma3daDB ||
-        !window.ma3daDoc ||
-        !window.ma3daGetDoc
-      ) return;
-
-      const ref = window.ma3daDoc(
-        window.ma3daDB,
-        COLLECTION,
-        DOC_ID
-      );
-
+      const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
       const snapshot = await window.ma3daGetDoc(ref);
-
       if (!snapshot.exists()) return;
 
       const data = snapshot.data() || {};
-
       savedImage = data.imageData || "";
-
       if (savedImage) {
         applyBackground(savedImage, data.opacity ?? 16);
+        const preview = $("ma3daBgPreview");
+        if (preview) {
+          preview.style.backgroundImage = 'url("' + savedImage + '")';
+          preview.textContent = "";
+        }
+        const opacity = $("ma3daBgOpacity");
+        const opacityValue = $("ma3daBgOpacityValue");
+        if (opacity) opacity.value = String(data.opacity ?? 16);
+        if (opacityValue) opacityValue.textContent = String(data.opacity ?? 16) + "%";
       }
     } catch (error) {
       console.warn("تعذر تحميل خلفية مِعدة:", error);
@@ -15613,37 +15636,30 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   async function publishBackground() {
     const button = $("ma3daBgPublish");
-
     try {
-      await verifyOwner();
-
+      const user = await verifyOwner();
       if (!selectedImage) {
         status("اختر صورة أولًا.");
         return;
       }
 
-      button.disabled = true;
+      if (button) button.disabled = true;
       status("جارٍ حفظ الخلفية...");
 
-      const ref = window.ma3daDoc(
-        window.ma3daDB,
-        COLLECTION,
-        DOC_ID
-      );
-
-      const opacity = Number($("ma3daBgOpacity").value);
+      const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
+      const opacity = Number($("ma3daBgOpacity")?.value || 16);
 
       await window.ma3daSetDoc(ref, {
         imageData: selectedImage,
         opacity,
         allPages: true,
         updatedAtMs: Date.now(),
-        updatedBy: window.ma3daAuth.currentUser.uid
+        updatedBy: user.uid
       }, { merge: true });
 
       savedImage = selectedImage;
       applyBackground(savedImage, opacity);
-      status("تم حفظ الخلفية وتطبيقها على الصفحات المفتوحة.");
+      status("تم حفظ الخلفية وتطبيقها على الصفحات.");
     } catch (error) {
       console.error("Background publish error:", error);
       status(error.message || "تعذر الحفظ. تحقق من صلاحيات Firebase.");
@@ -15652,36 +15668,56 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
   }
 
-  async function openBackgroundPage() {
-    try {
-      await verifyOwner();
-    } catch (error) {
-      alert(error.message);
-      return;
+  function selectBackgroundTab() {
+    const center = $("ma3daControlCenter");
+    if (!center) return;
+
+    center.querySelectorAll("[data-cc-tab]").forEach(button => {
+      const active = button.dataset.ccTab === "backgrounds";
+      button.classList.toggle("active", active);
+    });
+    center.querySelectorAll("[data-cc-panel]").forEach(panel => {
+      panel.hidden = panel.dataset.ccPanel !== "backgrounds";
+    });
+  }
+
+  function ensureBackgroundPanel() {
+    const center = $("ma3daControlCenter");
+    if (!center) throw new Error("تعذر العثور على مركز التحكم الشامل.");
+
+    addStyles();
+
+    let tab = center.querySelector('[data-cc-tab="backgrounds"]');
+    if (!tab) {
+      tab = document.createElement("button");
+      tab.type = "button";
+      tab.dataset.ccTab = "backgrounds";
+      tab.textContent = "إدارة الخلفيات";
+      const firstTab = center.querySelector("[data-cc-tab]");
+      if (firstTab?.parentElement) firstTab.parentElement.appendChild(tab);
+      else center.prepend(tab);
+    }
+    if (tab.dataset.ma3daBackgroundBound !== "1") {
+      tab.addEventListener("click", openBackgroundPage);
+      tab.dataset.ma3daBackgroundBound = "1";
     }
 
-    let page = $(PAGE_ID);
-
-    if (!page) {
-      page = document.createElement("section");
-      page.id = PAGE_ID;
-      page.className = "screen support-screen";
-
-      page.innerHTML = `
+    let panel = $(PANEL_ID);
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = PANEL_ID;
+      panel.dataset.ccPanel = "backgrounds";
+      panel.hidden = true;
+      panel.innerHTML = `
         <div class="bg-panel">
-          <h2 style="text-align:center;color:#a98638">
+          <h3 style="text-align:center;color:#a98638;margin-top:0">
             مِعدة | إدارة خلفيات التطبيق
-          </h2>
+          </h3>
+          <p>اختر الصورة التي تريد استخدامها خلفية لصفحات التطبيق، ثم عاينها وانشرها.</p>
 
-          <p>ارفع الصورة التي تريد استخدامها خلفية لصفحات التطبيق.</p>
-
-          <label for="ma3daBgFile">اختر صورة</label>
-          <input
-            id="ma3daBgFile"
-            type="file"
-            accept="image/*"
-            style="display:block;width:100%;margin:12px 0"
-          >
+          <label for="ma3daBgFile">اختر صورة الخلفية</label>
+          <input id="ma3daBgFile" type="file" accept="image/*"
+            style="display:block;width:100%;margin:12px 0">
 
           <div id="ma3daBgPreview" class="bg-preview">
             ستظهر معاينة الصورة هنا
@@ -15691,141 +15727,103 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
             درجة وضوح الصورة:
             <span id="ma3daBgOpacityValue">16%</span>
           </label>
+          <input id="ma3daBgOpacity" type="range" min="5" max="45" value="16"
+            style="display:block;width:100%">
 
-          <input
-            id="ma3daBgOpacity"
-            type="range"
-            min="5"
-            max="45"
-            value="16"
-            style="display:block;width:100%"
-          >
-
-          <div>
-            <button id="ma3daBgPublish" class="bg-publish">
-              نشر الخلفية
-            </button>
-
-            <button id="ma3daBgRestore">
-              معاينة الخلفية المحفوظة
-            </button>
-
-            <button id="ma3daBgBack" class="bg-back">
-              رجوع
-            </button>
+          <div style="text-align:center;margin-top:12px">
+            <button id="ma3daBgPublish" class="bg-publish" type="button">حفظ ونشر الخلفية</button>
+            <button id="ma3daBgRestore" type="button">معاينة الخلفية المحفوظة</button>
           </div>
-
           <div id="ma3daBgStatus" class="bg-status" role="status"></div>
         </div>
       `;
 
-      document.body.appendChild(page);
+      const lastPanel = center.querySelector("[data-cc-panel]:last-of-type");
+      if (lastPanel?.parentElement === center) lastPanel.after(panel);
+      else center.appendChild(panel);
+    }
 
-      $("ma3daBgFile").addEventListener("change", async event => {
+    if (!initializedPanel) {
+      initializedPanel = true;
+
+      $("ma3daBgFile")?.addEventListener("change", async event => {
         const file = event.target.files?.[0];
         if (!file) return;
-
         if (!file.type.startsWith("image/")) {
           status("الملف المحدد ليس صورة.");
           return;
         }
-
         try {
           selectedImage = await compressImage(file);
-          $("ma3daBgPreview").style.backgroundImage =
-            'url("' + selectedImage + '")';
-          $("ma3daBgPreview").textContent = "";
+          const preview = $("ma3daBgPreview");
+          if (preview) {
+            preview.style.backgroundImage = 'url("' + selectedImage + '")';
+            preview.textContent = "";
+          }
           status("تم تجهيز الصورة للمعاينة.");
         } catch (error) {
           status(error.message || "تعذر تجهيز الصورة.");
         }
       });
 
-      $("ma3daBgOpacity").addEventListener("input", event => {
+      $("ma3daBgOpacity")?.addEventListener("input", event => {
         const value = Number(event.target.value);
-        $("ma3daBgOpacityValue").textContent = value + "%";
-
+        const valueLabel = $("ma3daBgOpacityValue");
+        if (valueLabel) valueLabel.textContent = value + "%";
         if (selectedImage) applyBackground(selectedImage, value);
       });
 
-      $("ma3daBgPublish").addEventListener(
-        "click", publishBackground
-      );
+      $("ma3daBgPublish")?.addEventListener("click", publishBackground);
 
-      $("ma3daBgRestore").addEventListener("click", () => {
+      $("ma3daBgRestore")?.addEventListener("click", () => {
         if (!savedImage) {
           status("لا توجد خلفية محفوظة.");
           return;
         }
-
         selectedImage = savedImage;
-        $("ma3daBgPreview").style.backgroundImage =
-          'url("' + savedImage + '")';
-        $("ma3daBgPreview").textContent = "";
+        const preview = $("ma3daBgPreview");
+        if (preview) {
+          preview.style.backgroundImage = 'url("' + savedImage + '")';
+          preview.textContent = "";
+        }
         status("تمت معاينة الخلفية المحفوظة.");
-      });
-
-      $("ma3daBgBack").addEventListener("click", () => {
-        page.classList.remove("active");
-
-        const dashboard = $("ownerPortalDashboardScreen");
-
-        if (dashboard) dashboard.classList.add("active");
       });
     }
 
-    document.querySelectorAll(".screen").forEach(screen => {
-      screen.classList.remove("active");
-    });
-
-    page.classList.add("active");
-    await loadSavedBackground();
+    return panel;
   }
 
-  function addOwnerButton() {
-    const dashboard = $("ownerPortalDashboardScreen");
-
-    if (!dashboard || dashboard.dataset.ma3daBgButton) return;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "support-btn support-primary";
-    button.textContent = "إدارة خلفيات التطبيق";
-    button.style.cssText = "width:100%;margin:10px 0";
-
-    button.addEventListener("click", openBackgroundPage);
-
-    const target =
-      dashboard.querySelector(".owner-admin-grid") ||
-      dashboard.querySelector(".owner-admin-details") ||
-      dashboard;
-
-    target.prepend(button);
-    dashboard.dataset.ma3daBgButton = "1";
+  async function openBackgroundPage() {
+    try {
+      await verifyOwner();
+      ensureBackgroundPanel();
+      selectBackgroundTab();
+      await loadSavedBackground();
+      $("ma3daControlCenter")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    } catch (error) {
+      console.error("فتح إدارة الخلفيات:", error);
+      alert(error.message || "تعذر فتح إدارة الخلفيات.");
+    }
   }
+
+  // يفتح قسم الخلفيات من داخل مركز التحكم، ولا ينشئ صفحة منفصلة.
+  window.ma3daOpenBackgroundManager = openBackgroundPage;
+  window.ma3daEnsureBackgroundPanel = ensureBackgroundPanel;
 
   function initialize() {
     addStyles();
-    addOwnerButton();
     loadSavedBackground();
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initialize, {
-      once: true
-    });
+    document.addEventListener("DOMContentLoaded", initialize, { once: true });
   } else {
     initialize();
   }
-
-  // محاولة إضافة الزر عند فتح لوحة المالك، دون مراقبة مستمرة للصفحة
-  document.addEventListener("click", event => {
-    if (event.target.closest("#ownerPortalDashboardScreen")) {
-      addOwnerButton();
-    }
-  });
-
-  window.addEventListener("load", addOwnerButton, { once: true });
+  window.addEventListener("load", initialize, { once: true });
 })();
 
 /* =========================================================
@@ -16389,18 +16387,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         throw new Error("تعذر العثور على لوحة مالك التطبيق.");
       }
 
-      dashboard.querySelectorAll(".owner-admin-card").forEach(card => {
-        card.hidden = true;
+      // إخفاء عناصر لوحة المالك فقط، مع إبقاء الحاوية التي تحتوي مركز التحكم ظاهرة.
+      [
+        ".owner-admin-toolbar",
+        "#ownerInfoStatus",
+        ".owner-admin-metrics",
+        ".owner-admin-grid",
+        "#ownerAdminDetails",
+        "#ma3daControlCenterEntryWrap"
+      ].forEach(selector => {
+        dashboard.querySelectorAll(selector).forEach(element => {
+          element.hidden = true;
+        });
       });
 
-      const details = $("ownerAdminDetails");
-      if (details) details.hidden = true;
-
       page.hidden = false;
-
       await loadSettings();
-
       activateTab("texts");
+
+      // تجهيز تبويب الخلفيات داخل المركز، مع الإبقاء على الصفحة الحالية.
+      if (typeof window.ma3daEnsureBackgroundPanel === "function") {
+        window.ma3daEnsureBackgroundPanel();
+      }
 
       page.scrollIntoView({
         behavior: "smooth",
@@ -16408,6 +16416,21 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       });
 
     } catch (error) {
+      console.error("MA3DA control center open:", error);
+      if (page) page.hidden = true;
+
+      [
+        ".owner-admin-toolbar",
+        "#ownerInfoStatus",
+        ".owner-admin-metrics",
+        ".owner-admin-grid",
+        "#ma3daControlCenterEntryWrap"
+      ].forEach(selector => {
+        dashboard?.querySelectorAll(selector).forEach(element => {
+          element.hidden = false;
+        });
+      });
+
       alert(error.message || "تعذر فتح مركز التحكم.");
     }
   }
@@ -16417,12 +16440,27 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const dashboard = $("ownerPortalDashboardScreen");
 
     if (page) page.hidden = true;
+    if (!dashboard) return;
 
-    if (dashboard) {
-      dashboard.querySelectorAll(".owner-admin-card").forEach(card => {
-        card.hidden = false;
+    [
+      ".owner-admin-toolbar",
+      "#ownerInfoStatus",
+      ".owner-admin-metrics",
+      ".owner-admin-grid",
+      "#ma3daControlCenterEntryWrap"
+    ].forEach(selector => {
+      dashboard.querySelectorAll(selector).forEach(element => {
+        element.hidden = false;
       });
-    }
+    });
+
+    const details = $("ownerAdminDetails");
+    if (details) details.hidden = true;
+
+    dashboard.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   }
 
   function initialize() {
