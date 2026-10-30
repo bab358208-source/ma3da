@@ -15828,3 +15828,650 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.addEventListener("load", addOwnerButton, { once: true });
 })();
 
+/* =========================================================
+   MA3DA | OWNER CONTROL CENTER
+   إضافة مستقلة — لا تستبدل أي كود سابق
+========================================================= */
+(function Ma3daOwnerControlCenter() {
+  "use strict";
+
+  const COLLECTION = "ma3daSettings";
+  const DOC_ID = "ownerControlCenter";
+  const HISTORY = "ma3daSettingsHistory";
+  const CAMPAIGNS = "marketingCampaigns";
+
+  const $ = id => document.getElementById(id);
+
+  let currentSettings = {};
+  let originalTexts = {};
+  let initialized = false;
+
+  const textTargets = {
+    introTitle: "#introScreen .hero h1",
+    customerTitle: "#customerHomeScreen .hero h1",
+    operatorTitle: "#operatorHomeScreen .hero h1",
+    supportTitle: "#supportLandingScreen .hero h1"
+  };
+
+  const textFields = {
+    introTitle: "ccIntroTitle",
+    customerTitle: "ccCustomerTitle",
+    operatorTitle: "ccOperatorTitle",
+    supportTitle: "ccSupportTitle"
+  };
+
+  const priceFields = {
+    "بوكلين": "ccPriceBackhoe",
+    "شيول": "ccPriceLoader",
+    "قلاب": "ccPriceTruck",
+    "كرين": "ccPriceCrane",
+    "حفار": "ccPriceExcavator",
+    "بلدوزر": "ccPriceBulldozer"
+  };
+
+  function status(message, error = false) {
+    const el = $("ccMainStatus");
+    if (!el) return;
+    el.textContent = message;
+    el.dataset.error = error ? "1" : "0";
+  }
+
+  function campaignStatus(message) {
+    const el = $("ccCampaignStatus");
+    if (el) el.textContent = message;
+  }
+
+  async function getOwner() {
+    await window.ma3daFirebaseReady;
+
+    const user = await window.ma3daGetCurrentUser();
+
+    if (!user?.uid) {
+      throw new Error("يجب تسجيل الدخول بحساب مالك التطبيق.");
+    }
+
+    const ref = window.ma3daDoc(
+      window.ma3daDB,
+      "supportStaff",
+      user.uid
+    );
+
+    const snap = await window.ma3daGetDoc(ref);
+
+    if (!snap.exists()) {
+      throw new Error("حساب المالك غير مسجل في قاعدة البيانات.");
+    }
+
+    const data = snap.data() || {};
+
+    if (data.role !== "owner" || data.active === false) {
+      throw new Error("ليس لديك صلاحية استخدام مركز التحكم.");
+    }
+
+    return user;
+  }
+
+  function getDefaultSettings() {
+    return {
+      texts: {
+        introTitle: "",
+        customerTitle: "",
+        operatorTitle: "",
+        supportTitle: ""
+      },
+      design: {
+        primary: "#111111",
+        gold: "#c8a45b",
+        fontScale: "1",
+        radius: "16"
+      },
+      prices: {
+        "بوكلين": 250,
+        "شيول": 220,
+        "قلاب": 180,
+        "كرين": 350,
+        "حفار": 250,
+        "بلدوزر": 300
+      },
+      finance: {
+        commission: 0,
+        vat: 15,
+        invoicePrefix: "M3",
+        invoiceFooter: ""
+      }
+    };
+  }
+
+  function mergeSettings(data) {
+    const defaults = getDefaultSettings();
+
+    return {
+      ...defaults,
+      ...data,
+      texts: { ...defaults.texts, ...(data?.texts || {}) },
+      design: { ...defaults.design, ...(data?.design || {}) },
+      prices: { ...defaults.prices, ...(data?.prices || {}) },
+      finance: { ...defaults.finance, ...(data?.finance || {}) }
+    };
+  }
+
+  function applyTexts(texts) {
+    Object.entries(textTargets).forEach(([key, selector]) => {
+      const element = document.querySelector(selector);
+      if (!element) return;
+
+      if (!originalTexts[key]) {
+        originalTexts[key] = element.textContent;
+      }
+
+      const value = String(texts[key] || "").trim();
+
+      if (value) {
+        element.textContent = value;
+      } else if (originalTexts[key]) {
+        element.textContent = originalTexts[key];
+      }
+    });
+  }
+
+  function applyDesign(design) {
+    const root = document.documentElement;
+
+    root.style.setProperty(
+      "--ma3da-admin-primary",
+      design.primary || "#111111"
+    );
+
+    root.style.setProperty(
+      "--ma3da-admin-gold",
+      design.gold || "#c8a45b"
+    );
+
+    root.style.setProperty(
+      "--ma3da-admin-font-scale",
+      String(design.fontScale || 1)
+    );
+
+    root.style.setProperty(
+      "--ma3da-admin-radius",
+      `${Number(design.radius || 16)}px`
+    );
+  }
+
+  function applyPrices(prices) {
+    // ربط الأسعار بالكائن الموجود في التطبيق.
+    if (typeof hourlyPrices === "undefined") return;
+
+    Object.entries(prices || {}).forEach(([name, value]) => {
+      const price = Number(value);
+
+      if (
+        Object.prototype.hasOwnProperty.call(hourlyPrices, name) &&
+        Number.isFinite(price) &&
+        price >= 0
+      ) {
+        hourlyPrices[name] = price;
+      }
+    });
+  }
+
+  function applySettings(settings) {
+    currentSettings = mergeSettings(settings);
+
+    applyTexts(currentSettings.texts);
+    applyDesign(currentSettings.design);
+    applyPrices(currentSettings.prices);
+
+    window.ma3daControlSettings = currentSettings;
+  }
+
+  function readForm() {
+    const defaults = getDefaultSettings();
+
+    const texts = {};
+    Object.entries(textFields).forEach(([key, id]) => {
+      texts[key] = $(id)?.value.trim() || "";
+    });
+
+    const prices = {};
+    Object.entries(priceFields).forEach(([name, id]) => {
+      const value = Number($(id)?.value);
+      prices[name] = Number.isFinite(value) && value >= 0
+        ? value
+        : defaults.prices[name];
+    });
+
+    return {
+      texts,
+      design: {
+        primary: $("ccPrimaryColor")?.value || "#111111",
+        gold: $("ccGoldColor")?.value || "#c8a45b",
+        fontScale: $("ccFontScale")?.value || "1",
+        radius: $("ccCardRadius")?.value || "16"
+      },
+      prices,
+      finance: {
+        commission: Math.max(
+          0,
+          Math.min(100, Number($("ccCommission")?.value || 0))
+        ),
+        vat: Math.max(
+          0,
+          Math.min(100, Number($("ccVat")?.value || 15))
+        ),
+        invoicePrefix: $("ccInvoicePrefix")?.value.trim() || "M3",
+        invoiceFooter: $("ccInvoiceFooter")?.value.trim() || ""
+      }
+    };
+  }
+
+  function fillForm(settings) {
+    const s = mergeSettings(settings);
+
+    Object.entries(textFields).forEach(([key, id]) => {
+      if ($(id)) $(id).value = s.texts[key] || "";
+    });
+
+    if ($("ccPrimaryColor")) {
+      $("ccPrimaryColor").value = s.design.primary;
+    }
+
+    if ($("ccGoldColor")) {
+      $("ccGoldColor").value = s.design.gold;
+    }
+
+    if ($("ccFontScale")) {
+      $("ccFontScale").value = String(s.design.fontScale);
+    }
+
+    if ($("ccCardRadius")) {
+      $("ccCardRadius").value = String(s.design.radius);
+    }
+
+    Object.entries(priceFields).forEach(([name, id]) => {
+      if ($(id)) $(id).value = s.prices[name];
+    });
+
+    if ($("ccCommission")) {
+      $("ccCommission").value = s.finance.commission;
+    }
+
+    if ($("ccVat")) {
+      $("ccVat").value = s.finance.vat;
+    }
+
+    if ($("ccInvoicePrefix")) {
+      $("ccInvoicePrefix").value = s.finance.invoicePrefix;
+    }
+
+    if ($("ccInvoiceFooter")) {
+      $("ccInvoiceFooter").value = s.finance.invoiceFooter;
+    }
+  }
+
+  async function loadSettings() {
+    await getOwner();
+
+    const ref = window.ma3daDoc(
+      window.ma3daDB,
+      COLLECTION,
+      DOC_ID
+    );
+
+    const snap = await window.ma3daGetDoc(ref);
+
+    const settings = snap.exists()
+      ? snap.data()
+      : getDefaultSettings();
+
+    fillForm(settings);
+    applySettings(settings);
+
+    status("تم تحميل إعدادات مركز التحكم.");
+  }
+
+  function activateTab(name) {
+    document.querySelectorAll("[data-cc-tab]").forEach(button => {
+      button.classList.toggle(
+        "active",
+        button.dataset.ccTab === name
+      );
+    });
+
+    document.querySelectorAll("[data-cc-panel]").forEach(panel => {
+      panel.hidden = panel.dataset.ccPanel !== name;
+    });
+  }
+
+  async function saveSettings() {
+    try {
+      const user = await getOwner();
+      const settings = readForm();
+
+      const docRef = window.ma3daDoc(
+        window.ma3daDB,
+        COLLECTION,
+        DOC_ID
+      );
+
+      // الاحتفاظ بنسخة سابقة قبل اعتماد التعديل.
+      if (Object.keys(currentSettings).length) {
+        await window.ma3daAddDoc(
+          window.ma3daCollection(window.ma3daDB, HISTORY),
+          {
+            settings: currentSettings,
+            changedBy: user.uid,
+            changedByEmail: user.email || "",
+            createdAt: new Date(),
+            createdAtMs: Date.now()
+          }
+        );
+      }
+
+      await window.ma3daSetDoc(
+        docRef,
+        {
+          ...settings,
+          updatedBy: user.uid,
+          updatedByEmail: user.email || "",
+          updatedAt: new Date(),
+          updatedAtMs: Date.now(),
+          version: 1
+        },
+        { merge: true }
+      );
+
+      applySettings(settings);
+      fillForm(settings);
+
+      status("تم حفظ الإعدادات واعتمادها بنجاح.");
+
+    } catch (error) {
+      console.error("MA3DA control save:", error);
+      status(error.message || "تعذر حفظ الإعدادات.", true);
+    }
+  }
+
+  function previewTexts() {
+    const values = {};
+
+    Object.entries(textFields).forEach(([key, id]) => {
+      values[key] = $(id)?.value.trim() || "";
+    });
+
+    applyTexts(values);
+    status("هذه معاينة محلية للنصوص. اضغط حفظ لاعتمادها.");
+  }
+
+  function previewDesign() {
+    const design = {
+      primary: $("ccPrimaryColor")?.value,
+      gold: $("ccGoldColor")?.value,
+      fontScale: $("ccFontScale")?.value,
+      radius: $("ccCardRadius")?.value
+    };
+
+    applyDesign(design);
+
+    const preview = $("ccDesignPreview");
+
+    if (preview) {
+      preview.style.background = design.primary;
+      preview.style.color = "#ffffff";
+      preview.style.borderColor = design.gold;
+      preview.style.borderRadius = `${Number(design.radius)}px`;
+      preview.style.fontSize = `${Number(design.fontScale)}em`;
+      preview.style.border = `2px solid ${design.gold}`;
+    }
+
+    status("تم تطبيق معاينة التصميم محلياً.");
+  }
+
+  function resetPreview() {
+    applySettings(currentSettings);
+    fillForm(currentSettings);
+
+    const preview = $("ccDesignPreview");
+
+    if (preview) {
+      preview.removeAttribute("style");
+    }
+
+    status("تم إلغاء المعاينة.");
+  }
+
+  async function publishCampaign() {
+    const button = $("ccCampaignPublish");
+
+    try {
+      const user = await getOwner();
+
+      const title = $("ccCampaignTitle")?.value.trim() || "";
+      const body = $("ccCampaignBody")?.value.trim() || "";
+      const audience = $("ccCampaignAudience")?.value || "all";
+      const link = $("ccCampaignLink")?.value.trim() || "";
+
+      if (!title || !body) {
+        campaignStatus("اكتب عنوان الإعلان ونصه أولاً.");
+        return;
+      }
+
+      if (button) {
+        button.disabled = true;
+        button.textContent = "جارٍ حفظ الحملة...";
+      }
+
+      await window.ma3daAddDoc(
+        window.ma3daCollection(window.ma3daDB, CAMPAIGNS),
+        {
+          title,
+          body,
+          audience,
+          link,
+          status: "awaiting_fcm_backend",
+          deliveryProvider: "firebase-cloud-messaging",
+          deliveryEnabled: false,
+          createdBy: user.uid,
+          createdByEmail: user.email || "",
+          createdAt: new Date(),
+          createdAtMs: Date.now()
+        }
+      );
+
+      campaignStatus(
+        "تم حفظ الحملة. لم تُرسل إلى الأجهزة بعد؛ يلزم ربط خدمة FCM الخلفية."
+      );
+
+      $("ccCampaignTitle").value = "";
+      $("ccCampaignBody").value = "";
+      $("ccCampaignLink").value = "";
+
+    } catch (error) {
+      console.error("MA3DA campaign:", error);
+      campaignStatus(error.message || "تعذر حفظ الحملة.");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "نشر الحملة";
+      }
+    }
+  }
+
+  async function loadHistory() {
+    const target = $("ccHistoryList");
+    if (!target) return;
+
+    target.textContent = "جارٍ تحميل سجل التعديلات...";
+
+    try {
+      await getOwner();
+
+      const snap = await window.ma3daGetDocs(
+        window.ma3daCollection(window.ma3daDB, HISTORY)
+      );
+
+      const records = [];
+
+      snap.forEach(doc => {
+        records.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      records.sort(
+        (a, b) => Number(b.createdAtMs || 0) - Number(a.createdAtMs || 0)
+      );
+
+      target.replaceChildren();
+
+      if (!records.length) {
+        target.textContent = "لا توجد تعديلات سابقة.";
+        return;
+      }
+
+      records.slice(0, 50).forEach(record => {
+        const item = document.createElement("article");
+        item.className = "ma3da-cc-history-item";
+
+        const heading = document.createElement("strong");
+        heading.textContent = "تعديل محفوظ";
+
+        const details = document.createElement("p");
+        details.textContent =
+          (record.changedByEmail || record.changedBy || "مالك التطبيق") +
+          " · " +
+          new Date(
+            Number(record.createdAtMs || 0)
+          ).toLocaleString("ar-SA");
+
+        const restore = document.createElement("button");
+        restore.type = "button";
+        restore.textContent = "استعادة هذه النسخة";
+
+        restore.addEventListener("click", async () => {
+          if (!confirm("هل تريد استعادة هذه الإعدادات؟")) return;
+
+          try {
+            await getOwner();
+
+            const previous = mergeSettings(record.settings || {});
+
+            fillForm(previous);
+
+            await saveSettings();
+
+            status("تمت استعادة الإعدادات المحفوظة.");
+
+          } catch (error) {
+            status(error.message || "تعذرت الاستعادة.", true);
+          }
+        });
+
+        item.append(heading, details, restore);
+        target.appendChild(item);
+      });
+
+    } catch (error) {
+      target.textContent =
+        error.message || "تعذر تحميل سجل التعديلات.";
+    }
+  }
+
+  async function openCenter() {
+    const page = $("ma3daControlCenter");
+    const dashboard = $("ownerPortalDashboardScreen");
+
+    try {
+      await getOwner();
+
+      if (!page || !dashboard) {
+        throw new Error("تعذر العثور على لوحة مالك التطبيق.");
+      }
+
+      dashboard.querySelectorAll(".owner-admin-card").forEach(card => {
+        card.hidden = true;
+      });
+
+      const details = $("ownerAdminDetails");
+      if (details) details.hidden = true;
+
+      page.hidden = false;
+
+      await loadSettings();
+
+      activateTab("texts");
+
+      page.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    } catch (error) {
+      alert(error.message || "تعذر فتح مركز التحكم.");
+    }
+  }
+
+  function closeCenter() {
+    const page = $("ma3daControlCenter");
+    const dashboard = $("ownerPortalDashboardScreen");
+
+    if (page) page.hidden = true;
+
+    if (dashboard) {
+      dashboard.querySelectorAll(".owner-admin-card").forEach(card => {
+        card.hidden = false;
+      });
+    }
+  }
+
+  function initialize() {
+    if (initialized) return;
+
+    if (!$("ma3daControlCenterOpen")) return;
+
+    initialized = true;
+
+    $("ma3daControlCenterOpen").addEventListener(
+      "click",
+      openCenter
+    );
+
+    $("ma3daCCBack")?.addEventListener("click", closeCenter);
+
+    document.querySelectorAll("[data-cc-tab]").forEach(button => {
+      button.addEventListener("click", () => {
+        activateTab(button.dataset.ccTab);
+      });
+    });
+
+    $("ccSaveSettings")?.addEventListener("click", saveSettings);
+    $("ccPreviewTexts")?.addEventListener("click", previewTexts);
+    $("ccResetPreview")?.addEventListener("click", resetPreview);
+    $("ccCampaignPublish")?.addEventListener("click", publishCampaign);
+    $("ccRefreshHistory")?.addEventListener("click", loadHistory);
+
+    [
+      "ccPrimaryColor",
+      "ccGoldColor",
+      "ccFontScale",
+      "ccCardRadius"
+    ].forEach(id => {
+      $(id)?.addEventListener("input", previewDesign);
+      $(id)?.addEventListener("change", previewDesign);
+    });
+
+    console.log("MA3DA OWNER CONTROL CENTER READY");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initialize, {
+      once: true
+    });
+  } else {
+    initialize();
+  }
+
+  window.addEventListener("load", initialize, { once: true });
+
+})();
