@@ -493,6 +493,37 @@
 </section>
 
 
+<!-- الصفحة: إنشاء حساب جديد | ATHAR -->
+<section id="createAccountScreen" class="screen athar-register-screen">
+  <div class="athar-register-wrap">
+    <div class="athar-register-brand">
+      <span class="athar-register-mark">✦</span>
+      <h1>آثار <span>| ATHAR</span></h1>
+      <h2>أنشئ حسابك الآن</h2>
+      <p>ابدأ رحلتك واترك أثرك معنا</p>
+    </div>
+    <div class="card athar-register-card">
+      <label for="registerFullName">الاسم الكامل</label>
+      <input id="registerFullName" type="text" autocomplete="name" placeholder="اكتب اسمك الكامل" maxlength="100">
+      <label for="registerEmail">البريد الإلكتروني</label>
+      <input id="registerEmail" type="email" inputmode="email" autocomplete="email" placeholder="example@email.com">
+      <small class="athar-register-hint">سنرسل إليك رابط توثيق البريد الإلكتروني.</small>
+      <label for="registerPhone">رقم الجوال</label>
+      <input id="registerPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05xxxxxxxx أو +9665xxxxxxxx" maxlength="16">
+      <label for="registerPhoneCode">رمز التحقق</label>
+      <input id="registerPhoneCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="أدخل رمز التحقق 1234" maxlength="4">
+      <small class="athar-register-hint">رمز تجريبي مؤقت: <strong>1234</strong> — لا يتم إرسال SMS فعلي في هذه المرحلة.</small>
+      <label for="registerPassword">كلمة المرور</label>
+      <input id="registerPassword" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل">
+      <label for="registerPasswordConfirm">تأكيد كلمة المرور</label>
+      <input id="registerPasswordConfirm" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">
+      <p id="registerAccountError" class="phone-error" role="alert" aria-live="polite"></p>
+      <button id="submitCreateAccountBtn" class="main-btn" type="button">إنشاء الحساب</button>
+      <button id="backToLoginFromRegisterBtn" class="back-btn" type="button">لديك حساب؟ تسجيل الدخول</button>
+    </div>
+  </div>
+</section>
+
 
 <!-- =====================================================
      بيانات العميل
@@ -1109,13 +1140,10 @@
 
       <div class="home-header-text">
 
-        <span class="home-greeting">
-          عبدالله
-        </span>
+        <span class="home-greeting" id="customerHomeName">مستخدم</span>
 
-        <h1>
-          الصفحة الرئيسية
-        </h1>
+        <h1>الصفحة الرئيسية</h1>
+        <p class="athar-home-tagline">آثار… نبني اليوم ما يبقى غدًا.</p>
 
       </div>
 
@@ -1516,9 +1544,8 @@
           أهلاً بك
         </span>
 
-        <h1 id="operatorHomeName">
-          صاحب المعدة
-        </h1>
+        <h1 id="operatorHomeName">صاحب المعدة</h1>
+        <p class="athar-home-tagline">آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.</p>
 
       </div>
 
@@ -3982,15 +4009,15 @@
       <div class="chat-driver-info">
 
 
-        <div class="chat-avatar">
-          ف
+        <div class="chat-avatar" id="chatPeerAvatar">
+          ص
         </div>
 
 
         <div>
 
-          <strong>
-            فهد القحطاني
+          <strong id="chatPeerName">
+            صاحب المعدة
           </strong>
 
           <span>
@@ -4148,7 +4175,7 @@
 
 
     <p>
-      المشغل فهد القحطاني وصل إلى موقع العمل.
+      وصل صاحب المعدة إلى موقع العمل.
     </p>
 
 
@@ -4995,7 +5022,7 @@
 
 <!-- الصفحة: المقاول: الصفحة الرئيسية | المعرّف البرمجي: contractorHomeScreen -->
 <section id="contractorHomeScreen" class="screen">
-  <div class="hero"><div class="hero-icon">🏗️</div><h1>أهلاً <span id="contractorHomeName">بك</span></h1><p>لوحة تحكم المقاول وصاحب المشروع</p></div>
+  <div class="hero"><div class="hero-icon">🏗️</div><h1>أهلاً <span id="contractorHomeName">بك</span></h1><p class="athar-home-tagline">آثار… من طموح المشاريع تبدأ حكايات الإنجاز.</p><p>لوحة تحكم المقاول وصاحب المشروع</p></div>
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
@@ -5597,6 +5624,7 @@
     browserLocalPersistence,
     sendEmailVerification,
     sendPasswordResetEmail,
+    updateProfile,
     signOut
   }
   from
@@ -5882,7 +5910,8 @@ window.ma3daOrderBy =
   window.ma3daCreateAccount =
     async (
       email,
-      password
+      password,
+      fullName = ""
     ) => {
 
 
@@ -5906,6 +5935,14 @@ window.ma3daOrderBy =
 
         createdUser =
           result.user;
+
+        if (fullName.trim()) {
+          try {
+            await updateProfile(createdUser, { displayName: fullName.trim() });
+          } catch (profileError) {
+            console.warn("تعذر حفظ الاسم في ملف Firebase الشخصي، سيبقى الاسم ضمن بيانات استكمال الحساب:", profileError);
+          }
+        }
 
 
         try {
@@ -5969,19 +6006,7 @@ window.ma3daOrderBy =
 
 
 
-        alert(
-
-          "تم إنشاء الحساب بنجاح.\n\n" +
-
-          "تم إرسال رسالة تحقق إلى بريدك الإلكتروني.\n" +
-
-          "افتح الرسالة واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
-
-        );
-
-
-
-        return null;
+        return createdUser;
 
 
       }
