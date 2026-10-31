@@ -1380,22 +1380,6 @@ if(emailLoginBtn){
         );
  
         localStorage.setItem("selectedRole", selectedRole);
-        let pendingRegistration = null;
-        try { pendingRegistration = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
-        if (pendingRegistration && pendingRegistration.uid === user.uid) {
-          const customerNameField = document.getElementById("customerNameInput");
-          const customerPhoneField = document.getElementById("customerPhoneInput");
-          const operatorNameField = document.getElementById("operatorNameInput");
-          const operatorPhoneField = document.getElementById("operatorPhoneInput");
-          const contractorNameField = document.getElementById("contractorNameInput");
-          const contractorPhoneField = document.getElementById("contractorPhoneInput");
-          if (customerNameField && !customerNameField.value) customerNameField.value = pendingRegistration.name || user.displayName || "";
-          if (customerPhoneField && !customerPhoneField.value) customerPhoneField.value = pendingRegistration.phone || "";
-          if (operatorNameField && !operatorNameField.value) operatorNameField.value = pendingRegistration.name || user.displayName || "";
-          if (operatorPhoneField && !operatorPhoneField.value) operatorPhoneField.value = pendingRegistration.phone || "";
-          if (contractorNameField && !contractorNameField.value) contractorNameField.value = pendingRegistration.name || user.displayName || "";
-          if (contractorPhoneField && !contractorPhoneField.value) contractorPhoneField.value = pendingRegistration.phone || "";
-        }
  
    if (selectedRole === "customer") {
   try {
@@ -1411,14 +1395,9 @@ if(emailLoginBtn){
       const nameInput = document.getElementById("customerNameInput");
       const phoneInput = document.getElementById("customerPhoneInput");
       const cityInput = document.getElementById("customerCityInput");
-      let pending = null; try { pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
-      if (pending?.uid !== currentUser.uid) pending = null;
-      const customerName = data.name || data.fullName || data.displayName || currentUser.displayName || pending?.name || "مستخدم";
-      if (nameInput) nameInput.value = data.name || data.fullName || pending?.name || "";
-      if (phoneInput) phoneInput.value = data.phone || pending?.phone || "";
+      if (nameInput) nameInput.value = data.name || "";
+      if (phoneInput) phoneInput.value = data.phone || "";
       if (cityInput) cityInput.value = data.city || "";
-      const greeting = document.getElementById("customerHomeName");
-      if (greeting) greeting.textContent = customerName;
       showScreen("customerHomeScreen");
     } else {
       showScreen("customerDataScreen");
@@ -1489,93 +1468,121 @@ if(emailLoginBtn){
  
 }
  
-/* 02 — التسجيل الجديد والتحقق التجريبي من الجوال */
-const submitCreateAccountBtn = document.getElementById("submitCreateAccountBtn");
-const backToLoginFromRegisterBtn = document.getElementById("backToLoginFromRegisterBtn");
-
-if (createAccountBtn) {
-  createAccountBtn.addEventListener("click", () => {
-    const error = document.getElementById("registerAccountError");
-    if (error) error.textContent = "";
-    showScreen("createAccountScreen");
-  });
-}
-
-if (backToLoginFromRegisterBtn) {
-  backToLoginFromRegisterBtn.addEventListener("click", () => {
-    showScreen("phoneScreen");
-  });
-}
-
-if (submitCreateAccountBtn) {
-  submitCreateAccountBtn.addEventListener("click", async () => {
-    const value = id => (document.getElementById(id)?.value || "").trim();
-    const fullName = value("registerFullName");
-    const email = value("registerEmail").toLowerCase();
-    const phone = value("registerPhone").replace(/[\s()-]/g, "");
-    const phoneCode = value("registerPhoneCode");
-    const password = document.getElementById("registerPassword")?.value || "";
-    const passwordConfirm = document.getElementById("registerPasswordConfirm")?.value || "";
-    const error = document.getElementById("registerAccountError");
-    const fail = message => { if (error) error.textContent = message; };
-
-    if (error) error.textContent = "";
-    if (!fullName || !email || !phone || !phoneCode || !password || !passwordConfirm) {
-      fail("أكمل جميع الحقول قبل إنشاء الحساب."); return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      fail("أدخل بريدًا إلكترونيًا صحيحًا."); return;
-    }
-    if (!/^(05\d{8}|\+9665\d{8}|9665\d{8})$/.test(phone)) {
-      fail("أدخل رقم جوال سعودي صحيحًا يبدأ بـ 05 أو +9665."); return;
-    }
-    if (phoneCode !== "1234") {
-      fail("رمز التحقق غير صحيح. استخدم الرمز التجريبي 1234."); return;
-    }
-    if (password.length < 6) {
-      fail("كلمة المرور يجب أن تكون 6 أحرف أو أكثر."); return;
-    }
-    if (password !== passwordConfirm) {
-      fail("كلمتا المرور غير متطابقتين."); return;
-    }
-    if (typeof window.ma3daCreateAccount !== "function") {
-      fail("Firebase لم يجهز بعد، أعد تحميل الصفحة."); return;
-    }
-
-    submitCreateAccountBtn.disabled = true;
-    submitCreateAccountBtn.textContent = "جارٍ إنشاء الحساب...";
-    try {
-      const user = await window.ma3daCreateAccount(email, password, fullName);
-      if (!user) {
-        fail("تعذر إنشاء الحساب. راجع رسالة الخطأ ثم حاول مرة أخرى.");
+/* 02 — تسجيل الدخول والحسابات: إنشاء حساب جديد والتحقق */
+/* CREATE ACCOUNT */
+ 
+if(createAccountBtn){
+ 
+  createAccountBtn.addEventListener(
+    "click",
+    async()=>{
+ 
+      const {
+        email,
+        password,
+        error
+      } =
+        getEmailData();
+ 
+      if(!email || !password){
+ 
+        if(error)
+          error.textContent =
+            "أدخل البريد الإلكتروني وكلمة المرور";
+ 
         return;
+ 
       }
-      try {
-        localStorage.setItem("atharPendingRegistration", JSON.stringify({
-          uid: user.uid,
-          name: fullName,
-          phone,
-          role: selectedRole || localStorage.getItem("selectedRole") || "customer"
-        }));
-      } catch (storageError) {
-        console.warn("تعذر حفظ بيانات التسجيل المبدئية محليًا:", storageError);
+ 
+      if(password.length < 6){
+ 
+        if(error)
+          error.textContent =
+            "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
+ 
+        return;
+ 
       }
-      const loginEmail = document.getElementById("emailInput");
-      const loginPassword = document.getElementById("passwordInput");
-      if (loginEmail) loginEmail.value = email;
-      if (loginPassword) loginPassword.value = password;
-      alert("تم إنشاء الحساب بنجاح.\n\nأرسلنا رابط توثيق إلى بريدك الإلكتروني. افتح الرسالة واضغط رابط التحقق، ثم ارجع وسجّل الدخول.\n\nتم قبول رمز الجوال التجريبي 1234.");
-      showScreen("phoneScreen");
-    } catch (createError) {
-      console.error("خطأ في واجهة إنشاء الحساب:", createError);
-      fail(createError?.message || "تعذر إنشاء الحساب. حاول مرة أخرى.");
-    } finally {
-      submitCreateAccountBtn.disabled = false;
-      submitCreateAccountBtn.textContent = "إنشاء الحساب";
+ 
+      if(error)
+        error.textContent = "";
+ 
+      if(
+        typeof window.ma3daCreateAccount !==
+        "function"
+      ){
+ 
+        if(error)
+          error.textContent =
+            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
+ 
+        console.error(
+          "ma3daCreateAccount غير موجود"
+        );
+ 
+        return;
+ 
+      }
+ 
+      const user =
+        await window.ma3daCreateAccount(
+          email,
+          password
+        );
+ 
+      if(!user)
+        return;
+ 
+      console.log(
+        "تم إنشاء الحساب بنجاح:",
+        user.uid
+      );
+ 
+      /* تم إرسال رابط التحقق من Firebase */
+ 
+      alert(
+        "تم إنشاء الحساب بنجاح ✅\n\n" +
+        "تم إرسال رابط التحقق إلى بريدك الإلكتروني 📧\n\n" +
+        "افتح البريد واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
+      );
+ 
+      /* نخرج المستخدم من شاشة الحساب الجديد */
+ 
+      if(window.ma3daAuth){
+ 
+        try{
+ 
+          const {
+            signOut
+          } =
+            await import(
+              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
+            );
+ 
+          await signOut(
+            window.ma3daAuth
+          );
+ 
+        }catch(signOutError){
+ 
+          console.error(
+            "تعذر تسجيل الخروج بعد إنشاء الحساب:",
+            signOutError
+          );
+ 
+        }
+ 
+      }
+ 
+      showScreen(
+        "phoneScreen"
+      );
+ 
     }
-  });
+  );
+ 
 }
-
+ 
 /* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
 /* OPERATOR */
  
@@ -4095,9 +4102,6 @@ if(saveCustomerDataBtn){
         console.log(
           "تم حفظ بيانات العميل"
         );
-        const homeName = document.getElementById("customerHomeName");
-        if (homeName) homeName.textContent = name || user.displayName || "مستخدم";
-        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         showScreen(
           "customerHomeScreen"
@@ -5342,7 +5346,6 @@ if(saveOperatorDataBtn){
         );
  
         localStorage.setItem("operatorProfile", JSON.stringify({ name, phone, city, email: user.email || "", operatorId: user.uid }));
-        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         await loadOperatorDashboard();
  
@@ -5537,7 +5540,7 @@ async function loadOperatorDashboard(){
  
     if(nameElement)
       nameElement.textContent =
-        data.name || data.fullName || data.displayName || window.ma3daAuth?.currentUser?.displayName ||
+        data.name ||
         "صاحب المعدة";
  
   }
@@ -13984,7 +13987,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(typeof refresh==='function'){
           await refresh();
           status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
-        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','createAccountScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
           status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
         }else{
           status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
@@ -16138,10 +16141,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function applySettings(settings) {
     currentSettings = mergeSettings(settings);
 
-    applyTexts(currentSettings.texts);
     applyDesign(currentSettings.design);
-    applyPrices(currentSettings.prices);
-    applyPageCustomizations(currentSettings.pageCustomization);
 
     window.ma3daControlSettings = currentSettings;
   }
@@ -16416,7 +16416,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     fillForm(settings);
     applySettings(settings);
     pageDraft = { ...(mergeSettings(settings).pageCustomization || {}) };
-    ensurePageCustomizationPanel();
 
     status("تم تحميل إعدادات مركز التحكم.");
   }
@@ -16437,49 +16436,23 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function saveSettings() {
     try {
       const user = await getOwner();
-      const settings = readForm();
-
-      const docRef = window.ma3daDoc(
-        window.ma3daDB,
-        COLLECTION,
-        DOC_ID
-      );
-
-      // الاحتفاظ بنسخة سابقة قبل اعتماد التعديل.
-      if (Object.keys(currentSettings).length) {
-        await window.ma3daAddDoc(
-          window.ma3daCollection(window.ma3daDB, HISTORY),
-          {
-            settings: currentSettings,
-            changedBy: user.uid,
-            changedByEmail: user.email || "",
-            createdAt: new Date(),
-            createdAtMs: Date.now()
-          }
-        );
-      }
-
-      await window.ma3daSetDoc(
-        docRef,
-        {
-          ...settings,
-          updatedBy: user.uid,
-          updatedByEmail: user.email || "",
-          updatedAt: new Date(),
-          updatedAtMs: Date.now(),
-          version: 1
-        },
-        { merge: true }
-      );
-
-      applySettings(settings);
-      fillForm(settings);
-
-      status("تم حفظ الإعدادات واعتمادها بنجاح.");
-
+      const finance = {
+        commission: Math.max(0, Math.min(100, Number($("ccCommission")?.value || 0))),
+        vat: Math.max(0, Math.min(100, Number($("ccVat")?.value || 15))),
+        invoicePrefix: $("ccInvoicePrefix")?.value.trim() || "M3",
+        invoiceFooter: $("ccInvoiceFooter")?.value.trim() || ""
+      };
+      const docRef = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
+      await window.ma3daSetDoc(docRef, {
+        finance,
+        financeUpdatedBy: user.uid,
+        financeUpdatedAtMs: Date.now()
+      }, { merge: true });
+      currentSettings = mergeSettings({ ...currentSettings, finance });
+      status("تم حفظ إعدادات المالية والفواتير.");
     } catch (error) {
-      console.error("MA3DA control save:", error);
-      status(error.message || "تعذر حفظ الإعدادات.", true);
+      console.error("MA3DA finance settings:", error);
+      status(error.message || "تعذر حفظ إعدادات المالية.", true);
     }
   }
 
@@ -16490,8 +16463,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       values[key] = $(id)?.value.trim() || "";
     });
 
-    applyTexts(values);
-    status("هذه معاينة محلية للنصوص. اضغط حفظ لاعتمادها.");
+    status("إدارة النصوص المستقلة غير متاحة في هذه اللوحة.", true);
   }
 
   function previewDesign() {
@@ -16696,8 +16668,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       page.hidden = false;
       await loadSettings();
-      ensurePageCustomizationPanel();
-      activateTab("texts");
+        activateTab("design");
 
       // تجهيز تبويب الخلفيات داخل المركز، مع الإبقاء على الصفحة الحالية.
       if (typeof window.ma3daEnsureBackgroundPanel === "function") {
@@ -16806,4 +16777,118 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   window.addEventListener("load", initialize, { once: true });
 
+})();
+
+
+/* =========================================================
+   ATHAR | AZOOZ — FIVE GLOBAL SEASONAL IDENTITIES
+   Applies a selected visual identity across the whole app.
+========================================================= */
+(function Ma3daAzoozSeasonalThemes(){
+  "use strict";
+  const COLLECTION = "ma3daSettings";
+  const DOC_ID = "ownerControlCenter";
+  const THEMES = {
+    national: {name:"اليوم الوطني السعودي", vars:{bg:"#f7f0df",surface:"#fffaf0",primary:"#064b35",button:"#08764d",buttonText:"#fff8e8",gold:"#e7bd62",text:"#183b2e",muted:"#557365",border:"#d7b76a",nav:"#063d2c",hero:"#07543b"}},
+    founding: {name:"يوم التأسيس", vars:{bg:"#eee0cb",surface:"#fff7e9",primary:"#563b2b",button:"#765039",buttonText:"#fff8ed",gold:"#c59a62",text:"#39291f",muted:"#80664e",border:"#c9a77d",nav:"#493225",hero:"#78573c"}},
+    fitr: {name:"عيد الفطر", vars:{bg:"#fbf4e8",surface:"#fffdf7",primary:"#9b6c25",button:"#bd9145",buttonText:"#fffdf7",gold:"#e4c27d",text:"#3b3024",muted:"#8b775d",border:"#e6c98e",nav:"#f0d9ac",hero:"#f8ead1"}},
+    adha: {name:"عيد الأضحى", vars:{bg:"#eaf0e9",surface:"#fffdf6",primary:"#064b3e",button:"#08735e",buttonText:"#fffaf0",gold:"#d9b66a",text:"#18372f",muted:"#60796f",border:"#c6a85f",nav:"#063e34",hero:"#0b5548"}},
+    classic: {name:"الهوية العادية", vars:{bg:"#f7f5ef",surface:"#ffffff",primary:"#171717",button:"#171717",buttonText:"#f2dfb1",gold:"#c8a45b",text:"#242424",muted:"#777064",border:"#d8c79f",nav:"#171717",hero:"#242424"}}
+  };
+  const $ = id => document.getElementById(id);
+  let activeTheme = "classic";
+  let busy = false;
+  function injectThemeStyles(){
+    if($("ma3daAzoozThemeStyles")) return;
+    const style=document.createElement("style"); style.id="ma3daAzoozThemeStyles";
+    style.textContent=`
+      :root{--az-bg:#f7f5ef;--az-surface:#fff;--az-primary:#171717;--az-button:#171717;--az-button-text:#f2dfb1;--az-gold:#c8a45b;--az-text:#242424;--az-muted:#777064;--az-border:#d8c79f;--az-nav:#171717;--az-hero:#242424}
+      body{background-color:var(--az-bg)}
+      .screen{color:var(--az-text)}
+      .screen .card,.screen .card-item,.screen .request-card,.screen .menu-item,.screen .settings-card,.screen .support-card,.screen .owner-admin-cardlink,.screen .invoice-card,.screen .equipment-card,.screen .stat-card{background-color:var(--az-surface);border-color:var(--az-border)}
+      .screen button,.screen .btn,.screen [role=button]{border-color:var(--az-border)}
+      .screen button:not(.danger):not(.delete):not(.reject):not(.cancel):not([class*=danger]):not([class*=delete]),.screen .btn:not(.danger):not(.delete),.screen [role=button]:not(.danger){background-color:var(--az-button);color:var(--az-button-text)}
+      .screen button.primary,.screen .btn-primary,.screen .primary-btn,.screen button[type=submit],.screen .submit-btn,.screen .main-action{background:var(--az-button);color:var(--az-button-text);border-color:var(--az-gold)}
+      .screen input,.screen select,.screen textarea{background-color:var(--az-surface);border-color:var(--az-border);color:var(--az-text)}
+      .screen .card,.screen [class*=card],.screen [class*=panel],.screen [class*=tile]{border-color:var(--az-border)}
+      .screen .hero,.screen [class*=hero]{background-color:var(--az-hero)}
+      .screen .hero,.screen .page-header,.screen .screen-header{border-color:var(--az-border)}
+      .screen h1,.screen h2,.screen h3,.screen .section-title{color:var(--az-primary)}
+      .screen .athar-home-tagline{color:var(--az-gold)}
+      .screen input:focus,.screen select:focus,.screen textarea:focus{border-color:var(--az-gold);outline-color:var(--az-gold)}
+      .screen .bottom-nav,.screen .bottom-navigation,.screen .app-bottom-nav{background:var(--az-nav);border-color:var(--az-gold)}
+      .screen .bottom-nav a,.screen .bottom-navigation a,.screen .app-bottom-nav a{color:var(--az-button-text)}
+      #ma3daControlCenter{--az-bg:#fff;--az-surface:#fff;--az-text:#242424}
+      #ma3daControlCenter .ma3da-theme-card{background:#fff}
+      html[data-ma3da-theme="national"] .screen{background-color:var(--az-bg)}
+      html[data-ma3da-theme="founding"] .screen{background-color:var(--az-bg)}
+      html[data-ma3da-theme="fitr"] .screen{background-color:var(--az-bg)}
+      html[data-ma3da-theme="adha"] .screen{background-color:var(--az-bg)}
+      .ma3da-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+      .ma3da-theme-card{border:1px solid #e3d5b4;border-radius:16px;padding:9px;background:#fff;box-shadow:0 5px 16px rgba(35,25,10,.06);overflow:hidden}
+      .ma3da-theme-card.active{outline:3px solid #c8a45b;outline-offset:1px}
+      .ma3da-theme-swatch{height:118px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:white;text-align:center;padding:8px}
+      .ma3da-theme-swatch span{font-size:27px}.ma3da-theme-swatch b{font-size:14px}
+      .ma3da-theme-national{background:linear-gradient(145deg,#063b2b,#08734d 65%,#d6ae58)}
+      .ma3da-theme-founding{background:linear-gradient(145deg,#3f2a20,#9a7049 65%,#d5b58a)}
+      .ma3da-theme-fitr{background:linear-gradient(145deg,#fff4dc,#e9c77f);color:#62451e}
+      .ma3da-theme-adha{background:linear-gradient(145deg,#073d34,#0b6957 65%,#d5b86c)}
+      .ma3da-theme-classic{background:linear-gradient(145deg,#171717,#403a2d 65%,#c8a45b)}
+      .ma3da-theme-card button{width:100%;margin-top:9px;padding:11px 6px;border:1px solid #c8a45b;border-radius:10px;background:#171717;color:#f2dfb1;font-weight:800}
+      .ma3da-theme-card.active button{background:#0b6b4b;color:white}
+      #ma3daThemeStatus{font-weight:800;min-height:24px;color:#176b46}
+      @media(max-width:420px){.ma3da-theme-grid{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+  }
+  function applyTheme(key){
+    const theme=THEMES[key]||THEMES.classic; activeTheme=key;
+    const root=document.documentElement;
+    if(key==="classic"){
+      root.removeAttribute("data-ma3da-theme");
+      ["bg","surface","primary","button","button-text","gold","text","muted","border","nav","hero"].forEach(k=>root.style.removeProperty(`--az-${k}`));
+    }else{
+      root.dataset.ma3daTheme=key;
+      Object.entries(theme.vars).forEach(([k,v])=>root.style.setProperty(`--az-${k.replace(/[A-Z]/g,m=>"-"+m.toLowerCase())}`,v));
+    }
+    document.querySelectorAll("[data-theme-card]").forEach(card=>card.classList.toggle("active",card.dataset.themeCard===key));
+    document.querySelectorAll("[data-activate-theme]").forEach(btn=>{
+      const selected=btn.dataset.activateTheme===key;
+      btn.textContent=selected?"الهوية مفعّلة ✓":(btn.dataset.activateTheme==="classic"?"العودة للهوية العادية":"تفعيل الهوية");
+      btn.disabled=selected;
+    });
+    window.ma3daActiveVisualIdentity=key;
+  }
+  async function activateTheme(key){
+    if(busy)return; if(!THEMES[key])return; busy=true;
+    const status=$("ma3daThemeStatus"); if(status)status.textContent="جارٍ تفعيل الهوية وحفظها...";
+    try{
+      await window.ma3daFirebaseReady;
+      const user=await window.ma3daGetCurrentUser();
+      if(!user?.uid)throw new Error("سجّل الدخول بحساب مالك التطبيق أولاً.");
+      const userSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,"supportStaff",user.uid));
+      const userData=userSnap.exists()?userSnap.data():{};
+      if(userData.role!=="owner"||userData.active===false)throw new Error("ليس لديك صلاحية تغيير هوية التطبيق.");
+      applyTheme(key);
+      await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,COLLECTION,DOC_ID),{activeVisualIdentity:key,visualIdentityName:THEMES[key].name,visualIdentityUpdatedAtMs:Date.now(),visualIdentityUpdatedBy:user.uid},{merge:true});
+      if(status)status.textContent=`تم تفعيل «${THEMES[key].name}» وحفظها. ستظهر الهوية نفسها لجميع المستخدمين بعد تحديث التطبيق.`;
+    }catch(error){
+      if(status)status.textContent=error.message||"تعذر حفظ الهوية. لم يتم اعتماد التغيير.";
+    }finally{busy=false;}
+  }
+  async function loadTheme(){
+    injectThemeStyles();
+    try{
+      await window.ma3daFirebaseReady;
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,COLLECTION,DOC_ID));
+      const key=snap.exists()?snap.data()?.activeVisualIdentity:"classic";
+      applyTheme(THEMES[key]?key:"classic");
+    }catch(e){applyTheme("classic");console.warn("تعذر تحميل هوية آثار المحفوظة:",e);}
+  }
+  document.addEventListener("click",event=>{
+    const btn=event.target.closest("[data-activate-theme]");
+    if(btn)activateTheme(btn.dataset.activateTheme);
+  });
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",loadTheme,{once:true});else loadTheme();
+  window.addEventListener("load",loadTheme,{once:true});
 })();
