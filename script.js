@@ -1380,6 +1380,22 @@ if(emailLoginBtn){
         );
  
         localStorage.setItem("selectedRole", selectedRole);
+        let pendingRegistration = null;
+        try { pendingRegistration = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
+        if (pendingRegistration && pendingRegistration.uid === user.uid) {
+          const customerNameField = document.getElementById("customerNameInput");
+          const customerPhoneField = document.getElementById("customerPhoneInput");
+          const operatorNameField = document.getElementById("operatorNameInput");
+          const operatorPhoneField = document.getElementById("operatorPhoneInput");
+          const contractorNameField = document.getElementById("contractorNameInput");
+          const contractorPhoneField = document.getElementById("contractorPhoneInput");
+          if (customerNameField && !customerNameField.value) customerNameField.value = pendingRegistration.name || user.displayName || "";
+          if (customerPhoneField && !customerPhoneField.value) customerPhoneField.value = pendingRegistration.phone || "";
+          if (operatorNameField && !operatorNameField.value) operatorNameField.value = pendingRegistration.name || user.displayName || "";
+          if (operatorPhoneField && !operatorPhoneField.value) operatorPhoneField.value = pendingRegistration.phone || "";
+          if (contractorNameField && !contractorNameField.value) contractorNameField.value = pendingRegistration.name || user.displayName || "";
+          if (contractorPhoneField && !contractorPhoneField.value) contractorPhoneField.value = pendingRegistration.phone || "";
+        }
  
    if (selectedRole === "customer") {
   try {
@@ -1395,9 +1411,14 @@ if(emailLoginBtn){
       const nameInput = document.getElementById("customerNameInput");
       const phoneInput = document.getElementById("customerPhoneInput");
       const cityInput = document.getElementById("customerCityInput");
-      if (nameInput) nameInput.value = data.name || "";
-      if (phoneInput) phoneInput.value = data.phone || "";
+      let pending = null; try { pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
+      if (pending?.uid !== currentUser.uid) pending = null;
+      const customerName = data.name || data.fullName || data.displayName || currentUser.displayName || pending?.name || "مستخدم";
+      if (nameInput) nameInput.value = data.name || data.fullName || pending?.name || "";
+      if (phoneInput) phoneInput.value = data.phone || pending?.phone || "";
       if (cityInput) cityInput.value = data.city || "";
+      const greeting = document.getElementById("customerHomeName");
+      if (greeting) greeting.textContent = customerName;
       showScreen("customerHomeScreen");
     } else {
       showScreen("customerDataScreen");
@@ -1468,121 +1489,93 @@ if(emailLoginBtn){
  
 }
  
-/* 02 — تسجيل الدخول والحسابات: إنشاء حساب جديد والتحقق */
-/* CREATE ACCOUNT */
- 
-if(createAccountBtn){
- 
-  createAccountBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      const {
-        email,
-        password,
-        error
-      } =
-        getEmailData();
- 
-      if(!email || !password){
- 
-        if(error)
-          error.textContent =
-            "أدخل البريد الإلكتروني وكلمة المرور";
- 
-        return;
- 
-      }
- 
-      if(password.length < 6){
- 
-        if(error)
-          error.textContent =
-            "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
- 
-        return;
- 
-      }
- 
-      if(error)
-        error.textContent = "";
- 
-      if(
-        typeof window.ma3daCreateAccount !==
-        "function"
-      ){
- 
-        if(error)
-          error.textContent =
-            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
- 
-        console.error(
-          "ma3daCreateAccount غير موجود"
-        );
- 
-        return;
- 
-      }
- 
-      const user =
-        await window.ma3daCreateAccount(
-          email,
-          password
-        );
- 
-      if(!user)
-        return;
- 
-      console.log(
-        "تم إنشاء الحساب بنجاح:",
-        user.uid
-      );
- 
-      /* تم إرسال رابط التحقق من Firebase */
- 
-      alert(
-        "تم إنشاء الحساب بنجاح ✅\n\n" +
-        "تم إرسال رابط التحقق إلى بريدك الإلكتروني 📧\n\n" +
-        "افتح البريد واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
-      );
- 
-      /* نخرج المستخدم من شاشة الحساب الجديد */
- 
-      if(window.ma3daAuth){
- 
-        try{
- 
-          const {
-            signOut
-          } =
-            await import(
-              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-            );
- 
-          await signOut(
-            window.ma3daAuth
-          );
- 
-        }catch(signOutError){
- 
-          console.error(
-            "تعذر تسجيل الخروج بعد إنشاء الحساب:",
-            signOutError
-          );
- 
-        }
- 
-      }
- 
-      showScreen(
-        "phoneScreen"
-      );
- 
-    }
-  );
- 
+/* 02 — التسجيل الجديد والتحقق التجريبي من الجوال */
+const submitCreateAccountBtn = document.getElementById("submitCreateAccountBtn");
+const backToLoginFromRegisterBtn = document.getElementById("backToLoginFromRegisterBtn");
+
+if (createAccountBtn) {
+  createAccountBtn.addEventListener("click", () => {
+    const error = document.getElementById("registerAccountError");
+    if (error) error.textContent = "";
+    showScreen("createAccountScreen");
+  });
 }
- 
+
+if (backToLoginFromRegisterBtn) {
+  backToLoginFromRegisterBtn.addEventListener("click", () => {
+    showScreen("phoneScreen");
+  });
+}
+
+if (submitCreateAccountBtn) {
+  submitCreateAccountBtn.addEventListener("click", async () => {
+    const value = id => (document.getElementById(id)?.value || "").trim();
+    const fullName = value("registerFullName");
+    const email = value("registerEmail").toLowerCase();
+    const phone = value("registerPhone").replace(/[\s()-]/g, "");
+    const phoneCode = value("registerPhoneCode");
+    const password = document.getElementById("registerPassword")?.value || "";
+    const passwordConfirm = document.getElementById("registerPasswordConfirm")?.value || "";
+    const error = document.getElementById("registerAccountError");
+    const fail = message => { if (error) error.textContent = message; };
+
+    if (error) error.textContent = "";
+    if (!fullName || !email || !phone || !phoneCode || !password || !passwordConfirm) {
+      fail("أكمل جميع الحقول قبل إنشاء الحساب."); return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fail("أدخل بريدًا إلكترونيًا صحيحًا."); return;
+    }
+    if (!/^(05\d{8}|\+9665\d{8}|9665\d{8})$/.test(phone)) {
+      fail("أدخل رقم جوال سعودي صحيحًا يبدأ بـ 05 أو +9665."); return;
+    }
+    if (phoneCode !== "1234") {
+      fail("رمز التحقق غير صحيح. استخدم الرمز التجريبي 1234."); return;
+    }
+    if (password.length < 6) {
+      fail("كلمة المرور يجب أن تكون 6 أحرف أو أكثر."); return;
+    }
+    if (password !== passwordConfirm) {
+      fail("كلمتا المرور غير متطابقتين."); return;
+    }
+    if (typeof window.ma3daCreateAccount !== "function") {
+      fail("Firebase لم يجهز بعد، أعد تحميل الصفحة."); return;
+    }
+
+    submitCreateAccountBtn.disabled = true;
+    submitCreateAccountBtn.textContent = "جارٍ إنشاء الحساب...";
+    try {
+      const user = await window.ma3daCreateAccount(email, password, fullName);
+      if (!user) {
+        fail("تعذر إنشاء الحساب. راجع رسالة الخطأ ثم حاول مرة أخرى.");
+        return;
+      }
+      try {
+        localStorage.setItem("atharPendingRegistration", JSON.stringify({
+          uid: user.uid,
+          name: fullName,
+          phone,
+          role: selectedRole || localStorage.getItem("selectedRole") || "customer"
+        }));
+      } catch (storageError) {
+        console.warn("تعذر حفظ بيانات التسجيل المبدئية محليًا:", storageError);
+      }
+      const loginEmail = document.getElementById("emailInput");
+      const loginPassword = document.getElementById("passwordInput");
+      if (loginEmail) loginEmail.value = email;
+      if (loginPassword) loginPassword.value = password;
+      alert("تم إنشاء الحساب بنجاح.\n\nأرسلنا رابط توثيق إلى بريدك الإلكتروني. افتح الرسالة واضغط رابط التحقق، ثم ارجع وسجّل الدخول.\n\nتم قبول رمز الجوال التجريبي 1234.");
+      showScreen("phoneScreen");
+    } catch (createError) {
+      console.error("خطأ في واجهة إنشاء الحساب:", createError);
+      fail(createError?.message || "تعذر إنشاء الحساب. حاول مرة أخرى.");
+    } finally {
+      submitCreateAccountBtn.disabled = false;
+      submitCreateAccountBtn.textContent = "إنشاء الحساب";
+    }
+  });
+}
+
 /* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
 /* OPERATOR */
  
@@ -4102,6 +4095,9 @@ if(saveCustomerDataBtn){
         console.log(
           "تم حفظ بيانات العميل"
         );
+        const homeName = document.getElementById("customerHomeName");
+        if (homeName) homeName.textContent = name || user.displayName || "مستخدم";
+        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         showScreen(
           "customerHomeScreen"
@@ -5346,6 +5342,7 @@ if(saveOperatorDataBtn){
         );
  
         localStorage.setItem("operatorProfile", JSON.stringify({ name, phone, city, email: user.email || "", operatorId: user.uid }));
+        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         await loadOperatorDashboard();
  
@@ -5540,7 +5537,7 @@ async function loadOperatorDashboard(){
  
     if(nameElement)
       nameElement.textContent =
-        data.name ||
+        data.name || data.fullName || data.displayName || window.ma3daAuth?.currentUser?.displayName ||
         "صاحب المعدة";
  
   }
@@ -13987,7 +13984,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(typeof refresh==='function'){
           await refresh();
           status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
-        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','createAccountScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
           status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
         }else{
           status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
