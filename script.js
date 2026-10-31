@@ -15419,9 +15419,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   const $ = id => document.getElementById(id);
 
+  function currentIdentity() {
+    return window.ma3daActiveVisualIdentity || "classic";
+  }
+
+  function identityBackgroundData(data, identity = currentIdentity()) {
+    if (data && !data.identities && ("imageData" in data || "pageBackgrounds" in data)) return data;
+    // Legacy root fields are the original ATHAR backgrounds: keep them for classic only.
+    if (identity === "classic") {
+      return data?.identities?.classic || {
+        imageData: data?.imageData || "",
+        opacity: data?.opacity ?? 16,
+        allPages: data?.allPages !== false,
+        pageBackgrounds: data?.pageBackgrounds || {}
+      };
+    }
+    return data?.identities?.[identity] || { imageData: "", opacity: 16, allPages: false, pageBackgrounds: {} };
+  }
+
   function cacheBackground(data) {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({
+        identity: currentIdentity(),
         imageData: data.imageData || "",
         opacity: data.opacity ?? 16,
         allPages: data.allPages !== false,
@@ -15434,6 +15453,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   function applyBackgroundSettings(data) {
     if (!data) return;
+    data = identityBackgroundData(data);
     savedImage = data.imageData || "";
     savedPageBackgrounds = data.pageBackgrounds || {};
     if (data.allPages === false || !savedImage) {
@@ -15451,7 +15471,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function loadCachedBackground() {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) applyBackgroundSettings(JSON.parse(raw));
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (!cached.identity || cached.identity === currentIdentity()) applyBackgroundSettings(cached);
+      }
     } catch (error) {
       console.warn("تعذر استعادة الخلفيات المحفوظة محليًا:", error);
     }
@@ -15661,13 +15684,14 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const snapshot = await window.ma3daGetDoc(ref);
       if (!snapshot.exists()) return;
 
-      const data = snapshot.data() || {};
+      const rootData = snapshot.data() || {};
+      const data = identityBackgroundData(rootData);
       cacheBackground(data);
       applyBackgroundSettings(data);
       if (savedImage && data.allPages !== false) {
         const preview = $("ma3daBgPreview");
         if (preview) {
-          preview.style.backgroundImage = 'url("' + image + '")';
+          preview.style.backgroundImage = 'url("' + savedImage + '")';
           preview.textContent = "";
         }
         const opacity = $("ma3daBgOpacity");
@@ -15697,21 +15721,24 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const pageId = $("ma3daBgPageSelect")?.value || "all";
       const snap = await window.ma3daGetDoc(ref);
       const existing = snap.exists() ? (snap.data() || {}) : {};
-      const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
+      const identity = currentIdentity();
+      const currentData = identityBackgroundData(existing, identity);
+      const pageBackgrounds = { ...(currentData.pageBackgrounds || {}) };
       if (pageId === "all") {
-        await window.ma3daSetDoc(ref, {
-          imageData: selectedImage, opacity, allPages: true,
-          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
-        }, { merge: true });
+        const identities = { ...(existing.identities || {}), [identity]: {
+          imageData: selectedImage, opacity, allPages: true, pageBackgrounds
+        } };
+        await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
         savedImage = selectedImage;
         cacheBackground({ imageData: savedImage, opacity, allPages: true, pageBackgrounds });
         applyBackground(savedImage, opacity, "all");
         status("تم حفظ الخلفية وتطبيقها على جميع الصفحات.");
       } else {
         pageBackgrounds[pageId] = { imageData: selectedImage, opacity };
-        await window.ma3daSetDoc(ref, {
-          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
-        }, { merge: true });
+        const identities = { ...(existing.identities || {}), [identity]: {
+          ...currentData, pageBackgrounds
+        } };
+        await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
         savedPageBackgrounds = pageBackgrounds;
         cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
         applyBackground(selectedImage, opacity, pageId);
@@ -15771,6 +15798,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
             مِعدة | إدارة خلفيات التطبيق
           </h3>
           <p>اختر الصفحة أولًا. يمكنك تطبيق الخلفية على صفحة واحدة أو على جميع الصفحات.</p>
+          <div id="ma3daBgIdentityLabel" style="padding:10px 12px;margin:10px 0;background:#fbf7ed;border:1px solid #d9c79c;border-radius:10px;color:#765b25;font-weight:800">الهوية المختارة: آثار العادية</div>
           <label for="ma3daBgPageSelect">الصفحة المستهدفة</label>
           <select id="ma3daBgPageSelect" style="display:block;width:100%;margin:8px 0 14px;padding:10px;border-radius:10px;border:1px solid #d9c79c;background:#fff;color:#242424">
             <option value="all">جميع الصفحات</option>
@@ -15869,15 +15897,19 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
           const snap = await window.ma3daGetDoc(ref);
           const existing = snap.exists() ? (snap.data() || {}) : {};
-          const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
+          const identity = currentIdentity();
+          const currentData = identityBackgroundData(existing, identity);
+          const pageBackgrounds = { ...(currentData.pageBackgrounds || {}) };
           if (pageId === "all") {
-            await window.ma3daSetDoc(ref, { imageData: "", allPages: false, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            const identities = { ...(existing.identities || {}), [identity]: { ...currentData, imageData: "", allPages: false } };
+            await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedImage = "";
             clearBackground("all");
             cacheBackground({ imageData: "", allPages: false, pageBackgrounds });
           } else {
             pageBackgrounds[pageId] = { imageData: "", opacity: Number($("ma3daBgOpacity")?.value || 16) };
-            await window.ma3daSetDoc(ref, { pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            const identities = { ...(existing.identities || {}), [identity]: { ...currentData, pageBackgrounds } };
+            await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedPageBackgrounds = pageBackgrounds;
             clearBackground(pageId);
             cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
@@ -15913,10 +15945,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     return panel;
   }
 
+  function updateBackgroundIdentityLabel() {
+    const names = { classic:"آثار العادية", national:"اليوم الوطني السعودي", founding:"يوم التأسيس", fitr:"عيد الفطر", adha:"عيد الأضحى" };
+    const label = $("ma3daBgIdentityLabel");
+    if (label) label.textContent = "الهوية المختارة: " + (names[currentIdentity()] || names.classic);
+  }
+
   async function openBackgroundPage() {
     try {
       await verifyOwner();
       ensureBackgroundPanel();
+      updateBackgroundIdentityLabel();
       selectBackgroundTab();
       await loadSavedBackground();
       $("ma3daControlCenter")?.scrollIntoView({
@@ -15947,6 +15986,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     initialize();
   }
   window.addEventListener("load", initialize, { once: true });
+  window.addEventListener("ma3da:visual-identity-changed", async () => {
+    updateBackgroundIdentityLabel();
+    clearBackground("all");
+    try { await loadSavedBackground(); } catch (error) { console.warn("تعذر تحميل خلفيات الهوية المختارة:", error); }
+  });
 })();
 
 /* =========================================================
@@ -16789,8 +16833,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const COLLECTION = "ma3daSettings";
   const DOC_ID = "ownerControlCenter";
   const THEMES = {
-    national: {name:"اليوم الوطني السعودي", vars:{bg:"#f7f0df",surface:"#fffaf0",primary:"#064b35",button:"#08764d",buttonText:"#fff8e8",gold:"#e7bd62",text:"#183b2e",muted:"#557365",border:"#d7b76a",nav:"#063d2c",hero:"#07543b"}},
-    founding: {name:"يوم التأسيس", vars:{bg:"#eee0cb",surface:"#fff7e9",primary:"#563b2b",button:"#765039",buttonText:"#fff8ed",gold:"#c59a62",text:"#39291f",muted:"#80664e",border:"#c9a77d",nav:"#493225",hero:"#78573c"}},
+    national: {name:"اليوم الوطني السعودي", vars:{bg:"#f7f0df",surface:"#fffaf0",primary:"#064b35",button:"#08764d",buttonText:"#fff8e8",gold:"#e7bd62",text:"#ffffff",muted:"#ffffff",border:"#d7b76a",nav:"#063d2c",hero:"#07543b"}},
+    founding: {name:"يوم التأسيس", vars:{bg:"#eee0cb",surface:"#fff7e9",primary:"#563b2b",button:"#765039",buttonText:"#fff8ed",gold:"#c59a62",text:"#ffffff",muted:"#ffffff",border:"#c9a77d",nav:"#493225",hero:"#78573c"}},
     fitr: {name:"عيد الفطر", vars:{bg:"#fbf4e8",surface:"#fffdf7",primary:"#9b6c25",button:"#bd9145",buttonText:"#fffdf7",gold:"#e4c27d",text:"#3b3024",muted:"#8b775d",border:"#e6c98e",nav:"#f0d9ac",hero:"#f8ead1"}},
     adha: {name:"عيد الأضحى", vars:{bg:"#eaf0e9",surface:"#fffdf6",primary:"#064b3e",button:"#08735e",buttonText:"#fffaf0",gold:"#d9b66a",text:"#18372f",muted:"#60796f",border:"#c6a85f",nav:"#063e34",hero:"#0b5548"}},
     classic: {name:"الهوية العادية", vars:{bg:"#f7f5ef",surface:"#ffffff",primary:"#171717",button:"#171717",buttonText:"#f2dfb1",gold:"#c8a45b",text:"#242424",muted:"#777064",border:"#d8c79f",nav:"#171717",hero:"#242424"}}
@@ -16805,6 +16849,22 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       :root{--az-bg:#f7f5ef;--az-surface:#fff;--az-primary:#171717;--az-button:#171717;--az-button-text:#f2dfb1;--az-gold:#c8a45b;--az-text:#242424;--az-muted:#777064;--az-border:#d8c79f;--az-nav:#171717;--az-hero:#242424}
       body{background-color:var(--az-bg)}
       .screen{color:var(--az-text)}
+      html[data-ma3da-theme="national"] .screen,
+      html[data-ma3da-theme="founding"] .screen,
+      html[data-ma3da-theme="national"] .screen :is(h1,h2,h3,h4,p,span,label,strong,b,small,a,li,div),
+      html[data-ma3da-theme="founding"] .screen :is(h1,h2,h3,h4,p,span,label,strong,b,small,a,li,div){color:#fff !important}
+      html[data-ma3da-theme="national"] .screen input,
+      html[data-ma3da-theme="national"] .screen select,
+      html[data-ma3da-theme="national"] .screen textarea,
+      html[data-ma3da-theme="founding"] .screen input,
+      html[data-ma3da-theme="founding"] .screen select,
+      html[data-ma3da-theme="founding"] .screen textarea{color:#fff !important}
+      html[data-ma3da-theme="national"] .screen button:not(.danger):not(.delete):not(.reject):not(.cancel),
+      html[data-ma3da-theme="national"] .screen .btn:not(.danger):not(.delete),
+      html[data-ma3da-theme="national"] .screen [role=button]:not(.danger){background:#08764d !important;color:#fff !important}
+      html[data-ma3da-theme="founding"] .screen button:not(.danger):not(.delete):not(.reject):not(.cancel),
+      html[data-ma3da-theme="founding"] .screen .btn:not(.danger):not(.delete),
+      html[data-ma3da-theme="founding"] .screen [role=button]:not(.danger){background:#765039 !important;color:#fff !important}
       .screen .card,.screen .card-item,.screen .request-card,.screen .menu-item,.screen .settings-card,.screen .support-card,.screen .owner-admin-cardlink,.screen .invoice-card,.screen .equipment-card,.screen .stat-card{background-color:var(--az-surface);border-color:var(--az-border)}
       .screen button,.screen .btn,.screen [role=button]{border-color:var(--az-border)}
       .screen button:not(.danger):not(.delete):not(.reject):not(.cancel):not([class*=danger]):not([class*=delete]),.screen .btn:not(.danger):not(.delete),.screen [role=button]:not(.danger){background-color:var(--az-button);color:var(--az-button-text)}
@@ -16858,6 +16918,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       btn.disabled=selected;
     });
     window.ma3daActiveVisualIdentity=key;
+    window.dispatchEvent(new CustomEvent("ma3da:visual-identity-changed", { detail: { identity: key } }));
   }
   async function activateTheme(key){
     if(busy)return; if(!THEMES[key])return; busy=true;
