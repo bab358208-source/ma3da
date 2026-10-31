@@ -3884,3 +3884,14 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 .main-btn {
   border-color: var(--ma3da-admin-gold);
 }
+/* إصلاح الرموز والحروف المشوشة في صفحة العميل فقط */
+
+#customerHomeScreen .home-request-card::after {
+    content: none !important;
+    display: none !important;
+}
+
+#customerHomeScreen .home-menu-item::after {
+    content: none !important;
+    display: none !important;
+}
