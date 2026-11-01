@@ -16848,6 +16848,77 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function fill(){const x=selected();$("atharIdentityPrimary").value=x.primary;$("atharIdentityAccent").value=x.accent;$("atharIdentitySurface").value=x.surface;$("atharIdentityText").value=x.text;$("atharIdentityBackground").value=x.background||"";$("atharIdentityOverlay").value=String(x.overlay??14);$("atharIdentityOverlayValue").textContent=String(x.overlay??14)+"%";$("atharIdentityTaglineCustomer").value=x.taglines.customer||"";$("atharIdentityTaglineOwner").value=x.taglines.owner||"";$("atharIdentityTaglineProjects").value=x.taglines.projects||"";$("atharButtonShape").value=x.button.shape;$("atharButtonColor").value=x.button.color;$("atharButtonTextColor").value=x.button.textColor;$("atharButtonBorderColor").value=x.button.borderColor;$("atharButtonRadius").value=String(x.button.radius);$("atharButtonFont").value=x.button.font;preview();}
   function preview(){const {value:x}=readEditor();const p=$("atharIdentityPreview");if(p){p.style.backgroundColor=x.surface;p.style.color=x.text;p.style.borderColor=x.accent;p.style.backgroundImage=x.background?`linear-gradient(rgba(0,0,0,${x.overlay/100}),rgba(0,0,0,${x.overlay/100})),url("${x.background.replace(/"/g,"%22")}")`:"none";p.style.backgroundSize="cover";p.style.setProperty("--athar-preview-primary",x.primary);p.querySelector("strong").style.color=x.primary;p.querySelector("span").textContent=x.name+" — معاينة";}const b=$("atharButtonPreview");if(b){b.style.background=x.button.shape==="outline"?"transparent":x.button.color;b.style.color=x.button.textColor;b.style.border=`2px solid ${x.button.borderColor}`;b.style.borderRadius=x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`;b.style.fontFamily=x.button.font;}}
   function apply(key, x){
+    
+/* ATHAR — مكتبة الزخارف المتكررة للهويات */
+function atharBuildMotif(key) {
+  const drawings = {
+    nationalDay: `
+      <path d="M5 35 18 22 31 35 18 48Z M38 8l8 8-8 8-8-8z M38 48l8 8-8 8-8-8z"/>
+      <path d="M60 12h26l-13 13z M60 60h26L73 47z"/>
+      <path d="M105 18c10-12 23-12 33 0 M105 52c10 12 23 12 33 0"/>
+      <path d="M164 12l8 8-8 8-8-8z M164 44l8 8-8 8-8-8z"/>
+      <path d="M202 35l13-13 13 13-13 13z"/>
+      <path d="M18 5v10m-5-5h10 M215 5v10m-5-5h10"/>
+    `,
+    foundingDay: `
+      <path d="M8 60V35l14-14 14 14v25 M15 60V41h14v19"/>
+      <path d="M48 12l10 10-10 10-10-10z M48 42l10 10-10 10-10-10z"/>
+      <circle cx="120" cy="36" r="26"/>
+      <path d="M120 10v52 M94 36h52 M102 18l36 36 M138 18l-36 36"/>
+      <path d="M180 60V35l14-14 14 14v25 M187 60V41h14v19"/>
+    `,
+    eidFitr: `
+      <path d="M25 10C3 24 12 53 36 59 10 65-5 35 12 16c4-4 8-6 13-6z"/>
+      <path d="M62 8v10m-9 0h18l-3 25H56z M56 43h15l-7 11z M63 54v9"/>
+      <path d="M103 12l6 11 11 6-11 6-6 11-6-11-11-6 11-6z"/>
+      <path d="M145 8v54m-8-44 8-8 8 8m-16 28 8 8 8-8"/>
+      <path d="M185 12l6 11 11 6-11 6-6 11-6-11-11-6 11-6z"/>
+      <path d="M220 8v10m-9 0h18l-3 25h-12z M214 43h15l-7 11z"/>
+    `,
+    eidAdha: `
+      <path d="M12 40c-8-9-1-22 10-21 5-12 20-12 26-2 12-3 20 9 14 19-2 13-20 18-33 9-8 3-14 0-17-5z"/>
+      <path d="M59 31l11-7 8 8-8 8"/>
+      <path d="M22 53l-3 11m25-11 3 11"/>
+      <path d="M95 10l6 11 11 6-11 6-6 11-6-11-11-6 11-6z"/>
+      <path d="M145 8v54m-8-44 8-8 8 8m-16 28 8 8 8-8"/>
+      <path d="M180 40c-8-9-1-22 10-21 5-12 20-12 26-2 12-3 20 9 14 19-2 13-20 18-33 9-8 3-14 0-17-5z"/>
+      <path d="M227 31l11-7 8 8-8 8 M190 53l-3 11m25-11 3 11"/>
+    `,
+    classic: `
+      <path d="M5 48h48l-4-13H25l-8 8H5z M22 35l7-15h20l8 15"/>
+      <circle cx="22" cy="54" r="5"/><circle cx="43" cy="54" r="5"/>
+      <path d="M75 48h46l-4-13H95l-8 8H75z M90 35l8-16h20l7 16"/>
+      <circle cx="91" cy="54" r="5"/><circle cx="112" cy="54" r="5"/>
+      <path d="M145 48h42l-4-19h-17l-8 9h-13z M158 29l8-14h16l7 14"/>
+      <circle cx="159" cy="54" r="5"/><circle cx="179" cy="54" r="5"/>
+      <path d="M210 10l8 8-8 8-8-8z M210 42l8 8-8 8-8-8z"/>
+    `
+  };
+
+  const slogan = key === "nationalDay"
+    ? `<g fill="#fff" stroke="none" font-size="8" font-weight="bold" font-family="Arial,Tahoma,sans-serif">
+         <text x="120" y="10" text-anchor="middle">عزّنا بطبعنا</text>
+         <text x="120" y="69" text-anchor="middle">عزّنا بطموحنا</text>
+       </g>`
+    : "";
+
+  const foundingText = key === "foundingDay"
+    ? `<text x="120" y="40" fill="#fff" stroke="none" font-size="11" font-weight="bold" text-anchor="middle" font-family="Arial">1727م</text>`
+    : "";
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="240" height="72" viewBox="0 0 240 72">
+      <g fill="none" stroke="#fff" stroke-width="1.7"
+         stroke-linecap="round" stroke-linejoin="round" opacity=".85">
+        ${drawings[key] || drawings.classic}
+      </g>
+      ${slogan}
+      ${foundingText}
+    </svg>`;
+
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
     const root=document.documentElement;
     const radius=x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`;
     root.dataset.atharIdentity=key;
@@ -16863,6 +16934,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-button-font",x.button.font);
     root.style.setProperty("--athar-identity-bg-color",x.surface);
     root.style.setProperty("--athar-identity-text-color",x.text);
+    root.style.setProperty(
+  "--athar-button-ornament",
+  atharBuildMotif(key)
+);
     // زخارف أحادية اللون داخل جميع الأزرار، تختلف تلقائياً حسب الهوية.
     const motif = {
       nationalDay: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M8 40 24 24 40 40 24 56Z M200 40 216 24 232 40 216 56Z M55 12h28l-14 14z M157 54h28l-14 14z"/><path d="M120 12v56M108 22l12-10 12 10M108 58l12 10 12-10"/></g></svg>',
