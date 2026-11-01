@@ -4215,14 +4215,16 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   padding: 8px 12px;
 }
 /* =========================================================
-   زخارف الأزرار — نسخة هادئة وغير متكررة
-   ملاحظة: تستخدم الزخرفة التي يضعها JavaScript في المتغير.
+   زخارف الأزرار — أثار | توزيع متوسط ومتوازن
+   شعار في الوسط + زخرفة يمين + زخرفة يسار
 ========================================================= */
+
 :root[data-athar-identity] {
-  --athar-motif-size: 100px 34px;
-  --athar-motif-opacity: .12;
+  --athar-motif-opacity: .17;
+  --athar-motif-size: 65px 24px;
 }
-/* إعداد شكل الأزرار دون تكرار خلفية الزخرفة */
+
+/* إعداد شكل الأزرار */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4252,10 +4254,8 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   font-family: var(--athar-button-font, Arial, Tahoma, sans-serif) !important;
   text-shadow: none;
 }
-/*
-   الزخرفة تظهر مرة واحدة فقط في طبقة مستقلة.
-   لا نستخدم repeat حتى لا تتكدس الرسومات.
-*/
+
+/* توزيع الزخارف الثلاث */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4276,13 +4276,28 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: var(--athar-button-ornament, none);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: var(--athar-motif-size, 100px 34px);
-  opacity: var(--athar-motif-opacity, .12);
+
+  background-image:
+    var(--athar-button-ornament, none),
+    var(--athar-button-ornament, none),
+    var(--athar-button-ornament, none);
+
+  background-repeat: no-repeat, no-repeat, no-repeat;
+
+  background-position:
+    center center,
+    right 9px center,
+    left 9px center;
+
+  background-size:
+    65px 24px,
+    34px 13px,
+    34px 13px;
+
+  opacity: var(--athar-motif-opacity, .17);
 }
-/* إبقاء نصوص الأزرار فوق الزخرفة */
+
+/* إبقاء محتوى الأزرار فوق الزخارف */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4301,7 +4316,8 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   position: relative;
   z-index: 1;
 }
-/* عناصر SVG والنصوص داخل الأزرار تبقى واضحة */
+
+/* وضوح النصوص والأيقونات */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4312,15 +4328,20 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   position: relative;
   z-index: 1;
 }
-/* لا نغيّر ألوان أزرار النجاح والخطر والتحذير */
-:root[data-athar-identity] .screen button.danger-btn,
-:root[data-athar-identity] .screen button.delete-btn,
-:root[data-athar-identity] .screen button.logout-btn,
-:root[data-athar-identity] .screen button.success-btn,
-:root[data-athar-identity] .screen button.warning-btn,
-:root[data-athar-identity] .screen button.status-btn {
-  background-image: none !important;
+
+/* أزرار النجاح والخطر والتحذير تحتفظ بألوانها */
+:root[data-athar-identity] .screen :is(
+  button.danger-btn,
+  button.delete-btn,
+  button.logout-btn,
+  button.success-btn,
+  button.warning-btn,
+  button.status-btn
+)::after {
+  content: none !important;
+  display: none !important;
 }
+
 /* حالات التعطيل */
 :root[data-athar-identity] :is(
   button:disabled,
@@ -4329,22 +4350,61 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   cursor: not-allowed;
   opacity: .65;
 }
+
 /* حدود الحقول والفواصل */
 :root[data-athar-identity] :is(hr, .divider, .separator) {
   border-color: var(--athar-theme-accent) !important;
 }
+
+/* حدود العناوين الرئيسية */
 :root[data-athar-identity] .screen :is(
-  .hero, .operator-dashboard-header
+  .hero,
+  .operator-dashboard-header
 ) {
   border-color: var(--athar-theme-accent);
 }
-/* إبقاء مؤشر الحالة بألوانه الدلالية */
+
+/* الحفاظ على ألوان مؤشرات الحالة */
 :root[data-athar-identity] :is(
   .status-success, .success-text, .text-success,
   .status-danger, .danger-text, .text-danger,
   .status-warning, .warning-text, .text-warning
 ) {
   color: inherit;
+}
+
+/* تحسين التوزيع في الجوال */
+@media (max-width: 520px) {
+  :root[data-athar-identity] {
+    --athar-motif-opacity: .15;
+    --athar-motif-size: 54px 20px;
+  }
+
+  :root[data-athar-identity] :is(
+    button,
+    .btn,
+    [role="button"],
+    a.button,
+    a.btn,
+    .main-btn,
+    .primary-btn,
+    .secondary-btn,
+    .action-btn,
+    .tab-btn,
+    .nav-btn,
+    .home-menu-item,
+    .athar-button-preview
+  )::after {
+    background-size:
+      54px 20px,
+      27px 11px,
+      27px 11px;
+
+    background-position:
+      center center,
+      right 6px center,
+      left 6px center;
+  }
 }
 /* =========================================================
    تحسينات الهاتف
