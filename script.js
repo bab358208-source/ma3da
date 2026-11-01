@@ -16871,6 +16871,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       eidAdha: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M28 48c-8-8-2-22 10-22 4-13 22-13 27-2 13-3 22 10 15 21-1 13-22 19-35 9-8 3-15 0-17-6zM73 36l12-7 8 8-8 9M40 55l-3 12m25-12 3 12M150 14l5 10 10 5-10 5-5 10-5-10-10-5 10-5zM190 20l5 9 9 5-9 5-5 9-5-9-9-5 9-5z"/><path d="M180 65l10-10 10 10m-90 0 10-10 10 10"/></g></svg>',
       classic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M14 57h54l-5-15H32l-8 8H14zM28 42l6-14h24l8 14M25 57v7m34-7v7M105 57h50l-4-13h-30l-8 7h-8zM118 44l7-17h21l8 17M115 57v7m34-7v7M184 62h36l-5-20h-18l-7 8h-6zM190 42l8-12h14l6 12M190 62v5m25-5v5"/><circle cx="36" cy="60" r="5"/><circle cx="55" cy="60" r="5"/><circle cx="126" cy="60" r="5"/><circle cx="145" cy="60" r="5"/><circle cx="198" cy="64" r="5"/><circle cx="214" cy="64" r="5"/></g></svg>'
     }[key] || '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><path d="M8 40 24 24 40 40 24 56Z M200 40 216 24 232 40 216 56Z" fill="none" stroke="#fff" stroke-width="2"/></svg>';
+    const ornamentColor=/^#[0-9a-f]{6}$/i.test(x.button.textColor||"")?x.button.textColor:"#ffffff";
+    motif=motif.replace(/stroke="#fff"/g,`stroke="${ornamentColor}"`).replace(/fill="#fff"/g,`fill="${ornamentColor}"`);
     root.style.setProperty("--athar-button-ornament", `url("data:image/svg+xml,${encodeURIComponent(motif)}")`);
     const safeUrl=(x.background||"").trim();
     const validUrl=!safeUrl || /^https:\/\//i.test(safeUrl);
@@ -16894,27 +16896,34 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     });
     document.body.style.backgroundColor=x.surface;
     document.body.style.color=x.text;
-    // تطبيق الألوان على البطاقات والحقول والأزرار في جميع الشاشات دون المساس بأحداثها أو معرّفاتها.
-    document.querySelectorAll(".screen .card,.screen .panel,.screen .form-card,.screen .dashboard-card,.screen .home-request-card,.screen .home-menu-item").forEach(el=>{
-      el.style.setProperty("border-color",x.accent);
+    if(safeUrl){
+      const bodyOverlay=Math.max(0,Math.min(100,Number(x.overlay)||0))/100;
+      document.body.style.backgroundImage=`linear-gradient(rgba(255,255,255,${bodyOverlay}),rgba(255,255,255,${bodyOverlay})),url("${safeUrl.replace(/["\\]/g,"\\$&")}")`;
+      document.body.style.backgroundSize="cover";
+      document.body.style.backgroundPosition="center top";
+      document.body.style.backgroundAttachment="scroll";
+    }else{
+      document.body.style.removeProperty("background-image");
+      document.body.style.removeProperty("background-size");
+      document.body.style.removeProperty("background-position");
+      document.body.style.removeProperty("background-attachment");
+    }
+    // ربط جميع عناصر الواجهة بالهوية المختارة، بما فيها الأزرار خارج حاويات .screen.
+    const interactiveSelector='button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn';
+    document.querySelectorAll(interactiveSelector).forEach(btn=>{
+      btn.style.setProperty("--athar-local-button-bg",x.button.color);
+      btn.style.setProperty("--athar-local-button-text",x.button.textColor);
+      btn.style.setProperty("--athar-local-button-border",x.button.borderColor);
+      btn.style.setProperty("--athar-local-button-radius",radius);
+      btn.style.setProperty("--athar-local-button-font",x.button.font);
+      btn.classList.add("athar-themed-control");
     });
-    document.querySelectorAll(".screen button").forEach(btn=>{
-      btn.style.setProperty("border-radius",radius);
-      btn.style.setProperty("font-family",x.button.font);
-      btn.style.setProperty("border-color",x.button.borderColor);
-      btn.classList.remove("athar-national-green","athar-national-white");
-      if(key==="nationalDay"){
-        const label=(btn.innerText||btn.textContent||"").replace(/\s+/g," ").trim();
-        if(/اطلب معدة|الطلبات السابقة|طلبات سابقة|المعدات السابقة|مشاريعي|المشاريع السابقة|الإعدادات/.test(label))btn.classList.add("athar-national-green");
-        else if(/الطلبات الحالية|طلبات حالية|الدعم الفني|الدعم/.test(label))btn.classList.add("athar-national-white");
-      }else if(btn.classList.contains("main-btn")||btn.classList.contains("primary-btn")){
-        btn.style.setProperty("background-color",x.button.color);
-        btn.style.setProperty("color",x.button.textColor);
-      }
+    document.querySelectorAll('.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item,.modal-content,.modal-card,.popup,.dialog,.list-card,.settings-card,.section-card,.stat-card,.info-card').forEach(el=>{
+      el.style.setProperty("--athar-local-border",x.accent);
     });
-    document.querySelectorAll(".screen input,.screen select,.screen textarea").forEach(el=>{
-      el.style.setProperty("border-color",x.accent);
-      el.style.setProperty("color",x.text);
+    document.querySelectorAll('input:not([type="button"]):not([type="submit"]):not([type="reset"]),select,textarea').forEach(el=>{
+      el.style.setProperty("--athar-local-field-border",x.accent);
+      el.style.setProperty("--athar-local-field-text",x.text);
     });
     const map=[["customerHomeScreen",x.taglines.customer],["operatorHomeScreen",x.taglines.owner],["contractorHomeScreen",x.taglines.projects]];
     map.forEach(([id,t])=>{
@@ -16927,7 +16936,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   async function load(){try{await window.ma3daFirebaseReady;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);const snap=await window.ma3daGetDoc(ref);const data=snap.exists()?snap.data():{};identities=mergeAll(data.atharIdentities);activeIdentity=data.activeAtharIdentity||"classic";apply(activeIdentity,identities[activeIdentity]||defaults.classic);savedSnapshot=JSON.stringify(identities);if($("atharIdentitySelect"))$("atharIdentitySelect").value=activeIdentity;fill();}catch(e){console.warn("تعذر تحميل إعدادات هويات آثار:",e);identities=mergeAll({});fill();}}
   async function save(activate=false){try{if(!window.ma3daAuth?.currentUser)throw new Error("سجّل الدخول أولًا.");const u=window.ma3daAuth.currentUser;if(!u.emailVerified)throw new Error("يجب توثيق البريد الإلكتروني لحساب المالك قبل اعتماد الهوية.");const {key,value}=readEditor();identities[key]=value;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);const payload={atharIdentities:identities,atharIdentityUpdatedAt:new Date(),atharIdentityUpdatedAtMs:Date.now(),atharIdentityUpdatedBy:u.uid};if(activate){payload.activeAtharIdentity=key;activeIdentity=key;}await window.ma3daSetDoc(ref,payload,{merge:true});savedSnapshot=JSON.stringify(identities);if(activate){apply(key,value);status("تم تفعيل الهوية بنجاح");}else{status("تم حفظ تعديلات الهوية. لم يتم تغيير الهوية النشطة.");}}catch(e){console.error(e);status(e.message||"تعذر حفظ الهوية.",true);}}
-  function init(){const center=$("ma3daControlCenter");if(!center||$("atharIdentitySelect")?.dataset.bound==="1")return;const sel=$("atharIdentitySelect");if(!sel)return;sel.dataset.bound="1";sel.addEventListener("change",()=>{const {key,value}=readEditor();identities[key]=value;fill();});ids.slice(1).forEach(id=>{const el=$(id);el?.addEventListener("input",()=>{preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});el?.addEventListener("change",()=>{if(id==="atharIdentityOverlay")$("atharIdentityOverlayValue").textContent=el.value+"%";preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});});$("atharIdentitySave")?.addEventListener("click",()=>save(false));$("atharIdentityActivate")?.addEventListener("click",()=>save(true));$("atharIdentityReset")?.addEventListener("click",()=>{identities=mergeAll(JSON.parse(savedSnapshot||"{}"));fill();status("تمت استعادة آخر نسخة محفوظة للمعاينة.");});load();}
+  function init(){const center=$("ma3daControlCenter");if(!center||$("atharIdentitySelect")?.dataset.bound==="1")return;const sel=$("atharIdentitySelect");if(!sel)return;sel.dataset.bound="1";let editorKey=sel.value||"classic";sel.addEventListener("change",()=>{const {value}=readEditor();identities[editorKey]=value;editorKey=sel.value||"classic";fill();});ids.slice(1).forEach(id=>{const el=$(id);el?.addEventListener("input",()=>{preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});el?.addEventListener("change",()=>{if(id==="atharIdentityOverlay")$("atharIdentityOverlayValue").textContent=el.value+"%";preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});});$("atharIdentitySave")?.addEventListener("click",()=>save(false));$("atharIdentityActivate")?.addEventListener("click",()=>save(true));$("atharIdentityReset")?.addEventListener("click",()=>{identities=mergeAll(JSON.parse(savedSnapshot||"{}"));fill();status("تمت استعادة آخر نسخة محفوظة للمعاينة.");});load();}
   window.ma3daLoadAtharIdentities = load;
   load();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();window.addEventListener("load",init,{once:true});
