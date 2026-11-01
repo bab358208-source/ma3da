@@ -1380,6 +1380,22 @@ if(emailLoginBtn){
         );
  
         localStorage.setItem("selectedRole", selectedRole);
+        let pendingRegistration = null;
+        try { pendingRegistration = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
+        if (pendingRegistration && pendingRegistration.uid === user.uid) {
+          const customerNameField = document.getElementById("customerNameInput");
+          const customerPhoneField = document.getElementById("customerPhoneInput");
+          const operatorNameField = document.getElementById("operatorNameInput");
+          const operatorPhoneField = document.getElementById("operatorPhoneInput");
+          const contractorNameField = document.getElementById("contractorNameInput");
+          const contractorPhoneField = document.getElementById("contractorPhoneInput");
+          if (customerNameField && !customerNameField.value) customerNameField.value = pendingRegistration.name || user.displayName || "";
+          if (customerPhoneField && !customerPhoneField.value) customerPhoneField.value = pendingRegistration.phone || "";
+          if (operatorNameField && !operatorNameField.value) operatorNameField.value = pendingRegistration.name || user.displayName || "";
+          if (operatorPhoneField && !operatorPhoneField.value) operatorPhoneField.value = pendingRegistration.phone || "";
+          if (contractorNameField && !contractorNameField.value) contractorNameField.value = pendingRegistration.name || user.displayName || "";
+          if (contractorPhoneField && !contractorPhoneField.value) contractorPhoneField.value = pendingRegistration.phone || "";
+        }
  
    if (selectedRole === "customer") {
   try {
@@ -1395,9 +1411,14 @@ if(emailLoginBtn){
       const nameInput = document.getElementById("customerNameInput");
       const phoneInput = document.getElementById("customerPhoneInput");
       const cityInput = document.getElementById("customerCityInput");
-      if (nameInput) nameInput.value = data.name || "";
-      if (phoneInput) phoneInput.value = data.phone || "";
+      let pending = null; try { pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); } catch (_) {}
+      if (pending?.uid !== currentUser.uid) pending = null;
+      const customerName = data.name || data.fullName || data.displayName || currentUser.displayName || pending?.name || "مستخدم";
+      if (nameInput) nameInput.value = data.name || data.fullName || pending?.name || "";
+      if (phoneInput) phoneInput.value = data.phone || pending?.phone || "";
       if (cityInput) cityInput.value = data.city || "";
+      const greeting = document.getElementById("customerHomeName");
+      if (greeting) greeting.textContent = customerName;
       showScreen("customerHomeScreen");
     } else {
       showScreen("customerDataScreen");
@@ -1468,121 +1489,93 @@ if(emailLoginBtn){
  
 }
  
-/* 02 — تسجيل الدخول والحسابات: إنشاء حساب جديد والتحقق */
-/* CREATE ACCOUNT */
- 
-if(createAccountBtn){
- 
-  createAccountBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      const {
-        email,
-        password,
-        error
-      } =
-        getEmailData();
- 
-      if(!email || !password){
- 
-        if(error)
-          error.textContent =
-            "أدخل البريد الإلكتروني وكلمة المرور";
- 
-        return;
- 
-      }
- 
-      if(password.length < 6){
- 
-        if(error)
-          error.textContent =
-            "كلمة المرور يجب أن تكون 6 أحرف أو أكثر";
- 
-        return;
- 
-      }
- 
-      if(error)
-        error.textContent = "";
- 
-      if(
-        typeof window.ma3daCreateAccount !==
-        "function"
-      ){
- 
-        if(error)
-          error.textContent =
-            "Firebase لم يجهز بعد، أعد تحميل الصفحة";
- 
-        console.error(
-          "ma3daCreateAccount غير موجود"
-        );
- 
-        return;
- 
-      }
- 
-      const user =
-        await window.ma3daCreateAccount(
-          email,
-          password
-        );
- 
-      if(!user)
-        return;
- 
-      console.log(
-        "تم إنشاء الحساب بنجاح:",
-        user.uid
-      );
- 
-      /* تم إرسال رابط التحقق من Firebase */
- 
-      alert(
-        "تم إنشاء الحساب بنجاح ✅\n\n" +
-        "تم إرسال رابط التحقق إلى بريدك الإلكتروني 📧\n\n" +
-        "افتح البريد واضغط على رابط التحقق، ثم ارجع وسجّل الدخول."
-      );
- 
-      /* نخرج المستخدم من شاشة الحساب الجديد */
- 
-      if(window.ma3daAuth){
- 
-        try{
- 
-          const {
-            signOut
-          } =
-            await import(
-              "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"
-            );
- 
-          await signOut(
-            window.ma3daAuth
-          );
- 
-        }catch(signOutError){
- 
-          console.error(
-            "تعذر تسجيل الخروج بعد إنشاء الحساب:",
-            signOutError
-          );
- 
-        }
- 
-      }
- 
-      showScreen(
-        "phoneScreen"
-      );
- 
-    }
-  );
- 
+/* 02 — التسجيل الجديد والتحقق التجريبي من الجوال */
+const submitCreateAccountBtn = document.getElementById("submitCreateAccountBtn");
+const backToLoginFromRegisterBtn = document.getElementById("backToLoginFromRegisterBtn");
+
+if (createAccountBtn) {
+  createAccountBtn.addEventListener("click", () => {
+    const error = document.getElementById("registerAccountError");
+    if (error) error.textContent = "";
+    showScreen("createAccountScreen");
+  });
 }
- 
+
+if (backToLoginFromRegisterBtn) {
+  backToLoginFromRegisterBtn.addEventListener("click", () => {
+    showScreen("phoneScreen");
+  });
+}
+
+if (submitCreateAccountBtn) {
+  submitCreateAccountBtn.addEventListener("click", async () => {
+    const value = id => (document.getElementById(id)?.value || "").trim();
+    const fullName = value("registerFullName");
+    const email = value("registerEmail").toLowerCase();
+    const phone = value("registerPhone").replace(/[\s()-]/g, "");
+    const phoneCode = value("registerPhoneCode");
+    const password = document.getElementById("registerPassword")?.value || "";
+    const passwordConfirm = document.getElementById("registerPasswordConfirm")?.value || "";
+    const error = document.getElementById("registerAccountError");
+    const fail = message => { if (error) error.textContent = message; };
+
+    if (error) error.textContent = "";
+    if (!fullName || !email || !phone || !phoneCode || !password || !passwordConfirm) {
+      fail("أكمل جميع الحقول قبل إنشاء الحساب."); return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fail("أدخل بريدًا إلكترونيًا صحيحًا."); return;
+    }
+    if (!/^(05\d{8}|\+9665\d{8}|9665\d{8})$/.test(phone)) {
+      fail("أدخل رقم جوال سعودي صحيحًا يبدأ بـ 05 أو +9665."); return;
+    }
+    if (phoneCode !== "1234") {
+      fail("رمز التحقق غير صحيح. استخدم الرمز التجريبي 1234."); return;
+    }
+    if (password.length < 6) {
+      fail("كلمة المرور يجب أن تكون 6 أحرف أو أكثر."); return;
+    }
+    if (password !== passwordConfirm) {
+      fail("كلمتا المرور غير متطابقتين."); return;
+    }
+    if (typeof window.ma3daCreateAccount !== "function") {
+      fail("Firebase لم يجهز بعد، أعد تحميل الصفحة."); return;
+    }
+
+    submitCreateAccountBtn.disabled = true;
+    submitCreateAccountBtn.textContent = "جارٍ إنشاء الحساب...";
+    try {
+      const user = await window.ma3daCreateAccount(email, password, fullName);
+      if (!user) {
+        fail("تعذر إنشاء الحساب. راجع رسالة الخطأ ثم حاول مرة أخرى.");
+        return;
+      }
+      try {
+        localStorage.setItem("atharPendingRegistration", JSON.stringify({
+          uid: user.uid,
+          name: fullName,
+          phone,
+          role: selectedRole || localStorage.getItem("selectedRole") || "customer"
+        }));
+      } catch (storageError) {
+        console.warn("تعذر حفظ بيانات التسجيل المبدئية محليًا:", storageError);
+      }
+      const loginEmail = document.getElementById("emailInput");
+      const loginPassword = document.getElementById("passwordInput");
+      if (loginEmail) loginEmail.value = email;
+      if (loginPassword) loginPassword.value = password;
+      alert("تم إنشاء الحساب بنجاح.\n\nأرسلنا رابط توثيق إلى بريدك الإلكتروني. افتح الرسالة واضغط رابط التحقق، ثم ارجع وسجّل الدخول.\n\nتم قبول رمز الجوال التجريبي 1234.");
+      showScreen("phoneScreen");
+    } catch (createError) {
+      console.error("خطأ في واجهة إنشاء الحساب:", createError);
+      fail(createError?.message || "تعذر إنشاء الحساب. حاول مرة أخرى.");
+    } finally {
+      submitCreateAccountBtn.disabled = false;
+      submitCreateAccountBtn.textContent = "إنشاء الحساب";
+    }
+  });
+}
+
 /* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
 /* OPERATOR */
  
@@ -4102,6 +4095,9 @@ if(saveCustomerDataBtn){
         console.log(
           "تم حفظ بيانات العميل"
         );
+        const homeName = document.getElementById("customerHomeName");
+        if (homeName) homeName.textContent = name || user.displayName || "مستخدم";
+        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         showScreen(
           "customerHomeScreen"
@@ -5346,6 +5342,7 @@ if(saveOperatorDataBtn){
         );
  
         localStorage.setItem("operatorProfile", JSON.stringify({ name, phone, city, email: user.email || "", operatorId: user.uid }));
+        try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         await loadOperatorDashboard();
  
@@ -5540,7 +5537,7 @@ async function loadOperatorDashboard(){
  
     if(nameElement)
       nameElement.textContent =
-        data.name ||
+        data.name || data.fullName || data.displayName || window.ma3daAuth?.currentUser?.displayName ||
         "صاحب المعدة";
  
   }
@@ -13987,7 +13984,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(typeof refresh==='function'){
           await refresh();
           status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
-        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','createAccountScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
           status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
         }else{
           status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
@@ -16809,96 +16806,4 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   window.addEventListener("load", initialize, { once: true });
 
-})();
-
-
-/* ATHAR_SEASONAL_IDENTITIES_V2
-   مظهر موسمي مستقل عن خلفية آثار الأصلية ووظائف التطبيق. */
-(function ATHAR_SEASONAL_IDENTITIES_V2(){
-  'use strict';
-  const DOC='seasonalIdentities';
-  const KEY='athar_seasonal_identity_v2';
-  const THEMES={
-    founding:{label:'يوم التأسيس',ink:'#9A6944',accent:'#A8754C',soft:'#F7EBDD',line:'#E7CDB2',banner:'يوم بدينا'},
-    fitr:{label:'عيد الفطر',ink:'#24558A',accent:'#C89B45',soft:'#F5F8FC',line:'#D9E4F2',banner:'عيد سعيد · تقبل الله طاعتكم'},
-    adha:{label:'عيد الأضحى',ink:'#8A682C',accent:'#B99043',soft:'#FBF7ED',line:'#EAD9B7',banner:'عيد سعيد · تقبل الله طاعتكم'},
-    classic:{label:'آثار العادية',ink:'#8A682C',accent:'#B8954A',soft:'#FBF8F0',line:'#E5D7B5',banner:''}
-  };
-  let active='classic', backgrounds={}, ready=false;
-  const $=id=>document.getElementById(id);
-  function screens(){return [...document.querySelectorAll('.screen[id]')].filter(x=>!['ma3daControlCenter','ma3daControlCenterBackgroundPanel'].includes(x.id));}
-  function apply(){
-    const cfg=THEMES[active]||THEMES.classic;
-    document.documentElement.dataset.atharTheme=active;
-    document.body.dataset.atharTheme=active;
-    document.documentElement.style.setProperty('--athar-identity-ink',cfg.ink);
-    document.documentElement.style.setProperty('--athar-identity-accent',cfg.accent);
-    document.documentElement.style.setProperty('--athar-identity-soft',cfg.soft);
-    document.documentElement.style.setProperty('--athar-identity-line',cfg.line);
-    screens().forEach(screen=>{
-      screen.dataset.atharTheme=active;
-      let banner=screen.querySelector(':scope > .athar-seasonal-banner');
-      if(cfg.banner){
-        if(!banner){banner=document.createElement('div');banner.className='athar-seasonal-banner';screen.prepend(banner);}
-        banner.textContent=cfg.banner;
-      }else if(banner)banner.remove();
-      const bg=backgrounds[active]||'';
-      if(active!=='classic' && bg){
-        screen.style.setProperty('--athar-seasonal-bg',`url("${bg}")`);
-        screen.classList.add('athar-seasonal-background');
-      }else{
-        screen.style.removeProperty('--athar-seasonal-bg');
-        screen.classList.remove('athar-seasonal-background');
-      }
-    });
-    document.querySelectorAll('[data-theme-card]').forEach(card=>card.classList.toggle('athar-theme-selected',card.dataset.themeCard===active));
-    const status=$('ma3daThemeStatus'); if(status)status.textContent='الهوية الحالية: '+(THEMES[active]?.label||'آثار العادية');
-  }
-  async function owner(){
-    await window.ma3daFirebaseReady;
-    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
-    if(!user?.uid)throw new Error('سجّل الدخول بحساب مالك التطبيق أولًا.');
-    const ref=window.ma3daDoc(window.ma3daDB,'supportStaff',user.uid);
-    const snap=await window.ma3daGetDoc(ref); const data=snap.exists()?snap.data():{};
-    if(data.role!=='owner'||data.active===false)throw new Error('تفعيل الهويات مخصص لمالك التطبيق.');
-    return user;
-  }
-  async function save(){
-    const user=await owner();
-    const ref=window.ma3daDoc(window.ma3daDB,'ma3daSettings',DOC);
-    await window.ma3daSetDoc(ref,{activeTheme:active,backgrounds,updatedAtMs:Date.now(),updatedBy:user.uid},{merge:true});
-    try{localStorage.setItem(KEY,JSON.stringify({activeTheme:active,backgrounds}));}catch(_){}
-  }
-  async function load(){
-    try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);backgrounds=d.backgrounds||{};active=THEMES[d.activeTheme]?d.activeTheme:'classic';apply();}}catch(_){}
-    try{
-      await window.ma3daFirebaseReady;
-      if(!window.ma3daDB||!window.ma3daDoc||!window.ma3daGetDoc)return;
-      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'ma3daSettings',DOC));
-      if(snap.exists()){const d=snap.data()||{};backgrounds=d.backgrounds||{};active=THEMES[d.activeTheme]?d.activeTheme:'classic';try{localStorage.setItem(KEY,JSON.stringify({activeTheme:active,backgrounds}));}catch(_){}apply();}
-    }catch(e){console.warn('تعذر تحميل الهوية الموسمية:',e);}
-  }
-  function mountBackgroundControls(){
-    const panel=document.querySelector('[data-cc-panel="design"]'); if(!panel||$('atharSeasonalBackgrounds'))return;
-    const box=document.createElement('section');box.id='atharSeasonalBackgrounds';box.className='athar-seasonal-admin';
-    box.innerHTML='<h3>الخلفيات المستقلة لكل هوية</h3><p>ارفع خلفية منفصلة للتأسيس أو لكل عيد. خلفية آثار الأصلية محفوظة كما هي ولا تُستبدل.</p><label for="atharSeasonTheme">الهوية</label><select id="atharSeasonTheme"><option value="founding">يوم التأسيس</option><option value="fitr">عيد الفطر</option><option value="adha">عيد الأضحى</option></select><input id="atharSeasonFile" type="file" accept="image/*"><div id="atharSeasonPreview">معاينة الخلفية المختارة</div><button type="button" id="atharSeasonSave">حفظ خلفية الهوية</button><button type="button" id="atharSeasonDelete">حذف خلفية الهوية المحددة</button><p id="atharSeasonStatus" role="status"></p>';
-    panel.appendChild(box);
-    const say=m=>{const e=$('atharSeasonStatus');if(e)e.textContent=m;};
-    $('atharSeasonTheme').addEventListener('change',()=>{const v=backgrounds[$('atharSeasonTheme').value]||'';$('atharSeasonPreview').style.backgroundImage=v?`url("${v}")`:'';$('atharSeasonPreview').textContent=v?'':'لا توجد خلفية محفوظة لهذه الهوية';});
-    $('atharSeasonFile').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){say('اختر ملف صورة صالحًا.');return;}const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{const scale=Math.min(1,1200/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);let q=.72,data=c.toDataURL('image/jpeg',q);while(data.length>220000&&q>.30){q-=.07;data=c.toDataURL('image/jpeg',q);}if(data.length>220000){say('الصورة كبيرة؛ اختر صورة أصغر أو قلّل دقتها.');return;}const v=$('atharSeasonTheme').value; backgrounds[v]=data;$('atharSeasonPreview').style.backgroundImage=`url("${data}")`;$('atharSeasonPreview').textContent='';say('تم تجهيز الخلفية. اضغط حفظ لتطبيقها بعد النشر.');};im.src=reader.result;};reader.readAsDataURL(f);});
-    $('atharSeasonSave').addEventListener('click',async()=>{try{const v=$('atharSeasonTheme').value;if(!backgrounds[v])throw new Error('اختر صورة خلفية أولًا.');await save();apply();say('تم حفظ الخلفية المستقلة وتطبيقها.');}catch(e){say(e.message||'تعذر حفظ الخلفية.');}});
-    $('atharSeasonDelete').addEventListener('click',async()=>{try{const v=$('atharSeasonTheme').value;const next={...backgrounds};delete next[v];backgrounds=next;await save();apply();$('atharSeasonPreview').style.backgroundImage='';$('atharSeasonPreview').textContent='لا توجد خلفية محفوظة لهذه الهوية';say('تم حذف خلفية الهوية المحددة فقط.');}catch(e){say(e.message||'تعذر حذف الخلفية.');}});
-    const initial=backgrounds[$('atharSeasonTheme').value]||'';if(initial)$('atharSeasonPreview').style.backgroundImage=`url("${initial}")`;
-  }
-  function bind(){
-    document.querySelectorAll('[data-activate-theme]').forEach(btn=>{
-      if(btn.dataset.atharSeasonBound)return;btn.dataset.atharSeasonBound='1';
-      if(btn.dataset.activateTheme==='national'){btn.disabled=true;btn.textContent='قيد إعادة التصميم';btn.title='اليوم الوطني غير معتمد حاليًا';return;}
-      btn.addEventListener('click',async()=>{const next=btn.dataset.activateTheme;if(!THEMES[next])return;const old=active;active=next;apply();try{await save();}catch(e){active=old;apply();const st=$('ma3daThemeStatus');if(st)st.textContent=e.message||'تعذر حفظ الهوية؛ أُعيدت الهوية السابقة.';}});
-    });
-    mountBackgroundControls();
-  }
-  function init(){if(ready)return;ready=true;bind();load();const obs=new MutationObserver(()=>{bind();apply();});obs.observe(document.documentElement,{childList:true,subtree:true});}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-  window.addEventListener('load',init,{once:true});
 })();
