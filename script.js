@@ -16847,10 +16847,79 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function status(msg,bad=false){const e=$("atharIdentityStatus");if(e){e.textContent=msg;e.dataset.error=bad?"1":"0";}}
   function fill(){const x=selected();$("atharIdentityPrimary").value=x.primary;$("atharIdentityAccent").value=x.accent;$("atharIdentitySurface").value=x.surface;$("atharIdentityText").value=x.text;$("atharIdentityBackground").value=x.background||"";$("atharIdentityOverlay").value=String(x.overlay??14);$("atharIdentityOverlayValue").textContent=String(x.overlay??14)+"%";$("atharIdentityTaglineCustomer").value=x.taglines.customer||"";$("atharIdentityTaglineOwner").value=x.taglines.owner||"";$("atharIdentityTaglineProjects").value=x.taglines.projects||"";$("atharButtonShape").value=x.button.shape;$("atharButtonColor").value=x.button.color;$("atharButtonTextColor").value=x.button.textColor;$("atharButtonBorderColor").value=x.button.borderColor;$("atharButtonRadius").value=String(x.button.radius);$("atharButtonFont").value=x.button.font;preview();}
   function preview(){const {value:x}=readEditor();const p=$("atharIdentityPreview");if(p){p.style.backgroundColor=x.surface;p.style.color=x.text;p.style.borderColor=x.accent;p.style.backgroundImage=x.background?`linear-gradient(rgba(0,0,0,${x.overlay/100}),rgba(0,0,0,${x.overlay/100})),url("${x.background.replace(/"/g,"%22")}")`:"none";p.style.backgroundSize="cover";p.style.setProperty("--athar-preview-primary",x.primary);p.querySelector("strong").style.color=x.primary;p.querySelector("span").textContent=x.name+" — معاينة";}const b=$("atharButtonPreview");if(b){b.style.background=x.button.shape==="outline"?"transparent":x.button.color;b.style.color=x.button.textColor;b.style.border=`2px solid ${x.button.borderColor}`;b.style.borderRadius=x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`;b.style.fontFamily=x.button.font;}}
-  function apply(key, x){const root=document.documentElement;root.style.setProperty("--athar-identity-primary",x.primary);root.style.setProperty("--athar-identity-accent",x.accent);root.style.setProperty("--athar-identity-surface",x.surface);root.style.setProperty("--athar-identity-text",x.text);root.style.setProperty("--athar-bg-overlay",String((Number(x.overlay)||0)/100));root.style.setProperty("--athar-button-bg",x.button.color);root.style.setProperty("--athar-button-text",x.button.textColor);root.style.setProperty("--athar-button-border",x.button.borderColor);root.style.setProperty("--athar-button-radius",x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`);root.style.setProperty("--athar-button-font",x.button.font);root.dataset.atharIdentity=key;const map=[["customerHomeScreen",x.taglines.customer],["operatorHomeScreen",x.taglines.owner],["contractorHomeScreen",x.taglines.projects]];map.forEach(([id,t])=>{const page=$(id);if(!page)return;let el=page.querySelector(".athar-home-tagline");if(!el){el=document.createElement("p");el.className="athar-home-tagline";const hero=page.querySelector(".hero, .operator-dashboard-header");hero?.appendChild(el);}if(el&&t)el.textContent=t;if(x.background){page.style.setProperty("--athar-identity-bg",`url("${x.background.replace(/"/g,"%22")}")`);page.classList.add("athar-identity-background");}else{page.style.removeProperty("--athar-identity-bg");page.classList.remove("athar-identity-background");}});}
+  function apply(key, x){
+    const root=document.documentElement;
+    const radius=x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`;
+    root.dataset.atharIdentity=key;
+    root.style.setProperty("--athar-identity-primary",x.primary);
+    root.style.setProperty("--athar-identity-accent",x.accent);
+    root.style.setProperty("--athar-identity-surface",x.surface);
+    root.style.setProperty("--athar-identity-text",x.text);
+    root.style.setProperty("--athar-bg-overlay",String(Math.max(0,Math.min(100,Number(x.overlay)||0))/100));
+    root.style.setProperty("--athar-button-bg",x.button.color);
+    root.style.setProperty("--athar-button-text",x.button.textColor);
+    root.style.setProperty("--athar-button-border",x.button.borderColor);
+    root.style.setProperty("--athar-button-radius",radius);
+    root.style.setProperty("--athar-button-font",x.button.font);
+    root.style.setProperty("--athar-identity-bg-color",x.surface);
+    root.style.setProperty("--athar-identity-text-color",x.text);
+    const safeUrl=(x.background||"").trim();
+    const validUrl=!safeUrl || /^https:\/\//i.test(safeUrl);
+    if(!validUrl){status("رابط الخلفية يجب أن يبدأ بـ https://",true);return;}
+    // تطبيق الخلفية على كل شاشة، مع استعادة خلفية CSS الأصلية عند إزالة الرابط.
+    document.querySelectorAll(".screen").forEach(page=>{
+      page.style.backgroundColor=x.surface;
+      page.style.color=x.text;
+      if(safeUrl){
+        const overlay=Math.max(0,Math.min(100,Number(x.overlay)||0))/100;
+        page.style.backgroundImage=`linear-gradient(rgba(255,255,255,${overlay}),rgba(255,255,255,${overlay})),url("${safeUrl.replace(/["\\]/g,"\\$&")}")`;
+        page.style.backgroundSize="cover";
+        page.style.backgroundPosition="center center";
+        page.style.backgroundAttachment="scroll";
+      }else{
+        page.style.removeProperty("background-image");
+        page.style.removeProperty("background-size");
+        page.style.removeProperty("background-position");
+        page.style.removeProperty("background-attachment");
+      }
+    });
+    document.body.style.backgroundColor=x.surface;
+    document.body.style.color=x.text;
+    // تطبيق الألوان على البطاقات والحقول والأزرار في جميع الشاشات دون المساس بأحداثها أو معرّفاتها.
+    document.querySelectorAll(".screen .card,.screen .panel,.screen .form-card,.screen .dashboard-card,.screen .home-request-card,.screen .home-menu-item").forEach(el=>{
+      el.style.setProperty("border-color",x.accent);
+    });
+    document.querySelectorAll(".screen button").forEach(btn=>{
+      btn.style.setProperty("border-radius",radius);
+      btn.style.setProperty("font-family",x.button.font);
+      btn.style.setProperty("border-color",x.button.borderColor);
+      btn.classList.remove("athar-national-green","athar-national-white");
+      if(key==="nationalDay"){
+        const label=(btn.innerText||btn.textContent||"").replace(/\s+/g," ").trim();
+        if(/اطلب معدة|الطلبات السابقة|طلبات سابقة|المعدات السابقة|مشاريعي|المشاريع السابقة|الإعدادات/.test(label))btn.classList.add("athar-national-green");
+        else if(/الطلبات الحالية|طلبات حالية|الدعم الفني|الدعم/.test(label))btn.classList.add("athar-national-white");
+      }else if(btn.classList.contains("main-btn")||btn.classList.contains("primary-btn")){
+        btn.style.setProperty("background-color",x.button.color);
+        btn.style.setProperty("color",x.button.textColor);
+      }
+    });
+    document.querySelectorAll(".screen input,.screen select,.screen textarea").forEach(el=>{
+      el.style.setProperty("border-color",x.accent);
+      el.style.setProperty("color",x.text);
+    });
+    const map=[["customerHomeScreen",x.taglines.customer],["operatorHomeScreen",x.taglines.owner],["contractorHomeScreen",x.taglines.projects]];
+    map.forEach(([id,t])=>{
+      const page=$(id);if(!page)return;
+      let el=page.querySelector(".athar-home-tagline");
+      if(!el){el=document.createElement("p");el.className="athar-home-tagline";(page.querySelector(".hero, .operator-dashboard-header")||page).appendChild(el);}
+      el.textContent=t||"";
+      el.style.color=x.primary;
+    });
+  }
   async function load(){try{await window.ma3daFirebaseReady;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);const snap=await window.ma3daGetDoc(ref);const data=snap.exists()?snap.data():{};identities=mergeAll(data.atharIdentities);activeIdentity=data.activeAtharIdentity||"classic";apply(activeIdentity,identities[activeIdentity]||defaults.classic);savedSnapshot=JSON.stringify(identities);if($("atharIdentitySelect"))$("atharIdentitySelect").value=activeIdentity;fill();}catch(e){console.warn("تعذر تحميل إعدادات هويات آثار:",e);identities=mergeAll({});fill();}}
-  async function save(){try{if(!window.ma3daAuth?.currentUser)throw new Error("سجّل الدخول أولًا.");const u=window.ma3daAuth.currentUser;if(!u.emailVerified)throw new Error("يجب توثيق البريد الإلكتروني لحساب المالك قبل اعتماد الهوية.");const {key,value}=readEditor();identities[key]=value;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);await window.ma3daSetDoc(ref,{atharIdentities:identities,activeAtharIdentity:key,atharIdentityUpdatedAt:new Date(),atharIdentityUpdatedAtMs:Date.now(),atharIdentityUpdatedBy:u.uid},{merge:true});activeIdentity=key;savedSnapshot=JSON.stringify(identities);apply(key,value);status("تم حفظ الهوية المختارة وأشكال أزرارها.");}catch(e){console.error(e);status(e.message||"تعذر حفظ الهوية.",true);}}
-  function init(){const center=$("ma3daControlCenter");if(!center||$("atharIdentitySelect")?.dataset.bound==="1")return;const sel=$("atharIdentitySelect");if(!sel)return;sel.dataset.bound="1";sel.addEventListener("change",()=>{const {key,value}=readEditor();identities[key]=value;fill();});ids.slice(1).forEach(id=>{const el=$(id);el?.addEventListener("input",preview);el?.addEventListener("change",()=>{if(id==="atharIdentityOverlay")$("atharIdentityOverlayValue").textContent=el.value+"%";preview();});});$("atharIdentitySave")?.addEventListener("click",save);$("atharIdentityReset")?.addEventListener("click",()=>{identities=mergeAll(JSON.parse(savedSnapshot||"{}"));fill();status("تمت استعادة آخر نسخة محفوظة للمعاينة.");});load();}
+  async function save(activate=false){try{if(!window.ma3daAuth?.currentUser)throw new Error("سجّل الدخول أولًا.");const u=window.ma3daAuth.currentUser;if(!u.emailVerified)throw new Error("يجب توثيق البريد الإلكتروني لحساب المالك قبل اعتماد الهوية.");const {key,value}=readEditor();identities[key]=value;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);const payload={atharIdentities:identities,atharIdentityUpdatedAt:new Date(),atharIdentityUpdatedAtMs:Date.now(),atharIdentityUpdatedBy:u.uid};if(activate){payload.activeAtharIdentity=key;activeIdentity=key;}await window.ma3daSetDoc(ref,payload,{merge:true});savedSnapshot=JSON.stringify(identities);if(activate){apply(key,value);status("تم تفعيل الهوية بنجاح");}else{status("تم حفظ تعديلات الهوية. لم يتم تغيير الهوية النشطة.");}}catch(e){console.error(e);status(e.message||"تعذر حفظ الهوية.",true);}}
+  function init(){const center=$("ma3daControlCenter");if(!center||$("atharIdentitySelect")?.dataset.bound==="1")return;const sel=$("atharIdentitySelect");if(!sel)return;sel.dataset.bound="1";sel.addEventListener("change",()=>{const {key,value}=readEditor();identities[key]=value;fill();});ids.slice(1).forEach(id=>{const el=$(id);el?.addEventListener("input",()=>{preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});el?.addEventListener("change",()=>{if(id==="atharIdentityOverlay")$("atharIdentityOverlayValue").textContent=el.value+"%";preview();const currentKey=$("atharIdentitySelect")?.value||"classic";if(currentKey===activeIdentity){const {value}=readEditor();apply(currentKey,value);}});});$("atharIdentitySave")?.addEventListener("click",()=>save(false));$("atharIdentityActivate")?.addEventListener("click",()=>save(true));$("atharIdentityReset")?.addEventListener("click",()=>{identities=mergeAll(JSON.parse(savedSnapshot||"{}"));fill();status("تمت استعادة آخر نسخة محفوظة للمعاينة.");});load();}
   window.ma3daLoadAtharIdentities = load;
+  load();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();window.addEventListener("load",init,{once:true});
 })();
