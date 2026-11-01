@@ -1507,6 +1507,36 @@ if (backToLoginFromRegisterBtn) {
   });
 }
 
+const registerAgreementAccepted = document.getElementById("registerAgreementAccepted");
+const registerAgreementStatus = document.getElementById("registerAgreementStatus");
+const registerAgreementVersion = "ATHAR-TERMS-1.0";
+function refreshRegistrationAgreement() {
+  const accepted = !!registerAgreementAccepted?.checked;
+  if (submitCreateAccountBtn) submitCreateAccountBtn.disabled = !accepted;
+  if (registerAgreementStatus) registerAgreementStatus.textContent = accepted
+    ? "تم تحديد الموافقة. يمكنك إكمال إنشاء الحساب."
+    : "الموافقة مطلوبة لإتمام إنشاء الحساب.";
+}
+function renderRoleAgreementTerms() {
+  const target = document.getElementById("atharRoleTerms");
+  if (!target) return;
+  const role = selectedRole || localStorage.getItem("selectedRole") || "customer";
+  const terms = {
+    customer: ["أؤكد أن تفاصيل الطلب والموقع والمدة صحيحة، وأراجع السعر والفاتورة قبل التأكيد، وألتزم بالسداد وشروط الإلغاء المتفق عليها."],
+    operator: ["أؤكد صحة بيانات المعدة وتوافرها وامتلاكي أو حيازتي النظامية لحق تأجيرها، وألتزم بالسعر والمدة ومتطلبات التشغيل والسلامة."],
+    contractor: ["أؤكد صحة بيانات المشروع وموقعه واحتياجاته، وألتزم بتوثيق التمديدات والتغييرات والوفاء بالاتفاقات المالية ومتطلبات الموقع التي تقع ضمن مسؤوليتي."]
+  };
+  const label = role === "operator" ? "صاحب المعدة" : role === "contractor" ? "المقاول أو صاحب المشروع" : "العميل";
+  target.replaceChildren();
+  const heading = document.createElement("h4"); heading.textContent = `أحكام إضافية — ${label}`;
+  const paragraph = document.createElement("p"); paragraph.textContent = terms[role]?.[0] || terms.customer[0];
+  target.append(heading, paragraph);
+}
+registerAgreementAccepted?.addEventListener("change", refreshRegistrationAgreement);
+if (createAccountBtn) createAccountBtn.addEventListener("click", () => setTimeout(renderRoleAgreementTerms, 0));
+refreshRegistrationAgreement();
+renderRoleAgreementTerms();
+
 if (submitCreateAccountBtn) {
   submitCreateAccountBtn.addEventListener("click", async () => {
     const value = id => (document.getElementById(id)?.value || "").trim();
@@ -1520,6 +1550,11 @@ if (submitCreateAccountBtn) {
     const fail = message => { if (error) error.textContent = message; };
 
     if (error) error.textContent = "";
+    if (!registerAgreementAccepted?.checked) {
+      fail("يجب قراءة اتفاقية الاستخدام والموافقة عليها قبل إنشاء الحساب.");
+      refreshRegistrationAgreement();
+      return;
+    }
     if (!fullName || !email || !phone || !phoneCode || !password || !passwordConfirm) {
       fail("أكمل جميع الحقول قبل إنشاء الحساب."); return;
     }
@@ -1545,7 +1580,11 @@ if (submitCreateAccountBtn) {
     submitCreateAccountBtn.disabled = true;
     submitCreateAccountBtn.textContent = "جارٍ إنشاء الحساب...";
     try {
-      const user = await window.ma3daCreateAccount(email, password, fullName);
+      const user = await window.ma3daCreateAccount(email, password, fullName, {
+        accepted: true,
+        version: registerAgreementVersion,
+        role: selectedRole || localStorage.getItem("selectedRole") || "customer"
+      });
       if (!user) {
         fail("تعذر إنشاء الحساب. راجع رسالة الخطأ ثم حاول مرة أخرى.");
         return;
@@ -1570,7 +1609,7 @@ if (submitCreateAccountBtn) {
       console.error("خطأ في واجهة إنشاء الحساب:", createError);
       fail(createError?.message || "تعذر إنشاء الحساب. حاول مرة أخرى.");
     } finally {
-      submitCreateAccountBtn.disabled = false;
+      submitCreateAccountBtn.disabled = !registerAgreementAccepted?.checked;
       submitCreateAccountBtn.textContent = "إنشاء الحساب";
     }
   });
@@ -16149,18 +16188,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function readForm() {
     const defaults = getDefaultSettings();
 
-    const texts = {};
-    Object.entries(textFields).forEach(([key, id]) => {
-      texts[key] = $(id)?.value.trim() || "";
-    });
+    const texts = { ...(currentSettings.texts || defaults.texts) };
 
-    const prices = {};
-    Object.entries(priceFields).forEach(([name, id]) => {
-      const value = Number($(id)?.value);
-      prices[name] = Number.isFinite(value) && value >= 0
-        ? value
-        : defaults.prices[name];
-    });
+    const prices = { ...(currentSettings.prices || defaults.prices) };
 
     return {
       texts,
@@ -16416,7 +16446,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     fillForm(settings);
     applySettings(settings);
     pageDraft = { ...(mergeSettings(settings).pageCustomization || {}) };
-    ensurePageCustomizationPanel();
 
     status("تم تحميل إعدادات مركز التحكم.");
   }
@@ -16444,20 +16473,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         COLLECTION,
         DOC_ID
       );
-
-      // الاحتفاظ بنسخة سابقة قبل اعتماد التعديل.
-      if (Object.keys(currentSettings).length) {
-        await window.ma3daAddDoc(
-          window.ma3daCollection(window.ma3daDB, HISTORY),
-          {
-            settings: currentSettings,
-            changedBy: user.uid,
-            changedByEmail: user.email || "",
-            createdAt: new Date(),
-            createdAtMs: Date.now()
-          }
-        );
-      }
 
       await window.ma3daSetDoc(
         docRef,
@@ -16696,12 +16711,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       page.hidden = false;
       await loadSettings();
-      ensurePageCustomizationPanel();
-      activateTab("texts");
+      activateTab("design");
 
-      // تجهيز تبويب الخلفيات داخل المركز، مع الإبقاء على الصفحة الحالية.
-      if (typeof window.ma3daEnsureBackgroundPanel === "function") {
-        window.ma3daEnsureBackgroundPanel();
+      // تحميل إعدادات الهويات بعد التحقق من صلاحية مالك التطبيق.
+      if (typeof window.ma3daLoadAtharIdentities === "function") {
+        await window.ma3daLoadAtharIdentities();
       }
 
       page.scrollIntoView({
@@ -16781,7 +16795,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     $("ccPreviewTexts")?.addEventListener("click", previewTexts);
     $("ccResetPreview")?.addEventListener("click", resetPreview);
     $("ccCampaignPublish")?.addEventListener("click", publishCampaign);
-    $("ccRefreshHistory")?.addEventListener("click", loadHistory);
 
     [
       "ccPrimaryColor",
@@ -16806,4 +16819,38 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   window.addEventListener("load", initialize, { once: true });
 
+})();
+
+
+/* =========================================================
+   ATHAR | إدارة الهويات الخمس والأزرار — مستقلة عن وظائف الأزرار
+========================================================= */
+(function AtharIdentityManager(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const DOC = "ownerControlCenter";
+  const COL = "ma3daSettings";
+  let identities = {};
+  let activeIdentity = "classic";
+  let savedSnapshot = null;
+  const defaults = {
+    classic:{name:"آثار العادية",primary:"#111111",accent:"#c8a45b",surface:"#f5f5f5",text:"#191919",background:"",overlay:14,taglines:{customer:"آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",owner:"آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.",projects:"آثار… من طموح المشاريع تبدأ حكايات الإنجاز."},button:{shape:"rounded",color:"#111111",textColor:"#ffffff",borderColor:"#111111",radius:14,font:"Arial, Tahoma, sans-serif"}},
+    eidFitr:{name:"عيد الفطر",primary:"#174b3b",accent:"#d8b66a",surface:"#f7f4e9",text:"#17392f",background:"",overlay:16,taglines:{customer:"عيدكم إنجاز… وآثار تجمعنا على الخير.",owner:"بمعداتكم تكتمل فرحة الإنجاز.",projects:"مشاريع تزهر بالخير وتبقى آثارها."},button:{shape:"pill",color:"#174b3b",textColor:"#ffffff",borderColor:"#d8b66a",radius:24,font:"Arial, Tahoma, sans-serif"}},
+    eidAdha:{name:"عيد الأضحى",primary:"#31533f",accent:"#c6a15b",surface:"#f5f1e7",text:"#26392d",background:"",overlay:16,taglines:{customer:"في أيام الخير… أنجز مشروعك بثقة.",owner:"سخّر معداتك لصناعة أثرٍ أكبر.",projects:"خطوات ثابتة ومشاريع تنمو بالإنجاز."},button:{shape:"rounded",color:"#31533f",textColor:"#ffffff",borderColor:"#c6a15b",radius:16,font:"Arial, Tahoma, sans-serif"}},
+    nationalDay:{name:"اليوم الوطني السعودي",primary:"#145b3b",accent:"#d7c69a",surface:"#f1f6f1",text:"#123d2c",background:"",overlay:12,taglines:{customer:"همة وطن… ومشاريع تصنع المستقبل.",owner:"بمعداتكم نبني ونترك أثرًا لوطننا.",projects:"من أرض الوطن تبدأ حكايات الإنجاز."},button:{shape:"soft",color:"#145b3b",textColor:"#ffffff",borderColor:"#d7c69a",radius:12,font:"Arial, Tahoma, sans-serif"}},
+    foundingDay:{name:"يوم التأسيس",primary:"#60452f",accent:"#b99a6b",surface:"#f4eee4",text:"#463323",background:"",overlay:18,taglines:{customer:"جذور راسخة… وإنجاز يمتد للمستقبل.",owner:"من أصالة الأرض نصنع أثر البناء.",projects:"مشاريع اليوم امتداد لقصة وطن."},button:{shape:"rounded",color:"#60452f",textColor:"#ffffff",borderColor:"#b99a6b",radius:18,font:"Arial, Tahoma, sans-serif"}}
+  };
+  const ids=["atharIdentitySelect","atharIdentityPrimary","atharIdentityAccent","atharIdentitySurface","atharIdentityText","atharIdentityBackground","atharIdentityOverlay","atharIdentityTaglineCustomer","atharIdentityTaglineOwner","atharIdentityTaglineProjects","atharButtonShape","atharButtonColor","atharButtonTextColor","atharButtonBorderColor","atharButtonRadius","atharButtonFont"];
+  function mergeAll(raw){const out={};Object.keys(defaults).forEach(k=>{const d=defaults[k],x=raw?.[k]||{};out[k]={...d,...x,taglines:{...d.taglines,...(x.taglines||{})},button:{...d.button,...(x.button||{})}};});return out;}
+  function selected(){return identities[$("atharIdentitySelect")?.value||"classic"]||defaults.classic;}
+  function readEditor(){const key=$("atharIdentitySelect")?.value||"classic";const old=selected();return {key,value:{...old,primary:$ ("atharIdentityPrimary")?.value||old.primary,accent:$("atharIdentityAccent")?.value||old.accent,surface:$("atharIdentitySurface")?.value||old.surface,text:$("atharIdentityText")?.value||old.text,background:$("atharIdentityBackground")?.value.trim()||"",overlay:Number($("atharIdentityOverlay")?.value||14),taglines:{customer:$("atharIdentityTaglineCustomer")?.value||"",owner:$("atharIdentityTaglineOwner")?.value||"",projects:$("atharIdentityTaglineProjects")?.value||""},button:{shape:$("atharButtonShape")?.value||"rounded",color:$("atharButtonColor")?.value||"#111111",textColor:$("atharButtonTextColor")?.value||"#ffffff",borderColor:$("atharButtonBorderColor")?.value||"#c8a45b",radius:Number($("atharButtonRadius")?.value||14),font:$("atharButtonFont")?.value||"Arial, Tahoma, sans-serif"}}};}
+  function status(msg,bad=false){const e=$("atharIdentityStatus");if(e){e.textContent=msg;e.dataset.error=bad?"1":"0";}}
+  function fill(){const x=selected();$("atharIdentityPrimary").value=x.primary;$("atharIdentityAccent").value=x.accent;$("atharIdentitySurface").value=x.surface;$("atharIdentityText").value=x.text;$("atharIdentityBackground").value=x.background||"";$("atharIdentityOverlay").value=String(x.overlay??14);$("atharIdentityOverlayValue").textContent=String(x.overlay??14)+"%";$("atharIdentityTaglineCustomer").value=x.taglines.customer||"";$("atharIdentityTaglineOwner").value=x.taglines.owner||"";$("atharIdentityTaglineProjects").value=x.taglines.projects||"";$("atharButtonShape").value=x.button.shape;$("atharButtonColor").value=x.button.color;$("atharButtonTextColor").value=x.button.textColor;$("atharButtonBorderColor").value=x.button.borderColor;$("atharButtonRadius").value=String(x.button.radius);$("atharButtonFont").value=x.button.font;preview();}
+  function preview(){const {value:x}=readEditor();const p=$("atharIdentityPreview");if(p){p.style.backgroundColor=x.surface;p.style.color=x.text;p.style.borderColor=x.accent;p.style.backgroundImage=x.background?`linear-gradient(rgba(0,0,0,${x.overlay/100}),rgba(0,0,0,${x.overlay/100})),url("${x.background.replace(/"/g,"%22")}")`:"none";p.style.backgroundSize="cover";p.style.setProperty("--athar-preview-primary",x.primary);p.querySelector("strong").style.color=x.primary;p.querySelector("span").textContent=x.name+" — معاينة";}const b=$("atharButtonPreview");if(b){b.style.background=x.button.shape==="outline"?"transparent":x.button.color;b.style.color=x.button.textColor;b.style.border=`2px solid ${x.button.borderColor}`;b.style.borderRadius=x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`;b.style.fontFamily=x.button.font;}}
+  function apply(key, x){const root=document.documentElement;root.style.setProperty("--athar-identity-primary",x.primary);root.style.setProperty("--athar-identity-accent",x.accent);root.style.setProperty("--athar-identity-surface",x.surface);root.style.setProperty("--athar-identity-text",x.text);root.style.setProperty("--athar-bg-overlay",String((Number(x.overlay)||0)/100));root.style.setProperty("--athar-button-bg",x.button.color);root.style.setProperty("--athar-button-text",x.button.textColor);root.style.setProperty("--athar-button-border",x.button.borderColor);root.style.setProperty("--athar-button-radius",x.button.shape==="pill"?"999px":x.button.shape==="square"?"2px":x.button.shape==="soft"?"8px":`${x.button.radius}px`);root.style.setProperty("--athar-button-font",x.button.font);root.dataset.atharIdentity=key;const map=[["customerHomeScreen",x.taglines.customer],["operatorHomeScreen",x.taglines.owner],["contractorHomeScreen",x.taglines.projects]];map.forEach(([id,t])=>{const page=$(id);if(!page)return;let el=page.querySelector(".athar-home-tagline");if(!el){el=document.createElement("p");el.className="athar-home-tagline";const hero=page.querySelector(".hero, .operator-dashboard-header");hero?.appendChild(el);}if(el&&t)el.textContent=t;if(x.background){page.style.setProperty("--athar-identity-bg",`url("${x.background.replace(/"/g,"%22")}")`);page.classList.add("athar-identity-background");}else{page.style.removeProperty("--athar-identity-bg");page.classList.remove("athar-identity-background");}});}
+  async function load(){try{await window.ma3daFirebaseReady;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);const snap=await window.ma3daGetDoc(ref);const data=snap.exists()?snap.data():{};identities=mergeAll(data.atharIdentities);activeIdentity=data.activeAtharIdentity||"classic";apply(activeIdentity,identities[activeIdentity]||defaults.classic);savedSnapshot=JSON.stringify(identities);if($("atharIdentitySelect"))$("atharIdentitySelect").value=activeIdentity;fill();}catch(e){console.warn("تعذر تحميل إعدادات هويات آثار:",e);identities=mergeAll({});fill();}}
+  async function save(){try{if(!window.ma3daAuth?.currentUser)throw new Error("سجّل الدخول أولًا.");const u=window.ma3daAuth.currentUser;if(!u.emailVerified)throw new Error("يجب توثيق البريد الإلكتروني لحساب المالك قبل اعتماد الهوية.");const {key,value}=readEditor();identities[key]=value;const ref=window.ma3daDoc(window.ma3daDB,COL,DOC);await window.ma3daSetDoc(ref,{atharIdentities:identities,activeAtharIdentity:key,atharIdentityUpdatedAt:new Date(),atharIdentityUpdatedAtMs:Date.now(),atharIdentityUpdatedBy:u.uid},{merge:true});activeIdentity=key;savedSnapshot=JSON.stringify(identities);apply(key,value);status("تم حفظ الهوية المختارة وأشكال أزرارها.");}catch(e){console.error(e);status(e.message||"تعذر حفظ الهوية.",true);}}
+  function init(){const center=$("ma3daControlCenter");if(!center||$("atharIdentitySelect")?.dataset.bound==="1")return;const sel=$("atharIdentitySelect");if(!sel)return;sel.dataset.bound="1";sel.addEventListener("change",()=>{const {key,value}=readEditor();identities[key]=value;fill();});ids.slice(1).forEach(id=>{const el=$(id);el?.addEventListener("input",preview);el?.addEventListener("change",()=>{if(id==="atharIdentityOverlay")$("atharIdentityOverlayValue").textContent=el.value+"%";preview();});});$("atharIdentitySave")?.addEventListener("click",save);$("atharIdentityReset")?.addEventListener("click",()=>{identities=mergeAll(JSON.parse(savedSnapshot||"{}"));fill();status("تمت استعادة آخر نسخة محفوظة للمعاينة.");});load();}
+  window.ma3daLoadAtharIdentities = load;
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();window.addEventListener("load",init,{once:true});
 })();
