@@ -15419,28 +15419,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   const $ = id => document.getElementById(id);
 
-  function currentIdentity() {
-    return window.ma3daActiveVisualIdentity || "classic";
-  }
-
-  function identityBackgroundData(data, identity = currentIdentity()) {
-    if (data && !data.identities && ("imageData" in data || "pageBackgrounds" in data)) return data;
-    // Legacy root fields are the original ATHAR backgrounds: keep them for classic only.
-    if (identity === "classic") {
-      return data?.identities?.classic || {
-        imageData: data?.imageData || "",
-        opacity: data?.opacity ?? 16,
-        allPages: data?.allPages !== false,
-        pageBackgrounds: data?.pageBackgrounds || {}
-      };
-    }
-    return data?.identities?.[identity] || { imageData: "", opacity: 16, allPages: false, pageBackgrounds: {} };
-  }
-
   function cacheBackground(data) {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify({
-        identity: currentIdentity(),
         imageData: data.imageData || "",
         opacity: data.opacity ?? 16,
         allPages: data.allPages !== false,
@@ -15453,7 +15434,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   function applyBackgroundSettings(data) {
     if (!data) return;
-    data = identityBackgroundData(data);
     savedImage = data.imageData || "";
     savedPageBackgrounds = data.pageBackgrounds || {};
     if (data.allPages === false || !savedImage) {
@@ -15471,10 +15451,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function loadCachedBackground() {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) {
-        const cached = JSON.parse(raw);
-        if (!cached.identity || cached.identity === currentIdentity()) applyBackgroundSettings(cached);
-      }
+      if (raw) applyBackgroundSettings(JSON.parse(raw));
     } catch (error) {
       console.warn("تعذر استعادة الخلفيات المحفوظة محليًا:", error);
     }
@@ -15684,14 +15661,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const snapshot = await window.ma3daGetDoc(ref);
       if (!snapshot.exists()) return;
 
-      const rootData = snapshot.data() || {};
-      const data = identityBackgroundData(rootData);
+      const data = snapshot.data() || {};
       cacheBackground(data);
       applyBackgroundSettings(data);
       if (savedImage && data.allPages !== false) {
         const preview = $("ma3daBgPreview");
         if (preview) {
-          preview.style.backgroundImage = 'url("' + savedImage + '")';
+          preview.style.backgroundImage = 'url("' + image + '")';
           preview.textContent = "";
         }
         const opacity = $("ma3daBgOpacity");
@@ -15721,24 +15697,21 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       const pageId = $("ma3daBgPageSelect")?.value || "all";
       const snap = await window.ma3daGetDoc(ref);
       const existing = snap.exists() ? (snap.data() || {}) : {};
-      const identity = currentIdentity();
-      const currentData = identityBackgroundData(existing, identity);
-      const pageBackgrounds = { ...(currentData.pageBackgrounds || {}) };
+      const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
       if (pageId === "all") {
-        const identities = { ...(existing.identities || {}), [identity]: {
-          imageData: selectedImage, opacity, allPages: true, pageBackgrounds
-        } };
-        await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+        await window.ma3daSetDoc(ref, {
+          imageData: selectedImage, opacity, allPages: true,
+          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
+        }, { merge: true });
         savedImage = selectedImage;
         cacheBackground({ imageData: savedImage, opacity, allPages: true, pageBackgrounds });
         applyBackground(savedImage, opacity, "all");
         status("تم حفظ الخلفية وتطبيقها على جميع الصفحات.");
       } else {
         pageBackgrounds[pageId] = { imageData: selectedImage, opacity };
-        const identities = { ...(existing.identities || {}), [identity]: {
-          ...currentData, pageBackgrounds
-        } };
-        await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+        await window.ma3daSetDoc(ref, {
+          pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid
+        }, { merge: true });
         savedPageBackgrounds = pageBackgrounds;
         cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
         applyBackground(selectedImage, opacity, pageId);
@@ -15798,7 +15771,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
             مِعدة | إدارة خلفيات التطبيق
           </h3>
           <p>اختر الصفحة أولًا. يمكنك تطبيق الخلفية على صفحة واحدة أو على جميع الصفحات.</p>
-          <div id="ma3daBgIdentityLabel" style="padding:10px 12px;margin:10px 0;background:#fbf7ed;border:1px solid #d9c79c;border-radius:10px;color:#765b25;font-weight:800">الهوية المختارة: آثار العادية</div>
           <label for="ma3daBgPageSelect">الصفحة المستهدفة</label>
           <select id="ma3daBgPageSelect" style="display:block;width:100%;margin:8px 0 14px;padding:10px;border-radius:10px;border:1px solid #d9c79c;background:#fff;color:#242424">
             <option value="all">جميع الصفحات</option>
@@ -15897,19 +15869,15 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           const ref = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
           const snap = await window.ma3daGetDoc(ref);
           const existing = snap.exists() ? (snap.data() || {}) : {};
-          const identity = currentIdentity();
-          const currentData = identityBackgroundData(existing, identity);
-          const pageBackgrounds = { ...(currentData.pageBackgrounds || {}) };
+          const pageBackgrounds = { ...(existing.pageBackgrounds || {}) };
           if (pageId === "all") {
-            const identities = { ...(existing.identities || {}), [identity]: { ...currentData, imageData: "", allPages: false } };
-            await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            await window.ma3daSetDoc(ref, { imageData: "", allPages: false, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedImage = "";
             clearBackground("all");
             cacheBackground({ imageData: "", allPages: false, pageBackgrounds });
           } else {
             pageBackgrounds[pageId] = { imageData: "", opacity: Number($("ma3daBgOpacity")?.value || 16) };
-            const identities = { ...(existing.identities || {}), [identity]: { ...currentData, pageBackgrounds } };
-            await window.ma3daSetDoc(ref, { identities, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
+            await window.ma3daSetDoc(ref, { pageBackgrounds, updatedAtMs: Date.now(), updatedBy: user.uid }, { merge: true });
             savedPageBackgrounds = pageBackgrounds;
             clearBackground(pageId);
             cacheBackground({ imageData: savedImage, allPages: Boolean(savedImage), pageBackgrounds });
@@ -15945,17 +15913,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     return panel;
   }
 
-  function updateBackgroundIdentityLabel() {
-    const names = { classic:"آثار العادية", national:"اليوم الوطني السعودي", founding:"يوم التأسيس", fitr:"عيد الفطر", adha:"عيد الأضحى" };
-    const label = $("ma3daBgIdentityLabel");
-    if (label) label.textContent = "الهوية المختارة: " + (names[currentIdentity()] || names.classic);
-  }
-
   async function openBackgroundPage() {
     try {
       await verifyOwner();
       ensureBackgroundPanel();
-      updateBackgroundIdentityLabel();
       selectBackgroundTab();
       await loadSavedBackground();
       $("ma3daControlCenter")?.scrollIntoView({
@@ -15986,11 +15947,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     initialize();
   }
   window.addEventListener("load", initialize, { once: true });
-  window.addEventListener("ma3da:visual-identity-changed", async () => {
-    updateBackgroundIdentityLabel();
-    clearBackground("all");
-    try { await loadSavedBackground(); } catch (error) { console.warn("تعذر تحميل خلفيات الهوية المختارة:", error); }
-  });
 })();
 
 /* =========================================================
@@ -16185,7 +16141,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function applySettings(settings) {
     currentSettings = mergeSettings(settings);
 
+    applyTexts(currentSettings.texts);
     applyDesign(currentSettings.design);
+    applyPrices(currentSettings.prices);
+    applyPageCustomizations(currentSettings.pageCustomization);
 
     window.ma3daControlSettings = currentSettings;
   }
@@ -16460,6 +16419,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     fillForm(settings);
     applySettings(settings);
     pageDraft = { ...(mergeSettings(settings).pageCustomization || {}) };
+    ensurePageCustomizationPanel();
 
     status("تم تحميل إعدادات مركز التحكم.");
   }
@@ -16480,23 +16440,49 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function saveSettings() {
     try {
       const user = await getOwner();
-      const finance = {
-        commission: Math.max(0, Math.min(100, Number($("ccCommission")?.value || 0))),
-        vat: Math.max(0, Math.min(100, Number($("ccVat")?.value || 15))),
-        invoicePrefix: $("ccInvoicePrefix")?.value.trim() || "M3",
-        invoiceFooter: $("ccInvoiceFooter")?.value.trim() || ""
-      };
-      const docRef = window.ma3daDoc(window.ma3daDB, COLLECTION, DOC_ID);
-      await window.ma3daSetDoc(docRef, {
-        finance,
-        financeUpdatedBy: user.uid,
-        financeUpdatedAtMs: Date.now()
-      }, { merge: true });
-      currentSettings = mergeSettings({ ...currentSettings, finance });
-      status("تم حفظ إعدادات المالية والفواتير.");
+      const settings = readForm();
+
+      const docRef = window.ma3daDoc(
+        window.ma3daDB,
+        COLLECTION,
+        DOC_ID
+      );
+
+      // الاحتفاظ بنسخة سابقة قبل اعتماد التعديل.
+      if (Object.keys(currentSettings).length) {
+        await window.ma3daAddDoc(
+          window.ma3daCollection(window.ma3daDB, HISTORY),
+          {
+            settings: currentSettings,
+            changedBy: user.uid,
+            changedByEmail: user.email || "",
+            createdAt: new Date(),
+            createdAtMs: Date.now()
+          }
+        );
+      }
+
+      await window.ma3daSetDoc(
+        docRef,
+        {
+          ...settings,
+          updatedBy: user.uid,
+          updatedByEmail: user.email || "",
+          updatedAt: new Date(),
+          updatedAtMs: Date.now(),
+          version: 1
+        },
+        { merge: true }
+      );
+
+      applySettings(settings);
+      fillForm(settings);
+
+      status("تم حفظ الإعدادات واعتمادها بنجاح.");
+
     } catch (error) {
-      console.error("MA3DA finance settings:", error);
-      status(error.message || "تعذر حفظ إعدادات المالية.", true);
+      console.error("MA3DA control save:", error);
+      status(error.message || "تعذر حفظ الإعدادات.", true);
     }
   }
 
@@ -16507,7 +16493,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       values[key] = $(id)?.value.trim() || "";
     });
 
-    status("إدارة النصوص المستقلة غير متاحة في هذه اللوحة.", true);
+    applyTexts(values);
+    status("هذه معاينة محلية للنصوص. اضغط حفظ لاعتمادها.");
   }
 
   function previewDesign() {
@@ -16712,7 +16699,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       page.hidden = false;
       await loadSettings();
-        activateTab("design");
+      ensurePageCustomizationPanel();
+      activateTab("texts");
 
       // تجهيز تبويب الخلفيات داخل المركز، مع الإبقاء على الصفحة الحالية.
       if (typeof window.ma3daEnsureBackgroundPanel === "function") {
@@ -16824,132 +16812,93 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 
-/* =========================================================
-   ATHAR | AZOOZ — FIVE GLOBAL SEASONAL IDENTITIES
-   Applies a selected visual identity across the whole app.
-========================================================= */
-(function Ma3daAzoozSeasonalThemes(){
-  "use strict";
-  const COLLECTION = "ma3daSettings";
-  const DOC_ID = "ownerControlCenter";
-  const THEMES = {
-    national: {name:"اليوم الوطني السعودي", vars:{bg:"#f7f0df",surface:"#fffaf0",primary:"#064b35",button:"#08764d",buttonText:"#fff8e8",gold:"#e7bd62",text:"#ffffff",muted:"#ffffff",border:"#d7b76a",nav:"#063d2c",hero:"#07543b"}},
-    founding: {name:"يوم التأسيس", vars:{bg:"#eee0cb",surface:"#fff7e9",primary:"#563b2b",button:"#765039",buttonText:"#fff8ed",gold:"#c59a62",text:"#ffffff",muted:"#ffffff",border:"#c9a77d",nav:"#493225",hero:"#78573c"}},
-    fitr: {name:"عيد الفطر", vars:{bg:"#fbf4e8",surface:"#fffdf7",primary:"#9b6c25",button:"#bd9145",buttonText:"#fffdf7",gold:"#e4c27d",text:"#3b3024",muted:"#8b775d",border:"#e6c98e",nav:"#f0d9ac",hero:"#f8ead1"}},
-    adha: {name:"عيد الأضحى", vars:{bg:"#eaf0e9",surface:"#fffdf6",primary:"#064b3e",button:"#08735e",buttonText:"#fffaf0",gold:"#d9b66a",text:"#18372f",muted:"#60796f",border:"#c6a85f",nav:"#063e34",hero:"#0b5548"}},
-    classic: {name:"الهوية العادية", vars:{bg:"#f7f5ef",surface:"#ffffff",primary:"#171717",button:"#171717",buttonText:"#f2dfb1",gold:"#c8a45b",text:"#242424",muted:"#777064",border:"#d8c79f",nav:"#171717",hero:"#242424"}}
+/* ATHAR_SEASONAL_IDENTITIES_V2
+   مظهر موسمي مستقل عن خلفية آثار الأصلية ووظائف التطبيق. */
+(function ATHAR_SEASONAL_IDENTITIES_V2(){
+  'use strict';
+  const DOC='seasonalIdentities';
+  const KEY='athar_seasonal_identity_v2';
+  const THEMES={
+    founding:{label:'يوم التأسيس',ink:'#9A6944',accent:'#A8754C',soft:'#F7EBDD',line:'#E7CDB2',banner:'يوم بدينا'},
+    fitr:{label:'عيد الفطر',ink:'#24558A',accent:'#C89B45',soft:'#F5F8FC',line:'#D9E4F2',banner:'عيد سعيد · تقبل الله طاعتكم'},
+    adha:{label:'عيد الأضحى',ink:'#8A682C',accent:'#B99043',soft:'#FBF7ED',line:'#EAD9B7',banner:'عيد سعيد · تقبل الله طاعتكم'},
+    classic:{label:'آثار العادية',ink:'#8A682C',accent:'#B8954A',soft:'#FBF8F0',line:'#E5D7B5',banner:''}
   };
-  const $ = id => document.getElementById(id);
-  let activeTheme = "classic";
-  let busy = false;
-  function injectThemeStyles(){
-    if($("ma3daAzoozThemeStyles")) return;
-    const style=document.createElement("style"); style.id="ma3daAzoozThemeStyles";
-    style.textContent=`
-      :root{--az-bg:#f7f5ef;--az-surface:#fff;--az-primary:#171717;--az-button:#171717;--az-button-text:#f2dfb1;--az-gold:#c8a45b;--az-text:#242424;--az-muted:#777064;--az-border:#d8c79f;--az-nav:#171717;--az-hero:#242424}
-      body{background-color:var(--az-bg)}
-      .screen{color:var(--az-text)}
-      html[data-ma3da-theme="national"] .screen,
-      html[data-ma3da-theme="founding"] .screen,
-      html[data-ma3da-theme="national"] .screen :is(h1,h2,h3,h4,p,span,label,strong,b,small,a,li,div),
-      html[data-ma3da-theme="founding"] .screen :is(h1,h2,h3,h4,p,span,label,strong,b,small,a,li,div){color:#fff !important}
-      html[data-ma3da-theme="national"] .screen input,
-      html[data-ma3da-theme="national"] .screen select,
-      html[data-ma3da-theme="national"] .screen textarea,
-      html[data-ma3da-theme="founding"] .screen input,
-      html[data-ma3da-theme="founding"] .screen select,
-      html[data-ma3da-theme="founding"] .screen textarea{color:#fff !important}
-      html[data-ma3da-theme="national"] .screen button:not(.danger):not(.delete):not(.reject):not(.cancel),
-      html[data-ma3da-theme="national"] .screen .btn:not(.danger):not(.delete),
-      html[data-ma3da-theme="national"] .screen [role=button]:not(.danger){background:#08764d !important;color:#fff !important}
-      html[data-ma3da-theme="founding"] .screen button:not(.danger):not(.delete):not(.reject):not(.cancel),
-      html[data-ma3da-theme="founding"] .screen .btn:not(.danger):not(.delete),
-      html[data-ma3da-theme="founding"] .screen [role=button]:not(.danger){background:#765039 !important;color:#fff !important}
-      .screen .card,.screen .card-item,.screen .request-card,.screen .menu-item,.screen .settings-card,.screen .support-card,.screen .owner-admin-cardlink,.screen .invoice-card,.screen .equipment-card,.screen .stat-card{background-color:var(--az-surface);border-color:var(--az-border)}
-      .screen button,.screen .btn,.screen [role=button]{border-color:var(--az-border)}
-      .screen button:not(.danger):not(.delete):not(.reject):not(.cancel):not([class*=danger]):not([class*=delete]),.screen .btn:not(.danger):not(.delete),.screen [role=button]:not(.danger){background-color:var(--az-button);color:var(--az-button-text)}
-      .screen button.primary,.screen .btn-primary,.screen .primary-btn,.screen button[type=submit],.screen .submit-btn,.screen .main-action{background:var(--az-button);color:var(--az-button-text);border-color:var(--az-gold)}
-      .screen input,.screen select,.screen textarea{background-color:var(--az-surface);border-color:var(--az-border);color:var(--az-text)}
-      .screen .card,.screen [class*=card],.screen [class*=panel],.screen [class*=tile]{border-color:var(--az-border)}
-      .screen .hero,.screen [class*=hero]{background-color:var(--az-hero)}
-      .screen .hero,.screen .page-header,.screen .screen-header{border-color:var(--az-border)}
-      .screen h1,.screen h2,.screen h3,.screen .section-title{color:var(--az-primary)}
-      .screen .athar-home-tagline{color:var(--az-gold)}
-      .screen input:focus,.screen select:focus,.screen textarea:focus{border-color:var(--az-gold);outline-color:var(--az-gold)}
-      .screen .bottom-nav,.screen .bottom-navigation,.screen .app-bottom-nav{background:var(--az-nav);border-color:var(--az-gold)}
-      .screen .bottom-nav a,.screen .bottom-navigation a,.screen .app-bottom-nav a{color:var(--az-button-text)}
-      #ma3daControlCenter{--az-bg:#fff;--az-surface:#fff;--az-text:#242424}
-      #ma3daControlCenter .ma3da-theme-card{background:#fff}
-      html[data-ma3da-theme="national"] .screen{background-color:var(--az-bg)}
-      html[data-ma3da-theme="founding"] .screen{background-color:var(--az-bg)}
-      html[data-ma3da-theme="fitr"] .screen{background-color:var(--az-bg)}
-      html[data-ma3da-theme="adha"] .screen{background-color:var(--az-bg)}
-      .ma3da-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
-      .ma3da-theme-card{border:1px solid #e3d5b4;border-radius:16px;padding:9px;background:#fff;box-shadow:0 5px 16px rgba(35,25,10,.06);overflow:hidden}
-      .ma3da-theme-card.active{outline:3px solid #c8a45b;outline-offset:1px}
-      .ma3da-theme-swatch{height:118px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:white;text-align:center;padding:8px}
-      .ma3da-theme-swatch span{font-size:27px}.ma3da-theme-swatch b{font-size:14px}
-      .ma3da-theme-national{background:linear-gradient(145deg,#063b2b,#08734d 65%,#d6ae58)}
-      .ma3da-theme-founding{background:linear-gradient(145deg,#3f2a20,#9a7049 65%,#d5b58a)}
-      .ma3da-theme-fitr{background:linear-gradient(145deg,#fff4dc,#e9c77f);color:#62451e}
-      .ma3da-theme-adha{background:linear-gradient(145deg,#073d34,#0b6957 65%,#d5b86c)}
-      .ma3da-theme-classic{background:linear-gradient(145deg,#171717,#403a2d 65%,#c8a45b)}
-      .ma3da-theme-card button{width:100%;margin-top:9px;padding:11px 6px;border:1px solid #c8a45b;border-radius:10px;background:#171717;color:#f2dfb1;font-weight:800}
-      .ma3da-theme-card.active button{background:#0b6b4b;color:white}
-      #ma3daThemeStatus{font-weight:800;min-height:24px;color:#176b46}
-      @media(max-width:420px){.ma3da-theme-grid{grid-template-columns:1fr}}
-    `;
-    document.head.appendChild(style);
-  }
-  function applyTheme(key){
-    const theme=THEMES[key]||THEMES.classic; activeTheme=key;
-    const root=document.documentElement;
-    if(key==="classic"){
-      root.removeAttribute("data-ma3da-theme");
-      ["bg","surface","primary","button","button-text","gold","text","muted","border","nav","hero"].forEach(k=>root.style.removeProperty(`--az-${k}`));
-    }else{
-      root.dataset.ma3daTheme=key;
-      Object.entries(theme.vars).forEach(([k,v])=>root.style.setProperty(`--az-${k.replace(/[A-Z]/g,m=>"-"+m.toLowerCase())}`,v));
-    }
-    document.querySelectorAll("[data-theme-card]").forEach(card=>card.classList.toggle("active",card.dataset.themeCard===key));
-    document.querySelectorAll("[data-activate-theme]").forEach(btn=>{
-      const selected=btn.dataset.activateTheme===key;
-      btn.textContent=selected?"الهوية مفعّلة ✓":(btn.dataset.activateTheme==="classic"?"العودة للهوية العادية":"تفعيل الهوية");
-      btn.disabled=selected;
+  let active='classic', backgrounds={}, ready=false;
+  const $=id=>document.getElementById(id);
+  function screens(){return [...document.querySelectorAll('.screen[id]')].filter(x=>!['ma3daControlCenter','ma3daControlCenterBackgroundPanel'].includes(x.id));}
+  function apply(){
+    const cfg=THEMES[active]||THEMES.classic;
+    document.documentElement.dataset.atharTheme=active;
+    document.body.dataset.atharTheme=active;
+    document.documentElement.style.setProperty('--athar-identity-ink',cfg.ink);
+    document.documentElement.style.setProperty('--athar-identity-accent',cfg.accent);
+    document.documentElement.style.setProperty('--athar-identity-soft',cfg.soft);
+    document.documentElement.style.setProperty('--athar-identity-line',cfg.line);
+    screens().forEach(screen=>{
+      screen.dataset.atharTheme=active;
+      let banner=screen.querySelector(':scope > .athar-seasonal-banner');
+      if(cfg.banner){
+        if(!banner){banner=document.createElement('div');banner.className='athar-seasonal-banner';screen.prepend(banner);}
+        banner.textContent=cfg.banner;
+      }else if(banner)banner.remove();
+      const bg=backgrounds[active]||'';
+      if(active!=='classic' && bg){
+        screen.style.setProperty('--athar-seasonal-bg',`url("${bg}")`);
+        screen.classList.add('athar-seasonal-background');
+      }else{
+        screen.style.removeProperty('--athar-seasonal-bg');
+        screen.classList.remove('athar-seasonal-background');
+      }
     });
-    window.ma3daActiveVisualIdentity=key;
-    window.dispatchEvent(new CustomEvent("ma3da:visual-identity-changed", { detail: { identity: key } }));
+    document.querySelectorAll('[data-theme-card]').forEach(card=>card.classList.toggle('athar-theme-selected',card.dataset.themeCard===active));
+    const status=$('ma3daThemeStatus'); if(status)status.textContent='الهوية الحالية: '+(THEMES[active]?.label||'آثار العادية');
   }
-  async function activateTheme(key){
-    if(busy)return; if(!THEMES[key])return; busy=true;
-    const status=$("ma3daThemeStatus"); if(status)status.textContent="جارٍ تفعيل الهوية وحفظها...";
+  async function owner(){
+    await window.ma3daFirebaseReady;
+    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
+    if(!user?.uid)throw new Error('سجّل الدخول بحساب مالك التطبيق أولًا.');
+    const ref=window.ma3daDoc(window.ma3daDB,'supportStaff',user.uid);
+    const snap=await window.ma3daGetDoc(ref); const data=snap.exists()?snap.data():{};
+    if(data.role!=='owner'||data.active===false)throw new Error('تفعيل الهويات مخصص لمالك التطبيق.');
+    return user;
+  }
+  async function save(){
+    const user=await owner();
+    const ref=window.ma3daDoc(window.ma3daDB,'ma3daSettings',DOC);
+    await window.ma3daSetDoc(ref,{activeTheme:active,backgrounds,updatedAtMs:Date.now(),updatedBy:user.uid},{merge:true});
+    try{localStorage.setItem(KEY,JSON.stringify({activeTheme:active,backgrounds}));}catch(_){}
+  }
+  async function load(){
+    try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);backgrounds=d.backgrounds||{};active=THEMES[d.activeTheme]?d.activeTheme:'classic';apply();}}catch(_){}
     try{
       await window.ma3daFirebaseReady;
-      const user=await window.ma3daGetCurrentUser();
-      if(!user?.uid)throw new Error("سجّل الدخول بحساب مالك التطبيق أولاً.");
-      const userSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,"supportStaff",user.uid));
-      const userData=userSnap.exists()?userSnap.data():{};
-      if(userData.role!=="owner"||userData.active===false)throw new Error("ليس لديك صلاحية تغيير هوية التطبيق.");
-      applyTheme(key);
-      await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,COLLECTION,DOC_ID),{activeVisualIdentity:key,visualIdentityName:THEMES[key].name,visualIdentityUpdatedAtMs:Date.now(),visualIdentityUpdatedBy:user.uid},{merge:true});
-      if(status)status.textContent=`تم تفعيل «${THEMES[key].name}» وحفظها. ستظهر الهوية نفسها لجميع المستخدمين بعد تحديث التطبيق.`;
-    }catch(error){
-      if(status)status.textContent=error.message||"تعذر حفظ الهوية. لم يتم اعتماد التغيير.";
-    }finally{busy=false;}
+      if(!window.ma3daDB||!window.ma3daDoc||!window.ma3daGetDoc)return;
+      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'ma3daSettings',DOC));
+      if(snap.exists()){const d=snap.data()||{};backgrounds=d.backgrounds||{};active=THEMES[d.activeTheme]?d.activeTheme:'classic';try{localStorage.setItem(KEY,JSON.stringify({activeTheme:active,backgrounds}));}catch(_){}apply();}
+    }catch(e){console.warn('تعذر تحميل الهوية الموسمية:',e);}
   }
-  async function loadTheme(){
-    injectThemeStyles();
-    try{
-      await window.ma3daFirebaseReady;
-      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,COLLECTION,DOC_ID));
-      const key=snap.exists()?snap.data()?.activeVisualIdentity:"classic";
-      applyTheme(THEMES[key]?key:"classic");
-    }catch(e){applyTheme("classic");console.warn("تعذر تحميل هوية آثار المحفوظة:",e);}
+  function mountBackgroundControls(){
+    const panel=document.querySelector('[data-cc-panel="design"]'); if(!panel||$('atharSeasonalBackgrounds'))return;
+    const box=document.createElement('section');box.id='atharSeasonalBackgrounds';box.className='athar-seasonal-admin';
+    box.innerHTML='<h3>الخلفيات المستقلة لكل هوية</h3><p>ارفع خلفية منفصلة للتأسيس أو لكل عيد. خلفية آثار الأصلية محفوظة كما هي ولا تُستبدل.</p><label for="atharSeasonTheme">الهوية</label><select id="atharSeasonTheme"><option value="founding">يوم التأسيس</option><option value="fitr">عيد الفطر</option><option value="adha">عيد الأضحى</option></select><input id="atharSeasonFile" type="file" accept="image/*"><div id="atharSeasonPreview">معاينة الخلفية المختارة</div><button type="button" id="atharSeasonSave">حفظ خلفية الهوية</button><button type="button" id="atharSeasonDelete">حذف خلفية الهوية المحددة</button><p id="atharSeasonStatus" role="status"></p>';
+    panel.appendChild(box);
+    const say=m=>{const e=$('atharSeasonStatus');if(e)e.textContent=m;};
+    $('atharSeasonTheme').addEventListener('change',()=>{const v=backgrounds[$('atharSeasonTheme').value]||'';$('atharSeasonPreview').style.backgroundImage=v?`url("${v}")`:'';$('atharSeasonPreview').textContent=v?'':'لا توجد خلفية محفوظة لهذه الهوية';});
+    $('atharSeasonFile').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){say('اختر ملف صورة صالحًا.');return;}const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{const scale=Math.min(1,1200/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);let q=.72,data=c.toDataURL('image/jpeg',q);while(data.length>220000&&q>.30){q-=.07;data=c.toDataURL('image/jpeg',q);}if(data.length>220000){say('الصورة كبيرة؛ اختر صورة أصغر أو قلّل دقتها.');return;}const v=$('atharSeasonTheme').value; backgrounds[v]=data;$('atharSeasonPreview').style.backgroundImage=`url("${data}")`;$('atharSeasonPreview').textContent='';say('تم تجهيز الخلفية. اضغط حفظ لتطبيقها بعد النشر.');};im.src=reader.result;};reader.readAsDataURL(f);});
+    $('atharSeasonSave').addEventListener('click',async()=>{try{const v=$('atharSeasonTheme').value;if(!backgrounds[v])throw new Error('اختر صورة خلفية أولًا.');await save();apply();say('تم حفظ الخلفية المستقلة وتطبيقها.');}catch(e){say(e.message||'تعذر حفظ الخلفية.');}});
+    $('atharSeasonDelete').addEventListener('click',async()=>{try{const v=$('atharSeasonTheme').value;const next={...backgrounds};delete next[v];backgrounds=next;await save();apply();$('atharSeasonPreview').style.backgroundImage='';$('atharSeasonPreview').textContent='لا توجد خلفية محفوظة لهذه الهوية';say('تم حذف خلفية الهوية المحددة فقط.');}catch(e){say(e.message||'تعذر حذف الخلفية.');}});
+    const initial=backgrounds[$('atharSeasonTheme').value]||'';if(initial)$('atharSeasonPreview').style.backgroundImage=`url("${initial}")`;
   }
-  document.addEventListener("click",event=>{
-    const btn=event.target.closest("[data-activate-theme]");
-    if(btn)activateTheme(btn.dataset.activateTheme);
-  });
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",loadTheme,{once:true});else loadTheme();
-  window.addEventListener("load",loadTheme,{once:true});
+  function bind(){
+    document.querySelectorAll('[data-activate-theme]').forEach(btn=>{
+      if(btn.dataset.atharSeasonBound)return;btn.dataset.atharSeasonBound='1';
+      if(btn.dataset.activateTheme==='national'){btn.disabled=true;btn.textContent='قيد إعادة التصميم';btn.title='اليوم الوطني غير معتمد حاليًا';return;}
+      btn.addEventListener('click',async()=>{const next=btn.dataset.activateTheme;if(!THEMES[next])return;const old=active;active=next;apply();try{await save();}catch(e){active=old;apply();const st=$('ma3daThemeStatus');if(st)st.textContent=e.message||'تعذر حفظ الهوية؛ أُعيدت الهوية السابقة.';}});
+    });
+    mountBackgroundControls();
+  }
+  function init(){if(ready)return;ready=true;bind();load();const obs=new MutationObserver(()=>{bind();apply();});obs.observe(document.documentElement,{childList:true,subtree:true});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+  window.addEventListener('load',init,{once:true});
 })();
