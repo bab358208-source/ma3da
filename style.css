@@ -4048,7 +4048,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
    ========================================== */
 
 :root[data-athar-identity] {
-  --athar-motif-size: 150px 45px;
+  --athar-motif-size: 55px 18px;
 }
 
 /* الأزرار وعناصر التفاعل */
