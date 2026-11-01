@@ -869,7 +869,7 @@ textarea {
 }
 
 #customerHomeScreen .home-request-card::after {
-  content: "ÃÂ°ÃÂÃÂÃÂ";
+  content: "ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ";
   position: absolute;
   left: -12px;
   bottom: -31px;
@@ -985,7 +985,7 @@ textarea {
 }
 
 #customerHomeScreen .home-menu-item::after {
-  content: "ÃÂ¢ÃÂÃÂ";
+  content: "ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ";
   position: absolute;
   left: 16px;
   color: #999;
@@ -2562,9 +2562,9 @@ html[data-theme="dark"] .operator-logout-btn {
 }
 
 /* =========================================================
-   MA3DA ÃÂ¢ÃÂÃÂ MY SUPPORT TICKETS
-   ÃÂÃÂµÃÂÃÂÃÂÃÂ­ÃÂÃÂ© ÃÂÃÂ´ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ§ÃÂÃÂ ÃÂÃÂÃÂÃÂ±ÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¯ ÃÂÃÂ§ÃÂÃÂÃÂÃÂ¯ÃÂÃÂ¹ÃÂÃÂ
-   ÃÂÃÂ¥ÃÂÃÂ¶ÃÂÃÂ§ÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ³ÃÂÃÂªÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂ¹ÃÂÃÂ ÃÂÃÂ§ÃÂÃÂÃÂÃÂªÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂª ÃÂÃÂ§ÃÂÃÂÃÂÃÂ­ÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂ©
+   MA3DA ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ MY SUPPORT TICKETS
+   ÃÂÃÂÃÂÃÂµÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ­ÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¹ÃÂÃÂÃÂÃÂ
+   ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂ¶ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂªÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂ¹ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂªÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ³ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂª ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ­ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ©
 ========================================================= */
 
 .ma3da-my-tickets-screen {
@@ -2769,7 +2769,7 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
   }
 }
 
-/* ÃÂÃÂÃÂÃÂ±ÃÂÃÂ§ÃÂÃÂ¬ÃÂÃÂ¹ÃÂÃÂ© ÃÂÃÂÃÂÃÂ±ÃÂÃÂ§ÃÂÃÂ­ÃÂÃÂ ÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂ´ÃÂÃÂ§ÃÂÃÂ±ÃÂÃÂÃÂÃÂ¹ ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂªÃÂÃÂÃÂÃÂ± */
+/* ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ¬ÃÂÃÂÃÂÃÂ¹ÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ­ÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ´ÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂ±ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¹ ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ§ÃÂÃÂÃÂÃÂªÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ± */
 .owner-phase-review-actions{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 #ownerInvoiceIssueFields{margin-top:16px}
 #ownerInvoiceIssueFields[hidden]{display:none}
@@ -2804,7 +2804,7 @@ html[data-theme="dark"] .ma3da-tickets-feedback {
 #operatorProjectRequestsPanel[hidden],#operatorCustomerRequestsPanel[hidden]{display:none!important}
 @media(max-width:420px){.operator-request-tabs{gap:7px}.operator-request-tab{font-size:.88rem;padding:10px 6px}}
 
-/* MA3DA premium client identity Ã¢ÂÂ charcoal, gold and warm ivory */
+/* MA3DA premium client identity ÃÂ¢ÃÂÃÂ charcoal, gold and warm ivory */
 :root{--ma3da-gold:#bd8a2d;--ma3da-gold-light:#e7c77f;--ma3da-ink:#191919;--ma3da-cream:#fbf6eb;--ma3da-sand:#f2e7d3;--ma3da-line:#e8dac0}
 body{background:linear-gradient(145deg,#fbf8f1 0%,#f4ead8 100%);color:var(--ma3da-ink)}
 .screen{color:var(--ma3da-ink)}
@@ -2831,7 +2831,7 @@ body{background:linear-gradient(145deg,#fbf8f1 0%,#f4ead8 100%);color:var(--ma3d
 .home-menu-text span{color:#766d60}
 /* Keep one simple navigation arrow; hide any decorative question/help mark beside it. */
 .home-arrow{color:#a87927;font-size:20px;font-weight:800;line-height:1}
-.home-menu-item .fa-circle-question,.home-menu-item .question-mark,.home-menu-item [aria-label*="ÃÂÃÂ³ÃÂ§ÃÂ¹ÃÂ¯ÃÂ©"]{display:none!important}
+.home-menu-item .fa-circle-question,.home-menu-item .question-mark,.home-menu-item [aria-label*="ÃÂÃÂÃÂÃÂ³ÃÂÃÂ§ÃÂÃÂ¹ÃÂÃÂ¯ÃÂÃÂ©"]{display:none!important}
 .home-features{gap:10px}
 .home-feature{background:#fffaf0;border:1px solid var(--ma3da-line);padding:13px 8px}
 .home-feature-icon{color:var(--ma3da-gold)}
@@ -2848,7 +2848,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 #customerSupportTicketForm{border-top:3px solid #c99a3e}
 @media(max-width:480px){.home-page{padding-left:10px;padding-right:10px}.home-header{margin-left:-10px;margin-right:-10px}.home-menu-item{padding:12px;gap:10px}.home-menu-text strong{font-size:15px}.home-menu-text span{font-size:12px}}
 
-/* ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª â ÙÙÙØ© ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙØ¨ÙØ© */
+/* ÃÂÃÂ±ÃÂÃÂ² ÃÂ¥ÃÂ¯ÃÂ§ÃÂ±ÃÂ© ÃÂ§ÃÂÃÂÃÂ¹ÃÂÃÂÃÂÃÂ§ÃÂª Ã¢ÂÂ ÃÂÃÂÃÂÃÂ© ÃÂÃÂÃÂ¹ÃÂ¯ÃÂ© ÃÂ§ÃÂÃÂ°ÃÂÃÂ¨ÃÂÃÂ© */
 
 #supportSectionOwnerInfo {
   color: #211b12;
@@ -2976,7 +2976,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   grid-column: 1 / -1;
 }
 
-/* ØªÙØ³ÙÙ Ø§ÙØ´Ø§Ø´Ø§Øª Ø§ÙØµØºÙØ±Ø© */
+/* ÃÂªÃÂÃÂ³ÃÂÃÂ ÃÂ§ÃÂÃÂ´ÃÂ§ÃÂ´ÃÂ§ÃÂª ÃÂ§ÃÂÃÂµÃÂºÃÂÃÂ±ÃÂ© */
 
 @media (max-width: 560px) {
   #supportSectionOwnerInfo .owner-info-grid {
@@ -2992,7 +2992,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   }
 }
 /* ==========================================
-   ÙØ³Ø§Ø¹Ø¯ ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙÙ â Ø§ÙÙÙÙØ© Ø§ÙØ°ÙØ¨ÙØ© ÙØ§ÙØ³ÙØ¯Ø§Ø¡
+   ÃÂÃÂ³ÃÂ§ÃÂ¹ÃÂ¯ ÃÂÃÂÃÂ¹ÃÂ¯ÃÂ© ÃÂ§ÃÂÃÂ°ÃÂÃÂ Ã¢ÂÂ ÃÂ§ÃÂÃÂÃÂÃÂÃÂ© ÃÂ§ÃÂÃÂ°ÃÂÃÂ¨ÃÂÃÂ© ÃÂÃÂ§ÃÂÃÂ³ÃÂÃÂ¯ÃÂ§ÃÂ¡
    ========================================== */
 
 .ma3da-ai-launcher {
@@ -3196,7 +3196,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     font-size: 11px;
   }
 }
-/* ØµÙØ­Ø§Øª Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ³Ø§Ø¹Ø¯ Ø§ÙØ°ÙÙ */
+/* ÃÂµÃÂÃÂ­ÃÂ§ÃÂª ÃÂ¥ÃÂ¯ÃÂ§ÃÂ±ÃÂ© ÃÂ§ÃÂÃÂÃÂ³ÃÂ§ÃÂ¹ÃÂ¯ ÃÂ§ÃÂÃÂ°ÃÂÃÂ */
 .ma3da-ai-admin-page {
   position: fixed;
   inset: 0;
@@ -3367,7 +3367,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     align-items: flex-start;
   }
 }
-/* ÙØ³Ø§Ø¹Ø¯ ÙÙØ¹Ø¯Ø© Ø§ÙØ°ÙÙ â ÙÙØ­Ø© Ø§ÙÙØ§ÙÙ */
+/* ÃÂÃÂ³ÃÂ§ÃÂ¹ÃÂ¯ ÃÂÃÂÃÂ¹ÃÂ¯ÃÂ© ÃÂ§ÃÂÃÂ°ÃÂÃÂ Ã¢ÂÂ ÃÂÃÂÃÂ­ÃÂ© ÃÂ§ÃÂÃÂÃÂ§ÃÂÃÂ */
 #ownerAssistantKnowledgeSection {
   direction: rtl;
   text-align: right;
@@ -3421,17 +3421,17 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   }
 }
 /* =========================================================
-   إضافات اعتماد المعدات والتصعيد وملاحظات مالك التطبيق
+   Ø¥Ø¶Ø§ÙØ§Øª Ø§Ø¹ØªÙØ§Ø¯ Ø§ÙÙØ¹Ø¯Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ
    ========================================================= */
 
-/* 01 — قائمة مراجعة المعدات */
+/* 01 â ÙØ§Ø¦ÙØ© ÙØ±Ø§Ø¬Ø¹Ø© Ø§ÙÙØ¹Ø¯Ø§Øª */
 #supportEquipmentEditsList .support-row {
   border: 1px solid #e6d6b2;
   border-radius: 16px;
   background: #fffdf8;
 }
 
-/* 02 — حقول الملاحظات والتصعيد في لوحة مالك التطبيق */
+/* 02 â Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª ÙØ§ÙØªØµØ¹ÙØ¯ ÙÙ ÙÙØ­Ø© ÙØ§ÙÙ Ø§ÙØªØ·Ø¨ÙÙ */
 .owner-admin-record textarea {
   width: 100%;
   box-sizing: border-box;
@@ -3443,23 +3443,23 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   background: #fff;
 }
 
-/* 03 — عناوين حقول الملاحظات */
+/* 03 â Ø¹ÙØ§ÙÙÙ Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª */
 .owner-admin-record label {
   display: block;
   font-weight: 700;
   margin-top: 12px;
 }
 
-/* 04 — زر حفظ الملاحظة اليومية */
+/* 04 â Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø© Ø§ÙÙÙÙÙØ© */
 #ownerDailyNoteSaveBtn {
   margin-top: 8px;
 }
 /* =========================================
-   MA3DA — مركز إدارة المعلومات
-   تنسيقات الأقسام والتصعيدات والملاحظات
+   MA3DA â ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª
+   ØªÙØ³ÙÙØ§Øª Ø§ÙØ£ÙØ³Ø§Ù ÙØ§ÙØªØµØ¹ÙØ¯Ø§Øª ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª
    ========================================= */
 
-/* بطاقات سجلات مركز إدارة المعلومات */
+/* Ø¨Ø·Ø§ÙØ§Øª Ø³Ø¬ÙØ§Øª ÙØ±ÙØ² Ø¥Ø¯Ø§Ø±Ø© Ø§ÙÙØ¹ÙÙÙØ§Øª */
 .owner-admin-record {
   direction: rtl;
   text-align: right;
@@ -3473,7 +3473,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* عناوين الحقول */
+/* Ø¹ÙØ§ÙÙÙ Ø§ÙØ­ÙÙÙ */
 .owner-admin-record label {
   display: block;
   margin: 10px 0 6px;
@@ -3482,7 +3482,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   text-align: right;
 }
 
-/* حقول الإدخال والملاحظات */
+/* Ø­ÙÙÙ Ø§ÙØ¥Ø¯Ø®Ø§Ù ÙØ§ÙÙÙØ§Ø­Ø¸Ø§Øª */
 .owner-admin-record input,
 .owner-admin-record select,
 .owner-admin-record textarea {
@@ -3506,13 +3506,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   line-height: 1.7;
 }
 
-/* أزرار السجلات */
+/* Ø£Ø²Ø±Ø§Ø± Ø§ÙØ³Ø¬ÙØ§Øª */
 .owner-admin-record button {
   margin: 8px 0 0 6px;
   border-radius: 10px;
 }
 
-/* قائمة تعديلات المعدات في الدعم الفني */
+/* ÙØ§Ø¦ÙØ© ØªØ¹Ø¯ÙÙØ§Øª Ø§ÙÙØ¹Ø¯Ø§Øª ÙÙ Ø§ÙØ¯Ø¹Ù Ø§ÙÙÙÙ */
 #supportEquipmentEditsList .support-row {
   box-sizing: border-box;
   width: 100%;
@@ -3525,12 +3525,12 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   direction: rtl;
 }
 
-/* زر حفظ الملاحظات اليومية */
+/* Ø²Ø± Ø­ÙØ¸ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
 #ownerDailyNoteSaveBtn {
   margin-top: 12px;
 }
 
-/* حقول الملاحظات اليومية */
+/* Ø­ÙÙÙ Ø§ÙÙÙØ§Ø­Ø¸Ø§Øª Ø§ÙÙÙÙÙØ© */
 #ownerDailyNotes,
 #ownerDailyNote,
 #ownerDailyNoteText,
@@ -3543,7 +3543,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   direction: rtl;
 }
 
-/* عرض التصعيدات داخل قسم الشكاوى وموظفي الدعم */
+/* Ø¹Ø±Ø¶ Ø§ÙØªØµØ¹ÙØ¯Ø§Øª Ø¯Ø§Ø®Ù ÙØ³Ù Ø§ÙØ´ÙØ§ÙÙ ÙÙÙØ¸ÙÙ Ø§ÙØ¯Ø¹Ù */
 #ownerEscalationsList,
 #supportEscalationsList,
 [data-owner-view="escalations"] {
@@ -3557,13 +3557,13 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   max-width: 100%;
 }
 
-/* منع تجاوز المحتوى عرض الشاشة */
+/* ÙÙØ¹ ØªØ¬Ø§ÙØ² Ø§ÙÙØ­ØªÙÙ Ø¹Ø±Ø¶ Ø§ÙØ´Ø§Ø´Ø© */
 .owner-admin-record *,
 #supportEquipmentEditsList * {
   overflow-wrap: anywhere;
 }
 
-/* توافق مع الآيفون */
+/* ØªÙØ§ÙÙ ÙØ¹ Ø§ÙØ¢ÙÙÙÙ */
 @media (max-width: 600px) {
   .owner-admin-record {
     padding: 12px;
@@ -3587,7 +3587,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 }
 /* =========================================================
    MA3DA | OWNER CONTROL CENTER
-   الهوية الذهبية — آثار
+   Ø§ÙÙÙÙØ© Ø§ÙØ°ÙØ¨ÙØ© â Ø¢Ø«Ø§Ø±
 ========================================================= */
 
 #ma3daControlCenter {
@@ -3865,7 +3865,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   }
 }
 
-/* تطبيق متغيرات الهوية على عناصر الواجهة العامة */
+/* ØªØ·Ø¨ÙÙ ÙØªØºÙØ±Ø§Øª Ø§ÙÙÙÙØ© Ø¹ÙÙ Ø¹ÙØ§ØµØ± Ø§ÙÙØ§Ø¬ÙØ© Ø§ÙØ¹Ø§ÙØ© */
 :root {
   --ma3da-admin-primary: #111111;
   --ma3da-admin-gold: #c8a45b;
@@ -3884,7 +3884,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 .main-btn {
   border-color: var(--ma3da-admin-gold);
 }
-/* إصلاح الرموز والحروف المشوشة في صفحة العميل فقط */
+/* Ø¥ØµÙØ§Ø­ Ø§ÙØ±ÙÙØ² ÙØ§ÙØ­Ø±ÙÙ Ø§ÙÙØ´ÙØ´Ø© ÙÙ ØµÙØ­Ø© Ø§ÙØ¹ÙÙÙ ÙÙØ· */
 
 #customerHomeScreen .home-request-card::after {
     content: none !important;
@@ -3895,3 +3895,59 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     content: none !important;
     display: none !important;
 }
+
+
+/* ATHAR â agreement, identity manager and button previews */
+.athar-legal-box{margin-top:22px;padding:16px;border:1px solid #dfd1ae;border-radius:16px;background:#fffdf8;text-align:right;direction:rtl}
+.athar-legal-box h3{margin:0 0 8px;color:#8d6a26;font-size:18px}.athar-legal-intro,.athar-register-hint{color:#766f62;font-size:13px;line-height:1.8}
+.athar-legal-details{margin:12px 0;border:1px solid #e7dcc5;border-radius:12px;background:#fff;overflow:hidden}.athar-legal-details summary{padding:13px;font-weight:800;cursor:pointer;color:#70551f}.athar-legal-content{max-height:360px;overflow:auto;padding:0 14px 14px;line-height:1.85;font-size:13px}.athar-legal-content h4{margin:15px 0 4px;color:#765a25}.athar-legal-content p{margin:0 0 8px;color:#4f4a40}.athar-legal-version,.athar-legal-disclaimer{font-size:11px!important;color:#81745b!important}.athar-agreement-check{display:flex!important;align-items:flex-start;gap:10px;margin:14px 0 5px!important;line-height:1.8}.athar-agreement-check input{width:20px!important;height:20px;flex:0 0 20px;margin:3px 0 0;accent-color:#a7833c}.athar-role-terms{padding:10px 12px;margin-top:12px;border-right:3px solid #c8a45b;background:#faf7ef;border-radius:8px}.athar-role-terms h4{margin:0 0 5px}.athar-role-terms p{margin:0}
+#submitCreateAccountBtn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.5)}
+.athar-identity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.athar-identity-preview{min-height:120px;margin:16px 0;padding:24px;border:2px solid #c8a45b;border-radius:18px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:#faf8f2;color:#191919;background-position:center;background-size:cover}.athar-identity-preview strong{font-size:25px}.athar-identity-preview span{font-size:14px}.athar-subheading{margin-top:28px!important;padding-top:16px;border-top:1px solid #eee}.athar-button-preview-wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px;border:1px dashed #d7c79f;border-radius:12px}.athar-button-preview-wrap span,.athar-identity-note{font-size:12px;color:#766f62;line-height:1.8}.athar-button-preview{min-width:130px;padding:13px 20px;font-weight:800;cursor:default}.athar-identity-background{position:relative;isolation:isolate}.athar-identity-background::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,var(--athar-bg-overlay,.14)),rgba(255,255,255,var(--athar-bg-overlay,.14))),var(--athar-identity-bg);background-size:cover;background-position:center;opacity:1}.athar-cc-panel [hidden]{display:none!important}
+:root{--athar-button-bg:#111;--athar-button-text:#fff;--athar-button-border:#c8a45b;--athar-button-radius:14px;--athar-button-font:Arial,Tahoma,sans-serif}
+@media(max-width:520px){.athar-identity-grid{grid-template-columns:1fr}.athar-legal-box{padding:12px}.athar-legal-content{max-height:300px}}
+
+.main-btn{background:var(--athar-button-bg,#111);color:var(--athar-button-text,#fff);border:1px solid var(--athar-button-border,#c8a45b);border-radius:var(--athar-button-radius,14px);font-family:var(--athar-button-font,inherit);}
+
+
+/* Ø§ÙÙÙÙØ© Ø§ÙÙØ·ÙÙØ©: ØªØ·Ø¨ÙÙ Ø´Ø§ÙÙ Ø¹ÙÙ Ø¬ÙÙØ¹ Ø´Ø§Ø´Ø§Øª ÙØ£ÙØ³Ø§Ù Ø§ÙØªØ·Ø¨ÙÙ */
+:root[data-athar-identity="nationalDay"]{--athar-identity-primary:#16834b;--athar-identity-accent:#83c9a4;--athar-identity-surface:#fff;--athar-identity-text:#176b43;--athar-button-bg:#16834b;--athar-button-text:#fff;--athar-button-border:#16834b;--athar-button-radius:16px;--athar-button-font:Tahoma,Arial,sans-serif;color-scheme:light}
+:root[data-athar-identity="nationalDay"] body{background:#fff!important;color:#176b43!important}
+:root[data-athar-identity="nationalDay"] .screen,
+:root[data-athar-identity="nationalDay"] section.screen,
+:root[data-athar-identity="nationalDay"] #customerHomeScreen,
+:root[data-athar-identity="nationalDay"] #operatorHomeScreen,
+:root[data-athar-identity="nationalDay"] #contractorHomeScreen{background-color:#fff!important;color:#176b43!important}
+:root[data-athar-identity="nationalDay"] .screen :is(h1,h2,h3,h4,p,label,.section-title,.page-title,.hero-title){color:#238653}
+:root[data-athar-identity="nationalDay"] .screen :is(.card,.home-request-card,.home-menu-item,.dashboard-card,.panel,.form-card){background-color:#fff!important;border-color:#d8eee1!important}
+:root[data-athar-identity="nationalDay"] .screen button.main-btn,
+:root[data-athar-identity="nationalDay"] .screen button.primary-btn,
+:root[data-athar-identity="nationalDay"] .screen .home-menu-item.main-btn{background:#16834b!important;color:#fff!important;border:1px solid #16834b!important}
+:root[data-athar-identity="nationalDay"] .screen button:not(.main-btn):not(.primary-btn):not(.danger-btn):not(.logout-btn){border-color:#b9dfca}
+:root[data-athar-identity="nationalDay"] .screen button{position:relative;overflow:hidden}
+:root[data-athar-identity="nationalDay"] .screen button::after{content:"ð¸ð¦";position:absolute;left:9px;bottom:5px;font-size:10px;line-height:1;opacity:.72;pointer-events:none}
+:root[data-athar-identity="nationalDay"] .screen button::before{content:"";position:absolute;inset:3px 30% auto auto;width:18px;height:18px;border:1px solid currentColor;opacity:.12;transform:rotate(45deg);pointer-events:none}
+:root[data-athar-identity="nationalDay"] .screen .back-btn,
+:root[data-athar-identity="nationalDay"] .screen button.white-btn{background:#fff!important;color:#16834b!important;border:1.5px solid #16834b!important}
+:root[data-athar-identity="nationalDay"] .screen input,
+:root[data-athar-identity="nationalDay"] .screen select,
+:root[data-athar-identity="nationalDay"] .screen textarea{background:#fff!important;border-color:#b9dfca!important;color:#176b43!important}
+:root[data-athar-identity="nationalDay"] .screen .hero,
+:root[data-athar-identity="nationalDay"] .screen .operator-dashboard-header{background:#fff!important;color:#16834b!important}
+:root[data-athar-identity="nationalDay"] .athar-home-tagline{color:#16834b!important;font-weight:900;text-align:center}
+
+:root[data-athar-identity="nationalDay"] .screen button.athar-national-green{background:#16834b!important;color:#fff!important;border:1.5px solid #16834b!important}
+:root[data-athar-identity="nationalDay"] .screen button.athar-national-white{background:#fff!important;color:#16834b!important;border:1.5px solid #16834b!important}
+:root[data-athar-identity="nationalDay"] .screen button.athar-national-green::after,
+:root[data-athar-identity="nationalDay"] .screen button.athar-national-white::after{content:"ð¸ð¦";position:absolute;left:8px;bottom:4px;font-size:9px;opacity:.8}
+
+/* ATHAR IDENTITY GLOBAL APPLY â all screens */
+:root[data-athar-identity] body{background-color:var(--athar-identity-surface,#f5f5f5);color:var(--athar-identity-text,#191919)}
+:root[data-athar-identity] .screen{background-color:var(--athar-identity-surface,#f5f5f5);color:var(--athar-identity-text,#191919)}
+:root[data-athar-identity] .screen :is(h1,h2,h3,h4,p,label,.section-title,.page-title,.hero-title){color:var(--athar-identity-text,#191919)}
+:root[data-athar-identity] .screen :is(.hero,.operator-dashboard-header){color:var(--athar-identity-primary,#111)}
+:root[data-athar-identity] .screen :is(.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item){border-color:var(--athar-identity-accent,#c8a45b)}
+:root[data-athar-identity] .screen button.main-btn,
+:root[data-athar-identity] .screen button.primary-btn,
+:root[data-athar-identity] .screen .home-menu-item.main-btn{background:var(--athar-button-bg,#111);color:var(--athar-button-text,#fff);border-color:var(--athar-button-border,#c8a45b);border-radius:var(--athar-button-radius,14px);font-family:var(--athar-button-font,Arial,Tahoma,sans-serif)}
+:root[data-athar-identity] .screen :is(input,select,textarea){border-color:var(--athar-identity-accent,#c8a45b)}
+:root[data-athar-identity] .athar-home-tagline{font-weight:900;text-align:center;margin:10px auto;padding:8px 12px;color:var(--athar-identity-primary,#111)}
