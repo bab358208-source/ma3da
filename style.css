@@ -3972,4 +3972,73 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 :root[data-athar-identity="foundingDay"]{--athar-button-bg:#60452f;--athar-button-text:#fff;--athar-button-border:#b99a6b}
 :root[data-athar-identity="eidFitr"]{--athar-button-bg:#174b3b;--athar-button-text:#fff;--athar-button-border:#d8b66a}
 :root[data-athar-identity="eidAdha"]{--athar-button-bg:#31533f;--athar-button-text:#fff;--athar-button-border:#c6a15b}
-:root[data-athar-identity="classic"]{--athar-button-bg:#111;--athar-button-text:#fff;--athar-button-border:#c8a45b
+:root[data-athar-identity="classic"]{--athar-button-bg:#111;--athar-button-text:#fff;--athar-button-border:#c8a45b}
+
+
+/* ATHAR GLOBAL THEME OVERRIDE v2 â all pages and all interactive controls */
+:root[data-athar-identity] {
+  --athar-theme-primary: var(--athar-identity-primary, #111111);
+  --athar-theme-accent: var(--athar-identity-accent, #c8a45b);
+  --athar-theme-surface: var(--athar-identity-surface, #f5f5f5);
+  --athar-theme-text: var(--athar-identity-text, #191919);
+}
+:root[data-athar-identity] body {
+  background-color: var(--athar-theme-surface) !important;
+  color: var(--athar-theme-text) !important;
+}
+:root[data-athar-identity] :is(.screen, [data-screen], .app-screen, .page-screen) {
+  background-color: var(--athar-theme-surface) !important;
+  color: var(--athar-theme-text) !important;
+  border-color: var(--athar-theme-accent);
+}
+:root[data-athar-identity] :is(h1,h2,h3,h4,h5,h6,.section-title,.page-title,.hero-title,.card-title,.panel-title,.screen-title,.sub-title) {
+  color: var(--athar-theme-primary) !important;
+}
+:root[data-athar-identity] :is(.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item,.modal-content,.modal-card,.popup,.dialog,.list-card,.settings-card,.section-card,.stat-card,.info-card) {
+  border-color: var(--athar-theme-accent) !important;
+}
+:root[data-athar-identity] :is(input:not([type="button"]):not([type="submit"]):not([type="reset"]),select,textarea) {
+  border-color: var(--athar-theme-accent) !important;
+  color: var(--athar-theme-text) !important;
+  accent-color: var(--athar-theme-primary) !important;
+}
+:root[data-athar-identity] :is(button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--athar-button-bg) !important;
+  color: var(--athar-button-text) !important;
+  border: 1px solid var(--athar-button-border) !important;
+  border-radius: var(--athar-button-radius) !important;
+  font-family: var(--athar-button-font) !important;
+  background-image: var(--athar-button-ornament) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+  text-shadow: none;
+}
+:root[data-athar-identity] :is(button,.btn,[role="button"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn) :is(span,strong,small,i,svg) {
+  position: relative;
+  z-index: 1;
+}
+:root[data-athar-identity] :is(button,.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn):disabled,
+:root[data-athar-identity] :is(button,.btn,[role="button"],[aria-disabled="true"]) {
+  cursor: not-allowed;
+}
+:root[data-athar-identity] :is(hr,.divider,.separator) { border-color: var(--athar-theme-accent) !important; }
+:root[data-athar-identity] .athar-home-tagline { color: var(--athar-theme-primary) !important; }
+/* keep semantic status indicators legible while their surrounding controls follow the identity */
+:root[data-athar-identity] :is(.status-success,.success-text,.text-success,.status-danger,.danger-text,.text-danger,.status-warning,.warning-text,.text-warning) { color: inherit; }
+
+/* v2 refinements: theme every screen surface and remove the old emoji overlay */
+:root[data-athar-identity="nationalDay"] .screen button::after { content: none !important; display: none !important; }
+:root[data-athar-identity] :is(.screen,.screen *) :is(p,span,label,small,strong,li,a,td,th,legend,summary,.description,.helper-text,.field-label):not(button):not(button *):not(.status-success):not(.status-danger):not(.status-warning):not(.text-success):not(.text-danger):not(.text-warning) {
+  color: var(--athar-theme-text) !important;
+}
+:root[data-athar-identity] :is(.screen,.screen *) :is(h1,h2,h3,h4,h5,h6,.section-title,.page-title,.hero-title,.card-title,.panel-title,.screen-title,.sub-title) {
+  color: var(--athar-theme-primary) !important;
+}
+:root[data-athar-identity] :is(.screen,.screen *) :is(.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item,.modal-content,.modal-card,.popup,.dialog,.list-card,.settings-card,.section-card,.stat-card,.info-card) {
+  background-color: color-mix(in srgb, var(--athar-theme-surface) 94%, white 6%) !important;
+  border-color: var(--athar-theme-accent) !important;
+}
