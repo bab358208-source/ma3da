@@ -16863,6 +16863,15 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-button-font",x.button.font);
     root.style.setProperty("--athar-identity-bg-color",x.surface);
     root.style.setProperty("--athar-identity-text-color",x.text);
+    // زخارف أحادية اللون داخل جميع الأزرار، تختلف تلقائياً حسب الهوية.
+    const motif = {
+      nationalDay: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M8 40 24 24 40 40 24 56Z M200 40 216 24 232 40 216 56Z M55 12h28l-14 14z M157 54h28l-14 14z"/><path d="M120 12v56M108 22l12-10 12 10M108 58l12 10 12-10"/></g></svg>',
+      foundingDay: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2" opacity=".9"><path d="M10 62V35l15-16 15 16v27M18 62V40h14v22M200 62V35l15-16 15 16v27M208 62V40h14v22"/><circle cx="120" cy="40" r="25"/><path d="M120 15v50M95 40h50M102 22l36 36M138 22l-36 36"/></g><text x="120" y="44" text-anchor="middle" fill="#fff" font-size="13" font-family="Arial">1727</text></svg>',
+      eidFitr: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M34 12c-18 16-12 42 8 50-28 2-43-31-20-49 4-3 8-2 12-1zM184 10v12m-10 0h20l-3 25h-14zM174 47h20l-10 12zM110 12l5 10 10 5-10 5-5 10-5-10-10-5 10-5z"/><path d="M15 68l10-10 10 10m170 0 10-10 10 10"/></g></svg>',
+      eidAdha: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M28 48c-8-8-2-22 10-22 4-13 22-13 27-2 13-3 22 10 15 21-1 13-22 19-35 9-8 3-15 0-17-6zM73 36l12-7 8 8-8 9M40 55l-3 12m25-12 3 12M150 14l5 10 10 5-10 5-5 10-5-10-10-5 10-5zM190 20l5 9 9 5-9 5-5 9-5-9-9-5 9-5z"/><path d="M180 65l10-10 10 10m-90 0 10-10 10 10"/></g></svg>',
+      classic: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><g fill="none" stroke="#fff" stroke-width="2.2" opacity=".9"><path d="M14 57h54l-5-15H32l-8 8H14zM28 42l6-14h24l8 14M25 57v7m34-7v7M105 57h50l-4-13h-30l-8 7h-8zM118 44l7-17h21l8 17M115 57v7m34-7v7M184 62h36l-5-20h-18l-7 8h-6zM190 42l8-12h14l6 12M190 62v5m25-5v5"/><circle cx="36" cy="60" r="5"/><circle cx="55" cy="60" r="5"/><circle cx="126" cy="60" r="5"/><circle cx="145" cy="60" r="5"/><circle cx="198" cy="64" r="5"/><circle cx="214" cy="64" r="5"/></g></svg>'
+    }[key] || '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80"><path d="M8 40 24 24 40 40 24 56Z M200 40 216 24 232 40 216 56Z" fill="none" stroke="#fff" stroke-width="2"/></svg>';
+    root.style.setProperty("--athar-button-ornament", `url("data:image/svg+xml,${encodeURIComponent(motif)}")`);
     const safeUrl=(x.background||"").trim();
     const validUrl=!safeUrl || /^https:\/\//i.test(safeUrl);
     if(!validUrl){status("رابط الخلفية يجب أن يبدأ بـ https://",true);return;}
