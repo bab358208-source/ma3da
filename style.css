@@ -4042,3 +4042,86 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   background-color: color-mix(in srgb, var(--athar-theme-surface) 94%, white 6%) !important;
   border-color: var(--athar-theme-accent) !important;
 }
+
+/* ==========================================
+   ATHAR — زخارف متعددة داخل جميع الأزرار
+   ========================================== */
+
+:root[data-athar-identity] {
+  --athar-motif-size: 150px 45px;
+}
+
+/* الأزرار وعناصر التفاعل */
+:root[data-athar-identity] :is(
+  button,
+  .btn,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  a.button,
+  a.btn,
+  .main-btn,
+  .primary-btn,
+  .secondary-btn,
+  .action-btn,
+  .tab-btn,
+  .nav-btn,
+  .home-menu-item
+) {
+  background-image: var(--athar-button-ornament) !important;
+  background-repeat: repeat !important;
+  background-position: center center !important;
+  background-size: var(--athar-motif-size) !important;
+  background-color: var(--athar-button-bg, var(--athar-identity-primary)) !important;
+  color: var(--athar-button-text, #fff) !important;
+  border-color: var(--athar-button-border, var(--athar-identity-accent)) !important;
+  border-radius: var(--athar-button-radius, 14px) !important;
+}
+
+/* الحفاظ على وضوح النص عند تعطيل الزر */
+:root[data-athar-identity] :is(
+  button:disabled,
+  [role="button"][aria-disabled="true"]
+) {
+  opacity: .65;
+}
+
+/* لا نضع الزخارف على حقول الكتابة */
+:root[data-athar-identity] :is(
+  input:not([type="button"]):not([type="submit"]):not([type="reset"]),
+  textarea,
+  select
+) {
+  background-image: none !important;
+}
+
+:root[data-athar-identity="nationalDay"] {
+  --athar-button-bg: #145b3b;
+  --athar-button-text: #fff;
+  --athar-button-border: #d7c69a;
+}
+
+:root[data-athar-identity="foundingDay"] {
+  --athar-button-bg: #60452f;
+  --athar-button-text: #fff;
+  --athar-button-border: #b99a6b;
+}
+
+:root[data-athar-identity="eidFitr"] {
+  --athar-button-bg: #174b3b;
+  --athar-button-text: #fff;
+  --athar-button-border: #d8b66a;
+}
+
+:root[data-athar-identity="eidAdha"] {
+  --athar-button-bg: #31533f;
+  --athar-button-text: #fff;
+  --athar-button-border: #c6a15b;
+}
+
+:root[data-athar-identity="classic"] {
+  --athar-button-bg: #111111;
+  --athar-button-text: #ffffff;
+  --athar-button-border: #c8a45b;
+}
