@@ -5241,7 +5241,7 @@
     <span class="owner-admin-icon">⚙️</span>
     <span>
       <strong>مركز التحكم الشامل</strong>
-      <small>اختيار هوية التطبيق وتفعيلها على جميع الصفحات</small>
+      <small>إدارة التصميم والنصوص والأسعار والفواتير والحملات</small>
     </span>
     <span class="owner-admin-arrow">←</span>
   </button>
@@ -5259,38 +5259,93 @@
   </div>
 
   <div class="ma3da-cc-tabs">
-    <button type="button" data-cc-tab="design" class="active">هوية وتصميم التطبيق</button>
+    <button type="button" data-cc-tab="texts">النصوص</button>
+    <button type="button" data-cc-tab="design">التصميم</button>
+    <button type="button" data-cc-tab="prices">الأسعار</button>
     <button type="button" data-cc-tab="finance">المالية والفواتير</button>
     <button type="button" data-cc-tab="campaigns">الإشعارات والتسويق</button>
+    <button type="button" data-cc-tab="history">سجل التعديلات</button>
   </div>
-  <!-- الهويات الموسمية الخمس -->
-  <div class="ma3da-cc-panel" data-cc-panel="design">
-    <h3>إدارة هوية وتصميم التطبيق</h3>
-    <p>اختر الهوية ثم اضغط تفعيل. ستتغير ألوان وخلفيات وعناصر الواجهة في جميع أقسام التطبيق مع بقاء الوظائف والبيانات كما هي.</p>
-    <div class="ma3da-theme-grid">
-      <article class="ma3da-theme-card" data-theme-card="national">
-        <div class="ma3da-theme-swatch ma3da-theme-national"><span>🇸🇦</span><b>اليوم الوطني السعودي</b></div>
-        <button type="button" data-activate-theme="national">تفعيل الهوية</button>
-      </article>
-      <article class="ma3da-theme-card" data-theme-card="founding">
-        <div class="ma3da-theme-swatch ma3da-theme-founding"><span>🏜️</span><b>يوم التأسيس</b></div>
-        <button type="button" data-activate-theme="founding">تفعيل الهوية</button>
-      </article>
-      <article class="ma3da-theme-card" data-theme-card="fitr">
-        <div class="ma3da-theme-swatch ma3da-theme-fitr"><span>🌙</span><b>عيد الفطر</b></div>
-        <button type="button" data-activate-theme="fitr">تفعيل الهوية</button>
-      </article>
-      <article class="ma3da-theme-card" data-theme-card="adha">
-        <div class="ma3da-theme-swatch ma3da-theme-adha"><span>🕋</span><b>عيد الأضحى</b></div>
-        <button type="button" data-activate-theme="adha">تفعيل الهوية</button>
-      </article>
-      <article class="ma3da-theme-card" data-theme-card="classic">
-        <div class="ma3da-theme-swatch ma3da-theme-classic"><span>ATHAR</span><b>الهوية العادية الحالية</b></div>
-        <button type="button" data-activate-theme="classic">العودة للهوية العادية</button>
-      </article>
+
+  <!-- النصوص -->
+  <div class="ma3da-cc-panel" data-cc-panel="texts">
+
+    <h3>إدارة نصوص التطبيق</h3>
+    <p>غيّر العبارات الرئيسية دون تعديل ملفات التطبيق.</p>
+
+    <label>عنوان مقدمة التطبيق</label>
+    <input id="ccIntroTitle" maxlength="100">
+
+    <label>عنوان الصفحة الرئيسية للعميل</label>
+    <input id="ccCustomerTitle" maxlength="100">
+
+    <label>عنوان الصفحة الرئيسية لصاحب المعدة</label>
+    <input id="ccOperatorTitle" maxlength="100">
+
+    <label>عنوان صفحة الدعم الفني</label>
+    <input id="ccSupportTitle" maxlength="100">
+
+    <button type="button" id="ccPreviewTexts">معاينة النصوص</button>
+
+  </div>
+
+  <!-- التصميم -->
+  <div class="ma3da-cc-panel" data-cc-panel="design" hidden>
+
+    <h3>الهوية البصرية</h3>
+
+    <label>اللون الأساسي</label>
+    <input type="color" id="ccPrimaryColor" value="#111111">
+
+    <label>اللون الذهبي</label>
+    <input type="color" id="ccGoldColor" value="#c8a45b">
+
+    <label>حجم الخط</label>
+    <select id="ccFontScale">
+      <option value="0.95">صغير</option>
+      <option value="1">متوسط</option>
+      <option value="1.05">كبير</option>
+      <option value="1.1">كبير جداً</option>
+    </select>
+
+    <label>استدارة البطاقات</label>
+    <select id="ccCardRadius">
+      <option value="10">10</option>
+      <option value="16">16</option>
+      <option value="22">22</option>
+      <option value="28">28</option>
+    </select>
+
+    <div id="ccDesignPreview">
+      معاينة الهوية البصرية لمِعدة
     </div>
-    <p id="ma3daThemeStatus" role="status" aria-live="polite"></p>
-    <p class="ma3da-cc-warning">تغيير الهوية يغيّر المظهر فقط، ولا يغيّر الطلبات أو الحسابات أو الأسعار أو بيانات المستخدمين.</p>
+
+  </div>
+
+  <!-- الأسعار -->
+  <div class="ma3da-cc-panel" data-cc-panel="prices" hidden>
+
+    <h3>إدارة أسعار المعدات</h3>
+    <p>الأسعار بالريال السعودي، وتُحفظ كإعدادات مركزية.</p>
+
+    <label>البوكلين — سعر الساعة</label>
+    <input id="ccPriceBackhoe" type="number" min="0" step="0.01">
+
+    <label>الشيول — سعر الساعة</label>
+    <input id="ccPriceLoader" type="number" min="0" step="0.01">
+
+    <label>القلاب — سعر الساعة</label>
+    <input id="ccPriceTruck" type="number" min="0" step="0.01">
+
+    <label>الكرين — سعر الساعة</label>
+    <input id="ccPriceCrane" type="number" min="0" step="0.01">
+
+    <label>الحفار — سعر الساعة</label>
+    <input id="ccPriceExcavator" type="number" min="0" step="0.01">
+
+    <label>البلدوزر — سعر الساعة</label>
+    <input id="ccPriceBulldozer" type="number" min="0" step="0.01">
+
   </div>
 
   <!-- المالية والفواتير -->
@@ -5355,12 +5410,31 @@
     </div>
 
   </div>
-</div>
+
+  <!-- السجل -->
+  <div class="ma3da-cc-panel" data-cc-panel="history" hidden>
+
+    <h3>سجل التعديلات</h3>
+    <p>مراجعة الإعدادات السابقة ومن قام بالتعديل.</p>
+
+    <button type="button" id="ccRefreshHistory">
+      تحديث السجل
+    </button>
+
+    <div id="ccHistoryList">
+      لا توجد تعديلات معروضة.
+    </div>
+
+  </div>
 
   <div class="ma3da-cc-actions">
 
     <button type="button" id="ccSaveSettings">
-      حفظ إعدادات المالية
+      حفظ واعتماد الإعدادات
+    </button>
+
+    <button type="button" id="ccResetPreview">
+      إلغاء المعاينة
     </button>
 
     <p id="ccMainStatus" role="status" aria-live="polite"></p>
