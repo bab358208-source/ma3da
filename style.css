@@ -3951,3 +3951,25 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 :root[data-athar-identity] .screen .home-menu-item.main-btn{background:var(--athar-button-bg,#111);color:var(--athar-button-text,#fff);border-color:var(--athar-button-border,#c8a45b);border-radius:var(--athar-button-radius,14px);font-family:var(--athar-button-font,Arial,Tahoma,sans-serif)}
 :root[data-athar-identity] .screen :is(input,select,textarea){border-color:var(--athar-identity-accent,#c8a45b)}
 :root[data-athar-identity] .athar-home-tagline{font-weight:900;text-align:center;margin:10px auto;padding:8px 12px;color:var(--athar-identity-primary,#111)}
+
+/* ATHAR â ÙØ¸Ø§Ù Ø§ÙÙÙÙØ© Ø§ÙØ´Ø§ÙÙ: Ø²Ø®Ø§Ø±Ù Ø§ÙØ£Ø²Ø±Ø§Ø± + Ø±Ø¨Ø· ÙÙÙÙÙØ§Øª Ø§ÙÙØ§Ø¬ÙØ© */
+:root{--athar-button-ornament:none;--athar-theme-muted:color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 18%,transparent)}
+:root[data-athar-identity] body{background-color:var(--athar-identity-surface)!important;color:var(--athar-identity-text)}
+:root[data-athar-identity] .screen{color:var(--athar-identity-text)}
+:root[data-athar-identity] .screen :is(h1,h2,h3,h4,h5,h6,.section-title,.page-title,.hero-title,.card-title,.panel-title){color:var(--athar-identity-primary)}
+:root[data-athar-identity] .screen :is(.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item,.modal-content,.modal-card,.popup,.dialog,.list-card,.settings-card){border-color:var(--athar-identity-accent)}
+:root[data-athar-identity] .screen :is(input:not([type=checkbox]):not([type=radio]),select,textarea){accent-color:var(--athar-identity-primary);border-color:var(--athar-identity-accent);color:var(--athar-identity-text)}
+:root[data-athar-identity] .screen :is(input[type=checkbox],input[type=radio]){accent-color:var(--athar-identity-primary)}
+:root[data-athar-identity] .screen :is(button,.btn,[role=button],input[type=button],input[type=submit]){font-family:var(--athar-button-font);border-radius:var(--athar-button-radius);border-color:var(--athar-button-border)}
+:root[data-athar-identity] .screen button:not(.danger-btn):not(.delete-btn):not(.logout-btn):not(.success-btn):not(.warning-btn):not(.status-btn){background-color:var(--athar-button-bg);color:var(--athar-button-text)}
+:root[data-athar-identity] .screen :is(button,.btn,[role=button],input[type=button],input[type=submit]){position:relative;isolation:isolate;overflow:hidden}
+:root[data-athar-identity] .screen :is(button,.btn,[role=button],input[type=button],input[type=submit])::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background-image:var(--athar-button-ornament);background-repeat:no-repeat;background-position:center;background-size:100% 100%;opacity:.22}
+:root[data-athar-identity] .screen :is(button,.btn,[role=button]) > *{position:relative;z-index:1}
+:root[data-athar-identity] .screen :is(.card,.panel,.form-card,.dashboard-card,.home-request-card,.home-menu-item,.modal-content,.modal-card,.popup,.dialog){box-shadow:0 5px 18px color-mix(in srgb,var(--athar-identity-primary) 8%,transparent)}
+:root[data-athar-identity] .screen :is(hr,.divider,.separator){border-color:var(--athar-identity-accent)}
+:root[data-athar-identity] .screen :is(.hero,.operator-dashboard-header){border-color:var(--athar-identity-accent)}
+:root[data-athar-identity="nationalDay"]{--athar-button-bg:#16834b;--athar-button-text:#fff;--athar-button-border:#b8ddc7}
+:root[data-athar-identity="foundingDay"]{--athar-button-bg:#60452f;--athar-button-text:#fff;--athar-button-border:#b99a6b}
+:root[data-athar-identity="eidFitr"]{--athar-button-bg:#174b3b;--athar-button-text:#fff;--athar-button-border:#d8b66a}
+:root[data-athar-identity="eidAdha"]{--athar-button-bg:#31533f;--athar-button-text:#fff;--athar-button-border:#c6a15b}
+:root[data-athar-identity="classic"]{--athar-button-bg:#111;--athar-button-text:#fff;--athar-button-border:#c8a45b
