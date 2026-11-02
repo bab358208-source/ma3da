@@ -15388,7 +15388,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       object-fit:contain; margin:0 auto 18px; border-radius:18px;
       filter:drop-shadow(0 10px 22px rgba(0,0,0,.18));
     }
-    /* خلفيات الصفحات الرئيسية تُدار من الهوية النشطة فقط لمنع تراكب الصور. */
+    .ma3da-athar-bg { position:relative !important; isolation:isolate; }
+    .ma3da-athar-bg::before {
+      content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+      background-image:var(--ma3da-athar-background); background-repeat:no-repeat;
+      background-position:center; background-size:cover; opacity:.14;
+    }
   `;
   (document.head || document.documentElement).appendChild(style);
 
@@ -15406,13 +15411,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       heroIcon.replaceWith(image);
     });
 
-    // إزالة أي طبقة قديمة لصورة آثار من الصفحات الرئيسية.
-    // صورة الخلفية الوحيدة لهذه الصفحات تأتي من الهوية الموسمية النشطة.
+    // خلفية سينمائية شفافة للصفحات الرئيسية المطلوبة، دون حجب عناصر الواجهة.
     ["customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen"].forEach(id => {
       const screen = document.getElementById(id);
       if (!screen) return;
-      screen.classList.remove("ma3da-athar-bg");
-      screen.style.removeProperty("--ma3da-athar-background");
+      screen.classList.add("ma3da-athar-bg");
+      screen.style.setProperty("--ma3da-athar-background", `url("${atharImage}")`);
     });
   }
 
@@ -16933,35 +16937,22 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     style.textContent = `
       html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
-      /* خلفية الهوية النشطة هي المصدر الوحيد لصورة الخلفية في التطبيق كله. */
-      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
-      .screen,.screen.ma3da-published-background{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
-      /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
-      #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
-        box-sizing:border-box!important;background:#fff!important;color:var(--athar-identity-text,#191919)!important;
-        border:3px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:22px!important;
-        padding:18px!important;box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
+      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.12)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
+      .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
+      /* منع تراكب خلفية إدارة الخلفيات فوق خلفية الهوية في الصفحات الرئيسية الثلاث */
+      .ma3da-published-background:is(#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen){background-image:none!important}
+      #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard,#contractorHomeScreen{
+        box-sizing:border-box!important;background:rgba(255,255,255,.12)!important;border:3px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:22px!important;padding:18px!important;
+        box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
       }
+      /* شاشة اختيار نوع الحساب وشاشة الدخول المشتركة للأدوار الثلاثة */
       #roleScreen .hero,#roleScreen>.card,#phoneScreen .hero,#phoneScreen>.card{
-        box-sizing:border-box!important;background:transparent!important;border:0!important;border-radius:0!important;
-        box-shadow:none!important;color:var(--athar-identity-text,#191919)!important;
+        box-sizing:border-box!important;background:rgba(255,255,255,.76)!important;border:3px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:20px!important;
+        box-shadow:0 6px 22px rgba(0,0,0,.06)!important;
       }
-      #roleScreen .hero,#phoneScreen .hero{padding:12px 8px 18px!important}
-      #roleScreen>.card,#phoneScreen>.card{padding:12px 8px!important}
-      /* إزالة الإطارات الداخلية القديمة حتى لا تظهر حدود مزدوجة. */
-      #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard{
-        box-sizing:border-box!important;background:transparent!important;border:0!important;border-radius:0!important;
-        padding:0!important;box-shadow:none!important;color:var(--athar-identity-text,#191919)!important;
-      }
-      #contractorHomeScreen .hero,#contractorHomeScreen .contractor-grid{color:var(--athar-identity-text,#191919)!important}
-      /* عناوين الشاشات ونصوص التعريف تتبع لون الهوية، وبقية النص يبقى داكنًا للقراءة. */
-      #roleScreen h1,#roleScreen .hero p,#phoneScreen h1,#phoneScreen .hero p,
-      #customerHomeScreen h1,#operatorHomeScreen h1,#contractorHomeScreen h1{
-        color:var(--athar-identity-primary,#171717)!important
-      }
-      #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
-        color:var(--athar-identity-text,#191919)!important
-      }
+      #roleScreen .hero,#phoneScreen .hero{padding:20px 16px!important}
+      #roleScreen>.card,#phoneScreen>.card{padding:18px!important}
+      #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{background:transparent!important}
       button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item{
         background:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
       }
