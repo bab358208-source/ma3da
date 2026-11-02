@@ -5301,39 +5301,31 @@
 
   <!-- إدارة الهويات والأزرار -->
   <div class="ma3da-cc-panel" data-cc-panel="design">
-    <h3>إدارة هويات آثار المستقلة</h3>
-    <p>اختر الهوية وعدّل ألوانها وخلفيتها وعباراتها وأزرارها. هوية آثار العادية تبدأ بالقيم الحالية ولا تتغير إلا عند اعتماد تعديلك.</p>
-    <label for="atharIdentitySelect">الهوية المراد إدارتها</label>
-    <select id="atharIdentitySelect">
-      <option value="classic">آثار العادية</option><option value="eidFitr">عيد الفطر</option><option value="eidAdha">عيد الأضحى</option><option value="nationalDay">اليوم الوطني السعودي</option><option value="foundingDay">يوم التأسيس</option>
-    </select>
-    <div class="athar-identity-grid">
-      <div><label for="atharIdentityPrimary">اللون الأساسي</label><input type="color" id="atharIdentityPrimary" value="#111111"></div>
-      <div><label for="atharIdentityAccent">اللون المميز</label><input type="color" id="atharIdentityAccent" value="#c8a45b"></div>
-      <div><label for="atharIdentitySurface">لون الخلفية</label><input type="color" id="atharIdentitySurface" value="#faf8f2"></div>
-      <div><label for="atharIdentityText">لون النص</label><input type="color" id="atharIdentityText" value="#191919"></div>
+    <h3>هويات آثار الموسمية</h3>
+    <p>اختر الهوية التي تريد تفعيلها على المنصة بالكامل. يتغير المظهر تلقائيًا في جميع الصفحات، ويظل محفوظًا بعد تحديث التطبيق وتسجيل الخروج والدخول.</p>
+    <div class="athar-identity-cards" aria-label="اختيار هوية آثار">
+      <button type="button" class="athar-identity-card" data-identity="eidFitr" aria-pressed="false">
+        <img src="IMG_0339.jpeg" alt="هوية عيد الفطر" loading="lazy">
+        <span class="athar-identity-card-caption"><strong>عيد الفطر</strong><small data-active-label>تفعيل الهوية</small></span>
+      </button>
+      <button type="button" class="athar-identity-card" data-identity="nationalDay" aria-pressed="false">
+        <img src="IMG_0344.jpeg" alt="هوية اليوم الوطني" loading="lazy">
+        <span class="athar-identity-card-caption"><strong>اليوم الوطني</strong><small data-active-label>تفعيل الهوية</small></span>
+      </button>
+      <button type="button" class="athar-identity-card" data-identity="foundingDay" aria-pressed="false">
+        <img src="IMG_0346.jpeg" alt="هوية يوم التأسيس" loading="lazy">
+        <span class="athar-identity-card-caption"><strong>يوم التأسيس</strong><small data-active-label>تفعيل الهوية</small></span>
+      </button>
+      <button type="button" class="athar-identity-card" data-identity="eidAdha" aria-pressed="false">
+        <img src="IMG_0348.jpeg" alt="هوية عيد الأضحى" loading="lazy">
+        <span class="athar-identity-card-caption"><strong>عيد الأضحى</strong><small data-active-label>تفعيل الهوية</small></span>
+      </button>
     </div>
-    <label for="atharIdentityBackground">رابط صورة الخلفية (اختياري)</label><input id="atharIdentityBackground" type="url" maxlength="1000" placeholder="https://...">
-    <label for="atharIdentityOverlay">شفافية الخلفية</label><input id="atharIdentityOverlay" type="range" min="0" max="70" value="14"><small id="atharIdentityOverlayValue">14%</small>
-    <label for="atharIdentityTaglineCustomer">عبارة صفحة العميل</label><input id="atharIdentityTaglineCustomer" maxlength="180">
-    <label for="atharIdentityTaglineOwner">عبارة صفحة المعدات</label><input id="atharIdentityTaglineOwner" maxlength="180">
-    <label for="atharIdentityTaglineProjects">عبارة صفحة المشاريع</label><input id="atharIdentityTaglineProjects" maxlength="180">
-    <div class="athar-identity-preview" id="atharIdentityPreview"><strong>آثار ATHAR</strong><span>معاينة الهوية المختارة</span></div>
-    <h3 class="athar-subheading">أشكال الأزرار</h3>
-    <label for="atharButtonShape">شكل الزر</label><select id="atharButtonShape"><option value="rounded">مستدير</option><option value="soft">ناعم</option><option value="square">مربع الحواف</option><option value="pill">كبسولة</option><option value="outline">إطار خارجي</option></select>
-    <div class="athar-identity-grid">
-      <div><label for="atharButtonColor">لون الزر</label><input type="color" id="atharButtonColor" value="#111111"></div>
-      <div><label for="atharButtonTextColor">لون النص</label><input type="color" id="atharButtonTextColor" value="#ffffff"></div>
-      <div><label for="atharButtonBorderColor">لون الحواف</label><input type="color" id="atharButtonBorderColor" value="#c8a45b"></div>
-      <div><label for="atharButtonRadius">استدارة الحواف</label><input type="range" id="atharButtonRadius" min="0" max="32" value="14"></div>
+    <div class="athar-identity-base-row">
+      <div><strong>هوية آثار الأساسية</strong><small>إلغاء الهوية الموسمية والعودة للمظهر الأصلي</small></div>
+      <button type="button" id="atharIdentityReset" class="back-btn">العودة للهوية الأساسية</button>
     </div>
-    <label for="atharButtonFont">خط الأزرار</label><select id="atharButtonFont"><option value="Arial, Tahoma, sans-serif">Arial / Tahoma</option><option value="Tahoma, Arial, sans-serif">Tahoma</option><option value="'Cairo', Arial, sans-serif">Cairo</option><option value="'Noto Sans Arabic', Tahoma, sans-serif">Noto Sans Arabic</option></select>
-    <div class="athar-button-preview-wrap"><span>معاينة مباشرة — لا يتغير إجراء الزر</span><button type="button" id="atharButtonPreview" class="athar-button-preview">زر تجريبي</button></div>
-    <p class="athar-identity-note">تغيير المظهر لا يغيّر معرّفات الأزرار أو أحداثها أو وظائفها البرمجية.</p>
-    <button type="button" id="atharIdentitySave" class="back-btn">حفظ تعديلات الهوية</button>
-    <button type="button" id="atharIdentityActivate" class="main-btn">تفعيل الهوية</button>
-    <button type="button" id="atharIdentityReset" class="back-btn">استعادة معاينة القيم المحفوظة</button>
-    <p id="atharIdentityStatus" role="status" aria-live="polite"></p>
+    <p id="atharIdentityStatus" role="status" aria-live="polite">جارٍ تحميل الهوية النشطة…</p>
     <!-- حقول توافق داخلية لإبقاء وحدة الإعدادات الحالية سليمة -->
     <input type="color" id="ccPrimaryColor" value="#111111" hidden><input type="color" id="ccGoldColor" value="#c8a45b" hidden><select id="ccFontScale" hidden><option value="1" selected>1</option></select><select id="ccCardRadius" hidden><option value="16" selected>16</option></select>
   </div>
