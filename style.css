@@ -3585,653 +3585,45 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     white-space: normal;
   }
 }
+
 /* =========================================================
-   MA3DA | OWNER CONTROL CENTER
-   الهوية الذهبية — أثار
-========================================================= */
-#ma3daControlCenter {
-  direction: rtl;
-  text-align: right;
-  width: 100%;
-  padding: 18px 10px;
-  color: #191919;
-  background: #faf8f2;
-  border-radius: 18px;
-  overflow: hidden;
-}
-#ma3daControlCenter[hidden],
-.ma3da-cc-panel[hidden] {
-  display: none !important;
-}
-.ma3da-control-entry {
-  width: 100%;
-  margin: 12px 0;
-  border: 1px solid #c8a45b !important;
-  background: linear-gradient(120deg, #171717, #29251c) !important;
-  color: #f2dfb1 !important;
-}
-.ma3da-control-entry strong {
-  color: #f2dfb1;
-}
-.ma3da-control-entry small {
-  color: #d4c49e !important;
-}
-.ma3da-cc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  border-radius: 16px;
-  color: #fff;
-  background: linear-gradient(120deg, #101010, #29251c);
-  border-bottom: 3px solid #c8a45b;
-}
-.ma3da-cc-header span {
-  color: #c8a45b;
-  font-size: 11px;
-  letter-spacing: 2px;
-  font-weight: bold;
-}
-.ma3da-cc-header h2 {
-  margin: 8px 0;
-  color: #f1dfb5;
-  font-size: 23px;
-}
-.ma3da-cc-header p {
-  color: #ddd;
-  margin: 0;
-  font-size: 13px;
-}
-.ma3da-cc-header button {
-  border: 1px solid #c8a45b;
-  background: transparent;
-  color: #f2dfb1;
-  border-radius: 12px;
-  padding: 11px 14px;
-  font: inherit;
-  cursor: pointer;
-}
-.ma3da-cc-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 14px 0;
-}
-.ma3da-cc-tabs button {
-  min-height: 48px;
-  padding: 9px 5px;
-  border: 1px solid #e4d7b9;
-  border-radius: 11px;
-  background: #fff;
-  color: #252525;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.ma3da-cc-tabs button.active {
-  background: #171717;
-  border-color: #c8a45b;
-  color: #e8cb88;
-}
-.ma3da-cc-panel {
-  background: #fff;
-  border: 1px solid #e8dfcd;
-  border-radius: 15px;
-  padding: 17px;
-  margin: 12px 0;
-  box-shadow: 0 5px 18px #00000008;
-}
-.ma3da-cc-panel h3 {
-  color: #8d6a26;
-  font-size: 19px;
-  margin: 0 0 10px;
-}
-.ma3da-cc-panel p {
-  color: #716957;
-  line-height: 1.8;
-  font-size: 13px;
-}
-.ma3da-cc-panel label {
-  display: block;
-  margin: 14px 0 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #29251e;
-}
-.ma3da-cc-panel input:not([type="color"]),
-.ma3da-cc-panel select,
-.ma3da-cc-panel textarea {
-  width: 100%;
-  min-height: 45px;
-  padding: 11px;
-  border: 1px solid #ded4c0;
-  border-radius: 10px;
-  background: #fffefa;
-  color: #171717;
-  font: inherit;
-  outline: none;
-}
-.ma3da-cc-panel textarea {
-  resize: vertical;
-}
-.ma3da-cc-panel input:focus,
-.ma3da-cc-panel select:focus,
-.ma3da-cc-panel textarea:focus {
-  border-color: #b58a36;
-  box-shadow: 0 0 0 3px #c8a45b22;
-}
-.ma3da-cc-panel input[type="color"] {
-  width: 100%;
-  height: 48px;
-  padding: 4px;
-  border: 1px solid #ded4c0;
-  border-radius: 10px;
-  background: #fff;
-}
-.ma3da-cc-panel button,
-.ma3da-cc-actions button {
-  border: 1px solid #b58a36;
-  border-radius: 10px;
-  background: #f5ead0;
-  color: #382b12;
-  padding: 12px 16px;
-  margin-top: 12px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.ma3da-cc-panel button:hover,
-.ma3da-cc-actions button:hover {
-  filter: brightness(.96);
-}
-#ccDesignPreview {
-  display: grid;
-  place-items: center;
-  min-height: 100px;
-  margin-top: 18px;
-  padding: 18px;
-  border: 2px solid #c8a45b;
-  border-radius: 16px;
-  background: #171717;
-  color: #fff;
-  text-align: center;
-  font-weight: 800;
-}
-.ma3da-cc-warning {
-  margin-top: 14px;
-  padding: 13px;
-  background: #fff8e9;
-  border: 1px solid #e7d5aa;
-  border-radius: 10px;
-  color: #75561b;
-  line-height: 1.8;
-  font-size: 13px;
-}
-.ma3da-cc-actions {
-  margin-top: 18px;
-  padding: 15px;
-  background: #fff;
-  border: 1px solid #e8dfcd;
-  border-radius: 14px;
-}
-#ccSaveSettings {
-  width: 100%;
-  min-height: 54px;
-  background: linear-gradient(110deg, #171717, #3a301d);
-  border: 1px solid #c8a45b;
-  color: #f2dfb1;
-  font-size: 16px;
-}
-#ccMainStatus,
-#ccCampaignStatus {
-  line-height: 1.8;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-#ccMainStatus[data-error="1"] {
-  color: #b42318;
-}
-.ma3da-cc-history-item {
-  padding: 14px;
-  margin: 10px 0;
-  border: 1px solid #e8dfcd;
-  border-radius: 12px;
-  background: #fffdf8;
-  overflow-wrap: anywhere;
-}
-.ma3da-cc-history-item strong {
-  color: #96722e;
-}
-.ma3da-cc-history-item p {
-  line-height: 1.7;
-  font-size: 12px;
-}
-@media (max-width: 520px) {
-  #ma3daControlCenter {
-    padding: 10px 5px;
-  }
-  .ma3da-cc-header {
-    align-items: flex-start;
-    padding: 14px;
-  }
-  .ma3da-cc-header h2 {
-    font-size: 19px;
-  }
-  .ma3da-cc-tabs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .ma3da-cc-panel {
-    padding: 13px;
-  }
-}
-/* =========================================================
-   إعدادات الهوية العامة
-========================================================= */
-:root {
-  --ma3da-admin-primary: #111111;
-  --ma3da-admin-gold: #c8a45b;
-  --ma3da-admin-font-scale: 1;
-  --ma3da-admin-radius: 16px;
-  --athar-button-bg: #111111;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #c8a45b;
-  --athar-button-radius: 14px;
-  --athar-button-font: Arial, Tahoma, sans-serif;
-  /* زخرفة غير متكررة */
-  --athar-button-ornament: none;
-  --athar-motif-opacity: 0.12;
-}
-.main-btn {
-  border-radius: var(--ma3da-admin-radius);
-  border-color: var(--ma3da-admin-gold);
-  background: var(--athar-button-bg, #111);
-  color: var(--athar-button-text, #fff);
-  font-family: var(--athar-button-font, Arial, Tahoma, sans-serif);
-}
-.card {
-  border-radius: var(--ma3da-admin-radius);
-}
-/* إزالة الزخارف القديمة من بطاقات الصفحة الرئيسية للعميل */
-#customerHomeScreen .home-request-card::after,
-#customerHomeScreen .home-menu-item::after {
-  content: none !important;
-  display: none !important;
-}
-/* =========================================================
-   الاتفاقية والتسجيل وإدارة الهوية
-========================================================= */
-.athar-legal-box {
-  margin-top: 22px;
-  padding: 16px;
-  border: 1px solid #dfd1ae;
-  border-radius: 16px;
-  background: #fffdf8;
-  text-align: right;
-  direction: rtl;
-}
-.athar-legal-box h3 {
-  margin: 0 0 8px;
-  color: #8d6a26;
-  font-size: 18px;
-}
-.athar-legal-intro,
-.athar-register-hint {
-  color: #766f62;
-  font-size: 13px;
-  line-height: 1.8;
-}
-.athar-legal-details {
-  margin: 12px 0;
-  border: 1px solid #e7dcc5;
-  border-radius: 12px;
-  background: #fff;
-  overflow: hidden;
-}
-.athar-legal-details summary {
-  padding: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  color: #70551f;
-}
-.athar-legal-content {
-  max-height: 360px;
-  overflow: auto;
-  padding: 0 14px 14px;
-  line-height: 1.85;
-  font-size: 13px;
-}
-.athar-legal-content h4 {
-  margin: 15px 0 4px;
-  color: #765a25;
-}
-.athar-legal-content p {
-  margin: 0 0 8px;
-  color: #4f4a40;
-}
-.athar-legal-version,
-.athar-legal-disclaimer {
-  font-size: 11px !important;
-  color: #81745b !important;
-}
-.athar-agreement-check {
-  display: flex !important;
-  align-items: flex-start;
-  gap: 10px;
-  margin: 14px 0 5px !important;
-  line-height: 1.8;
-}
-.athar-agreement-check input {
-  width: 20px !important;
-  height: 20px;
-  flex: 0 0 20px;
-  margin: 3px 0 0;
-  accent-color: #a7833c;
-}
-.athar-role-terms {
-  padding: 10px 12px;
-  margin-top: 12px;
-  border-right: 3px solid #c8a45b;
-  background: #faf7ef;
-  border-radius: 8px;
-}
-.athar-role-terms h4 {
-  margin: 0 0 5px;
-}
-.athar-role-terms p {
-  margin: 0;
-}
-#submitCreateAccountBtn:disabled {
-  opacity: .45;
-  cursor: not-allowed;
-  filter: grayscale(.5);
-}
-.athar-identity-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.athar-identity-preview {
-  min-height: 120px;
-  margin: 16px 0;
-  padding: 24px;
-  border: 2px solid #c8a45b;
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  background: #faf8f2;
-  color: #191919;
-  background-position: center;
-  background-size: cover;
-}
-.athar-identity-preview strong {
-  font-size: 25px;
-}
-.athar-identity-preview span {
-  font-size: 14px;
-}
-.athar-subheading {
-  margin-top: 28px !important;
-  padding-top: 16px;
-  border-top: 1px solid #eee;
-}
-.athar-button-preview-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 14px;
-  border: 1px dashed #d7c79f;
-  border-radius: 12px;
-}
-.athar-button-preview-wrap span,
-.athar-identity-note {
-  font-size: 12px;
-  color: #766f62;
-  line-height: 1.8;
-}
-.athar-button-preview {
-  min-width: 130px;
-  padding: 13px 20px;
-  font-weight: 800;
-  cursor: default;
-}
-.athar-identity-background {
-  position: relative;
-  isolation: isolate;
-}
-.athar-identity-background::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(
-      rgba(255, 255, 255, var(--athar-bg-overlay, .14)),
-      rgba(255, 255, 255, var(--athar-bg-overlay, .14))
-    ),
-    var(--athar-identity-bg);
-  background-size: cover;
-  background-position: center;
-  opacity: 1;
-}
-.athar-cc-panel [hidden] {
-  display: none !important;
-}
-@media (max-width: 520px) {
-  .athar-identity-grid {
-    grid-template-columns: 1fr;
-  }
-  .athar-legal-box {
-    padding: 12px;
-  }
-  .athar-legal-content {
-    max-height: 300px;
-  }
-}
-/* =========================================================
-   الهوية الوطنية — اليوم الوطني
-========================================================= */
-:root[data-athar-identity="nationalDay"] {
-  --athar-identity-primary: #16834b;
-  --athar-identity-accent: #83c9a4;
-  --athar-identity-surface: #ffffff;
-  --athar-identity-text: #176b43;
-  --athar-button-bg: #16834b;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #b8ddc7;
-  --athar-button-radius: 16px;
-  --athar-button-font: Tahoma, Arial, sans-serif;
-  color-scheme: light;
-}
-:root[data-athar-identity="nationalDay"] body {
-  background: #ffffff !important;
-  color: #176b43 !important;
-}
-:root[data-athar-identity="nationalDay"] .screen,
-:root[data-athar-identity="nationalDay"] section.screen,
-:root[data-athar-identity="nationalDay"] #customerHomeScreen,
-:root[data-athar-identity="nationalDay"] #operatorHomeScreen,
-:root[data-athar-identity="nationalDay"] #contractorHomeScreen {
-  background-color: #ffffff !important;
-  color: #176b43 !important;
-}
-:root[data-athar-identity="nationalDay"] .screen :is(
-  h1, h2, h3, h4, p, label, .section-title, .page-title, .hero-title
-) {
-  color: #238653;
-}
-:root[data-athar-identity="nationalDay"] .screen :is(
-  .card, .home-request-card, .home-menu-item,
-  .dashboard-card, .panel, .form-card
-) {
-  background-color: #ffffff !important;
-  border-color: #d8eee1 !important;
-}
-:root[data-athar-identity="nationalDay"] .screen button.main-btn,
-:root[data-athar-identity="nationalDay"] .screen button.primary-btn,
-:root[data-athar-identity="nationalDay"] .screen .home-menu-item.main-btn {
-  background-color: #16834b !important;
-  color: #ffffff !important;
-  border: 1px solid #16834b !important;
-}
-:root[data-athar-identity="nationalDay"] .screen button:not(.main-btn):not(.primary-btn):not(.danger-btn):not(.logout-btn) {
-  border-color: #b9dfca;
-}
-/* إزالة الرموز التعبيرية القديمة التي كانت تتكرر على الأزرار */
-:root[data-athar-identity="nationalDay"] .screen button::after,
-:root[data-athar-identity="nationalDay"] .screen button.athar-national-green::after,
-:root[data-athar-identity="nationalDay"] .screen button.athar-national-white::after {
-  content: none !important;
-  display: none !important;
-}
-:root[data-athar-identity="nationalDay"] .screen button::before {
-  content: none !important;
-  display: none !important;
-}
-:root[data-athar-identity="nationalDay"] .screen .back-btn,
-:root[data-athar-identity="nationalDay"] .screen button.white-btn {
-  background: #ffffff !important;
-  color: #16834b !important;
-  border: 1.5px solid #16834b !important;
-}
-:root[data-athar-identity="nationalDay"] .screen input,
-:root[data-athar-identity="nationalDay"] .screen select,
-:root[data-athar-identity="nationalDay"] .screen textarea {
-  background: #ffffff !important;
-  border-color: #b9dfca !important;
-  color: #176b43 !important;
-}
-:root[data-athar-identity="nationalDay"] .screen .hero,
-:root[data-athar-identity="nationalDay"] .screen .operator-dashboard-header {
-  background: #ffffff !important;
-  color: #16834b !important;
-}
-:root[data-athar-identity="nationalDay"] .athar-home-tagline {
-  color: #16834b !important;
-  font-weight: 900;
-  text-align: center;
-}
-/* =========================================================
-   ألوان الهويات الخمس
-========================================================= */
-:root[data-athar-identity="foundingDay"] {
-  --athar-identity-primary: #60452f;
-  --athar-identity-accent: #b99a6b;
-  --athar-identity-surface: #faf5ed;
-  --athar-identity-text: #493725;
-  --athar-button-bg: #60452f;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #b99a6b;
-}
-:root[data-athar-identity="eidFitr"] {
-  --athar-identity-primary: #174b3b;
-  --athar-identity-accent: #d8b66a;
-  --athar-identity-surface: #fbf8ef;
-  --athar-identity-text: #253f34;
-  --athar-button-bg: #174b3b;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #d8b66a;
-}
-:root[data-athar-identity="eidAdha"] {
-  --athar-identity-primary: #31533f;
-  --athar-identity-accent: #c6a15b;
-  --athar-identity-surface: #f7f7f0;
-  --athar-identity-text: #283d31;
-  --athar-button-bg: #31533f;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #c6a15b;
-}
-:root[data-athar-identity="classic"] {
-  --athar-identity-primary: #111111;
-  --athar-identity-accent: #c8a45b;
-  --athar-identity-surface: #faf8f2;
-  --athar-identity-text: #191919;
-  --athar-button-bg: #111111;
-  --athar-button-text: #ffffff;
-  --athar-button-border: #c8a45b;
-}
-/* =========================================================
-   تطبيق الهوية على الشاشات والبطاقات
-========================================================= */
-:root[data-athar-identity] {
-  --athar-theme-primary: var(--athar-identity-primary, #111111);
-  --athar-theme-accent: var(--athar-identity-accent, #c8a45b);
-  --athar-theme-surface: var(--athar-identity-surface, #f5f5f5);
-  --athar-theme-text: var(--athar-identity-text, #191919);
-}
-:root[data-athar-identity] body {
-  background-color: var(--athar-theme-surface) !important;
-  color: var(--athar-theme-text) !important;
-}
-:root[data-athar-identity] :is(
-  .screen, [data-screen], .app-screen, .page-screen
-) {
-  background-color: var(--athar-theme-surface) !important;
-  color: var(--athar-theme-text) !important;
-  border-color: var(--athar-theme-accent);
-}
-:root[data-athar-identity] :is(
-  h1, h2, h3, h4, h5, h6,
-  .section-title, .page-title, .hero-title,
-  .card-title, .panel-title, .screen-title, .sub-title
-) {
-  color: var(--athar-theme-primary) !important;
-}
-:root[data-athar-identity] :is(
-  .card, .panel, .form-card, .dashboard-card,
-  .home-request-card, .home-menu-item,
-  .modal-content, .modal-card, .popup, .dialog,
-  .list-card, .settings-card, .section-card,
-  .stat-card, .info-card
-) {
-  border-color: var(--athar-theme-accent) !important;
-}
-:root[data-athar-identity] :is(
-  input:not([type="button"]):not([type="submit"]):not([type="reset"]),
-  select, textarea
-) {
-  border-color: var(--athar-theme-accent) !important;
-  color: var(--athar-theme-text) !important;
-  accent-color: var(--athar-theme-primary) !important;
-  background-image: none !important;
-}
-:root[data-athar-identity] :is(
-  input[type="checkbox"], input[type="radio"]
-) {
-  accent-color: var(--athar-theme-primary);
-}
-:root[data-athar-identity] .athar-home-tagline {
-  color: var(--athar-theme-primary) !important;
-  font-weight: 900;
-  text-align: center;
-  margin: 10px auto;
-  padding: 8px 12px;
-}
-/* =========================================================
-   زخارف الأزرار — أثار | توزيع متوسط ومتوازن
-   شعار في الوسط + زخرفة يمين + زخرفة يسار
+   زخارف الأزرار — أثار
+   تكرار صورة الهوية والوصف 8 مرات داخل كل زر
+   4 أعمدة × صفّين
 ========================================================= */
 
+/* ربط كل هوية بالصورة الخاصة بها */
+:root[data-athar-identity="nationalDay"] {
+  --athar-button-ornament: url("./athar_button_motifs/nationalDay.png");
+}
+
+:root[data-athar-identity="foundingDay"] {
+  --athar-button-ornament: url("./athar_button_motifs/foundingDay.png");
+}
+
+:root[data-athar-identity="eidFitr"] {
+  --athar-button-ornament: url("./athar_button_motifs/eidFitr.png");
+}
+
+:root[data-athar-identity="eidAdha"] {
+  --athar-button-ornament: url("./athar_button_motifs/eidAdha.png");
+}
+
+:root[data-athar-identity="classic"] {
+  --athar-button-ornament: url("./athar_button_motifs/classic.png");
+}
+
+/* إعدادات الزخارف */
 :root[data-athar-identity] {
   --athar-motif-opacity: .17;
-  --athar-motif-size: 65px 24px;
+  --athar-motif-size: 25% 50%;
 }
 
-/* إعداد شكل الأزرار */
+/* شكل الأزرار */
 :root[data-athar-identity] :is(
   button,
   .btn,
   [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
   a.button,
   a.btn,
   .main-btn,
@@ -4246,16 +3638,17 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background-color: var(--athar-button-bg, var(--athar-theme-primary)) !important;
+
+  background-color: var(--athar-button-bg, #111111) !important;
   background-image: none !important;
+
   color: var(--athar-button-text, #ffffff) !important;
-  border-color: var(--athar-button-border, var(--athar-theme-accent)) !important;
+  border-color: var(--athar-button-border, #c8a45b) !important;
   border-radius: var(--athar-button-radius, 14px) !important;
   font-family: var(--athar-button-font, Arial, Tahoma, sans-serif) !important;
-  text-shadow: none;
 }
 
-/* توزيع الزخارف الثلاث */
+/* تكرار الصورة 8 مرات بالضبط */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4277,27 +3670,15 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   z-index: 0;
   pointer-events: none;
 
-  background-image:
-    var(--athar-button-ornament, none),
-    var(--athar-button-ornament, none),
-    var(--athar-button-ornament, none);
-
-  background-repeat: no-repeat, no-repeat, no-repeat;
-
-  background-position:
-    center center,
-    right 9px center,
-    left 9px center;
-
-  background-size:
-    65px 24px,
-    34px 13px,
-    34px 13px;
+  background-image: var(--athar-button-ornament, none);
+  background-repeat: repeat;
+  background-position: center;
+  background-size: 25% 50%;
 
   opacity: var(--athar-motif-opacity, .17);
 }
 
-/* إبقاء محتوى الأزرار فوق الزخارف */
+/* إبقاء النص والأيقونات فوق الصور */
 :root[data-athar-identity] :is(
   button,
   .btn,
@@ -4329,7 +3710,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   z-index: 1;
 }
 
-/* أزرار النجاح والخطر والتحذير تحتفظ بألوانها */
+/* المحافظة على ألوان أزرار الخطر والنجاح */
 :root[data-athar-identity] .screen :is(
   button.danger-btn,
   button.delete-btn,
@@ -4342,7 +3723,7 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   display: none !important;
 }
 
-/* حالات التعطيل */
+/* الأزرار المعطلة */
 :root[data-athar-identity] :is(
   button:disabled,
   [role="button"][aria-disabled="true"]
@@ -4351,67 +3732,19 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
   opacity: .65;
 }
 
-/* حدود الحقول والفواصل */
-:root[data-athar-identity] :is(hr, .divider, .separator) {
+/* الفواصل والحدود */
+:root[data-athar-identity] :is(
+  hr,
+  .divider,
+  .separator
+) {
   border-color: var(--athar-theme-accent) !important;
 }
 
-/* حدود العناوين الرئيسية */
-:root[data-athar-identity] .screen :is(
-  .hero,
-  .operator-dashboard-header
-) {
-  border-color: var(--athar-theme-accent);
-}
-
-/* الحفاظ على ألوان مؤشرات الحالة */
-:root[data-athar-identity] :is(
-  .status-success, .success-text, .text-success,
-  .status-danger, .danger-text, .text-danger,
-  .status-warning, .warning-text, .text-warning
-) {
-  color: inherit;
-}
-
-/* تحسين التوزيع في الجوال */
+/* تحسين الهوية على الآيفون */
 @media (max-width: 520px) {
   :root[data-athar-identity] {
     --athar-motif-opacity: .15;
-    --athar-motif-size: 54px 20px;
-  }
-
-  :root[data-athar-identity] :is(
-    button,
-    .btn,
-    [role="button"],
-    a.button,
-    a.btn,
-    .main-btn,
-    .primary-btn,
-    .secondary-btn,
-    .action-btn,
-    .tab-btn,
-    .nav-btn,
-    .home-menu-item,
-    .athar-button-preview
-  )::after {
-    background-size:
-      54px 20px,
-      27px 11px,
-      27px 11px;
-
-    background-position:
-      center center,
-      right 6px center,
-      left 6px center;
-  }
-}
-/* =========================================================
-   تحسينات الهاتف
-========================================================= */
-@media (max-width: 520px) {
-  :root[data-athar-identity] {
-    --athar-motif-size: 84px 29px;
-    --athar-motif-opacity: .10;
+    --athar-motif-size: 25% 50%;
   }
 }
