@@ -16948,8 +16948,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const style = document.createElement("style");
     style.id = "athar-identity-global-style";
     style.textContent = `
-      html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
-      body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
+      /* خلفية الهوية العامة: طبقة واحدة خلف جميع شاشات التطبيق */
+      html{background-color:var(--athar-identity-surface,#f7f7f5)!important}
+      body{position:relative!important;isolation:isolate!important;background:transparent!important;color:var(--athar-identity-text,#191919)}
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
       /* منع تراكب خلفية إدارة الخلفيات فوق خلفية الهوية في الصفحات الرئيسية الثلاث */
@@ -16979,10 +16980,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
-      /* الإصلاح النهائي: الإطار على الشاشة كاملة، والنص بلون الهوية داخل المساحات البيضاء */
+      /* لا تُخفِ صورة الهوية هنا؛ تبقى ظاهرة خلف جميع الشاشات */
       body::before{
-        background-image:none!important;
+        background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none)!important;
         background-color:var(--athar-identity-surface,#f7f7f5)!important;
+        background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
       }
       #roleScreen,#phoneScreen{
         box-sizing:border-box!important;
@@ -17007,14 +17009,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
       #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
         box-sizing:border-box!important;position:relative!important;isolation:isolate!important;
-        background-color:#fff!important;
-        background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)),var(--athar-identity-image)!important;
-        background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;
+        /* الجذر شفاف حتى تظهر خلفية الهوية العامة مرة واحدة فقط */
+        background:transparent!important;background-image:none!important;
         border:3px solid var(--athar-identity-frame,#c8a45b)!important;
         border-radius:24px!important;padding:14px!important;
         box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
         color:var(--athar-identity-primary,#171717)!important;
       }
+      /* كل شاشة شفافة على مستوى الجذر، والصورة العامة تبقى خلفها */
+      body .screen{background-color:transparent!important;background-image:none!important}
+      #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{background:transparent!important;background-image:none!important}
       /* منع طبقة صورة آثار القديمة من التراكب مع صورة الهوية الموسمية */
       #customerHomeScreen.ma3da-athar-bg::before,
       #operatorHomeScreen.ma3da-athar-bg::before,
