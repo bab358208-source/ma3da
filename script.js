@@ -15625,17 +15625,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     return user;
   }
 
-  const ATHAR_IDENTITY_HOME_IDS = new Set([
-    "customerHomeScreen", "operatorHomeScreen", "contractorHomeScreen"
-  ]);
-
-  function clearOnePublishedBackground(screen) {
-    if (!screen) return;
-    screen.classList.remove("ma3da-published-background");
-    screen.style.removeProperty("--ma3da-published-bg");
-    screen.style.removeProperty("--ma3da-bg-overlay");
-  }
-
   function applyBackground(image, opacity = 16, pageId = "all") {
     if (!image) return;
     const screens = document.querySelectorAll(".screen[id]");
@@ -15644,11 +15633,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       : Array.from(screens).filter(screen => screen.id === pageId);
     targets.forEach(screen => {
       if (screen.id === PANEL_ID || screen.id === "ma3daControlCenter") return;
-      // الصفحات الرئيسية الثلاث لها خلفية موسمية واحدة تديرها هوية آثار حصراً.
-      if (ATHAR_IDENTITY_HOME_IDS.has(screen.id)) {
-        clearOnePublishedBackground(screen);
-        return;
-      }
       screen.style.setProperty("--ma3da-published-bg", 'url("' + image + '")');
       screen.style.setProperty("--ma3da-bg-overlay", String(1 - Number(opacity) / 100));
       screen.classList.add("ma3da-published-background");
@@ -15659,7 +15643,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const targets = pageId === "all"
       ? document.querySelectorAll(".screen[id]")
       : Array.from(document.querySelectorAll(".screen[id]")).filter(screen => screen.id === pageId);
-    targets.forEach(screen => clearOnePublishedBackground(screen));
+    targets.forEach(screen => {
+      screen.classList.remove("ma3da-published-background");
+      screen.style.removeProperty("--ma3da-published-bg");
+      screen.style.removeProperty("--ma3da-bg-overlay");
+    });
   }
 
   function compressImage(file) {
@@ -16843,7 +16831,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const $ = id => document.getElementById(id);
   const COL = "ma3daSettings";
   const DOC = "ownerControlCenter";
-  const BASE_ATHAR_IMAGE = "8268CD44-F38B-4DC9-AD13-0854C60A304F.png";
   const IMAGE_BY_ID = {
     eidFitr: "IMG_0339.jpeg",
     nationalDay: "IMG_0344.jpeg",
@@ -16948,9 +16935,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const style = document.createElement("style");
     style.id = "athar-identity-global-style";
     style.textContent = `
-      /* خلفية الهوية العامة: طبقة واحدة خلف جميع شاشات التطبيق */
-      html{background-color:var(--athar-identity-surface,#f7f7f5)!important}
-      body{position:relative!important;isolation:isolate!important;background:transparent!important;color:var(--athar-identity-text,#191919)}
+      html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
+      body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
       /* منع تراكب خلفية إدارة الخلفيات فوق خلفية الهوية في الصفحات الرئيسية الثلاث */
@@ -16980,72 +16966,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
-      /* لا تُخفِ صورة الهوية هنا؛ تبقى ظاهرة خلف جميع الشاشات */
-      body::before{
-        background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none)!important;
-        background-color:var(--athar-identity-surface,#f7f7f5)!important;
-        background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important;
-      }
-      #roleScreen,#phoneScreen{
-        box-sizing:border-box!important;
-        background:#fff!important;
-        border:3px solid var(--athar-identity-frame,#c8a45b)!important;
-        border-radius:24px!important;
-        padding:18px!important;
-        color:var(--athar-identity-primary,#171717)!important;
-        box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
-      }
-      #roleScreen .hero,#roleScreen>.card,#phoneScreen .hero,#phoneScreen>.card{
-        background:transparent!important;border:0!important;box-shadow:none!important;
-        color:var(--athar-identity-primary,#171717)!important;
-      }
-      #roleScreen h1,#roleScreen h2,#roleScreen p,#roleScreen label,
-      #phoneScreen h1,#phoneScreen h2,#phoneScreen p,#phoneScreen label,
-      #roleScreen .hero-icon,#phoneScreen .hero-icon{
-        color:var(--athar-identity-primary,#171717)!important;
-      }
-      #phoneScreen input,#phoneScreen textarea,#phoneScreen select{
-        color:#222!important;background:#fff!important;
-      }
-      #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
-        box-sizing:border-box!important;position:relative!important;isolation:isolate!important;
-        /* الجذر شفاف حتى تظهر خلفية الهوية العامة مرة واحدة فقط */
-        background:transparent!important;background-image:none!important;
-        border:3px solid var(--athar-identity-frame,#c8a45b)!important;
-        border-radius:24px!important;padding:14px!important;
-        box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
-        color:var(--athar-identity-primary,#171717)!important;
-      }
-      /* كل شاشة شفافة على مستوى الجذر، والصورة العامة تبقى خلفها */
-      body .screen{background-color:transparent!important;background-image:none!important}
-      #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{background:transparent!important;background-image:none!important}
-      /* منع طبقة صورة آثار القديمة من التراكب مع صورة الهوية الموسمية */
-      #customerHomeScreen.ma3da-athar-bg::before,
-      #operatorHomeScreen.ma3da-athar-bg::before,
-      #contractorHomeScreen.ma3da-athar-bg::before{display:none!important;content:none!important}
-      #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard{
-        box-sizing:border-box!important;background:rgba(255,255,255,.91)!important;
-        border:2px solid var(--athar-identity-frame,#c8a45b)!important;
-        border-radius:20px!important;padding:18px!important;
-        color:var(--athar-identity-primary,#171717)!important;
-      }
-      #customerHomeScreen h1,#customerHomeScreen h2,#customerHomeScreen h3,
-      #customerHomeScreen p,#customerHomeScreen .home-greeting,
-      #operatorHomeScreen h1,#operatorHomeScreen h2,#operatorHomeScreen h3,
-      #operatorHomeScreen p,#operatorHomeScreen .operator-greeting,
-      #contractorHomeScreen h1,#contractorHomeScreen h2,#contractorHomeScreen h3,
-      #contractorHomeScreen p,#contractorHomeScreen label{
-        color:var(--athar-identity-primary,#171717)!important;
-      }
-      #contractorHomeScreen .hero,#contractorHomeScreen .contractor-grid{
-        background:rgba(255,255,255,.91)!important;
-        border:2px solid var(--athar-identity-frame,#c8a45b)!important;
-        border-radius:18px!important;padding:16px!important;
-      }
-      #contractorHomeScreen .contractor-action{
-        color:var(--athar-identity-primary,#171717)!important;
-        border-color:var(--athar-identity-frame,#c8a45b)!important;
-      }
       .athar-identity-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
       .athar-identity-card{position:relative;display:block;overflow:hidden;width:100%;padding:0!important;min-width:0;border:2px solid #e6dfd2!important;border-radius:16px!important;background:#fff!important;color:#171717!important;text-align:right;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.07)}
       .athar-identity-card img{display:block;width:100%;height:150px;object-fit:cover;background:#f5f2ec}
@@ -17087,9 +17007,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-button-text", identity.buttonText || "#171717");
     root.style.setProperty("--athar-identity-surface", identity.surface);
     root.style.setProperty("--athar-identity-text", identity.text);
-    // كل هوية تعرض صورتها الموسمية، والهوية الأساسية تعرض صورة آثار الأصلية.
-    const activeBackgroundImage = identity.image || BASE_ATHAR_IMAGE;
-    root.style.setProperty("--athar-identity-image", `url("${activeBackgroundImage}")`);
+    root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
     const slogans = [
       ["customerHomeScreen", identity.taglines.customer],
