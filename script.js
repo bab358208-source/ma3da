@@ -16939,6 +16939,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
+      /* منع تراكب خلفية إدارة الخلفيات فوق خلفية الهوية في الصفحات الرئيسية الثلاث */
+      .ma3da-published-background:is(#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen){background-image:none!important}
+      #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard,#contractorHomeScreen{
+        box-sizing:border-box!important;background:#fff!important;border:3px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:22px!important;padding:18px!important;
+        box-shadow:0 8px 26px rgba(0,0,0,.07)!important;
+      }
+      /* شاشة اختيار نوع الحساب وشاشة الدخول المشتركة للأدوار الثلاثة */
+      #roleScreen .hero,#roleScreen>.card,#phoneScreen .hero,#phoneScreen>.card{
+        box-sizing:border-box!important;background:#fff!important;border:3px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:20px!important;
+        box-shadow:0 6px 22px rgba(0,0,0,.06)!important;
+      }
+      #roleScreen .hero,#phoneScreen .hero{padding:20px 16px!important}
+      #roleScreen>.card,#phoneScreen>.card{padding:18px!important}
+      #customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{background:transparent!important}
       button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item{
         background:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
       }
@@ -16988,6 +17002,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.dataset.atharIdentity = activeIdentity;
     root.style.setProperty("--athar-identity-primary", identity.primary);
     root.style.setProperty("--athar-identity-accent", identity.accent);
+    root.style.setProperty("--athar-identity-frame", activeIdentity === "classic" ? "#c8a45b" : identity.primary);
     root.style.setProperty("--athar-button-bg", identity.buttonBg || "#D6B45E");
     root.style.setProperty("--athar-button-text", identity.buttonText || "#171717");
     root.style.setProperty("--athar-identity-surface", identity.surface);
