@@ -16892,6 +16892,24 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   let activeIdentity = "classic";
   let loadPromise = null;
   let initialized = false;
+  const CACHE_KEY = "athar.activeIdentity.v1";
+
+  function readCachedIdentity(){
+    try {
+      const raw = window.localStorage?.getItem(CACHE_KEY);
+      if (!raw) return null;
+      try {
+        const saved = JSON.parse(raw);
+        if (defaults[saved?.key]) return {key:saved.key, updatedAtMs:Number(saved.updatedAtMs)||0};
+      } catch (_) {}
+      return defaults[raw] ? {key:raw, updatedAtMs:0} : null;
+    } catch (_) { return null; }
+  }
+
+  function cacheIdentity(key, updatedAtMs=Date.now()){
+    if (!defaults[key]) return;
+    try { window.localStorage?.setItem(CACHE_KEY, JSON.stringify({key, updatedAtMs})); } catch (_) {}
+  }
 
   function status(message, bad=false){
     const el = $("atharIdentityStatus");
@@ -16921,9 +16939,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
-      button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn{
-        background-color:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
+      button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item{
+        background:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
       }
+      /* صفحة العميل: فرض لون الهوية على نصوص الأزرار الداخلية أيضاً */
+      #customerHomeScreen button:not(.athar-identity-card),#customerHomeScreen .home-menu-item,#customerHomeScreen .home-request-btn{
+        background-color:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important
+      }
+      #customerHomeScreen .home-menu-item .home-menu-text,#customerHomeScreen .home-menu-item .home-menu-text *,#customerHomeScreen .home-menu-item .home-arrow,#customerHomeScreen .home-request-btn *{
+        color:var(--athar-button-text,#171717)!important
+      }
+      body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
       .athar-identity-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
@@ -16992,15 +17018,18 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if (!window.ma3daAuth?.currentUser) throw new Error("سجّل الدخول بحساب مالك المنصة أولًا.");
     const user = window.ma3daAuth.currentUser;
     if (!user.emailVerified) throw new Error("يجب توثيق البريد الإلكتروني لحساب المالك قبل اعتماد الهوية.");
+    // احفظ الاختيار محلياً فوراً حتى لا يعود إلى الهوية الأساسية إذا تعذرت قراءة Firebase بعد التحديث.
+    const updatedAtMs = Date.now();
+    cacheIdentity(key, updatedAtMs);
+    apply(key);
     await window.ma3daFirebaseReady;
     const ref = window.ma3daDoc(window.ma3daDB, COL, DOC);
     await window.ma3daSetDoc(ref, {
       activeAtharIdentity: key,
-      atharIdentityUpdatedAt: new Date(),
-      atharIdentityUpdatedAtMs: Date.now(),
+      atharIdentityUpdatedAt: new Date(updatedAtMs),
+      atharIdentityUpdatedAtMs: updatedAtMs,
       atharIdentityUpdatedBy: user.uid
     }, {merge:true});
-    apply(key);
     status(key === "classic" ? "تمت استعادة هوية آثار الأساسية وحفظها على المنصة." : `تم تفعيل هوية ${defaults[key].name} على المنصة وحفظها بنجاح.`);
   }
 
@@ -17014,18 +17043,35 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function load(){
     if (loadPromise) return loadPromise;
     loadPromise = (async()=>{
+      const cached = readCachedIdentity();
+      const cachedKey = cached?.key || null;
+      // أظهر آخر اختيار معروف فوراً، ثم قارنه بآخر تحديث محفوظ على المنصة.
+      if (cachedKey){
+        apply(cachedKey);
+        status(`الهوية المحفوظة على هذا الجهاز: ${defaults[cachedKey].name}`);
+      }
       try{
         await window.ma3daFirebaseReady;
+        if (typeof window.ma3daGetCurrentUser === "function") {
+          try { await window.ma3daGetCurrentUser(); } catch (_) {}
+        }
         const ref = window.ma3daDoc(window.ma3daDB, COL, DOC);
         const snap = await window.ma3daGetDoc(ref);
         const data = snap.exists() ? snap.data() : {};
-        const key = defaults[data.activeAtharIdentity] ? data.activeAtharIdentity : "classic";
+        const remoteKey = defaults[data.activeAtharIdentity] ? data.activeAtharIdentity : null;
+        const remoteUpdatedAtMs = Number(data.atharIdentityUpdatedAtMs) || 0;
+        const cacheIsNewer = !!cachedKey && cached.updatedAtMs > remoteUpdatedAtMs;
+        const key = (cacheIsNewer ? cachedKey : remoteKey) || cachedKey || "classic";
+        cacheIdentity(key, Math.max(remoteUpdatedAtMs, cached?.updatedAtMs || 0));
         apply(key);
         status(`الهوية النشطة: ${defaults[key].name}`);
       }catch(error){
         console.warn("تعذر تحميل الهوية العامة لآثار:", error);
-        apply("classic");
-        status("تعذر قراءة الهوية المحفوظة؛ عُرضت الهوية الأساسية مؤقتًا.", true);
+        const fallbackKey = cachedKey || "classic";
+        apply(fallbackKey);
+        status(cachedKey
+          ? `تم استرجاع هوية ${defaults[fallbackKey].name} من هذا الجهاز؛ تعذرت مزامنتها مع المنصة.`
+          : "تعذرت قراءة الهوية المحفوظة ولا توجد نسخة محلية؛ عُرضت الهوية الأساسية.", true);
       }
       return activeIdentity;
     })();
@@ -17035,17 +17081,23 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   function init(){
     if (initialized) return;
-    const panel = $("ma3daControlCenter");
-    if (!panel) return;
     initialized = true;
-    panel.querySelectorAll(".athar-identity-card[data-identity]").forEach(card=>{
-      card.addEventListener("click", ()=>activate(card.dataset.identity));
+    // ربط بالنقر التفويضي حتى تعمل البطاقات حتى لو أُنشئت لوحة التحكم لاحقاً.
+    document.addEventListener("click", event=>{
+      const card = event.target.closest?.(".athar-identity-card[data-identity]");
+      if (card){ activate(card.dataset.identity); return; }
+      if (event.target.closest?.("#atharIdentityReset")) activate("classic");
     });
-    $("atharIdentityReset")?.addEventListener("click", ()=>activate("classic"));
     load();
   }
 
   window.ma3daLoadAtharIdentities = load;
+  window.addEventListener("storage", event=>{
+    if (event.key !== CACHE_KEY) return;
+    const key = readCachedIdentity()?.key || "classic";
+    apply(key);
+    status(`الهوية النشطة: ${defaults[key].name}`);
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();
   window.addEventListener("load", init, {once:true});
