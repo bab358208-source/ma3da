@@ -16840,6 +16840,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const defaults = {
     classic: {
       name: "آثار الأساسية", primary: "#171717", accent: "#c8a45b",
+      buttonBg: "#D6B45E", buttonText: "#171717",
       surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
         customer: "آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",
@@ -16848,7 +16849,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
     },
     eidFitr: {
-      name: "عيد الفطر", primary: "#174b3b", accent: "#d8b66a",
+      name: "عيد الفطر", primary: "#2876B9", accent: "#d8b66a",
+      buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f7f4e9", text: "#17392f", image: IMAGE_BY_ID.eidFitr,
       taglines: {
         customer: "عيدكم إنجاز… وآثار تجمعنا على الخير.",
@@ -16857,7 +16859,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
     },
     nationalDay: {
-      name: "اليوم الوطني", primary: "#145b3b", accent: "#d7c69a",
+      name: "اليوم الوطني", primary: "#79B98A", accent: "#d7c69a",
+      buttonBg: "#FFFFFF", buttonText: "#79B98A",
       surface: "#f1f6f1", text: "#123d2c", image: IMAGE_BY_ID.nationalDay,
       taglines: {
         customer: "همة وطن… ومشاريع تصنع المستقبل.",
@@ -16866,7 +16869,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
     },
     foundingDay: {
-      name: "يوم التأسيس", primary: "#60452f", accent: "#b99a6b",
+      name: "يوم التأسيس", primary: "#795437", accent: "#b99a6b",
+      buttonBg: "#FFFFFF", buttonText: "#795437",
       surface: "#f4eee4", text: "#463323", image: IMAGE_BY_ID.foundingDay,
       taglines: {
         customer: "جذور راسخة… وإنجاز يمتد للمستقبل.",
@@ -16875,7 +16879,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
     },
     eidAdha: {
-      name: "عيد الأضحى", primary: "#31533f", accent: "#c6a15b",
+      name: "عيد الأضحى", primary: "#2876B9", accent: "#c6a15b",
+      buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f5f1e7", text: "#26392d", image: IMAGE_BY_ID.eidAdha,
       taglines: {
         customer: "في أيام الخير… أنجز مشروعك بثقة.",
@@ -16917,7 +16922,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
       button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn{
-        background-color:#fff!important;background-image:var(--athar-button-ornament),linear-gradient(#fff,#fff)!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-identity-primary,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
+        background-color:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
       }
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
@@ -16957,6 +16962,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.dataset.atharIdentity = activeIdentity;
     root.style.setProperty("--athar-identity-primary", identity.primary);
     root.style.setProperty("--athar-identity-accent", identity.accent);
+    root.style.setProperty("--athar-button-bg", identity.buttonBg || "#D6B45E");
+    root.style.setProperty("--athar-button-text", identity.buttonText || "#171717");
     root.style.setProperty("--athar-identity-surface", identity.surface);
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
