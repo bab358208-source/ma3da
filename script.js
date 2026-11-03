@@ -16830,15 +16830,15 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const IMAGE_BY_ID = {
     classic: "athar_identity_classic.png",
     eidFitr: "athar_identity_eid_fitr.png",
-    nationalDay: "athar_identity_national_day.png",
-    foundingDay: "athar_identity_founding_day.png",
+    nationalDay: "4E6C168F-F74C-41A6-955F-7733DAEBCDD8.png",
+    foundingDay: "7B503A7C-CA42-4163-8BDD-7D0781F2D8C4.png",
     eidAdha: "athar_identity_eid_adha.png"
   };
   const defaults = {
     classic: {
       name: "آثار الأساسية", primary: "#171717", accent: "#c8a45b",
       buttonBg: "#D6B45E", buttonText: "#171717",
-      surface: "#f7f7f5", text: "#191919", image: IMAGE_BY_ID.classic,
+      surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
         customer: "آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",
         owner: "آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.",
@@ -16935,13 +16935,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
       /* خلفية الهوية النشطة هي المصدر الوحيد لصورة الخلفية في التطبيق كله. */
-      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:none}
+      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
       .screen,.screen.ma3da-published-background{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
-      .athar-identity-event-art{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;max-width:100%!important;margin:0 auto 14px!important;padding:0!important;overflow:hidden!important;border:1px solid var(--athar-identity-accent,#c8a45b)!important;border-radius:16px!important;background:rgba(255,255,255,.16)!important;box-shadow:0 5px 18px rgba(0,0,0,.07)!important}
-      .athar-identity-event-art img{display:block!important;width:100%!important;max-height:190px!important;object-fit:contain!important;object-position:center!important;border:0!important;border-radius:14px!important;background:transparent!important}
-      #roleScreen .athar-identity-event-art,#phoneScreen .athar-identity-event-art,#otpScreen .athar-identity-event-art{max-width:560px!important}
-      #customerHomeScreen .athar-identity-event-art,#operatorHomeScreen .athar-identity-event-art,#contractorHomeScreen .athar-identity-event-art{margin-bottom:16px!important}
-      @media(max-width:520px){.athar-identity-event-art img{max-height:150px!important}}
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
         box-sizing:border-box!important;background:#fff!important;color:var(--athar-identity-text,#191919)!important;
@@ -16964,7 +16959,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         min-height:190px!important;padding:26px 18px!important;margin:0 0 18px!important;
         border:1px solid rgba(255,255,255,.58)!important;border-radius:18px!important;
         background-color:#e8f0e8!important;
-        background-image:linear-gradient(90deg,rgba(255,255,255,.24),rgba(255,255,255,.42)),url("ATHAR-National-Day-Login.png")!important;
+        background-image:none!important;
         background-size:cover!important;background-position:center 28%!important;background-repeat:no-repeat!important;
         box-shadow:0 8px 24px rgba(12,49,35,.16)!important;
       }
@@ -17007,6 +17002,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
+      /* صور المناسبات تظهر داخل الشاشات المحددة فقط، ولا تستبدل خلفية التطبيق العامة. */
+      .athar-identity-event-art{display:block;position:relative;width:100%;height:clamp(130px,24vw,220px);margin:0 0 14px;overflow:hidden;border-radius:16px;background:#f4f1e9;}
+      .athar-identity-event-art[hidden]{display:none!important}
+      .athar-identity-event-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;}
+      #createAccountScreen .athar-identity-event-art{margin:0 0 16px;}
       .athar-identity-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
       .athar-identity-card{position:relative;display:block;overflow:hidden;width:100%;padding:0!important;min-width:0;border:2px solid #e6dfd2!important;border-radius:16px!important;background:#fff!important;color:#171717!important;text-align:right;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.07)}
       .athar-identity-card img{display:block;width:100%;height:150px;object-fit:cover;background:#f5f2ec}
@@ -17042,10 +17042,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       ["otpScreen", ".hero"],
       ["customerHomeScreen", ".home-page"],
       ["operatorHomeScreen", ".operator-dashboard"],
-      ["contractorHomeScreen", null]
+      ["contractorHomeScreen", null],
+      ["createAccountScreen", ".athar-register-brand"]
     ];
     const imageName = IMAGE_BY_ID[key] || IMAGE_BY_ID.classic;
-    const identityName = identity.name || defaults.classic.name;
     targets.forEach(([screenId, containerSelector])=>{
       const screen = $(screenId);
       if (!screen) return;
@@ -17058,16 +17058,21 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const img = document.createElement("img");
         img.loading = "eager";
         img.decoding = "async";
+        img.alt = "آثار";
+        img.addEventListener("error", ()=>{ art.hidden = true; }, {once:true});
+        img.addEventListener("load", ()=>{ art.hidden = false; }, {once:true});
         art.appendChild(img);
         container.insertBefore(art, container.firstChild);
       }
       const img = art.querySelector("img");
       if (img){
-        img.src = imageName;
-        img.alt = `صورة آثار لهوية ${identityName}`;
+        art.hidden = false;
+        img.alt = "آثار";
+        const expectedSrc = new URL(imageName, document.baseURI).href;
+        if (img.src !== expectedSrc) img.src = imageName;
       }
       art.dataset.identity = key;
-      art.setAttribute("aria-label", `هوية آثار ${identityName}`);
+      art.setAttribute("aria-label", "هوية آثار");
     });
   }
 
