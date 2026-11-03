@@ -16828,16 +16828,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const COL = "ma3daSettings";
   const DOC = "ownerControlCenter";
   const IMAGE_BY_ID = {
-    eidFitr: "IMG_0339.jpeg",
-    nationalDay: "ATHAR-National-Day-Login.png",
-    foundingDay: "IMG_0346.jpeg",
-    eidAdha: "IMG_0348.jpeg"
+    nationalDay: "ATHAR-Identity-National-Day.jpg",
+    foundingDay: "ATHAR-Identity-Founding-Day.jpg",
+    eidFitr: "ATHAR-Identity-Eid-Fitr.jpg",
+    eidAdha: "ATHAR-Identity-Eid-Adha.jpg",
+    classic: "ATHAR-Identity-Classic.jpg"
   };
   const defaults = {
     classic: {
       name: "آثار الأساسية", primary: "#171717", accent: "#c8a45b",
       buttonBg: "#D6B45E", buttonText: "#171717",
-      surface: "#f7f7f5", text: "#191919", image: "",
+      surface: "#f7f7f5", text: "#191919", image: IMAGE_BY_ID.classic,
       taglines: {
         customer: "آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",
         owner: "آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.",
@@ -16948,31 +16949,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
       #roleScreen .hero,#phoneScreen .hero{padding:12px 8px 18px!important}
       #roleScreen>.card,#phoneScreen>.card{padding:12px 8px!important}
-      /* لوحة اليوم الوطني أعلى الشاشات المحددة فقط؛ بقية الهويات لا تتأثر. */
-      html[data-athar-identity="nationalDay"] #roleScreen .hero,
-      html[data-athar-identity="nationalDay"] #phoneScreen .hero,
-      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header,
-      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header,
-      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero{
+      /* خلفية الهوية النشطة: شاشة اختيار الدور، الدخول، والواجهات الرئيسية الثلاث فقط. */
+      #roleScreen .hero,
+      #phoneScreen .hero,
+      #customerHomeScreen .home-header,
+      #operatorHomeScreen .operator-dashboard-header,
+      #contractorHomeScreen>.hero{
         position:relative!important;isolation:isolate!important;overflow:hidden!important;
         min-height:190px!important;padding:26px 18px!important;margin:0 0 18px!important;
-        border:1px solid rgba(255,255,255,.58)!important;border-radius:18px!important;
-        background-color:#e8f0e8!important;
-        background-image:linear-gradient(90deg,rgba(255,255,255,.24),rgba(255,255,255,.42)),url("ATHAR-National-Day-Login.png")!important;
-        background-size:cover!important;background-position:center 28%!important;background-repeat:no-repeat!important;
-        box-shadow:0 8px 24px rgba(12,49,35,.16)!important;
+        border:1px solid color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 55%,white)!important;
+        border-radius:18px!important;
+        background-color:var(--athar-identity-surface,#f7f7f5)!important;
+        background-image:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,.52)),var(--athar-identity-image,none)!important;
+        background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;
+        box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
       }
-      html[data-athar-identity="nationalDay"] #roleScreen .hero h1,
-      html[data-athar-identity="nationalDay"] #roleScreen .hero p,
-      html[data-athar-identity="nationalDay"] #phoneScreen .hero h1,
-      html[data-athar-identity="nationalDay"] #phoneScreen .hero p,
-      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header h1,
-      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header p,
-      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header h1,
-      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header p,
-      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero h1,
-      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero p{
-        color:#123d2c!important;text-shadow:0 1px 8px rgba(255,255,255,.72)!important
+      #roleScreen .hero h1,#roleScreen .hero p,
+      #phoneScreen .hero h1,#phoneScreen .hero p,
+      #customerHomeScreen .home-header h1,#customerHomeScreen .home-header p,
+      #operatorHomeScreen .operator-dashboard-header h1,#operatorHomeScreen .operator-dashboard-header p,
+      #contractorHomeScreen>.hero h1,#contractorHomeScreen>.hero p{
+        color:var(--athar-identity-text,#191919)!important;
+        text-shadow:0 1px 8px rgba(255,255,255,.68)!important;
       }
       /* إزالة الإطارات الداخلية القديمة حتى لا تظهر حدود مزدوجة. */
       #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard{
