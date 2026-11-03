@@ -16828,11 +16828,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const COL = "ma3daSettings";
   const DOC = "ownerControlCenter";
   const IMAGE_BY_ID = {
-    nationalDay: "ATHAR-Identity-National-Day.jpg",
-    foundingDay: "ATHAR-Identity-Founding-Day.jpg",
-    eidFitr: "ATHAR-Identity-Eid-Fitr.jpg",
-    eidAdha: "ATHAR-Identity-Eid-Adha.jpg",
-    classic: "ATHAR-Identity-Classic.jpg"
+    classic: "athar_identity_classic.png",
+    eidFitr: "athar_identity_eid_fitr.png",
+    nationalDay: "athar_identity_national_day.png",
+    foundingDay: "athar_identity_founding_day.png",
+    eidAdha: "athar_identity_eid_adha.png"
   };
   const defaults = {
     classic: {
@@ -16935,8 +16935,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
       /* خلفية الهوية النشطة هي المصدر الوحيد لصورة الخلفية في التطبيق كله. */
-      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
+      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:none}
       .screen,.screen.ma3da-published-background{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
+      .athar-identity-event-art{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;max-width:100%!important;margin:0 auto 14px!important;padding:0!important;overflow:hidden!important;border:1px solid var(--athar-identity-accent,#c8a45b)!important;border-radius:16px!important;background:rgba(255,255,255,.16)!important;box-shadow:0 5px 18px rgba(0,0,0,.07)!important}
+      .athar-identity-event-art img{display:block!important;width:100%!important;max-height:190px!important;object-fit:contain!important;object-position:center!important;border:0!important;border-radius:14px!important;background:transparent!important}
+      #roleScreen .athar-identity-event-art,#phoneScreen .athar-identity-event-art,#otpScreen .athar-identity-event-art{max-width:560px!important}
+      #customerHomeScreen .athar-identity-event-art,#operatorHomeScreen .athar-identity-event-art,#contractorHomeScreen .athar-identity-event-art{margin-bottom:16px!important}
+      @media(max-width:520px){.athar-identity-event-art img{max-height:150px!important}}
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
         box-sizing:border-box!important;background:#fff!important;color:var(--athar-identity-text,#191919)!important;
@@ -16949,28 +16954,31 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
       #roleScreen .hero,#phoneScreen .hero{padding:12px 8px 18px!important}
       #roleScreen>.card,#phoneScreen>.card{padding:12px 8px!important}
-      /* خلفية الهوية النشطة: شاشة اختيار الدور، الدخول، والواجهات الرئيسية الثلاث فقط. */
-      #roleScreen .hero,
-      #phoneScreen .hero,
-      #customerHomeScreen .home-header,
-      #operatorHomeScreen .operator-dashboard-header,
-      #contractorHomeScreen>.hero{
+      /* لوحة اليوم الوطني أعلى الشاشات المحددة فقط؛ بقية الهويات لا تتأثر. */
+      html[data-athar-identity="nationalDay"] #roleScreen .hero,
+      html[data-athar-identity="nationalDay"] #phoneScreen .hero,
+      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header,
+      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header,
+      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero{
         position:relative!important;isolation:isolate!important;overflow:hidden!important;
         min-height:190px!important;padding:26px 18px!important;margin:0 0 18px!important;
-        border:1px solid color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 55%,white)!important;
-        border-radius:18px!important;
-        background-color:var(--athar-identity-surface,#f7f7f5)!important;
-        background-image:linear-gradient(90deg,rgba(255,255,255,.34),rgba(255,255,255,.52)),var(--athar-identity-image,none)!important;
-        background-size:cover!important;background-position:center 42%!important;background-repeat:no-repeat!important;
-        box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
+        border:1px solid rgba(255,255,255,.58)!important;border-radius:18px!important;
+        background-color:#e8f0e8!important;
+        background-image:linear-gradient(90deg,rgba(255,255,255,.24),rgba(255,255,255,.42)),url("ATHAR-National-Day-Login.png")!important;
+        background-size:cover!important;background-position:center 28%!important;background-repeat:no-repeat!important;
+        box-shadow:0 8px 24px rgba(12,49,35,.16)!important;
       }
-      #roleScreen .hero h1,#roleScreen .hero p,
-      #phoneScreen .hero h1,#phoneScreen .hero p,
-      #customerHomeScreen .home-header h1,#customerHomeScreen .home-header p,
-      #operatorHomeScreen .operator-dashboard-header h1,#operatorHomeScreen .operator-dashboard-header p,
-      #contractorHomeScreen>.hero h1,#contractorHomeScreen>.hero p{
-        color:var(--athar-identity-text,#191919)!important;
-        text-shadow:0 1px 8px rgba(255,255,255,.68)!important;
+      html[data-athar-identity="nationalDay"] #roleScreen .hero h1,
+      html[data-athar-identity="nationalDay"] #roleScreen .hero p,
+      html[data-athar-identity="nationalDay"] #phoneScreen .hero h1,
+      html[data-athar-identity="nationalDay"] #phoneScreen .hero p,
+      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header h1,
+      html[data-athar-identity="nationalDay"] #customerHomeScreen .home-header p,
+      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header h1,
+      html[data-athar-identity="nationalDay"] #operatorHomeScreen .operator-dashboard-header p,
+      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero h1,
+      html[data-athar-identity="nationalDay"] #contractorHomeScreen>.hero p{
+        color:#123d2c!important;text-shadow:0 1px 8px rgba(255,255,255,.72)!important
       }
       /* إزالة الإطارات الداخلية القديمة حتى لا تظهر حدود مزدوجة. */
       #customerHomeScreen .home-page,#operatorHomeScreen .operator-dashboard{
@@ -17027,6 +17035,42 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     });
   }
 
+  function renderIdentityImages(identity, key){
+    const targets = [
+      ["roleScreen", ".hero"],
+      ["phoneScreen", ".hero"],
+      ["otpScreen", ".hero"],
+      ["customerHomeScreen", ".home-page"],
+      ["operatorHomeScreen", ".operator-dashboard"],
+      ["contractorHomeScreen", null]
+    ];
+    const imageName = IMAGE_BY_ID[key] || IMAGE_BY_ID.classic;
+    const identityName = identity.name || defaults.classic.name;
+    targets.forEach(([screenId, containerSelector])=>{
+      const screen = $(screenId);
+      if (!screen) return;
+      const container = containerSelector ? screen.querySelector(containerSelector) : screen;
+      if (!container) return;
+      let art = container.querySelector(":scope > .athar-identity-event-art");
+      if (!art){
+        art = document.createElement("div");
+        art.className = "athar-identity-event-art";
+        const img = document.createElement("img");
+        img.loading = "eager";
+        img.decoding = "async";
+        art.appendChild(img);
+        container.insertBefore(art, container.firstChild);
+      }
+      const img = art.querySelector("img");
+      if (img){
+        img.src = imageName;
+        img.alt = `صورة آثار لهوية ${identityName}`;
+      }
+      art.dataset.identity = key;
+      art.setAttribute("aria-label", `هوية آثار ${identityName}`);
+    });
+  }
+
   function apply(key){
     const identity = defaults[key] || defaults.classic;
     activeIdentity = defaults[key] ? key : "classic";
@@ -17042,6 +17086,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
+    renderIdentityImages(identity, activeIdentity);
     const slogans = [
       ["customerHomeScreen", identity.taglines.customer],
       ["operatorHomeScreen", identity.taglines.owner],
