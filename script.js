@@ -17002,28 +17002,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
-      /* صور اليوم الوطني ويوم التأسيس: لوحة كاملة خلف محتوى الشاشات المحددة، وليست صورة صغيرة أعلى الصفحة. */
-      #roleScreen,#phoneScreen,#otpScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen,#createAccountScreen{
-        position:relative!important;isolation:isolate!important;box-sizing:border-box!important;
-        width:100%!important;min-height:100vh!important;min-height:100svh!important;
-      }
-      .athar-identity-event-art{
-        display:block;position:absolute!important;inset:0!important;z-index:0!important;
-        width:100%!important;height:100%!important;min-height:100%!important;margin:0!important;
-        overflow:hidden!important;border-radius:0!important;background:transparent!important;
-        pointer-events:none!important;
-      }
+      /* صور المناسبات تظهر داخل الشاشات المحددة فقط، ولا تستبدل خلفية التطبيق العامة. */
+      .athar-identity-event-art{display:block;position:relative;width:100%;height:clamp(130px,24vw,220px);margin:0 0 14px;overflow:hidden;border-radius:16px;background:#f4f1e9;}
       .athar-identity-event-art[hidden]{display:none!important}
-      .athar-identity-event-art img{
-        display:block;width:100%!important;height:100%!important;
-        object-fit:contain!important;object-position:center center!important;
-      }
-      #roleScreen>*:not(.athar-identity-event-art),#phoneScreen>*:not(.athar-identity-event-art),
-      #otpScreen>*:not(.athar-identity-event-art),#customerHomeScreen>*:not(.athar-identity-event-art),
-      #operatorHomeScreen>*:not(.athar-identity-event-art),#contractorHomeScreen>*:not(.athar-identity-event-art),
-      #createAccountScreen>*:not(.athar-identity-event-art){position:relative;z-index:1}
-      /* توسيع لوحات الدخول والصفحات الرئيسية لتستوعب صورة الهوية كاملة. */
-      #roleScreen,#phoneScreen,#otpScreen,#createAccountScreen{max-width:none!important;}
+      .athar-identity-event-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;}
+      #createAccountScreen .athar-identity-event-art{margin:0 0 16px;}
       .athar-identity-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
       .athar-identity-card{position:relative;display:block;overflow:hidden;width:100%;padding:0!important;min-width:0;border:2px solid #e6dfd2!important;border-radius:16px!important;background:#fff!important;color:#171717!important;text-align:right;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.07)}
       .athar-identity-card img{display:block;width:100%;height:150px;object-fit:cover;background:#f5f2ec}
@@ -17037,6 +17020,37 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       .athar-identity-base-row small{margin-top:4px;color:#777;font-size:12px}
       #atharIdentityStatus{min-height:24px;margin-top:12px;color:var(--athar-identity-primary)}
       #atharIdentityStatus[data-error="1"]{color:#a32626}
+      /* اليوم الوطني ويوم التأسيس: الشاشة نفسها صورة مستقلة فقط بلا نصوص أو أزرار. */
+      html[data-athar-event-image-only="1"] #roleScreen,
+      html[data-athar-event-image-only="1"] #phoneScreen,
+      html[data-athar-event-image-only="1"] #otpScreen,
+      html[data-athar-event-image-only="1"] #customerHomeScreen,
+      html[data-athar-event-image-only="1"] #operatorHomeScreen,
+      html[data-athar-event-image-only="1"] #contractorHomeScreen,
+      html[data-athar-event-image-only="1"] #createAccountScreen{
+        position:fixed!important;inset:0!important;box-sizing:border-box!important;
+        width:100vw!important;height:100vh!important;height:100dvh!important;
+        min-height:100dvh!important;max-width:none!important;max-height:none!important;
+        margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+        box-shadow:none!important;overflow:hidden!important;background:#fff!important;
+      }
+      html[data-athar-event-image-only="1"] #roleScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #phoneScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #otpScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #customerHomeScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #operatorHomeScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #contractorHomeScreen> :not(.athar-identity-event-art),
+      html[data-athar-event-image-only="1"] #createAccountScreen> :not(.athar-identity-event-art){display:none!important}
+      html[data-athar-event-image-only="1"] .athar-identity-event-art{
+        display:block!important;position:absolute!important;inset:0!important;z-index:2!important;
+        width:100%!important;height:100%!important;margin:0!important;padding:0!important;
+        border:0!important;border-radius:0!important;overflow:hidden!important;background:#fff!important;
+      }
+      html[data-athar-event-image-only="1"] .athar-identity-event-art img{
+        display:block!important;width:100%!important;height:100%!important;
+        max-width:none!important;max-height:none!important;object-fit:contain!important;
+        object-position:center center!important;
+      }
       @media(max-width:420px){.athar-identity-card img{height:116px}.athar-identity-card-caption{align-items:flex-start;flex-direction:column;gap:4px}.athar-identity-base-row{align-items:stretch;flex-direction:column}.athar-identity-base-row button{width:100%}}
     `;
     document.head.appendChild(style);
@@ -17053,43 +17067,50 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
 
   function renderIdentityImages(identity, key){
+    const eventOnly = key === "nationalDay" || key === "foundingDay";
     const targets = [
-      ["roleScreen", null],
-      ["phoneScreen", null],
-      ["otpScreen", null],
-      ["customerHomeScreen", null],
-      ["operatorHomeScreen", null],
-      ["contractorHomeScreen", null],
-      ["createAccountScreen", null]
+      "roleScreen",
+      "phoneScreen",
+      "otpScreen",
+      "customerHomeScreen",
+      "operatorHomeScreen",
+      "contractorHomeScreen",
+      "createAccountScreen"
     ];
-    const imageName = IMAGE_BY_ID[key] || IMAGE_BY_ID.classic;
-    targets.forEach(([screenId, containerSelector])=>{
+    if (!eventOnly){
+      targets.forEach(screenId=>{
+        const screen = $(screenId);
+        const art = screen?.querySelector(":scope > .athar-identity-event-art");
+        if (art) art.hidden = true;
+      });
+      return;
+    }
+    const imageName = IMAGE_BY_ID[key];
+    targets.forEach(screenId=>{
       const screen = $(screenId);
       if (!screen) return;
-      const container = containerSelector ? screen.querySelector(containerSelector) : screen;
-      if (!container) return;
-      let art = container.querySelector(":scope > .athar-identity-event-art");
+      let art = screen.querySelector(":scope > .athar-identity-event-art");
       if (!art){
         art = document.createElement("div");
         art.className = "athar-identity-event-art";
         const img = document.createElement("img");
         img.loading = "eager";
         img.decoding = "async";
-        img.alt = "آثار";
+        img.alt = "";
         img.addEventListener("error", ()=>{ art.hidden = true; }, {once:true});
         img.addEventListener("load", ()=>{ art.hidden = false; }, {once:true});
         art.appendChild(img);
-        container.insertBefore(art, container.firstChild);
+        screen.insertBefore(art, screen.firstChild);
       }
       const img = art.querySelector("img");
       if (img){
         art.hidden = false;
-        img.alt = "آثار";
+        img.alt = "";
         const expectedSrc = new URL(imageName, document.baseURI).href;
         if (img.src !== expectedSrc) img.src = imageName;
       }
       art.dataset.identity = key;
-      art.setAttribute("aria-label", "هوية آثار");
+      art.setAttribute("aria-label", "");
     });
   }
 
@@ -17099,6 +17120,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     ensureThemeStyle();
     const root = document.documentElement;
     root.dataset.atharIdentity = activeIdentity;
+    root.dataset.atharEventImageOnly = (activeIdentity === "nationalDay" || activeIdentity === "foundingDay") ? "1" : "0";
     root.style.setProperty("--athar-identity-primary", identity.primary);
     root.style.setProperty("--athar-identity-accent", identity.accent);
     root.style.setProperty("--athar-identity-frame", activeIdentity === "classic" ? "#c8a45b" : identity.primary);
