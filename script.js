@@ -17002,11 +17002,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body .screen button:not(.athar-identity-card) *,body .screen [role="button"] *,body .screen a.button *,body .screen a.btn *{color:var(--athar-button-text,#171717)!important}
       button:not(.athar-identity-card):not(:disabled),.btn,[role="button"],a.button,a.btn{box-shadow:0 2px 9px rgba(0,0,0,.045)}
       button:disabled,input:disabled{opacity:.58}
-      /* صور المناسبات تظهر داخل الشاشات المحددة فقط، ولا تستبدل خلفية التطبيق العامة. */
-      .athar-identity-event-art{display:block;position:relative;width:100%;height:clamp(130px,24vw,220px);margin:0 0 14px;overflow:hidden;border-radius:16px;background:#f4f1e9;}
+      /* صور اليوم الوطني ويوم التأسيس: لوحة كاملة خلف محتوى الشاشات المحددة، وليست صورة صغيرة أعلى الصفحة. */
+      #roleScreen,#phoneScreen,#otpScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen,#createAccountScreen{
+        position:relative!important;isolation:isolate!important;box-sizing:border-box!important;
+        width:100%!important;min-height:100vh!important;min-height:100svh!important;
+      }
+      .athar-identity-event-art{
+        display:block;position:absolute!important;inset:0!important;z-index:0!important;
+        width:100%!important;height:100%!important;min-height:100%!important;margin:0!important;
+        overflow:hidden!important;border-radius:0!important;background:transparent!important;
+        pointer-events:none!important;
+      }
       .athar-identity-event-art[hidden]{display:none!important}
-      .athar-identity-event-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;}
-      #createAccountScreen .athar-identity-event-art{margin:0 0 16px;}
+      .athar-identity-event-art img{
+        display:block;width:100%!important;height:100%!important;
+        object-fit:contain!important;object-position:center center!important;
+      }
+      #roleScreen>*:not(.athar-identity-event-art),#phoneScreen>*:not(.athar-identity-event-art),
+      #otpScreen>*:not(.athar-identity-event-art),#customerHomeScreen>*:not(.athar-identity-event-art),
+      #operatorHomeScreen>*:not(.athar-identity-event-art),#contractorHomeScreen>*:not(.athar-identity-event-art),
+      #createAccountScreen>*:not(.athar-identity-event-art){position:relative;z-index:1}
+      /* توسيع لوحات الدخول والصفحات الرئيسية لتستوعب صورة الهوية كاملة. */
+      #roleScreen,#phoneScreen,#otpScreen,#createAccountScreen{max-width:none!important;}
       .athar-identity-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:18px 0}
       .athar-identity-card{position:relative;display:block;overflow:hidden;width:100%;padding:0!important;min-width:0;border:2px solid #e6dfd2!important;border-radius:16px!important;background:#fff!important;color:#171717!important;text-align:right;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.07)}
       .athar-identity-card img{display:block;width:100%;height:150px;object-fit:cover;background:#f5f2ec}
@@ -17037,13 +17054,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   function renderIdentityImages(identity, key){
     const targets = [
-      ["roleScreen", ".hero"],
-      ["phoneScreen", ".hero"],
-      ["otpScreen", ".hero"],
-      ["customerHomeScreen", ".home-page"],
-      ["operatorHomeScreen", ".operator-dashboard"],
+      ["roleScreen", null],
+      ["phoneScreen", null],
+      ["otpScreen", null],
+      ["customerHomeScreen", null],
+      ["operatorHomeScreen", null],
       ["contractorHomeScreen", null],
-      ["createAccountScreen", ".athar-register-brand"]
+      ["createAccountScreen", null]
     ];
     const imageName = IMAGE_BY_ID[key] || IMAGE_BY_ID.classic;
     targets.forEach(([screenId, containerSelector])=>{
