@@ -1417,8 +1417,11 @@ if(emailLoginBtn){
       if (nameInput) nameInput.value = data.name || data.fullName || pending?.name || "";
       if (phoneInput) phoneInput.value = data.phone || pending?.phone || "";
       if (cityInput) cityInput.value = data.city || "";
+      window.__atharRegisteredCustomerName = customerName;
       const greeting = document.getElementById("customerHomeName");
       if (greeting) greeting.textContent = customerName;
+      const newNameSlot = document.querySelector("#customerHomeScreen [data-athar-customer-name]");
+      if (newNameSlot) newNameSlot.textContent = customerName;
       showScreen("customerHomeScreen");
     } else {
       showScreen("customerDataScreen");
@@ -4134,8 +4137,11 @@ if(saveCustomerDataBtn){
         console.log(
           "تم حفظ بيانات العميل"
         );
+        window.__atharRegisteredCustomerName = name || user.displayName || "مستخدم";
         const homeName = document.getElementById("customerHomeName");
-        if (homeName) homeName.textContent = name || user.displayName || "مستخدم";
+        if (homeName) homeName.textContent = window.__atharRegisteredCustomerName;
+        const newNameSlot = document.querySelector("#customerHomeScreen [data-athar-customer-name]");
+        if (newNameSlot) newNameSlot.textContent = window.__atharRegisteredCustomerName;
         try { const pending = JSON.parse(localStorage.getItem("atharPendingRegistration") || "null"); if (pending?.uid === user.uid) localStorage.removeItem("atharPendingRegistration"); } catch (_) {}
  
         showScreen(
@@ -17172,7 +17178,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const syncCustomerName = ()=>{
           const greeting = $("customerHomeName");
           const authUser = window.ma3daAuth?.currentUser;
-          const registeredName = (greeting?.textContent || "").trim();
+          const registeredName = (window.__atharRegisteredCustomerName || greeting?.textContent || "").trim();
           const authName = (authUser?.displayName || "").trim();
           const value = registeredName && registeredName !== "مستخدم"
             ? registeredName
@@ -17181,11 +17187,21 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         };
         syncCustomerName();
         const greeting = $("customerHomeName");
-        if (greeting && window.MutationObserver) {
-          window.__atharCustomerNameObserver?.disconnect?.();
-          window.__atharCustomerNameObserver = new MutationObserver(syncCustomerName);
-          window.__atharCustomerNameObserver.observe(greeting,{childList:true,subtree:true,characterData:true});
+        if (greeting) {
+          const oldName = (greeting.textContent || "").trim();
+          if (oldName && oldName !== "مستخدم") window.__atharRegisteredCustomerName = oldName;
+          // هذا عنصر الاسم القديم الذي كان يظهر أسفل البطاقة الجديدة؛ أزل معه غلافه الصغير إذا كان لا يعرض إلا الاسم والأيقونة.
+          const oldNameWrapper = greeting.parentElement;
+          const wrapperText = (oldNameWrapper?.textContent || "").replace(/[👤\s:：]/g, "").trim();
+          const cleanOldName = oldName.replace(/[👤\s:：]/g, "").trim();
+          if (oldNameWrapper && wrapperText && (!cleanOldName || wrapperText === cleanOldName || wrapperText === "مستخدم")) {
+            oldNameWrapper.remove();
+          } else {
+            greeting.remove();
+          }
         }
+        window.__atharCustomerNameObserver?.disconnect?.();
+        window.__atharCustomerNameObserver = null;
         if (!window.__atharCustomerNameSyncInstalled) {
           window.__atharCustomerNameSyncInstalled = true;
           document.addEventListener("ma3da-auth-state-changed",syncCustomerName);
