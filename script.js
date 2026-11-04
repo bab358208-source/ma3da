@@ -16956,62 +16956,66 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         background:#fff!important;color:#191919!important;
         border-color:var(--athar-identity-frame,#c8a45b)!important;
       }
-      /* ATHAR | بطاقة الشاشة الصغيرة أعلى الصفحات الرئيسية الثلاث. */
+      /* ATHAR | بطاقة عنوان واحدة فقط للشاشة الرئيسية. */
       .athar-home-identity-panel{
         position:relative!important;isolation:isolate!important;overflow:hidden!important;
         display:flex!important;flex-direction:column!important;align-items:center!important;
-        justify-content:center!important;gap:8px!important;
-        width:100%!important;min-height:116px!important;box-sizing:border-box!important;
-        margin:4px auto 18px!important;padding:17px 14px 16px!important;
-        background:#fff!important;border:2px solid var(--athar-identity-frame,#c8a45b)!important;
-        border-radius:18px!important;text-align:center!important;
-        box-shadow:0 5px 18px rgba(30,30,30,.055),inset 0 0 0 4px rgba(255,255,255,.9)!important;
-      }
-      .athar-home-identity-panel:before,.athar-home-identity-panel:after{
-        content:""!important;position:absolute!important;z-index:-1!important;pointer-events:none!important;
+        justify-content:center!important;gap:9px!important;width:100%!important;
+        min-height:132px!important;box-sizing:border-box!important;
+        margin:0 auto 18px!important;padding:18px 15px 17px!important;
+        background:linear-gradient(145deg,#fff 0%,#fffdf8 52%,#fff 100%)!important;
+        border:2px solid var(--athar-identity-frame,#c8a45b)!important;
+        border-radius:20px!important;
+        box-shadow:0 9px 24px rgba(23,23,23,.075),inset 0 0 0 4px rgba(255,255,255,.95)!important;
+        text-align:center!important;
       }
       .athar-home-identity-panel:before{
-        inset:0!important;opacity:.42!important;
-        background:
-          radial-gradient(circle at 8% 18%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
-          radial-gradient(circle at 92% 82%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
-          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.95))!important;
-        background-size:24px 24px,24px 24px,auto!important;
+        content:""!important;position:absolute!important;z-index:-1!important;inset:7px!important;
+        border:1px solid color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 42%,transparent)!important;
+        border-radius:14px!important;pointer-events:none!important;
       }
       .athar-home-identity-panel:after{
-        width:76px!important;height:2px!important;bottom:10px!important;left:calc(50% - 38px)!important;
+        content:""!important;position:absolute!important;z-index:-1!important;
+        width:94px!important;height:3px!important;bottom:8px!important;left:calc(50% - 47px)!important;
+        border-radius:9px!important;
         background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent)!important;
       }
       .athar-home-identity-title{
-        display:inline-flex!important;align-items:center!important;justify-content:center!important;
-        max-width:100%!important;padding:7px 18px!important;margin:0!important;
-        border:1px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:999px!important;
-        background:#fff!important;color:var(--athar-identity-primary,#171717)!important;
+        margin:0!important;padding:6px 20px!important;border-radius:999px!important;
+        border:1px solid var(--athar-identity-frame,#c8a45b)!important;background:#fff!important;
+        color:var(--athar-identity-primary,#171717)!important;
         font-size:clamp(16px,3.8vw,20px)!important;font-weight:900!important;line-height:1.35!important;
       }
       .athar-home-identity-slogan{
-        display:block!important;max-width:100%!important;margin:0!important;padding:0 5px 5px!important;
-        color:#bd8b35!important;font-size:clamp(17px,4.4vw,23px)!important;
+        display:block!important;margin:0!important;padding:0 6px 5px!important;
+        color:#b58a3b!important;font-size:clamp(17px,4.5vw,24px)!important;
         font-weight:900!important;line-height:1.5!important;text-align:center!important;
-        text-wrap:balance!important;text-shadow:0 1px 0 rgba(255,255,255,.95)!important;
+        text-wrap:balance!important;text-shadow:0 1px 0 #fff!important;
       }
-      html[data-athar-identity="nationalDay"] .athar-home-identity-panel{
-        border-width:2.5px!important;background:linear-gradient(110deg,#fff 0%,#f8fcf8 50%,#fff 100%)!important;
+      .athar-home-customer-name{
+        display:flex!important;align-items:center!important;justify-content:center!important;
+        gap:9px!important;width:min(100%,340px)!important;box-sizing:border-box!important;
+        margin:2px auto 3px!important;padding:9px 14px!important;
+        border:1px solid color-mix(in srgb,var(--athar-identity-frame,#c8a45b) 65%,#fff)!important;
+        border-radius:13px!important;background:#fff!important;
+        color:#242424!important;font-size:14px!important;line-height:1.5!important;
       }
-      html[data-athar-identity="foundingDay"] .athar-home-identity-panel{
-        background:linear-gradient(110deg,#fff 0%,#fbf6ee 50%,#fff 100%)!important;
+      .athar-home-customer-name .athar-name-icon{
+        display:inline-flex!important;align-items:center!important;justify-content:center!important;
+        width:29px!important;height:29px!important;flex:0 0 29px!important;
+        border-radius:50%!important;background:var(--athar-identity-frame,#c8a45b)!important;
+        color:#fff!important;font-size:15px!important;
       }
+      .athar-home-customer-name strong{font-weight:900!important;color:#171717!important}
+      .athar-home-customer-name [data-athar-customer-name]{font-weight:800!important;color:var(--athar-identity-primary,#171717)!important}
+      html[data-athar-identity="nationalDay"] .athar-home-identity-panel{background:linear-gradient(145deg,#fff,#f5fbf6,#fff)!important}
+      html[data-athar-identity="foundingDay"] .athar-home-identity-panel{background:linear-gradient(145deg,#fff,#fbf5eb,#fff)!important}
       html[data-athar-identity="eidFitr"] .athar-home-identity-panel,
-      html[data-athar-identity="eidAdha"] .athar-home-identity-panel{
-        background:linear-gradient(110deg,#fff 0%,#f5faff 50%,#fff 100%)!important;
-      }
-      html[data-athar-identity="classic"] .athar-home-identity-panel{
-        background:linear-gradient(110deg,#fff 0%,#fffdf8 50%,#fff 100%)!important;
-      }
+      html[data-athar-identity="eidAdha"] .athar-home-identity-panel{background:linear-gradient(145deg,#fff,#f3f8fd,#fff)!important}
       @media(max-width:420px){
-        .athar-home-identity-panel{min-height:108px!important;padding:14px 10px 13px!important;margin-bottom:15px!important}
-        .athar-home-identity-title{font-size:16px!important;padding:6px 15px!important}
-        .athar-home-identity-slogan{font-size:17px!important;line-height:1.45!important}
+        .athar-home-identity-panel{min-height:122px!important;padding:15px 11px!important;border-radius:17px!important}
+        .athar-home-identity-slogan{font-size:17px!important}
+        .athar-home-customer-name{font-size:13px!important}
       }
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
@@ -17128,36 +17132,67 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
-    /* بطاقة صغيرة موحدة: عنوان الصفحة الرئيسية والعبارة التي اعتمدها المستخدم. */
-    [
+    const homePanels = [
       ["customerHomeScreen","customer"],
       ["operatorHomeScreen","owner"],
       ["contractorHomeScreen","projects"]
-    ].forEach(([id, role])=>{
+    ];
+    homePanels.forEach(([id, role])=>{
       const page = $(id);
       if (!page) return;
-      // إزالة العبارة القديمة التي كانت تُضاف داخل الهيدر حتى لا تتكرر.
-      page.querySelectorAll(".athar-home-tagline").forEach(node=>node.remove());
-      let panel = page.querySelector(":scope > .athar-home-identity-panel");
-      if (!panel){
-        panel = document.createElement("section");
-        panel.className = "athar-home-identity-panel";
-        panel.setAttribute("aria-label","الصفحة الرئيسية");
-        const title = document.createElement("h2");
-        title.className = "athar-home-identity-title";
-        title.textContent = "الصفحة الرئيسية";
-        const slogan = document.createElement("p");
-        slogan.className = "athar-home-identity-slogan";
-        slogan.textContent = "همة وطن… ومشاريع تصنع المستقبل.";
-        panel.append(title,slogan);
-        page.insertBefore(panel,page.firstChild);
-      } else {
-        const title = panel.querySelector(".athar-home-identity-title");
-        const slogan = panel.querySelector(".athar-home-identity-slogan");
-        if (title) title.textContent = "الصفحة الرئيسية";
-        if (slogan) slogan.textContent = "همة وطن… ومشاريع تصنع المستقبل.";
+
+      // Remove every previous version of the injected tagline and the old duplicate page heading.
+      page.querySelectorAll(".athar-home-tagline,.athar-home-identity-panel").forEach(node=>node.remove());
+      page.querySelectorAll("h1,h2,h3,.home-title,.hero-title").forEach(node=>{
+        if ((node.textContent || "").replace(/\\s+/g," ").trim() === "الصفحة الرئيسية") node.remove();
+      });
+
+      const panel = document.createElement("section");
+      panel.className = "athar-home-identity-panel";
+      panel.setAttribute("aria-label","عنوان الصفحة الرئيسية");
+
+      const title = document.createElement("h2");
+      title.className = "athar-home-identity-title";
+      title.textContent = "الصفحة الرئيسية";
+
+      const slogan = document.createElement("p");
+      slogan.className = "athar-home-identity-slogan";
+      slogan.textContent = identity.taglines?.[role] || "";
+
+      panel.append(title,slogan);
+
+      // اسم العميل يظهر أسفل العبارة في واجهة العميل فقط، ويتحدث تلقائياً عند تحميل الحساب.
+      if (role === "customer") {
+        const nameRow = document.createElement("div");
+        nameRow.className = "athar-home-customer-name";
+        nameRow.innerHTML = '<span class="athar-name-icon" aria-hidden="true">👤</span><strong>العميل:</strong><span data-athar-customer-name>جارٍ تحميل الاسم…</span>';
+        panel.appendChild(nameRow);
+
+        const nameValue = nameRow.querySelector("[data-athar-customer-name]");
+        const syncCustomerName = ()=>{
+          const greeting = $("customerHomeName");
+          const authUser = window.ma3daAuth?.currentUser;
+          const registeredName = (greeting?.textContent || "").trim();
+          const authName = (authUser?.displayName || "").trim();
+          const value = registeredName && registeredName !== "مستخدم"
+            ? registeredName
+            : (authName || (authUser ? "العميل المسجّل" : "سجّل الدخول لعرض اسمك"));
+          nameValue.textContent = value;
+        };
+        syncCustomerName();
+        const greeting = $("customerHomeName");
+        if (greeting && window.MutationObserver) {
+          window.__atharCustomerNameObserver?.disconnect?.();
+          window.__atharCustomerNameObserver = new MutationObserver(syncCustomerName);
+          window.__atharCustomerNameObserver.observe(greeting,{childList:true,subtree:true,characterData:true});
+        }
+        if (!window.__atharCustomerNameSyncInstalled) {
+          window.__atharCustomerNameSyncInstalled = true;
+          document.addEventListener("ma3da-auth-state-changed",syncCustomerName);
+        }
       }
-      panel.dataset.homeRole = role;
+
+      page.insertBefore(panel,page.firstChild);
     });
     updateCards();
   }
