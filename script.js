@@ -16956,13 +16956,62 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         background:#fff!important;color:#191919!important;
         border-color:var(--athar-identity-frame,#c8a45b)!important;
       }
-      /* عبارة الترحيب والتهنئة في الصفحات الرئيسية. */
-      .athar-home-tagline{
-        display:block!important;width:100%!important;box-sizing:border-box!important;
-        margin:18px auto 22px!important;padding:12px 8px!important;
-        color:#c8a45b!important;font-size:clamp(23px,5.4vw,34px)!important;
-        line-height:1.65!important;font-weight:900!important;letter-spacing:.1px!important;
-        text-align:center!important;text-shadow:0 1px 0 rgba(255,255,255,.9)!important;
+      /* ATHAR | بطاقة الشاشة الصغيرة أعلى الصفحات الرئيسية الثلاث. */
+      .athar-home-identity-panel{
+        position:relative!important;isolation:isolate!important;overflow:hidden!important;
+        display:flex!important;flex-direction:column!important;align-items:center!important;
+        justify-content:center!important;gap:8px!important;
+        width:100%!important;min-height:116px!important;box-sizing:border-box!important;
+        margin:4px auto 18px!important;padding:17px 14px 16px!important;
+        background:#fff!important;border:2px solid var(--athar-identity-frame,#c8a45b)!important;
+        border-radius:18px!important;text-align:center!important;
+        box-shadow:0 5px 18px rgba(30,30,30,.055),inset 0 0 0 4px rgba(255,255,255,.9)!important;
+      }
+      .athar-home-identity-panel:before,.athar-home-identity-panel:after{
+        content:""!important;position:absolute!important;z-index:-1!important;pointer-events:none!important;
+      }
+      .athar-home-identity-panel:before{
+        inset:0!important;opacity:.42!important;
+        background:
+          radial-gradient(circle at 8% 18%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
+          radial-gradient(circle at 92% 82%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
+          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.95))!important;
+        background-size:24px 24px,24px 24px,auto!important;
+      }
+      .athar-home-identity-panel:after{
+        width:76px!important;height:2px!important;bottom:10px!important;left:calc(50% - 38px)!important;
+        background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent)!important;
+      }
+      .athar-home-identity-title{
+        display:inline-flex!important;align-items:center!important;justify-content:center!important;
+        max-width:100%!important;padding:7px 18px!important;margin:0!important;
+        border:1px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:999px!important;
+        background:#fff!important;color:var(--athar-identity-primary,#171717)!important;
+        font-size:clamp(16px,3.8vw,20px)!important;font-weight:900!important;line-height:1.35!important;
+      }
+      .athar-home-identity-slogan{
+        display:block!important;max-width:100%!important;margin:0!important;padding:0 5px 5px!important;
+        color:#bd8b35!important;font-size:clamp(17px,4.4vw,23px)!important;
+        font-weight:900!important;line-height:1.5!important;text-align:center!important;
+        text-wrap:balance!important;text-shadow:0 1px 0 rgba(255,255,255,.95)!important;
+      }
+      html[data-athar-identity="nationalDay"] .athar-home-identity-panel{
+        border-width:2.5px!important;background:linear-gradient(110deg,#fff 0%,#f8fcf8 50%,#fff 100%)!important;
+      }
+      html[data-athar-identity="foundingDay"] .athar-home-identity-panel{
+        background:linear-gradient(110deg,#fff 0%,#fbf6ee 50%,#fff 100%)!important;
+      }
+      html[data-athar-identity="eidFitr"] .athar-home-identity-panel,
+      html[data-athar-identity="eidAdha"] .athar-home-identity-panel{
+        background:linear-gradient(110deg,#fff 0%,#f5faff 50%,#fff 100%)!important;
+      }
+      html[data-athar-identity="classic"] .athar-home-identity-panel{
+        background:linear-gradient(110deg,#fff 0%,#fffdf8 50%,#fff 100%)!important;
+      }
+      @media(max-width:420px){
+        .athar-home-identity-panel{min-height:108px!important;padding:14px 10px 13px!important;margin-bottom:15px!important}
+        .athar-home-identity-title{font-size:16px!important;padding:6px 15px!important}
+        .athar-home-identity-slogan{font-size:17px!important;line-height:1.45!important}
       }
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
@@ -17079,26 +17128,36 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
-    const slogans = [
-      ["customerHomeScreen", identity.taglines.customer],
-      ["operatorHomeScreen", identity.taglines.owner],
-      ["contractorHomeScreen", identity.taglines.projects]
-    ];
-    slogans.forEach(([id, tagline])=>{
+    /* بطاقة صغيرة موحدة: عنوان الصفحة الرئيسية والعبارة التي اعتمدها المستخدم. */
+    [
+      ["customerHomeScreen","customer"],
+      ["operatorHomeScreen","owner"],
+      ["contractorHomeScreen","projects"]
+    ].forEach(([id, role])=>{
       const page = $(id);
       if (!page) return;
-      let el = page.querySelector(".athar-home-tagline");
-      if (!el){
-        el = document.createElement("p");
-        el.className = "athar-home-tagline";
-        (page.querySelector(".hero, .operator-dashboard-header") || page).appendChild(el);
+      // إزالة العبارة القديمة التي كانت تُضاف داخل الهيدر حتى لا تتكرر.
+      page.querySelectorAll(".athar-home-tagline").forEach(node=>node.remove());
+      let panel = page.querySelector(":scope > .athar-home-identity-panel");
+      if (!panel){
+        panel = document.createElement("section");
+        panel.className = "athar-home-identity-panel";
+        panel.setAttribute("aria-label","الصفحة الرئيسية");
+        const title = document.createElement("h2");
+        title.className = "athar-home-identity-title";
+        title.textContent = "الصفحة الرئيسية";
+        const slogan = document.createElement("p");
+        slogan.className = "athar-home-identity-slogan";
+        slogan.textContent = "همة وطن… ومشاريع تصنع المستقبل.";
+        panel.append(title,slogan);
+        page.insertBefore(panel,page.firstChild);
+      } else {
+        const title = panel.querySelector(".athar-home-identity-title");
+        const slogan = panel.querySelector(".athar-home-identity-slogan");
+        if (title) title.textContent = "الصفحة الرئيسية";
+        if (slogan) slogan.textContent = "همة وطن… ومشاريع تصنع المستقبل.";
       }
-      el.textContent = tagline || "";
-      el.style.color = "#C8A45B";
-      el.style.fontSize = "clamp(23px, 5.4vw, 34px)";
-      el.style.fontWeight = "900";
-      el.style.lineHeight = "1.65";
-      el.style.textAlign = "center";
+      panel.dataset.homeRole = role;
     });
     updateCards();
   }
