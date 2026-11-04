@@ -16931,11 +16931,39 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const style = document.createElement("style");
     style.id = "athar-identity-global-style";
     style.textContent = `
-      html,body{background-color:var(--athar-identity-surface,#f7f7f5)!important}
+      /* ATHAR 2027: جميع خلفيات التطبيق والشاشات والبطاقات بيضاء. */
+      html,body{background:#fff!important;background-color:#fff!important}
       body{position:relative;isolation:isolate;color:var(--athar-identity-text,#191919)}
-      /* خلفية الهوية النشطة هي المصدر الوحيد لصورة الخلفية في التطبيق كله. */
-      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-color:var(--athar-identity-surface,#f7f7f5);background-image:linear-gradient(rgba(255,255,255,.80),rgba(255,255,255,.80)),var(--athar-identity-image,none);background-size:cover;background-position:center center;background-repeat:no-repeat}
-      .screen,.screen.ma3da-published-background{background-color:transparent!important;background-image:none!important;color:var(--athar-identity-text,#191919)!important}
+      body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:#fff!important;background-image:none!important}
+      .screen,.screen.ma3da-published-background{
+        box-sizing:border-box!important;background:#fff!important;background-color:#fff!important;
+        background-image:none!important;color:var(--athar-identity-text,#191919)!important;
+        border:2px solid var(--athar-identity-frame,#c8a45b)!important;
+        border-radius:20px!important;
+      }
+      /* الشاشات الكبيرة والصغيرة والبطاقات الداخلية: أبيض مع إطار الهوية. */
+      .screen .card,.screen .panel,.screen .section-card,.screen .content-card,
+      .screen .info-card,.screen .menu-card,.screen .dashboard-card,
+      .screen .request-card,.screen .order-card,.screen .stat-card,
+      .screen .form-card,.screen .settings-card,.screen .invoice-card,
+      .screen .equipment-card,.screen .project-card,.screen .support-card,
+      .screen [class*="card"],.screen [class*="panel"]{
+        box-sizing:border-box!important;background:#fff!important;background-color:#fff!important;
+        background-image:none!important;border:1.5px solid var(--athar-identity-frame,#c8a45b)!important;
+        color:var(--athar-identity-text,#191919)!important;
+      }
+      .screen input,.screen select,.screen textarea{
+        background:#fff!important;color:#191919!important;
+        border-color:var(--athar-identity-frame,#c8a45b)!important;
+      }
+      /* عبارة الترحيب والتهنئة في الصفحات الرئيسية. */
+      .athar-home-tagline{
+        display:block!important;width:100%!important;box-sizing:border-box!important;
+        margin:18px auto 22px!important;padding:12px 8px!important;
+        color:#c8a45b!important;font-size:clamp(23px,5.4vw,34px)!important;
+        line-height:1.65!important;font-weight:900!important;letter-spacing:.1px!important;
+        text-align:center!important;text-shadow:0 1px 0 rgba(255,255,255,.9)!important;
+      }
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
         box-sizing:border-box!important;background:#fff!important;color:var(--athar-identity-text,#191919)!important;
@@ -17037,7 +17065,14 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.dataset.atharIdentity = activeIdentity;
     root.style.setProperty("--athar-identity-primary", identity.primary);
     root.style.setProperty("--athar-identity-accent", identity.accent);
-    root.style.setProperty("--athar-identity-frame", activeIdentity === "classic" ? "#c8a45b" : identity.primary);
+    const frameColor = ({
+      nationalDay: "#79B98A",
+      foundingDay: "#C8A45B",
+      eidFitr: "#2876B9",
+      eidAdha: "#2876B9",
+      classic: "#C8A45B"
+    })[activeIdentity] || "#C8A45B";
+    root.style.setProperty("--athar-identity-frame", frameColor);
     root.style.setProperty("--athar-button-bg", identity.buttonBg || "#D6B45E");
     root.style.setProperty("--athar-button-text", identity.buttonText || "#171717");
     root.style.setProperty("--athar-identity-surface", identity.surface);
@@ -17059,7 +17094,11 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         (page.querySelector(".hero, .operator-dashboard-header") || page).appendChild(el);
       }
       el.textContent = tagline || "";
-      el.style.color = identity.primary;
+      el.style.color = "#C8A45B";
+      el.style.fontSize = "clamp(23px, 5.4vw, 34px)";
+      el.style.fontWeight = "900";
+      el.style.lineHeight = "1.65";
+      el.style.textAlign = "center";
     });
     updateCards();
   }
