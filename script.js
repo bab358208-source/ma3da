@@ -5571,17 +5571,13 @@ async function loadOperatorDashboard(){
     const data =
       operatorSnap.data();
  
-    const registeredOwnerName =
-      data.name || data.fullName || data.displayName ||
-      window.ma3daAuth?.currentUser?.displayName ||
-      (window.ma3daAuth?.currentUser?.email || "").split("@")[0] ||
-      "صاحب المعدة";
-
-    const nameElement = document.getElementById("operatorHomeName");
-    if(nameElement) nameElement.textContent = registeredOwnerName;
-
-    const accountNameElement = document.getElementById("atharOperatorAccountName");
-    if(accountNameElement) accountNameElement.textContent = registeredOwnerName;
+    const nameElement =
+      document.getElementById("operatorHomeName");
+ 
+    if(nameElement)
+      nameElement.textContent =
+        data.name || data.fullName || data.displayName || window.ma3daAuth?.currentUser?.displayName ||
+        "صاحب المعدة";
  
   }
  
@@ -16843,9 +16839,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#D6B45E", buttonText: "#171717",
       surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
-        customer: "آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",
-        owner: "آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.",
-        projects: "آثار… من طموح المشاريع تبدأ حكايات الإنجاز."
+        customer: "خطوتك الأولى نحو مشروع يليق بطموحك.",
+        owner: "معدتك أداة إنجاز… وطموحك يصنع الفرق.",
+        projects: "من فكرة طموحة… إلى مشروع يتحقق."
       }
     },
     eidFitr: {
@@ -16853,9 +16849,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f7f4e9", text: "#17392f", image: IMAGE_BY_ID.eidFitr,
       taglines: {
-        customer: "عيدكم إنجاز… وآثار تجمعنا على الخير.",
-        owner: "بمعداتكم تكتمل فرحة الإنجاز.",
-        projects: "مشاريع تزهر بالخير وتبقى آثارها."
+        customer: "في أيام الخير… أنجز مشروعك بثقة.",
+        owner: "في عيد الخير… عطاءك يصنع الفرق.",
+        projects: "أيام مباركة… ومشاريع تزدهر بالإنجاز."
       }
     },
     nationalDay: {
@@ -16864,8 +16860,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       surface: "#f1f6f1", text: "#123d2c", image: IMAGE_BY_ID.nationalDay,
       taglines: {
         customer: "همة وطن… ومشاريع تصنع المستقبل.",
-        owner: "بمعداتكم نبني ونترك أثرًا لوطننا.",
-        projects: "من أرض الوطن تبدأ حكايات الإنجاز."
+        owner: "بعزم الرجال… نبني وطناً ونصنع إنجازاً.",
+        projects: "وطنٌ يطمح… ومشاريع تعانق القمم."
       }
     },
     foundingDay: {
@@ -16873,9 +16869,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#795437",
       surface: "#f4eee4", text: "#463323", image: IMAGE_BY_ID.foundingDay,
       taglines: {
-        customer: "جذور راسخة… وإنجاز يمتد للمستقبل.",
-        owner: "من أصالة الأرض نصنع أثر البناء.",
-        projects: "مشاريع اليوم امتداد لقصة وطن."
+        customer: "من جذور المجد… تبدأ حكايات الإنجاز.",
+        owner: "من أصالة الماضي… إلى قوة العطاء.",
+        projects: "على خطى المجد… نواصل بناء المستقبل."
       }
     },
     eidAdha: {
@@ -16883,9 +16879,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f5f1e7", text: "#26392d", image: IMAGE_BY_ID.eidAdha,
       taglines: {
-        customer: "في أيام الخير… أنجز مشروعك بثقة.",
-        owner: "سخّر معداتك لصناعة أثرٍ أكبر.",
-        projects: "خطوات ثابتة ومشاريع تنمو بالإنجاز."
+        customer: "عيد أضحى مبارك… واجعل إنجازك يكتمل.",
+        owner: "أضحى مبارك… واجعل من عطائك إنجازاً.",
+        projects: "عيد الأضحى… موسم الخير واكتمال الإنجاز."
       }
     }
   };
@@ -16965,8 +16961,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         position:relative!important;isolation:isolate!important;overflow:hidden!important;
         display:flex!important;flex-direction:column!important;align-items:center!important;
         justify-content:center!important;gap:8px!important;
-        width:100%!important;min-height:116px!important;box-sizing:border-box!important;
-        margin:4px auto 18px!important;padding:17px 14px 16px!important;
+        width:100%!important;min-height:158px!important;box-sizing:border-box!important;
+        margin:4px auto 20px!important;padding:22px 16px 24px!important;
         background:#fff!important;border:2px solid var(--athar-identity-frame,#c8a45b)!important;
         border-radius:18px!important;text-align:center!important;
         box-shadow:0 5px 18px rgba(30,30,30,.055),inset 0 0 0 4px rgba(255,255,255,.9)!important;
@@ -16995,17 +16991,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
       .athar-home-identity-slogan{
         display:block!important;max-width:100%!important;margin:0!important;padding:0 5px 5px!important;
-        color:#bd8b35!important;font-size:clamp(17px,4.4vw,23px)!important;
+        color:#bd8b35!important;font-size:clamp(19px,4.8vw,25px)!important;
         font-weight:900!important;line-height:1.5!important;text-align:center!important;
         text-wrap:balance!important;text-shadow:0 1px 0 rgba(255,255,255,.95)!important;
       }
-      /* صفحة صاحب المعدة: تكبير اللوحة وإظهار اسم الحساب أسفل العبارة. */
-      #operatorHomeScreen .athar-home-identity-panel[data-home-role="owner"]{
-        min-height:174px!important;padding:23px 16px 22px!important;gap:11px!important;margin-top:4px!important;margin-bottom:22px!important;
-      }
-      #operatorHomeScreen .athar-home-identity-title{font-size:clamp(22px,5.4vw,29px)!important;padding:9px 24px!important}
-      #operatorHomeScreen .athar-home-identity-slogan{font-size:clamp(21px,5.1vw,27px)!important;line-height:1.55!important;padding-bottom:2px!important}
-      .athar-home-account-name{display:block!important;max-width:100%!important;margin:0!important;padding:3px 12px 5px!important;color:var(--athar-identity-primary,#171717)!important;font-size:clamp(17px,4.2vw,21px)!important;font-weight:900!important;line-height:1.45!important;text-align:center!important}
       html[data-athar-identity="nationalDay"] .athar-home-identity-panel{
         border-width:2.5px!important;background:linear-gradient(110deg,#fff 0%,#f8fcf8 50%,#fff 100%)!important;
       }
@@ -17019,10 +17008,15 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       html[data-athar-identity="classic"] .athar-home-identity-panel{
         background:linear-gradient(110deg,#fff 0%,#fffdf8 50%,#fff 100%)!important;
       }
+      .athar-home-account-name{
+        display:block!important;max-width:100%!important;margin:2px 0 0!important;
+        color:var(--athar-identity-primary,#171717)!important;font-size:clamp(15px,3.8vw,19px)!important;
+        font-weight:800!important;line-height:1.4!important;text-align:center!important;
+      }
       @media(max-width:420px){
-        .athar-home-identity-panel{min-height:108px!important;padding:14px 10px 13px!important;margin-bottom:15px!important}
+        .athar-home-identity-panel{min-height:146px!important;padding:18px 12px 20px!important;margin-bottom:16px!important}
         .athar-home-identity-title{font-size:16px!important;padding:6px 15px!important}
-        .athar-home-identity-slogan{font-size:17px!important;line-height:1.45!important}
+        .athar-home-identity-slogan{font-size:18px!important;line-height:1.45!important}
       }
       /* كل شاشة مطلوبة تظهر كلوحة بيضاء واحدة بإطار الهوية النشطة. */
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
@@ -17139,7 +17133,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
-    /* بطاقة صغيرة موحدة: عنوان الصفحة الرئيسية والعبارة التي اعتمدها المستخدم. */
+    /* ATHAR 2027: العبارات المعتمدة لكل دور بحسب الهوية النشطة. */
     [
       ["customerHomeScreen","customer"],
       ["operatorHomeScreen","owner"],
@@ -17147,46 +17141,53 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     ].forEach(([id, role])=>{
       const page = $(id);
       if (!page) return;
-      // إزالة العبارة القديمة التي كانت تُضاف داخل الهيدر حتى لا تتكرر.
+
+      // إزالة عبارات الترحيب القديمة من داخل رؤوس الصفحات.
       page.querySelectorAll(".athar-home-tagline").forEach(node=>node.remove());
+
       let panel = page.querySelector(":scope > .athar-home-identity-panel");
       if (!panel){
         panel = document.createElement("section");
         panel.className = "athar-home-identity-panel";
         panel.setAttribute("aria-label","الصفحة الرئيسية");
-        const title = document.createElement("h2");
-        title.className = "athar-home-identity-title";
-        title.textContent = "الصفحة الرئيسية";
-        const slogan = document.createElement("p");
-        slogan.className = "athar-home-identity-slogan";
-        slogan.textContent = role === "owner"
-          ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
-          : "همة وطن… ومشاريع تصنع المستقبل.";
-        panel.append(title,slogan);
-        if(role === "owner") {
-          const accountName = document.createElement("span");
-          accountName.className = "athar-home-account-name";
-          accountName.id = "atharOperatorAccountName";
-          accountName.textContent = "صاحب المعدة";
-          panel.appendChild(accountName);
-        }
         page.insertBefore(panel,page.firstChild);
-      } else {
-        const title = panel.querySelector(".athar-home-identity-title");
-        const slogan = panel.querySelector(".athar-home-identity-slogan");
-        if (title) title.textContent = "الصفحة الرئيسية";
-        if (slogan) slogan.textContent = role === "owner"
-          ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
-          : "همة وطن… ومشاريع تصنع المستقبل.";
-        if(role === "owner" && !panel.querySelector(".athar-home-account-name")){
-          const accountName = document.createElement("span");
-          accountName.className = "athar-home-account-name";
-          accountName.id = "atharOperatorAccountName";
-          accountName.textContent = "صاحب المعدة";
-          panel.appendChild(accountName);
+      }
+
+      let title = panel.querySelector(".athar-home-identity-title");
+      if (!title){
+        title = document.createElement("h2");
+        title.className = "athar-home-identity-title";
+        panel.appendChild(title);
+      }
+      title.textContent = "الصفحة الرئيسية";
+
+      let slogan = panel.querySelector(".athar-home-identity-slogan");
+      if (!slogan){
+        slogan = document.createElement("p");
+        slogan.className = "athar-home-identity-slogan";
+        panel.appendChild(slogan);
+      }
+      slogan.textContent = identity.taglines?.[role] || defaults.classic.taglines[role];
+
+      // اسم العميل واسم صاحب المشروع يظهران أسفل العبارة داخل اللوحة نفسها.
+      if (role === "customer" || role === "projects"){
+        const nameId = role === "customer" ? "customerHomeName" : "contractorHomeName";
+        let nameLine = panel.querySelector(".athar-home-account-name");
+        let nameNode = document.getElementById(nameId);
+        if (!nameNode){
+          nameNode = document.createElement("span");
+          nameNode.id = nameId;
+          nameNode.textContent = role === "customer" ? "مستخدم" : "مقاول";
         }
+        if (!nameLine){
+          nameLine = document.createElement("div");
+          nameLine.className = "athar-home-account-name";
+          panel.appendChild(nameLine);
+        }
+        if (nameNode.parentElement !== nameLine) nameLine.appendChild(nameNode);
       }
       panel.dataset.homeRole = role;
+      panel.dataset.homeIdentity = activeIdentity;
     });
     updateCards();
   }
