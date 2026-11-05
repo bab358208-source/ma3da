@@ -17118,8 +17118,97 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       #atharIdentityStatus{min-height:24px;margin-top:12px;color:var(--athar-identity-primary)}
       #atharIdentityStatus[data-error="1"]{color:#a32626}
       @media(max-width:420px){.athar-identity-card img{height:116px}.athar-identity-card-caption{align-items:flex-start;flex-direction:column;gap:4px}.athar-identity-base-row{align-items:stretch;flex-direction:column}.athar-identity-base-row button{width:100%}}
+
+      /* ATHAR FIX: الزخرفة نفسها تنتقل إلى كل الشاشات الداخلية والبطاقات الصغيرة. */
+      html[data-athar-identity] body .screen,
+      html[data-athar-identity] body .screen .card:not(.athar-identity-card),
+      html[data-athar-identity] body .screen .panel,
+      html[data-athar-identity] body .screen .section-card,
+      html[data-athar-identity] body .screen .content-card,
+      html[data-athar-identity] body .screen .info-card,
+      html[data-athar-identity] body .screen .menu-card,
+      html[data-athar-identity] body .screen .dashboard-card,
+      html[data-athar-identity] body .screen .request-card,
+      html[data-athar-identity] body .screen .order-card,
+      html[data-athar-identity] body .screen .stat-card,
+      html[data-athar-identity] body .screen .form-card,
+      html[data-athar-identity] body .screen .settings-card,
+      html[data-athar-identity] body .screen .invoice-card,
+      html[data-athar-identity] body .screen .equipment-card,
+      html[data-athar-identity] body .screen .project-card,
+      html[data-athar-identity] body .screen .support-card,
+      html[data-athar-identity] body .screen [class*="card"]:not(.athar-identity-card),
+      html[data-athar-identity] body .screen [class*="panel"] {
+        background-image:
+          radial-gradient(circle at 8% 18%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 42%,transparent) 0 1px,transparent 2px),
+          radial-gradient(circle at 92% 82%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 42%,transparent) 0 1px,transparent 2px),
+          linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent),
+          linear-gradient(#fff,#fff)!important;
+        background-size:24px 24px,24px 24px,76px 2px,auto!important;
+        background-position:left top,right bottom,center bottom,center!important;
+        background-repeat:repeat,repeat,no-repeat,no-repeat!important;
+        background-color:#fff!important;
+      }
+      html[data-athar-identity] body .screen {
+        background-image:
+          radial-gradient(circle at 8% 18%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
+          radial-gradient(circle at 92% 82%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
+          linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent),
+          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.92))!important;
+        background-size:24px 24px,24px 24px,76px 2px,auto!important;
+        background-position:left top,right bottom,center bottom,center!important;
+        background-repeat:repeat,repeat,no-repeat,no-repeat!important;
+      }
+
+      /* زخرفة الهوية على كل أنواع الأزرار والروابط التفاعلية، في كل الأدوار والشاشات. */
+      html[data-athar-identity] body :is(
+        button:not(.athar-identity-card),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],
+        a.button,a.btn,.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,
+        .home-request-btn,.home-menu-item
+      ) {
+        background-color:var(--athar-button-bg,#D6B45E)!important;
+        background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;
+        background-repeat:repeat,no-repeat!important;
+        background-size:220px 72px,100% 100%!important;
+        background-position:center center,center!important;
+        color:var(--athar-button-text,#171717)!important;
+        border-color:var(--athar-identity-accent,#c8a45b)!important;
+      }
+      html[data-athar-identity] body :is(
+        button:not(.athar-identity-card),[role="button"],a.button,a.btn,.btn,.main-btn,.primary-btn,
+        .secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item
+      ) :is(span,strong,b,small,i,svg) {
+        color:var(--athar-button-text,#171717)!important;
+      }
+      html[data-athar-identity] body .screen :is(.card,.panel,[class*="card"],[class*="panel"]):not(.athar-identity-card) {
+        border-color:var(--athar-identity-frame,#c8a45b)!important;
+      }
     `;
     document.head.appendChild(style);
+  }
+
+  /* يفرض زخرفة الهوية مباشرة على عناصر التفاعل حتى لا تطغى عليها قواعد CSS الأقدم. */
+  function decorateAllControls(root=document){
+    const selector = 'button:not(.athar-identity-card),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item';
+    const nodes = [];
+    if (root.matches?.(selector)) nodes.push(root);
+    root.querySelectorAll?.(selector).forEach(node=>nodes.push(node));
+    const ornament = motifFor(activeIdentity, getComputedStyle(document.documentElement).getPropertyValue("--athar-identity-accent").trim() || "#c8a45b");
+    nodes.forEach(node=>{
+      if (node.classList?.contains("athar-identity-card")) return;
+      node.style.setProperty("background-color","var(--athar-button-bg,#D6B45E)","important");
+      node.style.setProperty("background-image",`${ornament},linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))`,"important");
+      node.style.setProperty("background-repeat","repeat,no-repeat","important");
+      node.style.setProperty("background-size","220px 72px,100% 100%","important");
+      node.style.setProperty("background-position","center center,center","important");
+      node.style.setProperty("color","var(--athar-button-text,#171717)","important");
+      node.style.setProperty("border-color","var(--athar-identity-accent,#c8a45b)","important");
+    });
+  }
+
+  function decorateAllScreens(){
+    document.querySelectorAll(".screen").forEach(screen=>screen.classList.add("athar-ornamented-screen"));
+    decorateAllControls(document);
   }
 
   function updateCards(){
@@ -17154,6 +17243,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
+    // تحديث كل الأزرار والشاشات عند كل تبديل للهوية، وليس صفحة العميل فقط.
+    decorateAllScreens();
     /* بطاقة صغيرة موحدة: عنوان الصفحة الرئيسية والعبارة التي اعتمدها المستخدم. */
     [
       ["customerHomeScreen","customer"],
@@ -17287,6 +17378,19 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function init(){
     if (initialized) return;
     initialized = true;
+    // الشاشات والأزرار التي تُنشأ لاحقاً تأخذ الزخرفة نفسها تلقائياً.
+    decorateAllScreens();
+    if (document.body && !window.__atharOrnamentObserver) {
+      window.__atharOrnamentObserver = new MutationObserver(records=>{
+        records.forEach(record=>record.addedNodes.forEach(node=>{
+          if (node.nodeType === 1) {
+            if (node.matches?.(".screen")) node.classList.add("athar-ornamented-screen");
+            decorateAllControls(node);
+          }
+        }));
+      });
+      window.__atharOrnamentObserver.observe(document.body,{childList:true,subtree:true});
+    }
     // ربط بالنقر التفويضي حتى تعمل البطاقات حتى لو أُنشئت لوحة التحكم لاحقاً.
     document.addEventListener("click", event=>{
       const card = event.target.closest?.(".athar-identity-card[data-identity]");
