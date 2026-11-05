@@ -10799,6 +10799,7 @@ setTimeout(
         ) || "null"
       );
   }
+  window.contractorGetProfile = contractorGetProfile;
  
  
   function contractorSetRole() {
@@ -11016,6 +11017,8 @@ async function loadContractorProfile() {
       homeName.textContent =
         name || "مقاول";
     }
+    const atharProjectAccountName = document.getElementById("atharContractorAccountName");
+    if (atharProjectAccountName) atharProjectAccountName.textContent = name || window.ma3daAuth?.currentUser?.displayName || "";
  
  
     const settingsName =
@@ -16938,7 +16941,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:#fff!important;background-image:none!important}
       .screen,.screen.ma3da-published-background{
         box-sizing:border-box!important;background:#fff!important;background-color:#fff!important;
-        background-image:none!important;color:var(--athar-identity-text,#191919)!important;
+        background-image:
+          radial-gradient(circle at 8% 18%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
+          radial-gradient(circle at 92% 82%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
+          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.92))!important;
+        background-size:24px 24px,24px 24px,auto!important;background-repeat:repeat,repeat,no-repeat!important;
+        color:var(--athar-identity-text,#191919)!important;
         border:2px solid var(--athar-identity-frame,#c8a45b)!important;
         border-radius:20px!important;
       }
@@ -16990,6 +16998,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         background:#fff!important;color:var(--athar-identity-primary,#171717)!important;
         font-size:clamp(16px,3.8vw,20px)!important;font-weight:900!important;line-height:1.35!important;
       }
+      #contractorHomeScreen .athar-home-account-name{display:block!important;color:var(--athar-identity-primary,#171717)!important;font-size:21px!important;font-weight:900!important;line-height:1.4!important}
       .athar-home-identity-slogan{
         display:block!important;max-width:100%!important;margin:0!important;padding:0 5px 5px!important;
         color:#bd8b35!important;font-size:clamp(17px,4.4vw,23px)!important;
@@ -16997,20 +17006,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         text-wrap:balance!important;text-shadow:0 1px 0 rgba(255,255,255,.95)!important;
       }
       /* تكبير بطاقة صاحب المعدة فقط؛ لا تتأثر واجهتا العميل والمشاريع. */
-      #operatorHomeScreen .athar-home-identity-panel{
+      #operatorHomeScreen .athar-home-identity-panel,#contractorHomeScreen .athar-home-identity-panel{
         min-height:172px!important;gap:12px!important;padding:24px 16px 22px!important;margin:4px auto 22px!important;
       }
-      #operatorHomeScreen .athar-home-identity-title{font-size:clamp(21px,5vw,27px)!important;padding:9px 23px!important}
-      #operatorHomeScreen .athar-home-identity-slogan{font-size:clamp(23px,5.8vw,31px)!important;line-height:1.55!important;padding-bottom:7px!important}
+      #operatorHomeScreen .athar-home-identity-title,#contractorHomeScreen .athar-home-identity-title{font-size:clamp(21px,5vw,27px)!important;padding:9px 23px!important}
+      #operatorHomeScreen .athar-home-identity-slogan,#contractorHomeScreen .athar-home-identity-slogan{font-size:clamp(23px,5.8vw,31px)!important;line-height:1.55!important;padding-bottom:7px!important}
       #operatorHomeScreen .athar-home-account-name{
         display:block!important;max-width:100%!important;color:var(--athar-identity-primary,#171717)!important;
         font-size:clamp(19px,4.8vw,25px)!important;font-weight:900!important;line-height:1.4!important;
       }
       @media(max-width:420px){
-        #operatorHomeScreen .athar-home-identity-panel{min-height:158px!important;padding:20px 12px 19px!important}
-        #operatorHomeScreen .athar-home-identity-title{font-size:21px!important}
-        #operatorHomeScreen .athar-home-identity-slogan{font-size:23px!important}
-        #operatorHomeScreen .athar-home-account-name{font-size:19px!important}
+        #operatorHomeScreen .athar-home-identity-panel,#contractorHomeScreen .athar-home-identity-panel{min-height:158px!important;padding:20px 12px 19px!important}
+        #operatorHomeScreen .athar-home-identity-title,#contractorHomeScreen .athar-home-identity-title{font-size:21px!important}
+        #operatorHomeScreen .athar-home-identity-slogan,#contractorHomeScreen .athar-home-identity-slogan{font-size:23px!important}
+        #operatorHomeScreen .athar-home-account-name,#contractorHomeScreen .athar-home-account-name{font-size:19px!important}
       }
       html[data-athar-identity="nationalDay"] .athar-home-identity-panel{
         border-width:2.5px!important;background:linear-gradient(110deg,#fff 0%,#f8fcf8 50%,#fff 100%)!important;
@@ -17082,7 +17091,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       #roleScreen,#phoneScreen,#customerHomeScreen,#operatorHomeScreen,#contractorHomeScreen{
         color:var(--athar-identity-text,#191919)!important
       }
-      button:not(.athar-identity-card),.btn,[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item{
+      body button:not(.athar-identity-card),body .btn,body [role="button"],body input[type="button"],body input[type="submit"],body input[type="reset"],body a.button,body a.btn,body .main-btn,body .primary-btn,body .secondary-btn,body .action-btn,body .tab-btn,body .nav-btn,body .home-request-btn,body .home-menu-item{
         background:var(--athar-button-bg,#D6B45E)!important;background-image:var(--athar-button-ornament),linear-gradient(var(--athar-button-bg,#D6B45E),var(--athar-button-bg,#D6B45E))!important;background-repeat:no-repeat!important;background-size:220px 72px,auto!important;background-position:center center,center!important;color:var(--athar-button-text,#171717)!important;border-color:var(--athar-identity-accent,#c8a45b)!important;font-family:inherit!important
       }
       /* صفحة العميل: فرض لون الهوية على نصوص الأزرار الداخلية أيضاً */
@@ -17155,7 +17164,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if (!page) return;
       // إزالة العبارة القديمة التي كانت تُضاف داخل الهيدر حتى لا تتكرر.
       page.querySelectorAll(".athar-home-tagline").forEach(node=>node.remove());
-      let panel = page.querySelector(":scope > .athar-home-identity-panel");
+      const existingPanels = Array.from(page.querySelectorAll(".athar-home-identity-panel"));
+      let panel = existingPanels.shift() || null;
+      // احتفظ بلوحة واحدة فقط؛ يمنع تكرار بطاقة الصفحة الرئيسية داخل صفحة صاحب المعدة.
+      existingPanels.forEach(extra => extra.remove());
       if (!panel){
         panel = document.createElement("section");
         panel.className = "athar-home-identity-panel";
@@ -17169,11 +17181,14 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
           : "همة وطن… ومشاريع تصنع المستقبل.";
         panel.append(title,slogan);
-        if (role === "owner") {
+        if (role === "owner" || role === "projects") {
           const accountName = document.createElement("span");
           accountName.className = "athar-home-account-name";
-          accountName.id = "atharOperatorAccountName";
-          accountName.textContent = document.getElementById("operatorHomeName")?.textContent?.trim() || window.ma3daAuth?.currentUser?.displayName || "صاحب المعدة";
+          accountName.id = role === "owner" ? "atharOperatorAccountName" : "atharContractorAccountName";
+          const profile = role === "projects" ? (window.contractorGetProfile?.() || {}) : {};
+          accountName.textContent = role === "owner"
+            ? (document.getElementById("operatorHomeName")?.textContent?.trim() || window.ma3daAuth?.currentUser?.displayName || "صاحب المعدة")
+            : (profile.name || profile.contractorName || profile.fullName || profile.displayName || window.ma3daAuth?.currentUser?.displayName || "");
           panel.appendChild(accountName);
         }
         page.insertBefore(panel,page.firstChild);
@@ -17184,15 +17199,19 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if (slogan) slogan.textContent = role === "owner"
           ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
           : "همة وطن… ومشاريع تصنع المستقبل.";
-        if (role === "owner") {
+        if (role === "owner" || role === "projects") {
           let accountName = panel.querySelector(".athar-home-account-name");
           if (!accountName) {
             accountName = document.createElement("span");
             accountName.className = "athar-home-account-name";
-            accountName.id = "atharOperatorAccountName";
+            accountName.id = role === "owner" ? "atharOperatorAccountName" : "atharContractorAccountName";
             panel.appendChild(accountName);
           }
-          accountName.textContent = (accountName.textContent && accountName.textContent !== "صاحب المعدة") ? accountName.textContent : (window.ma3daAuth?.currentUser?.displayName || "صاحب المعدة");
+          const profile = role === "projects" ? (window.contractorGetProfile?.() || {}) : {};
+          const registeredName = role === "owner"
+            ? (window.ma3daAuth?.currentUser?.displayName || "صاحب المعدة")
+            : (profile.name || profile.contractorName || profile.fullName || profile.displayName || window.ma3daAuth?.currentUser?.displayName || "");
+          if (registeredName && (!accountName.textContent || accountName.textContent === "صاحب المعدة")) accountName.textContent = registeredName;
         }
       }
       panel.dataset.homeRole = role;
