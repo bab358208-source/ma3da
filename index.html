@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>مِعدة</title>
+  <title>آثار | ATHAR</title>
 
   <link
     rel="stylesheet"
@@ -83,6 +83,31 @@
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<style id="athar-role-footer-styles">
+  #roleScreen.active{display:flex!important;flex-direction:column!important;min-height:calc(100vh - 28px);}
+  #roleScreen .athar-role-footer{width:100%;margin:auto auto 0;padding:24px 0 8px;box-sizing:border-box;text-align:center;}
+  #roleScreen .athar-footer-brand{display:flex;align-items:center;justify-content:center;gap:9px;margin:0 auto 18px;color:#a97727;}
+  #roleScreen .athar-footer-mark{display:grid;place-items:center;width:43px;height:43px;border:2px solid #c99b45;border-radius:50%;font-size:27px;font-weight:900;line-height:1;}
+  #roleScreen .athar-footer-name{display:flex;flex-direction:column;font-size:23px;font-weight:900;line-height:1.05;}
+  #roleScreen .athar-footer-name small{font-size:10px;letter-spacing:3px;font-weight:800;margin-top:4px;}
+  #roleScreen .athar-footer-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;}
+  #roleScreen .athar-footer-link{display:flex;min-width:0;min-height:92px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 4px!important;border:1.5px solid #d7ad60!important;border-radius:16px!important;background:linear-gradient(145deg,#fffdf8,#f8efdd)!important;background-image:linear-gradient(145deg,#fffdf8,#f8efdd)!important;color:#49371d!important;font:inherit;font-size:clamp(12px,3.2vw,15px)!important;font-weight:800!important;box-shadow:0 4px 12px rgba(123,86,28,.09)!important;cursor:pointer;}
+  #roleScreen .athar-footer-link span{color:#49371d!important;}
+  #roleScreen .athar-footer-link .athar-footer-icon{color:#a87524!important;}
+  #roleScreen .athar-footer-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#f1dfbb;color:#a87524;font-size:22px;line-height:1;}
+  #roleScreen .athar-footer-copyright{display:flex;align-items:center;justify-content:center;gap:8px;margin:22px 0 0;color:#9a6b25;font-size:clamp(11px,3vw,14px);font-weight:800;line-height:1.7;}
+  #roleScreen .athar-footer-copyright:before,#roleScreen .athar-footer-copyright:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#d8ad62);}
+  #roleScreen .athar-footer-copyright:after{transform:scaleX(-1);}
+  .athar-footer-dialog{width:min( calc(100% - 36px), 420px);padding:0;border:1px solid #d7ad60;border-radius:18px;background:#fffdf8;color:#302719;box-shadow:0 18px 55px rgba(0,0,0,.22);}
+  .athar-footer-dialog::backdrop{background:rgba(25,20,12,.48);backdrop-filter:blur(2px);}
+  .athar-footer-dialog-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #ead9b8;}
+  .athar-footer-dialog-head h2{margin:0;color:#9b6c27;font-size:19px;}
+  .athar-footer-dialog-head button{width:34px;height:34px;border:0;border-radius:50%;background:#f3e6cd;color:#654719;font-size:24px;line-height:1;cursor:pointer;}
+  #atharFooterDialogMessage{padding:8px 18px 18px;line-height:1.8;}
+  @media(max-width:360px){#roleScreen .athar-footer-links{gap:5px}#roleScreen .athar-footer-link{min-height:82px;font-size:11px!important;border-radius:12px!important}}
+</style>
+
 </head>
 
 
@@ -92,7 +117,7 @@
 <header class="header">
 
   <div class="logo">
-    مِعدة
+    آثار
   </div>
 
 </header>
@@ -102,11 +127,11 @@
 
 
 <!-- =====================================================
-     مقدمة مِعدة
+     مقدمة آثار
 ===================================================== -->
 
 
-<!-- الصفحة: الصفحة التعريفية: مقدمة مِعدة | المعرّف البرمجي: introScreen -->
+<!-- الصفحة: الصفحة التعريفية: مقدمة آثار | المعرّف البرمجي: introScreen -->
 <section
   id="introScreen"
   class="screen active"
@@ -119,7 +144,7 @@
     </div>
 
     <h1>
-      أهلاً بك في مِعدة
+      أهلاً بك في آثار
     </h1>
 
     <p>
@@ -162,11 +187,11 @@
 
 
 <!-- =====================================================
-     ما هو مِعدة؟
+     ما هي آثار؟
 ===================================================== -->
 
 
-<!-- الصفحة: الصفحة التعريفية: لماذا مِعدة | المعرّف البرمجي: whyMa3daScreen -->
+<!-- الصفحة: الصفحة التعريفية: لماذا آثار | المعرّف البرمجي: whyMa3daScreen -->
 <section
   id="whyMa3daScreen"
   class="screen"
@@ -179,7 +204,7 @@
     </div>
 
     <h1>
-      ما هو مِعدة؟
+      ما هي آثار؟
     </h1>
 
     <p>
@@ -211,11 +236,11 @@
 
 
 <!-- =====================================================
-     لماذا مِعدة؟
+     لماذا آثار؟
 ===================================================== -->
 
 
-<!-- الصفحة: الصفحة التعريفية: كيف تعمل مِعدة | المعرّف البرمجي: howMa3daScreen -->
+<!-- الصفحة: الصفحة التعريفية: كيف تعمل آثار | المعرّف البرمجي: howMa3daScreen -->
 <section
   id="howMa3daScreen"
   class="screen"
@@ -228,7 +253,7 @@
     </div>
 
     <h1>
-      لماذا مِعدة؟
+      لماذا آثار؟
     </h1>
 
     <p>
@@ -260,11 +285,11 @@
 
 
 <!-- =====================================================
-     كيف تعمل مِعدة؟
+     كيف تعمل آثار؟
 ===================================================== -->
 
 
-<!-- الصفحة: الصفحة التعريفية: خطوات استخدام مِعدة | المعرّف البرمجي: howWorksScreen -->
+<!-- الصفحة: الصفحة التعريفية: خطوات استخدام آثار | المعرّف البرمجي: howWorksScreen -->
 <section
   id="howWorksScreen"
   class="screen"
@@ -277,7 +302,7 @@
     </div>
 
     <h1>
-      كيف تعمل مِعدة؟
+      كيف تعمل آثار؟
     </h1>
 
     <p>
@@ -338,7 +363,7 @@
     </div>
 
     <h1>
-      مرحبًا بك في مِعدة
+      مرحبًا بك في آثار
     </h1>
 
     <p>
@@ -385,6 +410,44 @@
     </button>
 
   </div>
+
+  <footer class="athar-role-footer" aria-label="معلومات منصة آثار">
+    <div class="athar-footer-brand" aria-hidden="true">
+      <span class="athar-footer-mark">آ</span>
+      <span class="athar-footer-name">آثار <small>ATHAR</small></span>
+    </div>
+
+    <nav class="athar-footer-links" aria-label="روابط آثار">
+      <button type="button" class="athar-footer-link" data-athar-footer="حقوقنا">
+        <span class="athar-footer-icon" aria-hidden="true">⚖</span>
+        <span>حقوقنا</span>
+      </button>
+      <button type="button" class="athar-footer-link" data-athar-footer="رؤيتنا">
+        <span class="athar-footer-icon" aria-hidden="true">◎</span>
+        <span>رؤيتنا</span>
+      </button>
+      <button type="button" class="athar-footer-link" data-athar-footer="من نحن">
+        <span class="athar-footer-icon" aria-hidden="true">♙</span>
+        <span>من نحن</span>
+      </button>
+      <button type="button" class="athar-footer-link" data-athar-footer="تواصل معنا">
+        <span class="athar-footer-icon" aria-hidden="true">☏</span>
+        <span>تواصل معنا</span>
+      </button>
+    </nav>
+
+    <div class="athar-footer-copyright">
+      <span>© جميع الحقوق محفوظة لآثار ATHAR – 2026</span>
+    </div>
+  </footer>
+
+  <dialog id="atharFooterInfoDialog" class="athar-footer-dialog" aria-labelledby="atharFooterDialogTitle">
+    <div class="athar-footer-dialog-head">
+      <h2 id="atharFooterDialogTitle">آثار ATHAR</h2>
+      <button type="button" id="atharFooterDialogClose" aria-label="إغلاق">×</button>
+    </div>
+    <p id="atharFooterDialogMessage">سيتم إضافة محتوى هذا القسم هنا.</p>
+  </dialog>
 
 </section>
 
@@ -582,7 +645,7 @@
     </h1>
 
     <p>
-      أدخل بياناتك لإكمال حسابك في مِعدة
+      أدخل بياناتك لإكمال حسابك في آثار
     </p>
 
   </div>
@@ -722,7 +785,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: addEquipmentScreen | المعرّف البرمجي: addEquipmentScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: addEquipmentScreen | المعرّف البرمجي: addEquipmentScreen -->
 <section
   id="addEquipmentScreen"
   class="screen"
@@ -2350,7 +2413,7 @@
 
 
     <p>
-      ملخص دخلك من أعمالك في مِعدة
+      ملخص دخلك من أعمالك في آثار
     </p>
 
 
@@ -2717,7 +2780,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: currentOrdersScreen | المعرّف البرمجي: currentOrdersScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: currentOrdersScreen | المعرّف البرمجي: currentOrdersScreen -->
 <section
   id="currentOrdersScreen"
   class="screen"
@@ -2779,7 +2842,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: previousOrdersScreen | المعرّف البرمجي: previousOrdersScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: previousOrdersScreen | المعرّف البرمجي: previousOrdersScreen -->
 <section
   id="previousOrdersScreen"
   class="screen"
@@ -3094,7 +3157,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: editPhoneScreen | المعرّف البرمجي: editPhoneScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: editPhoneScreen | المعرّف البرمجي: editPhoneScreen -->
 <section
   id="editPhoneScreen"
   class="screen"
@@ -3169,7 +3232,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: editEmailScreen | المعرّف البرمجي: editEmailScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: editEmailScreen | المعرّف البرمجي: editEmailScreen -->
 <section
   id="editEmailScreen"
   class="screen"
@@ -3244,7 +3307,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: changePasswordScreen | المعرّف البرمجي: changePasswordScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: changePasswordScreen | المعرّف البرمجي: changePasswordScreen -->
 <section
   id="changePasswordScreen"
   class="screen"
@@ -3319,7 +3382,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: languageSettingsScreen | المعرّف البرمجي: languageSettingsScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: languageSettingsScreen | المعرّف البرمجي: languageSettingsScreen -->
 <section
   id="languageSettingsScreen"
   class="screen"
@@ -3435,7 +3498,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: appearanceSettingsScreen | المعرّف البرمجي: appearanceSettingsScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: appearanceSettingsScreen | المعرّف البرمجي: appearanceSettingsScreen -->
 <section
   id="appearanceSettingsScreen"
   class="screen"
@@ -3630,7 +3693,7 @@
 
 
     <p>
-      إذا واجهت مشكلة أو لديك استفسار حول مِعدة،
+      إذا واجهت مشكلة أو لديك استفسار حول آثار،
       تواصل معنا وسنساعدك.
     </p>
 
@@ -3699,7 +3762,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: requestScreen | المعرّف البرمجي: requestScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: requestScreen | المعرّف البرمجي: requestScreen -->
 <section
   id="requestScreen"
   class="screen"
@@ -3885,7 +3948,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: searchingScreen | المعرّف البرمجي: searchingScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: searchingScreen | المعرّف البرمجي: searchingScreen -->
 <section
   id="searchingScreen"
   class="screen"
@@ -3922,7 +3985,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: matchedScreen | المعرّف البرمجي: matchedScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: matchedScreen | المعرّف البرمجي: matchedScreen -->
 <section
   id="matchedScreen"
   class="screen"
@@ -3985,7 +4048,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: chatScreen | المعرّف البرمجي: chatScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: chatScreen | المعرّف البرمجي: chatScreen -->
 <section
   id="chatScreen"
   class="screen"
@@ -4082,7 +4145,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: trackingScreen | المعرّف البرمجي: trackingScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: trackingScreen | المعرّف البرمجي: trackingScreen -->
 <section
   id="trackingScreen"
   class="screen"
@@ -4155,7 +4218,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: arrivedScreen | المعرّف البرمجي: arrivedScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: arrivedScreen | المعرّف البرمجي: arrivedScreen -->
 <section
   id="arrivedScreen"
   class="screen"
@@ -4197,7 +4260,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: workingScreen | المعرّف البرمجي: workingScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: workingScreen | المعرّف البرمجي: workingScreen -->
 <section
   id="workingScreen"
   class="screen"
@@ -4266,7 +4329,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: completedScreen | المعرّف البرمجي: completedScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: completedScreen | المعرّف البرمجي: completedScreen -->
 <section
   id="completedScreen"
   class="screen"
@@ -4376,7 +4439,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: paymentScreen | المعرّف البرمجي: paymentScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: paymentScreen | المعرّف البرمجي: paymentScreen -->
 <section
   id="paymentScreen"
   class="screen"
@@ -4394,7 +4457,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: ratingScreen | المعرّف البرمجي: ratingScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: ratingScreen | المعرّف البرمجي: ratingScreen -->
 <section
   id="ratingScreen"
   class="screen"
@@ -4410,7 +4473,7 @@
 
 
     <p>
-      كيف كانت تجربتك مع مِعدة؟
+      كيف كانت تجربتك مع آثار؟
     </p>
 
 
@@ -4482,7 +4545,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: thankYouScreen | المعرّف البرمجي: thankYouScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: thankYouScreen | المعرّف البرمجي: thankYouScreen -->
 <section
   id="thankYouScreen"
   class="screen"
@@ -4913,7 +4976,7 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات مِعدة: arrivedCustomerScreen | المعرّف البرمجي: arrivedCustomerScreen -->
+<!-- الصفحة: صفحة من صفحات آثار: arrivedCustomerScreen | المعرّف البرمجي: arrivedCustomerScreen -->
 <section
   id="arrivedCustomerScreen"
   class="screen"
@@ -5005,7 +5068,7 @@
 </main>
 
 <!-- =====================================================
-     مِعدة — صفحة المقاول وصاحب المشروع
+     آثار — صفحة المقاول وصاحب المشروع
      أضيفت إلى النسخة الحالية مع الحفاظ على الشاشات الأصلية
 ===================================================== -->
 <!-- الصفحة: المقاول: البيانات الشخصية | المعرّف البرمجي: contractorDataScreen -->
@@ -5026,10 +5089,10 @@
   <div class="contractor-grid">
     <button id="contractorDataBtn" class="contractor-action" type="button"><strong>🪪 بياناتي</strong><span>عرض بيانات المقاول وتحديثها.</span><br><u>فتح بياناتي</u></button>
     <button id="contractorProjectsBtn" class="contractor-action contractor-primary" type="button"><strong>🏗️ مشاريعي</strong><span>إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.</span><br><u>عرض مشاريعي</u></button>
-    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة مِعدة.</span><br><u>فتح الفواتير</u></button>
+    <button id="contractorFinanceBtn" class="contractor-action" type="button"><strong>🧾 الفواتير والمستحقات</strong><span>إدارة فواتير المشاريع والدفعات وعمولة آثار.</span><br><u>فتح الفواتير</u></button>
     <button id="contractorSettingsBtn" class="contractor-action" type="button"><strong>⚙️ الإعدادات</strong><span>تفضيلات استخدام التطبيق.</span><br><u>فتح الإعدادات</u></button>
     <button id="contractorAccountBtn" class="contractor-action" type="button"><strong>👤 الحساب</strong><span>معلومات الحساب وتسجيل الدخول.</span><br><u>إدارة الحساب</u></button>
-    <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم مِعدة.</span><br><u>التواصل مع الدعم</u></button>
+    <button id="contractorSupportBtn" class="contractor-action" type="button"><strong>🛟 الدعم الفني</strong><span>تواصل مع فريق دعم آثار.</span><br><u>التواصل مع الدعم</u></button>
   </div>
   <button id="contractorHomeLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button>
 </section>
@@ -5116,7 +5179,7 @@
     <label for="contractorInvoiceNumber">رقم الفاتورة (اختياري)</label><input id="contractorInvoiceNumber" maxlength="60" placeholder="يُنشأ تلقائيًا إذا تركته فارغًا">
     <label for="contractorInvoiceAmount">قيمة الفاتورة بالريال *</label><input id="contractorInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثال: 25000">
     <label for="contractorInvoiceDescription">وصف الفاتورة *</label><textarea id="contractorInvoiceDescription" rows="2" maxlength="500" placeholder="مثال: دفعة تأجير معدات لشهر أكتوبر"></textarea>
-    <p class="muted">يُسجّل إنشاء الفاتورة كبيان مالي داخل مِعدة، ولا يعني بحد ذاته تحصيل المبلغ أو إصدار فاتورة ضريبية معتمدة.</p>
+    <p class="muted">يُسجّل إنشاء الفاتورة كبيان مالي داخل آثار، ولا يعني بحد ذاته تحصيل المبلغ أو إصدار فاتورة ضريبية معتمدة.</p>
     <button id="contractorCreateInvoiceBtn" class="main-btn" type="button">حفظ الفاتورة</button>
     <p id="contractorInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
@@ -5142,7 +5205,7 @@
     <p id="ownerBookingInvoiceFeedback" role="status" aria-live="polite"></p>
   </div>
   <div class="card" id="bookingInvoiceGatewayNotice" hidden>
-    <h3>الدفع عبر مِعدة</h3>
+    <h3>الدفع عبر آثار</h3>
     <p>تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.</p>
   </div>
   <div id="bookingInvoicesList" hidden><div class="card">لا توجد فواتير لطلباتك حتى الآن.</div></div>
@@ -5153,11 +5216,11 @@
 <!-- الصفحة: المقاول: إعدادات الحساب | المعرّف البرمجي: contractorSettingsScreen -->
 <section id="contractorSettingsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الحساب والإعدادات</h1><p>تحديث بيانات المقاول</p></div><div class="card"><label for="contractorSettingsName">الاسم *</label><input id="contractorSettingsName" placeholder="الاسم الكامل"><label for="contractorSettingsPhone">رقم الجوال</label><input id="contractorSettingsPhone" type="tel" placeholder="05xxxxxxxx"><label for="contractorSettingsCity">المدينة</label><input id="contractorSettingsCity" placeholder="المدينة"><label for="contractorSettingsCompany">المؤسسة أو الشركة</label><input id="contractorSettingsCompany" placeholder="اسم المؤسسة أو الشركة"><button id="saveContractorSettingsBtn" class="main-btn" type="button">حفظ التعديلات</button><button id="contractorChangePasswordBtn" class="back-btn" type="button">تغيير كلمة المرور</button><button id="contractorSettingsBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 <!-- الصفحة: المقاول: الحساب | المعرّف البرمجي: contractorAccountScreen -->
-<section id="contractorAccountScreen" class="screen"><div class="hero"><div class="hero-icon">👤</div><h1>الحساب</h1><p>إدارة حساب الدخول في مِعدة</p></div><div class="card"><p>البريد الإلكتروني: <strong id="contractorAccountEmail">—</strong></p><button id="contractorAccountChangePasswordBtn" class="main-btn" type="button">تغيير كلمة المرور</button><button id="contractorAccountLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button><button id="contractorAccountBackBtn" class="back-btn" type="button">العودة</button></div></section>
+<section id="contractorAccountScreen" class="screen"><div class="hero"><div class="hero-icon">👤</div><h1>الحساب</h1><p>إدارة حساب الدخول في آثار</p></div><div class="card"><p>البريد الإلكتروني: <strong id="contractorAccountEmail">—</strong></p><button id="contractorAccountChangePasswordBtn" class="main-btn" type="button">تغيير كلمة المرور</button><button id="contractorAccountLogoutBtn" class="back-btn" type="button">تسجيل الخروج</button><button id="contractorAccountBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <!-- الصفحة: المقاول: تفضيلات الإعدادات | المعرّف البرمجي: contractorSettingsPrefsScreen -->
 <section id="contractorSettingsPrefsScreen" class="screen"><div class="hero"><div class="hero-icon">⚙️</div><h1>الإعدادات</h1><p>تفضيلات استخدام التطبيق</p></div><div class="card"><label><input id="contractorNotificationsSetting" type="checkbox" checked> تفعيل تنبيهات الطلبات داخل التطبيق</label><p class="muted">يمكن تعديل تفضيل التنبيهات لاحقًا عند تفعيل نظام الإشعارات.</p><button id="contractorSettingsPrefsBackBtn" class="back-btn" type="button">العودة</button></div></section>
 <!-- الصفحة: دعم المقاول: إرسال شكوى والتواصل مع الدعم | المعرّف البرمجي: contractorSupportScreen -->
-<section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم مِعدة</p></div><div class="card"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
+<section id="contractorSupportScreen" class="screen"><div class="hero"><div class="hero-icon">🛟</div><h1>الدعم الفني</h1><p>أرسل استفسارك أو بلاغك إلى فريق دعم آثار</p></div><div class="card"><label for="contractorSupportCategory">نوع الطلب</label><select id="contractorSupportCategory"><option value="استفسار">استفسار</option><option value="مشكلة تقنية">مشكلة تقنية</option><option value="مشكلة في طلب معدة">مشكلة في طلب معدة</option><option value="اقتراح">اقتراح</option></select><label for="contractorSupportMessage">تفاصيل الرسالة *</label><textarea id="contractorSupportMessage" rows="5" placeholder="اكتب كيف يمكننا مساعدتك..."></textarea><button id="contractorSupportSubmitBtn" class="main-btn" type="button">إرسال إلى الدعم</button><p id="contractorSupportFeedback" role="status" aria-live="polite"></p><button id="contractorSupportChatBtn" class="back-btn" type="button">فتح المحادثة الحالية</button><button id="contractorSupportBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button></div></section>
 
 
 
@@ -5216,7 +5279,7 @@
 <!-- بوابة مالك المنصة: لا يوجد رابط ظاهر لها في خيارات الاستخدام -->
 <section id="ownerPortalDashboardScreen" class="screen support-screen" aria-label="لوحة تحكم مالك المنصة">
   <div class="support-wrap owner-admin-wrap"><div class="support-card owner-admin-card">
-    <div class="owner-admin-toolbar"><button id="ownerPortalRefreshBtn" class="support-btn" type="button">⟳ تحديث</button><div class="owner-admin-heading"><h1 class="support-title">لوحة تحكم مِعدة</h1><p class="support-subtitle">الإدارة العامة للمنصة</p></div><button id="ownerPortalLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
+    <div class="owner-admin-toolbar"><button id="ownerPortalRefreshBtn" class="support-btn" type="button">⟳ تحديث</button><div class="owner-admin-heading"><h1 class="support-title">لوحة تحكم آثار</h1><p class="support-subtitle">الإدارة العامة للمنصة</p></div><button id="ownerPortalLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
     <p id="ownerInfoStatus" role="status" aria-live="polite">جارٍ تجهيز لوحة التحكم…</p>
     <div class="owner-admin-metrics">
       <button type="button" class="owner-admin-metric" data-owner-view="money"><span>إجمالي المبالغ الداخلة عبر التطبيق</span><strong id="ownerInfoRevenue">—</strong><small>ريال سعودي · السجلات المدفوعة المتاحة</small></button>
@@ -5231,7 +5294,7 @@
       <button type="button" class="owner-admin-cardlink" data-owner-view="notes"><span class="owner-admin-icon">📝</span><span><strong>الملاحظات اليومية</strong><small>سجل يومي لمراجعة أداء التطبيق والعمل</small></span><span class="owner-admin-arrow">←</span></button>
     </div>
     <!-- =====================================================
-     مِعدة | مركز التحكم الشامل لمالك التطبيق
+     آثار | مركز التحكم الشامل لمالك التطبيق
 ===================================================== -->
 
 <div id="ma3daControlCenterEntryWrap">
@@ -5251,9 +5314,9 @@
 
   <div class="ma3da-cc-header">
     <div>
-      <span>MA3DA · OWNER CONTROL</span>
+      <span>ATHAR · OWNER CONTROL</span>
       <h2>مركز التحكم الشامل</h2>
-      <p>جميع إعدادات منصة مِعدة في مكان واحد</p>
+      <p>جميع إعدادات منصة آثار في مكان واحد</p>
     </div>
     <button id="ma3daCCBack" type="button">العودة ←</button>
   </div>
@@ -5300,7 +5363,7 @@
 
     <h3>السياسة المالية</h3>
 
-    <label>عمولة تطبيق مِعدة (%)</label>
+    <label>عمولة تطبيق آثار (%)</label>
     <input id="ccCommission" type="number" min="0" max="100" step="0.01">
 
     <label>ضريبة القيمة المضافة (%)</label>
@@ -5326,7 +5389,7 @@
 
     <label>عنوان الإعلان</label>
     <input id="ccCampaignTitle" maxlength="100"
-           placeholder="مثلاً: عروض مِعدة الجديدة">
+           placeholder="مثلاً: عروض آثار الجديدة">
 
     <label>نص الإعلان</label>
     <textarea id="ccCampaignBody" rows="4" maxlength="500"
@@ -5399,7 +5462,7 @@
 <section id="ownerPortalLoginScreen" class="screen support-screen" aria-label="دخول مالك المنصة">
   <div class="support-wrap"><div class="support-card">
     <div class="hero-icon">🔐</div><h1 class="support-title">دخول مالك المنصة</h1>
-    <p class="support-subtitle">بوابة خاصة بمالك منصة مِعدة.</p>
+    <p class="support-subtitle">بوابة خاصة بمالك منصة آثار.</p>
     <label for="ownerPortalEmailInput">البريد الإلكتروني</label><input id="ownerPortalEmailInput" class="support-input" type="email" autocomplete="username" placeholder="بريد مالك المنصة">
     <label for="ownerPortalPasswordInput">كلمة المرور</label><input id="ownerPortalPasswordInput" class="support-input" type="password" autocomplete="current-password" placeholder="كلمة المرور">
     <p id="ownerPortalLoginError" role="status" aria-live="polite"></p>
@@ -5412,7 +5475,7 @@
 <section id="supportLoginScreen" class="screen support-screen">
   <div class="support-wrap"><div class="support-card">
     <div class="hero-icon">🛟</div><h1 class="support-title">دخول موظفي الدعم</h1>
-    <p class="support-subtitle">هذه البوابة مخصصة لموظفي مِعدة المصرح لهم فقط.</p>
+    <p class="support-subtitle">هذه البوابة مخصصة لموظفي آثار المصرح لهم فقط.</p>
     <label for="supportEmailInput">البريد الإلكتروني</label><input id="supportEmailInput" class="support-input" type="email" autocomplete="username" placeholder="بريد الموظف">
     <label for="supportPasswordInput">كلمة المرور</label><input id="supportPasswordInput" class="support-input" type="password" autocomplete="current-password" placeholder="كلمة المرور">
     <p id="supportLoginError" role="status" aria-live="polite"></p>
@@ -5434,7 +5497,7 @@
 <section id="supportDashboardScreen" class="screen support-screen">
   <div class="support-wrap">
     <div class="support-panel support-topbar">
-      <div><div class="support-brand">مِعدة | مركز الدعم</div><span id="supportEmployeeEmail" class="support-badge">موظف دعم</span></div>
+      <div><div class="support-brand">آثار | مركز الدعم</div><span id="supportEmployeeEmail" class="support-badge">موظف دعم</span></div>
       <div><button id="supportRefreshBtn" class="support-btn" type="button" aria-label="تحديث" title="تحديث البيانات"></button><button id="supportLogoutBtn" class="support-btn support-danger" type="button">تسجيل الخروج</button></div>
       <button id="supportDashboardBackBtn" class="support-btn" type="button" aria-label="رجوع" title="رجوع">➜ رجوع</button>
     </div>
@@ -6399,18 +6462,18 @@ window.ma3daOrderBy =
 </div>
 
 
-<!-- مساعد مِعدة الذكي -->
+<!-- مساعد آثار الذكي -->
 <div id="ma3daAiLauncher" class="ma3da-ai-launcher" dir="rtl">
   <button
     id="ma3daAiToggle"
     class="ma3da-ai-orb"
     type="button"
-    aria-label="فتح مساعد مِعدة الذكي"
+    aria-label="فتح مساعد آثار الذكي"
     aria-expanded="false"
   >
     <span class="ma3da-ai-orb-core">✦</span>
   </button>
-  <span class="ma3da-ai-launcher-label">مساعد مِعدة الذكي</span>
+  <span class="ma3da-ai-launcher-label">مساعد آثار الذكي</span>
 </div>
 
 <section
@@ -6422,7 +6485,7 @@ window.ma3daOrderBy =
 >
   <header class="ma3da-ai-head">
     <div>
-      <strong>مساعد مِعدة الذكي</strong>
+      <strong>مساعد آثار الذكي</strong>
       <small>كيف أستطيع مساعدتك؟</small>
     </div>
     <button
@@ -6438,7 +6501,7 @@ window.ma3daOrderBy =
     aria-live="polite"
   >
     <div class="ma3da-ai-message assistant">
-      أهلًا بك في مِعدة. اكتب سؤالك وسأبحث في الإجابات المعتمدة.
+      أهلًا بك في آثار. اكتب سؤالك وسأبحث في الإجابات المعتمدة.
       إذا لم أجد إجابة موثوقة، سأحوّل سؤالك إلى فريق الدعم.
     </div>
   </div>
