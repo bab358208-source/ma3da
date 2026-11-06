@@ -26,7 +26,7 @@ async function ma3daReadUserRows(collectionName, fields, uid){
 
 /*
 ============================================================
-دليل تنظيم ملف script.js — مِعدة
+دليل تنظيم ملف script.js — آثار
 01 — الصفحات التعريفية: وظائف المقدمة والتنقل التعريفي
 02 — تسجيل الدخول والحسابات: اختيار الدور، الدخول، إنشاء الحساب، استعادة كلمة المرور
 03 — وظائف العميل: الطلبات، الحساب، الإعدادات، دعم العميل
@@ -659,7 +659,7 @@ function ma3daNotifyCustomerStatus(requestId,data){
     document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
   }
   if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
-    try{new Notification('مِعدة — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
+    try{new Notification('آثار — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
   }
 }
 
@@ -3806,7 +3806,7 @@ if(backFromRequestBtn){
  
 })();
  
-/* 01 — الصفحات التعريفية: مقدمة مِعدة والتنقل بين الشرائح */
+/* 01 — الصفحات التعريفية: مقدمة آثار والتنقل بين الشرائح */
 /* INTRO */
  
 const introNextBtn =
@@ -6380,7 +6380,7 @@ function updateOperatorCurrentUI(
 }
  
 
-/* مِعدة 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
+/* آثار 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
 let ma3daOwnerPosition = null;
 let ma3daArrivalDistanceKm = null;
 function ma3daDistanceKm(a,b){
@@ -9873,7 +9873,7 @@ document.addEventListener('click',async event=>{
 async function loadOwnerInformationCenter(){
   const employee = supportEmployee;
   if(!employee || employee.role !== "owner"){
-    alert("هذا المركز مخصص لمالك منصة مِعدة فقط.");
+    alert("هذا المركز مخصص لمالك منصة آثار فقط.");
     supportSetSection("tickets");
     return;
   }
@@ -10719,7 +10719,7 @@ setTimeout(
 );
 /* =========================================================
    CONTRACTOR / PROJECT OWNER
-   مِعدة
+   آثار
 ========================================================= */
  
 (function () {
@@ -12963,7 +12963,7 @@ async function loadOwnTickets(kind=activeListKind){
           setFeedback('ma3daComplaintChatFeedback',closeNotice || (nowClosed?'هذه الشكوى مغلقة. يمكنك الاطلاع على المحادثة السابقة.':''));
           const area=$('ma3daSupportStaffRating'); if(area) area.hidden=!nowClosed;
           if(becameClosed && typeof window.Notification==='function' && Notification.permission==='granted' && document.visibilityState!=='visible'){
-            try{new Notification('مِعدة — تم إغلاق الشكوى',{body:'تم إغلاق شكواك. افتح الدعم الفني لتقييم موظف الدعم.',tag:'ma3da-ticket-closed-'+ticket.id});}catch(_){ }
+            try{new Notification('آثار — تم إغلاق الشكوى',{body:'تم إغلاق شكواك. افتح الدعم الفني لتقييم موظف الدعم.',tag:'ma3da-ticket-closed-'+ticket.id});}catch(_){ }
           }
           const submit=$('ma3daSubmitSupportRatingBtn'); if(submit) submit.disabled=!!latest.supportRating;
           document.querySelectorAll('[data-support-rating]').forEach(star=>{const n=Number(star.dataset.supportRating)||0;star.textContent=n<=(latest.supportRating||0)?'★':'☆';star.disabled=!!latest.supportRating;});
@@ -13280,7 +13280,7 @@ async function staffTicketRows(){
   };
 
   // Keep old submit buttons inert so users cannot create duplicate tickets through the retired form.
-  document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم مِعدة لإرسال شكوى جديدة';});
+  document.querySelectorAll('[data-ma3da-support-submit], #contractorSupportSubmitBtn').forEach(btn=>{btn.disabled=true;btn.title='استخدم مركز دعم آثار لإرسال شكوى جديدة';});
 })();
 
 /* 03/04/05 — وظائف الفواتير والدفعات المشتركة: العميل وصاحب المعدة والمقاول */
@@ -14133,7 +14133,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   document.addEventListener('DOMContentLoaded',()=>{let theme='gold';try{theme=localStorage.getItem('ma3daSupportTheme')||'gold';}catch(_){}const select=document.getElementById('supportThemeSelect');if(select)select.value=theme;apply(theme);});
 })();
 /* ==========================================
-   مساعد مِعدة الذكي — الجزء الأول
+   مساعد آثار الذكي — الجزء الأول
    قاعدة المعرفة والأسئلة المحوّلة للدعم
    ========================================== */
 (function ma3daSmartAssistant() {
@@ -14153,7 +14153,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const send = $("ma3daAiSend");
 
   if (!launcher || !panel || !form || !input || !messages) {
-    console.error("مساعد مِعدة: عناصر الواجهة غير موجودة في index.");
+    console.error("مساعد آثار: عناصر الواجهة غير موجودة في index.");
     return;
   }
 
@@ -14369,7 +14369,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 /* =====================================================
-   مساعد مِعدة — ربط صندوق الدعم وإدارة المالك
+   مساعد آثار — ربط صندوق الدعم وإدارة المالك
    متوافق مع معرّفات index الحالية
    الأسئلة منفصلة عن supportTickets
    ===================================================== */
@@ -15439,7 +15439,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 /* =====================================================
-   مِعدة | إدارة خلفيات التطبيق — مدمجة داخل مركز التحكم الشامل
+   آثار | إدارة خلفيات التطبيق — مدمجة داخل مركز التحكم الشامل
    ===================================================== */
 (function Ma3daBackgroundManager() {
   "use strict";
@@ -15712,7 +15712,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if (opacityValue) opacityValue.textContent = String(data.opacity ?? 16) + "%";
       }
     } catch (error) {
-      console.warn("تعذر تحميل خلفية مِعدة:", error);
+      console.warn("تعذر تحميل خلفية آثار:", error);
     }
   }
 
@@ -15804,7 +15804,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       panel.innerHTML = `
         <div class="bg-panel">
           <h3 style="text-align:center;color:#a98638;margin-top:0">
-            مِعدة | إدارة خلفيات التطبيق
+            آثار | إدارة خلفيات التطبيق
           </h3>
           <p>اختر الصفحة أولًا. يمكنك تطبيق الخلفية على صفحة واحدة أو على جميع الصفحات.</p>
           <label for="ma3daBgPageSelect">الصفحة المستهدفة</label>
@@ -17410,4 +17410,36 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();
   window.addEventListener("load", init, {once:true});
+})();
+
+
+/* ATHAR — روابط تذييل صفحة اختيار طريقة الاستخدام */
+(function initAtharRoleFooter(){
+  function bind(){
+    const dialog=document.getElementById("atharFooterInfoDialog");
+    const title=document.getElementById("atharFooterDialogTitle");
+    const message=document.getElementById("atharFooterDialogMessage");
+    const close=document.getElementById("atharFooterDialogClose");
+    if(!dialog||dialog.dataset.bound==="1") return;
+    dialog.dataset.bound="1";
+    const descriptions={
+      "حقوقنا":"© جميع الحقوق محفوظة لآثار ATHAR – 2026.",
+      "رؤيتنا":"نسعى في آثار إلى تسهيل الوصول إلى الخدمات والمعدات ودعم إنجاز المشاريع بكفاءة وثقة.",
+      "من نحن":"آثار منصة رقمية تربط العملاء بأصحاب المعدات والمشغلين وأصحاب المشاريع في مكان واحد.",
+      "تواصل معنا":"يمكنك التواصل مع فريق آثار عبر قنوات الدعم المعتمدة داخل التطبيق."
+    };
+    document.addEventListener("click",event=>{
+      const button=event.target.closest?.("[data-athar-footer]");
+      if(!button) return;
+      const section=button.dataset.atharFooter||"آثار";
+      if(title) title.textContent=section;
+      if(message) message.textContent=descriptions[section]||"آثار ATHAR";
+      if(typeof dialog.showModal==="function") dialog.showModal();
+      else dialog.setAttribute("open","");
+    });
+    close?.addEventListener("click",()=>dialog.close?.());
+    dialog.addEventListener("click",event=>{if(event.target===dialog) dialog.close?.();});
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",bind,{once:true});
+  else bind();
 })();
