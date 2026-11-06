@@ -180,6 +180,11 @@
 
     </div>
 
+    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+      <button id="introNextBtn" class="main-btn" type="button">التالي</button>
+      <button id="skipIntroBtn" class="back-btn" type="button">تخطي المقدمة</button>
+    </div>
+
   </div>
 
 </section>
@@ -229,6 +234,11 @@
 
     </div>
 
+    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+      <button id="whyMa3daNextBtn" class="main-btn" type="button">التالي</button>
+      <button id="whyMa3daSkipBtn" class="back-btn" type="button">تخطي المقدمة</button>
+    </div>
+
   </div>
 
 </section>
@@ -276,6 +286,11 @@
 
       <span></span>
 
+    </div>
+
+    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
+      <button id="howMa3daBackBtn" class="back-btn" type="button">السابق</button>
+      <button id="howMa3daSkipBtn" class="back-btn" type="button">تخطي المقدمة</button>
     </div>
 
   </div>
@@ -6527,22 +6542,22 @@ window.ma3daOrderBy =
       <h2>أسئلة المساعد الذكي</h2>
       <p>الأسئلة التي لم يجد المساعد لها إجابة معتمدة</p>
     </div>
-    <button type="button" onclick="ma3daAiCloseAdminPages()">رجوع</button>
+    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
   </header>
 
   <div class="ma3da-ai-admin-tabs">
-    <button type="button" onclick="ma3daAiLoadSupportQuestions('open')">
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
       الأسئلة الجديدة
     </button>
-    <button type="button" onclick="ma3daAiLoadSupportQuestions('answered')">
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
       تم الرد
     </button>
-    <button type="button" onclick="ma3daAiLoadSupportQuestions('closed')">
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
       المغلقة
     </button>
   </div>
 
-  <div id="ma3daAiSupportList"></div>
+  <div id="ma3daAiSupportAdminList"></div>
 
   <div id="ma3daAiSupportConversation" hidden>
     <h3 id="ma3daAiSupportQuestionTitle"></h3>
@@ -6551,7 +6566,7 @@ window.ma3daOrderBy =
       <textarea id="ma3daAiSupportReply" required
         placeholder="اكتب ردك للمستخدم"></textarea>
       <button type="submit">إرسال الرد</button>
-      <button type="button" onclick="ma3daAiCloseQuestion()">إغلاق المحادثة</button>
+      <button type="button" onclick="document.getElementById('ma3daAiCloseQuestion')?.click()">إغلاق المحادثة</button>
     </form>
     <label>
       <input type="checkbox" id="ma3daAiSuggestAnswer">
@@ -6567,7 +6582,7 @@ window.ma3daOrderBy =
       <h2>إدارة المساعد الذكي</h2>
       <p>إدارة قاعدة المعرفة واعتماد إجابات الدعم</p>
     </div>
-    <button type="button" onclick="ma3daAiCloseAdminPages()">رجوع</button>
+    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
   </header>
 
   <div class="ma3da-ai-admin-stats">
