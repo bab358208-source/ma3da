@@ -38,6 +38,51 @@ async function ma3daReadUserRows(collectionName, fields, uid){
 */
 console.log("MA3DA SCRIPT LOADED");
 
+/* ATHAR — استعادة إعداد المظهر المحفوظ عند فتح التطبيق */
+(function initAtharSavedAppearance(){
+  function applySaved(){
+    const saved=localStorage.getItem('ma3daTheme')||'system';
+    if(saved==='dark'||saved==='light')document.documentElement.setAttribute('data-theme',saved);
+    else {
+      const dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+    }
+  }
+  applySaved();
+  window.addEventListener('storage',e=>{if(e.key==='ma3daTheme')applySaved();});
+  if(window.matchMedia){const media=window.matchMedia('(prefers-color-scheme: dark)');media.addEventListener?.('change',()=>{if((localStorage.getItem('ma3daTheme')||'system')==='system')applySaved();});}
+})();
+
+
+/* ATHAR — نافذة كتابة داخل التطبيق للأسباب والملاحظات المطلوبة */
+window.ma3daRequestText = window.ma3daRequestText || function ma3daRequestText(title, placeholder){
+  return new Promise(resolve=>{
+    const old=document.getElementById('atharTextEntryDialog');
+    if(old){old.remove();}
+    if(!document.getElementById('atharTextEntryDialogStyles')){
+      const style=document.createElement('style');style.id='atharTextEntryDialogStyles';
+      style.textContent=`#atharTextEntryDialog{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.58)}#atharTextEntryDialog .athar-entry-card{width:min(100%,480px);padding:20px;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:18px;background:var(--athar-identity-surface,#fffdf8);color:var(--athar-identity-text,#171717);box-shadow:0 18px 60px #0005}#atharTextEntryDialog h3{margin:0 0 12px;font-size:18px;line-height:1.6}#atharTextEntryDialog textarea{box-sizing:border-box;width:100%;min-height:132px;padding:12px;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:12px;background:transparent;color:inherit;font:inherit;resize:vertical}#atharTextEntryDialog .athar-entry-actions{display:flex;gap:10px;margin-top:14px}#atharTextEntryDialog button{flex:1;min-height:46px;border-radius:11px;border:1px solid var(--athar-identity-accent,#c8a45b);font:inherit;font-weight:800;cursor:pointer}#atharTextEntryDialog .athar-entry-submit{background:var(--athar-button-bg,#c8a45b);color:var(--athar-button-text,#171717)}#atharTextEntryDialog .athar-entry-cancel{background:transparent;color:inherit}`;
+      document.head.appendChild(style);
+    }
+    const wrap=document.createElement('div');wrap.id='atharTextEntryDialog';wrap.setAttribute('role','presentation');
+    const card=document.createElement('div');card.className='athar-entry-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+    const heading=document.createElement('h3');heading.textContent=title;
+    const field=document.createElement('textarea');field.maxLength=2000;field.placeholder=placeholder||'';field.setAttribute('aria-label',title);
+    const actions=document.createElement('div');actions.className='athar-entry-actions';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='athar-entry-cancel';cancel.textContent='إلغاء';
+    const submit=document.createElement('button');submit.type='button';submit.className='athar-entry-submit';submit.textContent='إرسال';
+    actions.append(cancel,submit);card.append(heading,field,actions);wrap.appendChild(card);document.body.appendChild(wrap);
+    let finished=false;const done=value=>{if(finished)return;finished=true;wrap.remove();resolve(value);};
+    cancel.addEventListener('click',()=>done(null));
+    wrap.addEventListener('click',e=>{if(e.target===wrap)done(null);});
+    submit.addEventListener('click',()=>{const value=field.value.trim();if(!value){field.focus();field.setCustomValidity('هذا الحقل مطلوب.');field.reportValidity();return;}done(value);});
+    field.addEventListener('input',()=>field.setCustomValidity(''));
+    field.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')submit.click();if(e.key==='Escape')done(null);});
+    field.focus();
+  });
+};
+
+
 /* 00 — بداية الملف: تهيئة عامة مشتركة للتطبيق */
  
 const screens =
@@ -5039,44 +5084,41 @@ if(backFromLanguageSettingsBtn){
 const arabicLanguageBtn =
   document.getElementById("arabicLanguageBtn");
  
-if(arabicLanguageBtn){
- 
-  arabicLanguageBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      document.documentElement.lang =
-        "ar";
- 
-      document.documentElement.dir =
-        "rtl";
- 
-      localStorage.setItem("ma3daLanguage", "ar");
- 
-      alert(
-        "تم اختيار اللغة العربية 🇸🇦"
-      );
- 
-    }
-  );
- 
-}
+
  
 const englishLanguageBtn =
   document.getElementById("englishLanguageBtn");
  
-if(englishLanguageBtn){
- 
-  englishLanguageBtn.addEventListener(
-    "click",
-    ()=>{
-      alert(
-        "اللغة الإنجليزية ستكون متاحة قريبًا 🌐"
-      );
-    }
-  );
- 
-}
+/* ATHAR — ترجمة واجهة التطبيق: النصوص الثابتة والديناميكية الشائعة */
+const atharEnglishDictionary={
+  "بوابة موظفي الدعم":"Support Staff Portal","أنا عميل":"I am a Customer","أنا صاحب معدة / مشغل":"I am an Equipment Owner / Operator","أنا مقاول أو صاحب مشروع":"I am a Contractor / Project Owner","بوابة أصحاب المعدات":"Equipment Owners Portal","بوابة أصحاب ومسؤولي المشاريع":"Contractors & Projects Portal","مسؤوليتنا":"Our Responsibility","حقوقنا":"Our Responsibility","رؤيتنا":"Our Vision","من نحن":"About Us","تواصل معنا":"Contact Us","آثار ATHAR":"ATHAR","جميع الحقوق محفوظة لآثار ATHAR – 2026":"All rights reserved to ATHAR – 2026","إغلاق":"Close","إلغاء":"Cancel","حفظ":"Save","حفظ التعديل":"Save Changes","حفظ الملاحظة":"Save Note","تعديل الملاحظة":"Edit Note","إرسال":"Send","إرسال الرد":"Send Reply","رجوع":"Back","الرجوع":"Back","التالي":"Next","ابدأ الآن":"Get Started","تسجيل الدخول":"Log In","إنشاء حساب جديد":"Create New Account","تسجيل جديد":"Sign Up","البريد الإلكتروني":"Email Address","كلمة المرور":"Password","تأكيد كلمة المرور":"Confirm Password","الاسم الكامل":"Full Name","رقم الجوال":"Mobile Number","رقم الهاتف":"Phone Number","نسيت كلمة المرور؟":"Forgot Password?","إرسال رابط التغيير":"Send Reset Link","اللغة":"Language","اختر لغة التطبيق":"Choose App Language","العربية":"Arabic","استخدام التطبيق باللغة العربية":"Use the app in Arabic","Use the app in English":"Use the app in English","المظهر":"Appearance","اختر مظهر التطبيق المناسب لك":"Choose your preferred app appearance","تلقائي":"System Default","استخدام مظهر الجهاز":"Use device appearance","فاتح":"Light","المظهر الفاتح":"Light appearance","داكن":"Dark","المظهر الداكن":"Dark appearance","الإعدادات":"Settings","الدعم الفني":"Technical Support","طلب معدة":"Request Equipment","الطلبات الحالية":"Current Requests","الطلبات السابقة":"Previous Requests","المشاريع":"Projects","الرئيسية":"Home","حسابي":"My Account","تسجيل الخروج":"Log Out","حفظ الملاحظة":"Save Note","ملاحظة اليوم":"Today's Note","اكتب ملاحظاتك عن أداء العمل أو التطبيق...":"Write your notes about work or app performance...","اكتب الملاحظة أولًا.":"Please enter a note first.","تم حفظ الملاحظة.":"Note saved.","تم تعديل الملاحظة وحفظها.":"Note updated and saved.","تعذر حفظ الملاحظة.":"Could not save the note.","لا توجد ملاحظات محفوظة بعد.":"No saved notes yet.","التصعيدات الواردة من موظفي الدعم":"Escalations from Support Staff","سبب التصعيد":"Escalation Reason","ملاحظة مالك التطبيق":"App Owner Note","اكتب الإجراء أو الملاحظة":"Enter an action or note","تعديل التعديل":"Edit","تم حفظ ملاحظة التصعيد.":"Escalation note saved.","تعذر حفظ الملاحظة. تحقق من صلاحيات Firebase.":"Could not save the note. Check Firebase permissions.","اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:":"Explain why you are escalating this issue to the app owner and what could not be resolved:","اكتب سبب التصعيد بالتفصيل...":"Describe the escalation reason in detail...","اكتب سبب رفض التعديل ليظهر لصاحب المعدة:":"Enter the reason for rejecting the equipment owner's changes:","اكتب سبب الرفض وما المطلوب تعديله...":"Explain why the changes were rejected and what needs to be corrected...","سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.":"A rejection reason is required so the equipment owner knows what to correct.","تم رفض التعديل وإرسال سبب الرفض لصاحب المعدة.":"Changes rejected. The reason was sent to the equipment owner.","تم تصعيد الشكوى إلى مالك التطبيق.":"The complaint has been escalated to the app owner.","تم إرسال التصعيد إلى مالك التطبيق.":"The escalation has been sent to the app owner.","الملاحظات اليومية لمالك التطبيق":"App Owner Daily Notes","حالة الطلب":"Request Status","الحالة":"Status","المبلغ":"Amount","المدة":"Duration","الموقع":"Location","نوع المعدة":"Equipment Type","السعر":"Price","الاسم":"Name","المدينة":"City","التفاصيل":"Details","الوصف":"Description","المرفقات":"Attachments","رقم الشكوى":"Ticket Number","الشكاوى":"Complaints","الشكاوى السابقة":"Previous Complaints","الشكاوى الحالية":"Open Complaints","موظف الدعم":"Support Agent","مالك التطبيق":"App Owner","مفتوحة":"Open","مغلقة":"Closed","قيد المتابعة":"In Progress","تم الحل":"Resolved","جارٍ التحميل...":"Loading...","جارٍ تحميل الملاحظات...":"Loading notes...","لا توجد بيانات":"No data available","لا توجد نتائج":"No results found","لم يتم العثور على نتائج":"No results found","تأكيد":"Confirm","حذف":"Delete","تعديل":"Edit","إضافة":"Add","اعتماد":"Approve","رفض":"Reject","سبب الرفض":"Rejection Reason","سبب التصعيد":"Escalation Reason","تم بنجاح":"Completed successfully","حدث خطأ":"An error occurred","حاول مرة أخرى":"Please try again","المعلومات الشخصية":"Personal Information","تغيير كلمة المرور":"Change Password","تغيير البريد الإلكتروني":"Change Email","تغيير رقم الجوال":"Change Mobile Number","المساعدة":"Help","اتصل بنا":"Contact Us","الأسئلة الشائعة":"Frequently Asked Questions","الفواتير":"Invoices","المدفوعات":"Payments","التقييمات":"Ratings","الدخل":"Income","المعدات":"Equipment","صاحب المعدة":"Equipment Owner","المقاول":"Contractor","العميل":"Customer","مشروع جديد":"New Project","إنشاء مشروع":"Create Project","المشاريع الحالية":"Current Projects","المشاريع السابقة":"Previous Projects","عرض الموقع على الخريطة":"View Location on Map","لا توجد مشاريع حالية":"No current projects","لا توجد مشاريع سابقة":"No previous projects","حفظ البيانات":"Save Data","تحديث":"Refresh","بحث":"Search","اكتب هنا":"Type here","اختر":"Select","اختر نوع المعدة":"Select equipment type","اختر مدة العمل":"Select work duration","اكتب موقع العمل":"Enter work location","لا توجد ملاحظات":"No notes","المظهر التلقائي":"Automatic appearance","تم اختيار المظهر الداكن":"Dark appearance selected","تم اختيار المظهر الفاتح":"Light appearance selected","تم اختيار المظهر التلقائي":"System appearance selected","تم اختيار اللغة العربية":"Arabic language selected","تم اختيار اللغة الإنجليزية":"English language selected","تم إرسال الرد لصاحب الشكوى.":"Your reply has been sent to the complainant.","اكتب الرد أولًا.":"Please enter a reply first.","هذه الشكوى مغلقة.":"This complaint is closed.","لا يوجد طلب حالي.":"There is no current request.","الطلب غير موجود.":"Request not found.","لا توجد معدات مسجلة":"No equipment registered","لا توجد طلبات":"No requests","المبلغ المستحق":"Amount Due","المجموع":"Total","المتبقي":"Remaining","ريال":"SAR","ساعة":"hour","ساعات":"hours","يوم كامل":"Full day","بدون مشغل":"Without operator","مع مشغل":"With operator","قبول الطلب":"Accept Request","رفض الطلب":"Reject Request","المعدة في الطريق إليك":"The equipment is on its way","المعدة وصلت إلى موقعك":"The equipment has arrived at your location","بدأت المعدة العمل":"The equipment has started working","انتهى العمل بالمعدة":"Work with the equipment has been completed","تم رفض طلبك من صاحب المعدة":"Your request was rejected by the equipment owner","الرؤية":"Vision","مسؤوليتنا":"Our Responsibility","نحن في آثار":"At ATHAR","يمكنك التواصل مع فريق آثار عبر قنوات الدعم المعتمدة داخل التطبيق.":"You can contact the ATHAR team through the support channels available in the app.","آثار منصة رقمية تربط العملاء بأصحاب المعدات والمشغلين وأصحاب المشاريع في مكان واحد.":"ATHAR is a digital platform connecting customers, equipment owners, operators, and project owners in one place.","نسعى في آثار إلى تسهيل الوصول إلى الخدمات والمعدات ودعم إنجاز المشاريع بكفاءة وثقة.":"ATHAR aims to make services and equipment easier to access and help projects move forward efficiently and reliably."
+};
+Object.assign(atharEnglishDictionary,{
+"أهلاً بك في آثار":"Welcome to ATHAR","معداتك الثقيلة":"Your Heavy Equipment","أقرب وأسهل مما تتوقع":"Closer and Easier Than You Expect","اطلب المعدة المناسبة لمشروعك":"Request the Right Equipment for Your Project","وتابع طلبك بكل سهولة":"Track Your Request Easily","ما هي آثار؟":"What is ATHAR?","منصة تربطك بأصحاب المعدات الثقيلة والمشغلين، وتساعدك في طلب المعدة التي تحتاجها بسهولة.":"A platform connecting you with heavy equipment owners and operators, making it easy to request the equipment you need.","لماذا آثار؟":"Why ATHAR?","لأننا نسهّل عليك الوصول إلى المعدات الثقيلة وأصحابها في مكان واحد وبطريقة أسرع وأسهل.":"We make it faster and easier to find heavy equipment and its owners in one place.","كيف تعمل آثار؟":"How Does ATHAR Work?","اختر نوع المعدة التي تحتاجها":"Choose the equipment you need","أرسل طلبك":"Submit your request","وتواصل مع المشغل المناسب":"Connect with the right operator","ابدأ الآن 🚜":"Get Started 🚜","مرحبًا بك في آثار":"Welcome to ATHAR","اختر طريقة استخدامك للتطبيق":"Choose how you want to use the app","تسجيل الدخول للمتابعة":"Log in to continue","📧 البريد الإلكتروني":"📧 Email address","🔐 كلمة المرور":"🔐 Password","← الرجوع":"← Back","أنشئ حسابك الآن":"Create your account","ابدأ رحلتك واترك أثرك معنا":"Start your journey and leave your mark with us","سنرسل إليك رابط توثيق البريد الإلكتروني.":"We will send you an email verification link.","رمز التحقق":"Verification code","رمز تجريبي مؤقت:":"Temporary test code:","— لا يتم إرسال SMS فعلي في هذه المرحلة.":"— No actual SMS is sent at this stage.","اتفاقية استخدام آثار ATHAR":"ATHAR Terms of Use","يرجى قراءة الاتفاقية كاملة والموافقة عليها قبل إنشاء الحساب.":"Please read and accept the full agreement before creating your account.","قراءة اتفاقية الاستخدام كاملة":"Read the full terms of use","الموافقة مطلوبة لإتمام إنشاء الحساب.":"Your agreement is required to complete account creation.","لديك حساب؟ تسجيل الدخول":"Already have an account? Log in","أكمل بياناتك":"Complete your details","أدخل بياناتك لإكمال حسابك في آثار":"Enter your details to complete your ATHAR account","👤 الاسم":"👤 Name","📱 رقم الجوال":"📱 Mobile number","📍 المدينة":"📍 City","حفظ ومتابعة":"Save and Continue","أدخل رمز التحقق":"Enter verification code","← تغيير رقم الجوال":"← Change mobile number","أضف معدتك":"Add Your Equipment","أدخل بيانات المعدة لتبدأ استقبال الطلبات":"Enter your equipment details to start receiving requests","🚜 نوع المعدة":"🚜 Equipment type","اختر نوع المعدة":"Select equipment type","بوكلين":"Excavator","شيول":"Wheel Loader","قلاب":"Dump Truck","كرين":"Crane","حفار":"Backhoe","بلدوزر":"Bulldozer","جريدر":"Motor Grader","مدحلة":"Road Roller","رافعة شوكية":"Forklift","رافعة تلسكوبية":"Telehandler","لودر":"Loader","حفار صغير":"Mini Excavator","سطحة":"Flatbed Truck","ناقلة معدات":"Equipment Transporter","وايت ماء":"Water Tanker","مضخة خرسانة":"Concrete Pump","ماكينة فرش أسفلت":"Asphalt Paver","أخرى":"Other","✏️ اذكر نوع المعدة":"✏️ Specify equipment type","🏷️ الماركة / الموديل":"🏷️ Brand / Model","📷 صورة المعدة":"📷 Equipment photo","📅 سنة الصنع":"📅 Year of manufacture","🟢 حالة المعدة":"🟢 Equipment status","متاحة الآن":"Available now","غير متاحة":"Unavailable","💰 سعر الإيجار بالساعة":"💰 Hourly rental price","السعر بالريال السعودي لكل ساعة":"Price in Saudi Riyals per hour","حفظ المعدة":"Save Equipment","توثيق حسابك":"Verify Your Account","أكمل توثيق حسابك لتتمكن من استقبال الطلبات":"Complete account verification to receive requests","حالة التوثيق":"Verification status","لم يتم تقديم طلب التوثيق":"No verification request submitted","بيانات صاحب المعدة":"Equipment owner details","المستندات المطلوبة":"Required documents","🪪 صورة الهوية":"🪪 ID photo","📄 مستند ملكية المعدة":"📄 Equipment ownership document","صور المعدة":"Equipment photos","📷 صورة المعدة من الأمام":"📷 Front view of equipment","📷 صورة المعدة من الجانب":"📷 Side view of equipment","📷 صورة إضافية للمعدة":"📷 Additional equipment photo","إرسال طلب التوثيق":"Submit verification request","تحتاج معدة؟":"Need Equipment?","اطلب معدتك بسهولة وسرعة":"Request equipment easily and quickly","طلب معدة جديدة":"New Equipment Request","الطلبات":"Requests","تابع طلباتك الحالية":"Track your current requests","عرض سجل طلباتك السابقة":"View your previous request history","فواتيري ومدفوعاتي":"My Invoices & Payments","راجع فواتيرك وحالة السداد":"Review your invoices and payment status","إدارة حسابك وتفضيلات التطبيق":"Manage your account and app preferences","نحن هنا لمساعدتك":"We are here to help","تغطية واسعة":"Wide Coverage","في جميع المدن":"Across all cities","توصيل سريع":"Fast Delivery","في الوقت المحدد":"On Time","معدات موثوقة":"Reliable Equipment","من مالكيها مباشرة":"Directly from Owners","أدخل بياناتك لإكمال حساب صاحب المعدة":"Enter your details to complete your equipment owner account","بعزم الرجال… نبني وطناً ونصنع إنجازاً.":"With determination, we build a nation and achieve great things.","أنت متصل":"You are Online","ستصلك طلبات العملاء القريبة منك":"Nearby customer requests will reach you","الطلبات الجديدة":"New Requests","طلبات العملاء التي تنتظر قبولك":"Customer requests awaiting your acceptance","الطلبات الحالية والسابقة في صفحة واحدة":"Current and previous requests in one place","طلبات المشاريع":"Project Requests","الطلبات الحالية والسابقة لمسؤولي المشاريع، بشكل مستقل عن طلبات العملاء":"Current and previous project-owner requests, separate from customer requests","معدتي":"My Equipment","عرض المعدة":"View Equipment","الموديل":"Model","السعر بالساعة":"Hourly Rate","حسابي":"My Account","متابعة دخلك من الأعمال":"Track your work income","فواتير التأجير ومستحقاتي":"Rental Invoices & My Dues","إصدار فاتورة لمسؤول المشروع ومتابعة مستحقات معداتي":"Issue invoices to project owners and track equipment payments","تقييمات العملاء لك":"Customer Ratings","إدارة بيانات حسابك":"Manage your account details","🚪 تسجيل الخروج":"🚪 Log Out","عرض وإدارة بيانات معدتك":"View and manage your equipment details","حالة المعدة":"Equipment status","✏️ تعديل بيانات المعدة":"✏️ Edit Equipment Details","اختر نوع الطلب لعرض طلبات العملاء أو طلبات المشاريع الموجهة لمعدتك":"Choose a request type to view customer or project requests for your equipment","🚜 طلبات العملاء":"🚜 Customer Requests","🏗️ طلبات المشاريع":"🏗️ Project Requests","لم يتم التحديث بعد":"Not updated yet","⟳ تحديث الطلبات":"⟳ Refresh Requests","جاري تحميل طلبات العملاء...":"Loading customer requests...","جاري تحميل طلبات المشاريع...":"Loading project requests...","تفاصيل الطلب":"Request Details","طلب مقبول · جاهز للتنفيذ":"Request Accepted · Ready to Start","اسم المعدة":"Equipment Name","اسم العميل المسجل":"Registered Customer Name","المدة":"Duration","المبلغ":"Amount","موقع العميل":"Customer Location","📍 موقع العميل — فتح Google Maps":"📍 Customer Location — Open Google Maps","💬 المحادثة":"💬 Chat","📞 الاتصال":"📞 Call","جاري تحميل الحالة...":"Loading status...","📍 التحقق المكاني من موقعي":"📍 Verify My Location","يجب التحقق من موقعك الفعلي قبل تأكيد الوصول.":"Verify your actual location before confirming arrival.","🚜 وصلت إلى موقع العميل":"🚜 Arrived at Customer Location","▶️ بدأت العمل":"▶️ Start Work","انتهى العمل":"Work Completed","تابع طلبات العملاء الحالية وسجل الطلبات السابقة من صفحة واحدة":"Track current customer requests and previous requests from one page","جاري تحميل الطلبات الحالية...":"Loading current requests...","جاري تحميل الطلبات السابقة...":"Loading previous requests...","إدارة طلبات مسؤولي المشاريع بشكل مستقل عن طلبات العملاء":"Manage project-owner requests separately from customer requests","ملخص دخلك من أعمالك في آثار":"Your ATHAR Work Income Summary","إجمالي الدخل":"Total Income","أعمال مكتملة":"Completed Jobs","إجمالي الساعات":"Total Hours","تقييمات العملاء لأعمالك":"Customer Ratings for Your Work","تعديل رقم الجوال":"Edit Mobile Number","تعديل البريد الإلكتروني":"Edit Email Address","كيف يمكننا مساعدتك؟":"How can we help you?","إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة، تواصل معنا وسنساعدك.":"If you have an issue with requests, your account, or equipment, contact us and we will help.","💬 التواصل مع الدعم":"💬 Contact Support","إرسال طلب إلى فريق الدعم":"Send a Request to Support","مشكلة في المعدة":"Equipment Issue","مشكلة في الطلبات":"Request Issue","مشكلة في الحساب":"Account Issue","استفسار":"Inquiry","بلاغ":"Report","تفاصيل المشكلة":"Issue Details","إرسال إلى الدعم":"Send to Support","جاري تحميل الطلبات...":"Loading requests..."
+});
+
+(function initAtharEnglishTranslation(){
+  const originalNodes=new WeakMap();
+  const originalAttrs=new WeakMap();
+  const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
+  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
+  function translateNewAttributes(root){const attrs=['placeholder','aria-label','title'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
+
+  function applyLanguage(language){const english=language==='en';document.documentElement.lang=english?'en':'ar';document.documentElement.dir=english?'ltr':'rtl';document.documentElement.dataset.atharLanguage=english?'en':'ar';
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){if(!node.nodeValue||!normalize(node.nodeValue))return NodeFilter.FILTER_REJECT;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
+    let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);node.nodeValue=english?translateText(original):original;}
+    const attrs=['placeholder','aria-label','title'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
+    document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
+  }
+  window.ma3daSetLanguage=language=>{const selected=language==='en'?'en':'ar';localStorage.setItem('ma3daLanguage',selected);applyLanguage(selected);};
+  window.ma3daApplySavedLanguage=()=>applyLanguage(localStorage.getItem('ma3daLanguage')||'ar');
+  const observer=new MutationObserver(records=>{if((localStorage.getItem('ma3daLanguage')||'ar')!=='en')return;for(const record of records){if(record.type==='childList'){record.addedNodes.forEach(node=>{if(node.nodeType===1){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let textNode;while((textNode=walker.nextNode())){if(!originalNodes.has(textNode))originalNodes.set(textNode,textNode.nodeValue);textNode.nodeValue=translateText(originalNodes.get(textNode));}translateNewAttributes(node);}else if(node.nodeType===3){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);node.nodeValue=translateText(originalNodes.get(node));}});}else if(record.type==='characterData'){const n=record.target;let original=originalNodes.get(n);if(original===undefined||n.nodeValue!==translateText(original)){original=n.nodeValue;originalNodes.set(n,original);}const translated=translateText(original);if(n.nodeValue!==translated)n.nodeValue=translated;}}});
+  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  const saved=localStorage.getItem('ma3daLanguage')||'ar';applyLanguage(saved);
+})();
+
+if(arabicLanguageBtn){arabicLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('ar');alert('تم اختيار اللغة العربية 🇸🇦');});}
+if(englishLanguageBtn){englishLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('en');alert('English language selected 🇬🇧');});}
  
 /* APPEARANCE */
  
@@ -5121,8 +5163,9 @@ if(systemAppearanceBtn){
     "click",
     ()=>{
  
-      document.documentElement.removeAttribute(
-        "data-theme"
+      document.documentElement.setAttribute(
+        "data-theme",
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
       );
  
       localStorage.setItem("ma3daTheme", "system");
@@ -9978,7 +10021,7 @@ async function loadOwnerInformationCenter(){
           const notes=[];ns.forEach(d=>notes.push({id:d.id,...(d.data()||{})}));
           notes.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
           const list=document.getElementById("ownerDailyNotesList");
-          if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString("ar-SA"):"")}</strong><span style="white-space:pre-wrap">${safe(n.text||"")}</span></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
+          if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record" data-owner-note-card="${safe(n.id)}"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString("ar-SA"):"")}</strong><span data-owner-note-text style="white-space:pre-wrap;display:block">${safe(n.text||"")}</span><textarea data-owner-note-editor rows="3" maxlength="5000" hidden>${safe(n.text||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="support-btn" data-edit-owner-note="${safe(n.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-owner-note="${safe(n.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
         }catch(e){
           console.error("تعذر تحميل الملاحظات اليومية:",e);
           const list=document.getElementById("ownerDailyNotesList");
@@ -9991,7 +10034,7 @@ async function loadOwnerInformationCenter(){
           const es=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"supportEscalations"));
           const rows=[];es.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
           rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
-          html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString("ar-SA"):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة"></textarea><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}">حفظ الملاحظة</button></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
+          html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString("ar-SA"):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة" disabled>${safe(x.ownerNote||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="support-btn" data-edit-escalation-note="${safe(x.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
         }catch(e){
           console.error("تعذر تحميل التصعيدات:",e);
           html=`<div class="owner-admin-empty">${safe(e.code==="permission-denied"?"رفضت قواعد Firebase قراءة التصعيدات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة supportEscalations.":"تعذر تحميل التصعيدات: "+(e.message||"خطأ غير معروف."))}</div>`;
@@ -10013,7 +10056,16 @@ async function loadOwnerInformationCenter(){
     const refresh=document.getElementById("ownerPortalRefreshBtn");if(refresh&&refresh.dataset.ownerBound!=='1'){refresh.dataset.ownerBound='1';refresh.addEventListener('click',()=>loadOwnerInformationCenter());}
     // Attach handlers to nested detail cards rendered after the first click.
     if(content&&content.dataset.ownerDelegation!=='1'){
-      content.dataset.ownerDelegation='1';content.addEventListener('click',async e=>{const b=e.target.closest('[data-owner-view]');if(b){openView(b.dataset.ownerView);return;}const saveEsc=e.target.closest('[data-save-escalation-note]');if(saveEsc){try{const id=saveEsc.dataset.saveEscalationNote;const field=content.querySelector(`[data-escalation-note="${id}"]`);const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error("يجب تسجيل الدخول كمالك المنصة.");await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,"supportEscalations",id),{ownerNote:(field?.value||"").trim(),ownerNoteBy:u.uid,ownerNoteAt:new Date(),status:"reviewed"});alert("تم حفظ ملاحظة التصعيد.");}catch(err){console.error(err);alert("تعذر حفظ الملاحظة. تحقق من صلاحيات Firebase.");}}});
+      content.dataset.ownerDelegation='1';content.addEventListener('click',async e=>{
+        const b=e.target.closest('[data-owner-view]');if(b){openView(b.dataset.ownerView);return;}
+        const editDaily=e.target.closest('[data-edit-owner-note]');
+        if(editDaily){const id=editDaily.dataset.editOwnerNote,card=content.querySelector(`[data-owner-note-card="${id}"]`),field=card?.querySelector('[data-owner-note-editor]'),save=card?.querySelector('[data-save-owner-note]'),text=card?.querySelector('[data-owner-note-text]');if(field){field.hidden=false;field.focus();}if(text)text.hidden=true;if(save)save.hidden=false;editDaily.hidden=true;return;}
+        const saveDaily=e.target.closest('[data-save-owner-note]');
+        if(saveDaily){const id=saveDaily.dataset.saveOwnerNote,card=content.querySelector(`[data-owner-note-card="${id}"]`),field=card?.querySelector('[data-owner-note-editor]'),text=card?.querySelector('[data-owner-note-text]'),edit=card?.querySelector('[data-edit-owner-note]'),value=(field?.value||'').trim();if(!value){alert('لا يمكن حفظ ملاحظة فارغة.');return;}saveDaily.disabled=true;try{const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error('يجب تسجيل الدخول كمالك المنصة.');await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'ownerDailyNotes',id),{text:value,updatedAt:new Date(),updatedAtMs:Date.now(),updatedBy:u.uid});if(text)text.textContent=value;if(field)field.hidden=true;if(text)text.hidden=false;if(edit)edit.hidden=false;saveDaily.hidden=true;alert('تم تعديل الملاحظة وحفظها.');}catch(err){console.error(err);alert(err.message||'تعذر تعديل الملاحظة. تحقق من صلاحيات Firebase.');}finally{saveDaily.disabled=false;}return;}
+        const editEsc=e.target.closest('[data-edit-escalation-note]');
+        if(editEsc){const id=editEsc.dataset.editEscalationNote,field=content.querySelector(`[data-escalation-note="${id}"]`),save=content.querySelector(`[data-save-escalation-note="${id}"]`);if(field){field.disabled=false;field.focus();}if(save)save.hidden=false;editEsc.hidden=true;return;}
+        const saveEsc=e.target.closest('[data-save-escalation-note]');if(saveEsc){try{const id=saveEsc.dataset.saveEscalationNote;const field=content.querySelector(`[data-escalation-note="${id}"]`);const u=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;if(!u)throw new Error('يجب تسجيل الدخول كمالك المنصة.');const note=(field?.value||'').trim();await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'supportEscalations',id),{ownerNote:note,ownerNoteBy:u.uid,ownerNoteAt:new Date(),status:'reviewed'});if(field)field.disabled=true;const edit=content.querySelector(`[data-edit-escalation-note="${id}"]`);if(edit)edit.hidden=false;saveEsc.hidden=true;alert('تم حفظ ملاحظة التصعيد.');}catch(err){console.error(err);alert(err.message||'تعذر حفظ الملاحظة. تحقق من صلاحيات Firebase.');}}
+      });
     }
   }catch(error){
     console.error("Owner information center load failed:",error);
@@ -11576,7 +11628,7 @@ async function openContractorHome() {
 
   async function escalateActiveTicket(){
     if(!activeTicket?.id) { setFeedback('supportTicketReplyFeedback','افتح شكوى من القائمة أولًا قبل التصعيد.'); return; }
-    const reason=prompt('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:');
+    const reason=await window.ma3daRequestText('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:','اكتب سبب التصعيد بالتفصيل...');
     if(reason===null)return;
     if(!reason.trim()){setFeedback('supportTicketReplyFeedback','اكتب سبب التصعيد قبل الإرسال.');return;}
     const button=$('supportTicketEscalateBtn');if(button){button.disabled=true;button.textContent='جارٍ إرسال التصعيد...';}
@@ -13086,7 +13138,7 @@ async function staffTicketRows(){
   // التصعيد ضمن نطاق مركز الدعم حتى يستخدم الشكوى المفتوحة الحالية فعليًا.
   async function escalateStaffTicket(){
     if(!activeTicket?.id){setFeedback('supportTicketReplyFeedback','افتح شكوى من القائمة أولًا قبل التصعيد.');return;}
-    const reason=prompt('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:');
+    const reason=await window.ma3daRequestText('اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:','اكتب سبب التصعيد بالتفصيل...');
     if(reason===null)return;
     if(!reason.trim()){setFeedback('supportTicketReplyFeedback','اكتب سبب التصعيد قبل الإرسال.');return;}
     const button=$('supportTicketEscalateBtn');
@@ -13184,7 +13236,7 @@ async function staffTicketRows(){
         await window.ma3daUpdateDoc(ref,{...allowed,pendingChanges:null,editStatus:'approved',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:'تمت الموافقة على التعديل',updatedAt:Date.now()});
         alert('تمت الموافقة على التعديل وتحديث بيانات المعدة المعتمدة.');
       }else{
-        const reason=prompt('اكتب سبب رفض التعديل ليظهر لصاحب المعدة:');
+        const reason=await window.ma3daRequestText('اكتب سبب رفض التعديل ليظهر لصاحب المعدة:','اكتب سبب الرفض وما المطلوب تعديله...');
         if(reason===null)return;
         if(!reason.trim())throw new Error('سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.');
         await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:reason.trim(),ownerNotice:{type:'equipment_edit_rejected',message:reason.trim(),createdAt:now,read:false}});
@@ -17421,7 +17473,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(!dialog||dialog.dataset.bound==="1") return;
     dialog.dataset.bound="1";
     const descriptions={
-      "حقوقنا":"© جميع الحقوق محفوظة لآثار ATHAR – 2026.",
+      "مسؤوليتنا":"نلتزم في آثار بحماية معلومات المستخدمين والتعامل معها بسرية، وتوفير تجربة موثوقة، وتوضيح مسؤوليات المنصة وحدود خدماتها، والاستجابة للبلاغات وفق السياسات المعتمدة. © جميع الحقوق محفوظة لآثار ATHAR – 2026.",
+      "حقوقنا":"نلتزم في آثار بحماية معلومات المستخدمين والتعامل معها بسرية، وتوفير تجربة موثوقة، وتوضيح مسؤوليات المنصة وحدود خدماتها، والاستجابة للبلاغات وفق السياسات المعتمدة. © جميع الحقوق محفوظة لآثار ATHAR – 2026.",
       "رؤيتنا":"نسعى في آثار إلى تسهيل الوصول إلى الخدمات والمعدات ودعم إنجاز المشاريع بكفاءة وثقة.",
       "من نحن":"آثار منصة رقمية تربط العملاء بأصحاب المعدات والمشغلين وأصحاب المشاريع في مكان واحد.",
       "تواصل معنا":"يمكنك التواصل مع فريق آثار عبر قنوات الدعم المعتمدة داخل التطبيق."
