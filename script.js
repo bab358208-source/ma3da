@@ -16843,9 +16843,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#D6B45E", buttonText: "#171717",
       surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
-        customer: "آثار… نصل بالمعدات إلى حيث يبدأ الإنجاز.",
-        owner: "آثار… بمعداتكم نصنع الإنجاز، ونترك أثرًا يدوم.",
-        projects: "آثار… من طموح المشاريع تبدأ حكايات الإنجاز."
+        customer: "خطوتك الأولى نحو مشروع يليق بطموحك.",
+        owner: "معدتك أداة إنجاز… وطموحك يصنع الفرق.",
+        projects: "من فكرة طموحة… إلى مشروع يتحقق."
       }
     },
     eidFitr: {
@@ -16853,9 +16853,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f7f4e9", text: "#17392f", image: IMAGE_BY_ID.eidFitr,
       taglines: {
-        customer: "عيدكم إنجاز… وآثار تجمعنا على الخير.",
-        owner: "بمعداتكم تكتمل فرحة الإنجاز.",
-        projects: "مشاريع تزهر بالخير وتبقى آثارها."
+        customer: "في أيام الخير… أنجز مشروعك بثقة.",
+        owner: "في عيد الخير… عطاءك يصنع الفرق.",
+        projects: "أيام مباركة… ومشاريع تزدهر بالإنجاز."
       }
     },
     nationalDay: {
@@ -16864,8 +16864,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       surface: "#f1f6f1", text: "#123d2c", image: IMAGE_BY_ID.nationalDay,
       taglines: {
         customer: "همة وطن… ومشاريع تصنع المستقبل.",
-        owner: "بمعداتكم نبني ونترك أثرًا لوطننا.",
-        projects: "من أرض الوطن تبدأ حكايات الإنجاز."
+        owner: "بعزم الرجال… نبني وطناً ونصنع إنجازاً.",
+        projects: "وطنٌ يطمح… ومشاريع تعانق القمم."
       }
     },
     foundingDay: {
@@ -16873,9 +16873,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#795437",
       surface: "#f4eee4", text: "#463323", image: IMAGE_BY_ID.foundingDay,
       taglines: {
-        customer: "جذور راسخة… وإنجاز يمتد للمستقبل.",
-        owner: "من أصالة الأرض نصنع أثر البناء.",
-        projects: "مشاريع اليوم امتداد لقصة وطن."
+        customer: "من جذور المجد… تبدأ حكايات الإنجاز.",
+        owner: "من أصالة الماضي… إلى قوة العطاء.",
+        projects: "على خطى المجد… نواصل بناء المستقبل."
       }
     },
     eidAdha: {
@@ -16883,9 +16883,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       buttonBg: "#FFFFFF", buttonText: "#2876B9",
       surface: "#f5f1e7", text: "#26392d", image: IMAGE_BY_ID.eidAdha,
       taglines: {
-        customer: "في أيام الخير… أنجز مشروعك بثقة.",
-        owner: "سخّر معداتك لصناعة أثرٍ أكبر.",
-        projects: "خطوات ثابتة ومشاريع تنمو بالإنجاز."
+        customer: "عيد أضحى مبارك… واجعل إنجازك يكتمل.",
+        owner: "أضحى مبارك… واجعل من عطائك إنجازاً.",
+        projects: "عيد الأضحى… موسم الخير واكتمال الإنجاز."
       }
     }
   };
@@ -17268,9 +17268,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         title.textContent = "الصفحة الرئيسية";
         const slogan = document.createElement("p");
         slogan.className = "athar-home-identity-slogan";
-        slogan.textContent = role === "owner"
-          ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
-          : "همة وطن… ومشاريع تصنع المستقبل.";
+        // اربط العبارة بالهوية النشطة والدور الحالي بدل النص الثابت.
+        slogan.textContent = identity.taglines?.[role] || defaults.classic.taglines[role] || "";
         panel.append(title,slogan);
         if (role === "owner" || role === "projects") {
           const accountName = document.createElement("span");
@@ -17287,9 +17286,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const title = panel.querySelector(".athar-home-identity-title");
         const slogan = panel.querySelector(".athar-home-identity-slogan");
         if (title) title.textContent = "الصفحة الرئيسية";
-        if (slogan) slogan.textContent = role === "owner"
-          ? "بعزم الرجال… نبني وطناً ونصنع إنجازاً."
-          : "همة وطن… ومشاريع تصنع المستقبل.";
+        // حدّث العبارة نفسها عند كل تبديل للهوية.
+        if (slogan) slogan.textContent = identity.taglines?.[role] || defaults.classic.taglines[role] || "";
         if (role === "owner" || role === "projects") {
           let accountName = panel.querySelector(".athar-home-account-name");
           if (!accountName) {
