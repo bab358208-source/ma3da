@@ -16981,11 +16981,12 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       }
       .athar-home-identity-panel:before{
         inset:0!important;opacity:.42!important;
-        background:
-          radial-gradient(circle at 8% 18%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
-          radial-gradient(circle at 92% 82%,var(--athar-identity-accent,#c8a45b) 0 1px,transparent 2px),
-          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.95))!important;
-        background-size:24px 24px,24px 24px,auto!important;
+        background-image:
+          var(--athar-page-ornament,var(--athar-button-ornament)),
+          linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.95))!important;
+        background-size:220px 72px,100% 100%!important;
+        background-repeat:repeat,no-repeat!important;
+        background-position:center center,center!important;
       }
       .athar-home-identity-panel:after{
         width:76px!important;height:2px!important;bottom:10px!important;left:calc(50% - 38px)!important;
@@ -17140,24 +17141,20 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       html[data-athar-identity] body .screen [class*="card"]:not(.athar-identity-card),
       html[data-athar-identity] body .screen [class*="panel"] {
         background-image:
-          radial-gradient(circle at 8% 18%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 42%,transparent) 0 1px,transparent 2px),
-          radial-gradient(circle at 92% 82%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 42%,transparent) 0 1px,transparent 2px),
-          linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent),
+          var(--athar-page-ornament,var(--athar-button-ornament)),
           linear-gradient(#fff,#fff)!important;
-        background-size:24px 24px,24px 24px,76px 2px,auto!important;
-        background-position:left top,right bottom,center bottom,center!important;
-        background-repeat:repeat,repeat,no-repeat,no-repeat!important;
+        background-size:220px 72px,100% 100%!important;
+        background-position:center center,center!important;
+        background-repeat:repeat,no-repeat!important;
         background-color:#fff!important;
       }
       html[data-athar-identity] body .screen {
         background-image:
-          radial-gradient(circle at 8% 18%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
-          radial-gradient(circle at 92% 82%,color-mix(in srgb,var(--athar-identity-accent,#c8a45b) 20%,transparent) 0 1px,transparent 2px),
-          linear-gradient(90deg,transparent,var(--athar-identity-accent,#c8a45b),transparent),
-          linear-gradient(135deg,rgba(255,255,255,0),rgba(255,255,255,.92))!important;
-        background-size:24px 24px,24px 24px,76px 2px,auto!important;
-        background-position:left top,right bottom,center bottom,center!important;
-        background-repeat:repeat,repeat,no-repeat,no-repeat!important;
+          var(--athar-page-ornament,var(--athar-button-ornament)),
+          linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.92))!important;
+        background-size:220px 72px,100% 100%!important;
+        background-position:center center,center!important;
+        background-repeat:repeat,no-repeat!important;
       }
 
       /* زخرفة الهوية على كل أنواع الأزرار والروابط التفاعلية، في كل الأدوار والشاشات. */
@@ -17242,7 +17239,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-surface", identity.surface);
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
-    root.style.setProperty("--athar-button-ornament", motifFor(activeIdentity, identity.accent));
+    const activeMotif = motifFor(activeIdentity, identity.accent);
+    root.style.setProperty("--athar-button-ornament", activeMotif);
+    // نفس النقش واللون يُستخدمان في الصفحات والبطاقات والأزرار حسب الهوية النشطة.
+    root.style.setProperty("--athar-page-ornament", activeMotif);
     // تحديث كل الأزرار والشاشات عند كل تبديل للهوية، وليس صفحة العميل فقط.
     decorateAllScreens();
     /* بطاقة صغيرة موحدة: عنوان الصفحة الرئيسية والعبارة التي اعتمدها المستخدم. */
