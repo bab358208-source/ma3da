@@ -86,11 +86,9 @@
 
 <style id="athar-role-footer-styles">
   #roleScreen.active{display:flex!important;flex-direction:column!important;min-height:calc(100vh - 28px);}
-  #roleScreen .athar-role-footer{width:100%;margin:auto auto 0;padding:24px 0 8px;box-sizing:border-box;text-align:center;}
-  #roleScreen .athar-footer-brand{display:flex;align-items:center;justify-content:center;gap:9px;margin:0 auto 18px;color:#a97727;}
-  #roleScreen .athar-footer-mark{display:grid;place-items:center;width:43px;height:43px;border:2px solid #c99b45;border-radius:50%;font-size:27px;font-weight:900;line-height:1;}
-  #roleScreen .athar-footer-name{display:flex;flex-direction:column;font-size:23px;font-weight:900;line-height:1.05;}
-  #roleScreen .athar-footer-name small{font-size:10px;letter-spacing:3px;font-weight:800;margin-top:4px;}
+  #roleScreen .athar-role-footer{width:100%;margin:auto auto 0;padding:18px 0 8px;box-sizing:border-box;text-align:center;}
+  #roleScreen .athar-support-portal-label{width:max-content;max-width:100%;margin:18px auto 0;padding:5px 18px 8px;text-align:center;color:#806027;font-weight:800;font-size:14px;cursor:pointer;outline-offset:4px;}
+  #roleScreen .athar-support-portal-rule{display:block;width:58px;height:1px;margin:8px auto 0;background:linear-gradient(90deg,transparent,#c99b45,transparent);}
   #roleScreen .athar-footer-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;}
   #roleScreen .athar-footer-link{display:flex;min-width:0;min-height:92px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px 4px!important;border:1.5px solid #d7ad60!important;border-radius:16px!important;background:linear-gradient(145deg,#fffdf8,#f8efdd)!important;background-image:linear-gradient(145deg,#fffdf8,#f8efdd)!important;color:#49371d!important;font:inherit;font-size:clamp(12px,3.2vw,15px)!important;font-weight:800!important;box-shadow:0 4px 12px rgba(123,86,28,.09)!important;cursor:pointer;}
   #roleScreen .athar-footer-link span{color:#49371d!important;}
@@ -99,12 +97,16 @@
   #roleScreen .athar-footer-copyright{display:flex;align-items:center;justify-content:center;gap:8px;margin:22px 0 0;color:#9a6b25;font-size:clamp(11px,3vw,14px);font-weight:800;line-height:1.7;}
   #roleScreen .athar-footer-copyright:before,#roleScreen .athar-footer-copyright:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,#d8ad62);}
   #roleScreen .athar-footer-copyright:after{transform:scaleX(-1);}
-  .athar-footer-dialog{width:min( calc(100% - 36px), 420px);padding:0;border:1px solid #d7ad60;border-radius:18px;background:#fffdf8;color:#302719;box-shadow:0 18px 55px rgba(0,0,0,.22);}
+  .athar-footer-dialog{width:min(calc(100% - 36px),520px);max-height:82vh;overflow:hidden;padding:0;border:1px solid #d7ad60;border-radius:18px;background:#fffdf8;color:#302719;box-shadow:0 18px 55px rgba(0,0,0,.22);}
   .athar-footer-dialog::backdrop{background:rgba(25,20,12,.48);backdrop-filter:blur(2px);}
   .athar-footer-dialog-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #ead9b8;}
   .athar-footer-dialog-head h2{margin:0;color:#9b6c27;font-size:19px;}
   .athar-footer-dialog-head button{width:34px;height:34px;border:0;border-radius:50%;background:#f3e6cd;color:#654719;font-size:24px;line-height:1;cursor:pointer;}
-  #atharFooterDialogMessage{padding:8px 18px 18px;line-height:1.8;}
+  #atharFooterDialogMessage{padding:8px 18px 20px;line-height:1.95;max-height:65vh;overflow-y:auto;text-align:right;}
+  #atharFooterDialogMessage h3{margin:14px 0 6px;color:#8d6426;font-size:1.02rem;}
+  #atharFooterDialogMessage p{margin:8px 0;}
+  #atharFooterDialogMessage ul{margin:8px 0;padding-right:22px;}
+  #atharFooterDialogMessage li{margin:5px 0;}
   @media(max-width:360px){#roleScreen .athar-footer-links{gap:5px}#roleScreen .athar-footer-link{min-height:82px;font-size:11px!important;border-radius:12px!important}}
 </style>
 
@@ -179,13 +181,7 @@
       <span></span>
 
     </div>
-
-    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
-      <button id="introNextBtn" class="main-btn" type="button">التالي</button>
-      <button id="skipIntroBtn" class="back-btn" type="button">تخطي المقدمة</button>
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -233,13 +229,7 @@
       <span></span>
 
     </div>
-
-    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
-      <button id="whyMa3daNextBtn" class="main-btn" type="button">التالي</button>
-      <button id="whyMa3daSkipBtn" class="back-btn" type="button">تخطي المقدمة</button>
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -287,13 +277,7 @@
       <span></span>
 
     </div>
-
-    <div class="intro-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;">
-      <button id="howMa3daBackBtn" class="back-btn" type="button">السابق</button>
-      <button id="howMa3daSkipBtn" class="back-btn" type="button">تخطي المقدمة</button>
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -395,7 +379,7 @@
       class="main-btn"
       type="button"
     >
-      👤 أنا عميل
+      👤 بوابة العملاء والمقاولين
     </button>
 
 
@@ -404,7 +388,7 @@
       class="main-btn"
       type="button"
     >
-      🚜 أنا صاحب معدة / مشغل
+      🚜 بوابة أصحاب المعدات
     </button>
 
     <button
@@ -412,30 +396,27 @@
       class="main-btn"
       type="button"
     >
-      🏗️ أنا مقاول أو صاحب مشروع
+      🏗️ بوابة أصحاب ومسؤولي المشاريع
     </button>
 
-    <button
+    <div
       id="supportStaffBtn"
-      class="support-subtle-link"
-      type="button"
-      style="margin-top:16px;background:transparent;border:0;text-decoration:underline;color:#6b5b37;width:100%;"
+      class="athar-support-portal-label"
+      role="link"
+      tabindex="0"
+      aria-label="فتح بوابة موظفي الدعم"
     >
-      صفحة موظفي الدعم
-    </button>
+      بوابة موظفي الدعم
+      <span class="athar-support-portal-rule" aria-hidden="true"></span>
+    </div>
 
   </div>
 
   <footer class="athar-role-footer" aria-label="معلومات منصة آثار">
-    <div class="athar-footer-brand" aria-hidden="true">
-      <span class="athar-footer-mark">آ</span>
-      <span class="athar-footer-name">آثار <small>ATHAR</small></span>
-    </div>
-
-    <nav class="athar-footer-links" aria-label="روابط آثار">
-      <button type="button" class="athar-footer-link" data-athar-footer="حقوقنا">
+    <nav class="athar-footer-links" aria-label="معلومات المنصة">
+      <button type="button" class="athar-footer-link" data-athar-footer="مسؤوليتنا">
         <span class="athar-footer-icon" aria-hidden="true">⚖</span>
-        <span>حقوقنا</span>
+        <span>مسؤوليتنا</span>
       </button>
       <button type="button" class="athar-footer-link" data-athar-footer="رؤيتنا">
         <span class="athar-footer-icon" aria-hidden="true">◎</span>
@@ -6395,6 +6376,72 @@ window.ma3daOrderBy =
       console.log(
         "script.js تم تحميله بعد تجهيز Firebase"
       );
+
+      // محتوى معلومات المنصة — يبقى داخل index حتى يظل script.js المعتمد ثابتًا.
+      const atharInfoContent = {
+        "مسؤوليتنا": `
+          <h3>ثقتكم أمانة</h3>
+          <p>في آثار ATHAR نؤمن أن الثقة أساس كل تعامل ناجح؛ لذلك نتعامل مع المعلومات والبيانات الشخصية التي يشاركها المستخدم معنا بمسؤولية واهتمام، ونسعى إلى حمايتها وعدم استخدامها إلا للأغراض المشروعة والمرتبطة بتقديم خدمات المنصة وتشغيلها وتحسينها.</p>
+          <h3>كيف نتعامل مع معلوماتكم؟</h3>
+          <ul>
+            <li>نطلب المعلومات اللازمة لإنشاء الحساب، والتحقق منه، وتقديم الخدمات وإدارة الطلبات والتواصل بشأنها.</li>
+            <li>نحرص على وضوح الغرض من جمع البيانات، وتقليل البيانات المطلوبة إلى القدر الذي تحتاجه الخدمة.</li>
+            <li>نقصر الوصول إلى المعلومات على من تستلزم طبيعة عمله الاطلاع عليها، ونتخذ تدابير تنظيمية وتقنية مناسبة للمحافظة على سريتها وسلامتها.</li>
+            <li>لا نشارك البيانات خارج نطاق تقديم الخدمة إلا وفق مسوغ نظامي أو موافقة معتبرة، أو عندما يكون ذلك لازمًا لتنفيذ طلب المستخدم، وبالقدر اللازم لذلك.</li>
+            <li>نعمل على معالجة البيانات بدقة، وتحديثها عند الحاجة، وعدم الاحتفاظ بها لمدة تتجاوز الغرض من جمعها، مع مراعاة المتطلبات النظامية.</li>
+          </ul>
+          <h3>حقوق المستخدم وواجباتنا</h3>
+          <p>نحترم حقوق أصحاب البيانات الشخصية، بما في ذلك حقهم في العلم والوصول إلى بياناتهم وطلب نسخة منها أو تصحيحها أو إتلافها، والعدول عن الموافقة متى انطبق ذلك، وفق نظام حماية البيانات الشخصية ولوائحه والاستثناءات الواردة فيه.</p>
+          <p>كما نعمل على تطوير إجراءاتنا وممارساتنا باستمرار، ونشجع المستخدم على المحافظة على سرية بيانات الدخول وعدم مشاركة رموز التحقق مع الآخرين. وتُستكمل التفاصيل والإجراءات من خلال سياسة الخصوصية وشروط الاستخدام المعتمدة للمنصة.</p>
+        `,
+        "رؤيتنا": `
+          <h3>أثرٌ يواكب طموح وطن</h3>
+          <p>تنطلق رؤيتنا من إيماننا بأن نهضة المدن والمشاريع تبدأ بتكامل الجهود، وسهولة الوصول إلى الموارد، وتحويل الطموحات إلى أعمال تُرى آثارها على أرض الواقع.</p>
+          <p>ونستلهم توجه المملكة العربية السعودية في ظل رؤية 2030 نحو اقتصاد مزدهر، وبيئة أعمال أكثر تنافسية، وتحول رقمي يرفع كفاءة الخدمات، ويدعم نمو المنشآت، ويعزز مشاركة القطاع الخاص في مسيرة التنمية.</p>
+          <h3>نحو قطاع إنشائي أكثر ترابطًا</h3>
+          <p>نتطلع إلى أن تسهم آثار في تقريب المسافة بين العملاء وأصحاب المعدات والمشغلين وأصحاب المشاريع؛ من خلال تسهيل الوصول إلى المعدات والخدمات المناسبة، وتنظيم الطلبات والتواصل، ومساندة إنجاز الأعمال بوضوح وكفاءة.</p>
+          <p>ونؤمن أن كل معدة تُستثمر بكفاءة، وكل مورد يصل إلى مشروعه في الوقت المناسب، وكل تعاون ناجح بين أطراف العمل؛ يمكن أن يصنع فرقًا في الإنتاجية ويضيف لبنة جديدة في مسيرة الإعمار.</p>
+          <p>طموحنا أن نكون جسرًا رقميًا موثوقًا يساند أعمال اليوم، ويشارك في بناء فرص الغد، بما ينسجم مع مستهدفات التنمية والابتكار والاستدامة في المملكة، دون أن ندّعي تمثيل أي جهة أو برنامج حكومي.</p>
+        `,
+        "من نحن": `
+          <h3>آثار ATHAR — منصة تجمع أطراف الإنجاز</h3>
+          <p>آثار منصة رقمية سعودية التوجه، صُممت لتكون حلقة وصل بين العملاء والمقاولين وأصحاب المعدات والمشغلين وأصحاب ومسؤولي المشاريع، في مساحة واحدة تساعدهم على الوصول إلى احتياجاتهم والتواصل بشأنها بصورة أكثر تنظيمًا ووضوحًا.</p>
+          <p>تخدم المنصة رحلة العمل من تحديد الاحتياج، واستعراض الخيارات المتاحة، وإرسال الطلبات، والتواصل بين الأطراف، ومتابعة مراحل التنفيذ والخدمات المرتبطة بالمشروع، بحسب الخصائص المتاحة داخل التطبيق.</p>
+          <h3>ماذا نقدم؟</h3>
+          <ul>
+            <li><strong>للعملاء والمقاولين:</strong> وسيلة أسهل للوصول إلى المعدات والخدمات التي تتطلبها الأعمال والمشاريع.</li>
+            <li><strong>لأصحاب المعدات:</strong> مساحة لعرض المعدات وإدارة الطلبات والتواصل مع طالبي الخدمة.</li>
+            <li><strong>لأصحاب ومسؤولي المشاريع:</strong> أدوات تساعد على تنظيم احتياجات المشروع وربطها بالمعدات ومقدمي الخدمات.</li>
+          </ul>
+          <p>نركز على تسهيل التواصل، ورفع وضوح المعلومات، وتنظيم خطوات العمل، وتقديم تجربة رقمية تراعي احتياجات مختلف الأطراف.</p>
+          <p>وتعمل آثار بوصفها منصة تقنية وسيطة لتنظيم التواصل والطلبات؛ ولا تحل محل الأطراف المتعاقدة في مسؤولياتهم، ولا تُعد بديلاً عن التحقق المباشر من المعدات أو الاتفاق على تفاصيل الخدمة وشروطها قبل التنفيذ.</p>
+          <p><strong>شعارنا:</strong> آثار… نبني اليوم ما يبقى غدًا.</p>
+        `,
+        "تواصل معنا": `
+          <h3>نسعد بتواصلكم</h3>
+          <p>فريق آثار يرحب باستفساراتكم وملاحظاتكم ومقترحاتكم. إذا واجهت مشكلة في الحساب، أو كان لديك استفسار عن طلب أو خدمة، أو رغبت في الإبلاغ عن ملاحظة؛ يمكنك التواصل معنا عبر قنوات الدعم الفني المعتمدة داخل التطبيق.</p>
+          <p>حتى نتمكن من مساعدتك بشكل أسرع، يرجى توضيح نوع الاستفسار وإرفاق رقم الطلب — إن وجد — وشرح مختصر للمشكلة، مع تجنب إرسال كلمات المرور أو رموز التحقق أو بيانات الدفع السرية.</p>
+          <p>نقدّر ثقتكم وملاحظاتكم؛ فهي تساعدنا على تحسين تجربة آثار وتطوير خدماتها باستمرار.</p>
+        `
+      };
+
+      document.addEventListener("click", event => {
+        const tile = event.target.closest?.("[data-athar-footer]");
+        if (!tile) return;
+        const section = tile.dataset.atharFooter || "";
+        const title = document.getElementById("atharFooterDialogTitle");
+        const message = document.getElementById("atharFooterDialogMessage");
+        if (title && atharInfoContent[section]) title.textContent = section;
+        if (message && atharInfoContent[section]) message.innerHTML = atharInfoContent[section];
+      });
+
+      const supportLabel = document.getElementById("supportStaffBtn");
+      supportLabel?.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          supportLabel.click();
+        }
+      });
 
     };
 
