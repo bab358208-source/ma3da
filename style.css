@@ -3748,3 +3748,12 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
     --athar-motif-size: 25% 50%;
   }
 }
+/* =========================================================
+   إخفاء الحروف والرموز المشوّهة في الصفحة الرئيسية للعميل
+========================================================= */
+
+#customerHomeScreen .home-request-card::after,
+#customerHomeScreen .home-menu-item::after {
+  content: none !important;
+  display: none !important;
+}
