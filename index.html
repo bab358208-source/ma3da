@@ -6667,6 +6667,58 @@ window.ma3daOrderBy =
   <input id="ma3daAiKnowledgeSearch" placeholder="ابحث في الأسئلة والإجابات">
   <div id="ma3daAiKnowledgeList"></div>
 </section>
+<style id="athar-six-request-fixes">
+/* 04 — تذييل آثار: يتبع ألوان الهوية النشطة دون التأثير على بقية الصفحات */
+#roleScreen .athar-support-portal-label{color:var(--athar-identity-primary,#806027)!important}
+#roleScreen .athar-support-portal-rule{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#c99b45),transparent)!important}
+#roleScreen .athar-footer-link{background:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;background-image:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;border-color:var(--athar-identity-accent,#d7ad60)!important;color:var(--athar-identity-text,#49371d)!important}
+#roleScreen .athar-footer-link span,#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-text,#49371d)!important}
+#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-primary,#a87524)!important}
+#roleScreen .athar-footer-copyright{color:var(--athar-identity-primary,#9a6b25)!important}
+#roleScreen .athar-footer-copyright:before,#roleScreen .athar-footer-copyright:after{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#d8ad62))!important}
+.athar-footer-dialog{border-color:var(--athar-identity-accent,#d7ad60)!important;background:var(--athar-identity-surface,#fffdf8)!important;color:var(--athar-identity-text,#171717)!important}
+.athar-footer-dialog h2{color:var(--athar-identity-primary,#8d6426)!important}
+
+/* 05 — الوضع الداكن: يحافظ على زخارف الهوية وألوان الأزرار وصور الخلفيات */
+html[data-theme="dark"] body{background-color:#111!important;color:#f2f2f2!important}
+html[data-theme="dark"] body .screen:not(#roleScreen){color:#f0f0f0}
+html[data-theme="dark"] body .screen .card,
+html[data-theme="dark"] body .screen .panel,
+html[data-theme="dark"] body .screen .section-card,
+html[data-theme="dark"] body .screen .content-card,
+html[data-theme="dark"] body .screen .info-card,
+html[data-theme="dark"] body .screen .menu-card,
+html[data-theme="dark"] body .screen .dashboard-card,
+html[data-theme="dark"] body .screen .request-card,
+html[data-theme="dark"] body .screen .order-card,
+html[data-theme="dark"] body .screen .stat-card,
+html[data-theme="dark"] body .screen .form-card,
+html[data-theme="dark"] body .screen .settings-card,
+html[data-theme="dark"] body .screen .invoice-card,
+html[data-theme="dark"] body .screen .equipment-card,
+html[data-theme="dark"] body .screen .project-card,
+html[data-theme="dark"] body .screen .support-card,
+html[data-theme="dark"] body .screen [class*="owner-admin-record"],
+html[data-theme="dark"] body .screen [class*="support-row"]{background-color:#202020!important;color:#f1f1f1!important;border-color:#555!important}
+html[data-theme="dark"] body .screen input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] body .screen select,
+html[data-theme="dark"] body .screen textarea{background-color:#181818!important;color:#f5f5f5!important;border-color:#555!important;color-scheme:dark}
+html[data-theme="dark"] body .screen input::placeholder,
+html[data-theme="dark"] body .screen textarea::placeholder{color:#aaa!important}
+html[data-theme="dark"] body .screen p,html[data-theme="dark"] body .screen label,html[data-theme="dark"] body .screen small,html[data-theme="dark"] body .screen span{color:inherit}
+html[data-theme="dark"] body .screen button:not(.main-btn):not(.home-menu-item):not(.athar-identity-card){color:inherit}
+html[data-theme="dark"] .athar-footer-dialog{background:#202020!important;color:#f1f1f1!important}
+html[data-theme="dark"] .athar-footer-dialog p{color:#f1f1f1!important}
+
+/* 06 — اتجاه واجهة اللغة الإنجليزية فقط؛ لا يتغير اتجاه بيانات المستخدم العربية */
+html[dir="ltr"][lang="en"] body{direction:ltr}
+html[dir="ltr"][lang="en"] .screen{text-align:left}
+html[dir="ltr"][lang="en"] .screen label{text-align:left}
+html[dir="ltr"][lang="en"] .screen input,html[dir="ltr"][lang="en"] .screen textarea,html[dir="ltr"][lang="en"] .screen select{text-align:left;direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-links{direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-link{direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-dialog{text-align:left;direction:ltr}
+</style>
 </body>
 
 </html>
