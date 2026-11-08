@@ -17496,3 +17496,576 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",bind,{once:true});
   else bind();
 })();
+
+/* =====================================================
+   ATHAR — نظام مراجعة التسجيلات
+   ===================================================== */
+
+window.atharRegistration = (() => {
+
+  const getUser = async () => {
+    await Promise.resolve(window.ma3daFirebaseReady);
+
+    return window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+  };
+
+  const getRequestRef = uid =>
+    window.ma3daDoc(
+      window.ma3daDB,
+      "registrationRequests",
+      uid
+    );
+
+  const getRequests = async () => {
+    const snap = await window.ma3daGetDocs(
+      window.ma3daCollection(
+        window.ma3daDB,
+        "registrationRequests"
+      )
+    );
+
+    const rows = [];
+
+    snap.forEach(d => {
+      rows.push({
+        id: d.id,
+        ...d.data()
+      });
+    });
+
+    return rows;
+  };
+
+  const safe = value =>
+    String(value ?? "—").replace(/[&<>"']/g, c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c]));
+
+  const roleName = role =>
+    role === "operator"
+      ? "صاحب معدة"
+      : role === "contractor"
+        ? "صاحب مشروع"
+        : role;
+
+  const dateText = value => {
+    if (!value) return "غير مسجل";
+
+    const date = value?.toDate
+      ? value.toDate()
+      : new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? "غير مسجل"
+      : date.toLocaleString("ar-SA");
+  };
+
+  const createRequest = async ({
+    uid,
+    role,
+    profile
+  }) => {
+
+    if (!["operator", "contractor"].includes(role)) {
+      throw new Error("نوع التسجيل غير صحيح.");
+    }
+
+    const ref = getRequestRef(uid);
+
+    await window.ma3daSetDoc(ref, {
+      uid,
+      role,
+      profile,
+      status: "pending_support",
+      createdAt: new Date(),
+      createdAtMs: Date.now(),
+      updatedAt: new Date()
+    });
+
+  };
+
+  const updateRegistrationData = async (
+    uid,
+    data
+  ) => {
+
+    const ref = getRequestRef(uid);
+
+    await window.ma3daUpdateDoc(ref, {
+      ...data,
+      updatedAt: new Date()
+    });
+
+  };
+
+  /* ---------------------------------
+     عرض الطلبات لموظف الدعم
+     --------------------------------- */
+
+  const loadSupportRegistrations = async () => {
+
+    const target =
+      document.getElementById(
+        "supportRegistrationList"
+      );
+
+    if (!target) return;
+
+    target.textContent = "جارٍ تحميل التسجيلات...";
+
+    try {
+
+      const rows = await getRequests();
+
+      const pending = rows.filter(x =>
+        x.status === "pending_support"
+      );
+
+      if (!pending.length) {
+        target.innerHTML =
+          '<div class="owner-admin-empty">لا توجد تسجيلات تنتظر المراجعة.</div>';
+        return;
+      }
+
+      target.innerHTML = pending.map(item => {
+
+        const profile = item.profile || {};
+
+        return `
+          <article class="owner-admin-record">
+
+            <strong>${safe(profile.name || profile.fullName)}</strong>
+
+            <span>الصفة: ${safe(roleName(item.role))}</span>
+            <span>الجوال: ${safe(profile.phone)}</span>
+            <span>البريد: ${safe(profile.email)}</span>
+
+            <small>
+              تاريخ التسجيل:
+              ${safe(dateText(item.createdAt))}
+            </small>
+
+            <label>سبب الرفض أو ملاحظات المراجعة</label>
+
+            <textarea
+              data-support-reason="${safe(item.id)}"
+              rows="3"
+              maxlength="1500"
+              placeholder="اكتب سبب القرار أو ملاحظاتك">
+            </textarea>
+
+            <div class="support-registration-actions">
+
+              <button
+                type="button"
+                class="support-btn support-primary"
+                data-registration-support-approve="${safe(item.id)}">
+                قبول مبدئي
+              </button>
+
+              <button
+                type="button"
+                class="support-btn"
+                data-registration-support-revision="${safe(item.id)}">
+                طلب استكمال
+              </button>
+
+              <button
+                type="button"
+                class="support-btn"
+                data-registration-support-reject="${safe(item.id)}">
+                رفض مبدئي
+              </button>
+
+            </div>
+
+          </article>
+        `;
+
+      }).join("");
+
+    } catch (error) {
+
+      console.error(error);
+
+      target.textContent =
+        "تعذر تحميل التسجيلات: " +
+        (error.message || "خطأ غير معروف");
+
+    }
+
+  };
+
+
+  /* ---------------------------------
+     قرار موظف الدعم
+     --------------------------------- */
+
+  const supportDecision = async (
+    uid,
+    decision
+  ) => {
+
+    const user = await getUser();
+
+    if (!user) {
+      throw new Error("يجب تسجيل الدخول.");
+    }
+
+    const reasonField = document.querySelector(
+      `[data-support-reason="${uid}"]`
+    );
+
+    const reason = reasonField?.value.trim() || "";
+
+    if (
+      decision !== "approved" &&
+      !reason
+    ) {
+      throw new Error("اكتب سبب الرفض أو طلب الاستكمال.");
+    }
+
+    const statusMap = {
+      approved: "support_approved",
+      rejected: "support_rejected",
+      needs_revision: "needs_revision"
+    };
+
+    await updateRegistrationData(uid, {
+      status: statusMap[decision],
+
+      supportReview: {
+        decision,
+        reason,
+        reviewedBy: user.uid,
+        reviewerEmail: user.email || "",
+        reviewedAt: new Date(),
+        reviewedAtMs: Date.now()
+      }
+    });
+
+    await loadSupportRegistrations();
+
+  };
+
+
+  /* ---------------------------------
+     لوحة المالك
+     --------------------------------- */
+
+  const loadOwnerRegistrations = async view => {
+
+    const target =
+      document.getElementById(
+        "ownerRegistrationList"
+      );
+
+    if (!target) return;
+
+    target.textContent = "جارٍ تحميل الطلبات...";
+
+    try {
+
+      const rows = await getRequests();
+
+      let filtered = [];
+
+      if (view === "final") {
+        filtered = rows.filter(x =>
+          x.status === "support_approved"
+        );
+      } else {
+        filtered = rows.filter(x =>
+          x.status === "pending_support" ||
+          x.status === "needs_revision"
+        );
+      }
+
+      if (!filtered.length) {
+        target.innerHTML =
+          '<div class="owner-admin-empty">لا توجد طلبات في هذا القسم.</div>';
+        return;
+      }
+
+      target.innerHTML = filtered.map(item => {
+
+        const profile = item.profile || {};
+        const support = item.supportReview || {};
+
+        const age = item.createdAtMs
+          ? Math.max(
+              0,
+              Math.floor(
+                (Date.now() - item.createdAtMs) / 60000
+              )
+            )
+          : null;
+
+        return `
+          <article class="owner-admin-record">
+
+            <strong>${safe(profile.name || profile.fullName)}</strong>
+
+            <span>الصفة: ${safe(roleName(item.role))}</span>
+            <span>الجوال: ${safe(profile.phone)}</span>
+            <span>البريد: ${safe(profile.email)}</span>
+            <span>الحالة: ${safe(item.status)}</span>
+
+            <small>
+              موظف الدعم:
+              ${safe(support.reviewerEmail || support.reviewedBy || "لم تتم المراجعة")}
+            </small>
+
+            <small>
+              مدة الانتظار:
+              ${age === null ? "غير معروف" : age + " دقيقة"}
+            </small>
+
+            <small>
+              ملاحظات الدعم:
+              ${safe(support.reason || "لا توجد")}
+            </small>
+
+            ${
+              view === "final"
+                ? `
+                  <label>سبب القرار النهائي</label>
+
+                  <textarea
+                    data-owner-reason="${safe(item.id)}"
+                    rows="3"
+                    maxlength="1500"
+                    placeholder="اكتب سبب القرار النهائي">
+                  </textarea>
+
+                  <div class="support-registration-actions">
+
+                    <button
+                      type="button"
+                      class="support-btn support-primary"
+                      data-registration-owner-approve="${safe(item.id)}">
+                      اعتماد نهائي
+                    </button>
+
+                    <button
+                      type="button"
+                      class="support-btn"
+                      data-registration-owner-reject="${safe(item.id)}">
+                      رفض نهائي
+                    </button>
+
+                  </div>
+                `
+                : ""
+            }
+
+          </article>
+        `;
+
+      }).join("");
+
+    } catch (error) {
+
+      console.error(error);
+
+      target.textContent =
+        "تعذر تحميل الطلبات: " +
+        (error.message || "خطأ غير معروف");
+
+    }
+
+  };
+
+
+  /* ---------------------------------
+     القرار النهائي للمالك
+     --------------------------------- */
+
+  const ownerDecision = async (
+    uid,
+    approved
+  ) => {
+
+    const user = await getUser();
+
+    if (!user) {
+      throw new Error("يجب تسجيل الدخول.");
+    }
+
+    const field = document.querySelector(
+      `[data-owner-reason="${uid}"]`
+    );
+
+    const reason = field?.value.trim() || "";
+
+    if (!reason) {
+      throw new Error("اكتب سبب القرار النهائي.");
+    }
+
+    await updateRegistrationData(uid, {
+
+      status: approved
+        ? "owner_approved"
+        : "owner_rejected",
+
+      ownerReview: {
+        decision: approved
+          ? "approved"
+          : "rejected",
+
+        reason,
+
+        reviewedBy: user.uid,
+
+        reviewerEmail: user.email || "",
+
+        reviewedAt: new Date(),
+
+        reviewedAtMs: Date.now()
+      }
+
+    });
+
+    await loadOwnerRegistrations("final");
+
+  };
+
+
+  /* ---------------------------------
+     ربط الأزرار
+     --------------------------------- */
+
+  document.addEventListener("click", async event => {
+
+    const supportApprove =
+      event.target.closest(
+        "[data-registration-support-approve]"
+      );
+
+    const supportReject =
+      event.target.closest(
+        "[data-registration-support-reject]"
+      );
+
+    const supportRevision =
+      event.target.closest(
+        "[data-registration-support-revision]"
+      );
+
+    const ownerApprove =
+      event.target.closest(
+        "[data-registration-owner-approve]"
+      );
+
+    const ownerReject =
+      event.target.closest(
+        "[data-registration-owner-reject]"
+      );
+
+    const ownerView =
+      event.target.closest(
+        "[data-owner-registration-view]"
+      );
+
+    try {
+
+      if (supportApprove) {
+        await supportDecision(
+          supportApprove.dataset.registrationSupportApprove,
+          "approved"
+        );
+      }
+
+      if (supportReject) {
+        await supportDecision(
+          supportReject.dataset.registrationSupportReject,
+          "rejected"
+        );
+      }
+
+      if (supportRevision) {
+        await supportDecision(
+          supportRevision.dataset.registrationSupportRevision,
+          "needs_revision"
+        );
+      }
+
+      if (ownerApprove) {
+        await ownerDecision(
+          ownerApprove.dataset.registrationOwnerApprove,
+          true
+        );
+      }
+
+      if (ownerReject) {
+        await ownerDecision(
+          ownerReject.dataset.registrationOwnerReject,
+          false
+        );
+      }
+
+      if (ownerView) {
+
+        const user = await getUser();
+
+        if (!user) {
+          throw new Error("يجب تسجيل الدخول.");
+        }
+
+        await loadOwnerRegistrations(
+          ownerView.dataset.ownerRegistrationView
+        );
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        error.message ||
+        "تعذر تنفيذ العملية."
+      );
+
+    }
+
+  });
+
+
+  document.getElementById(
+    "supportRegistrationRefresh"
+  )?.addEventListener(
+    "click",
+    loadSupportRegistrations
+  );
+
+  return {
+    createRequest,
+    updateRegistrationData,
+    loadSupportRegistrations,
+    loadOwnerRegistrations
+  };
+
+})();
+
+
+/* تحميل مراجعات الدعم عند فتح قسم التسجيلات */
+
+document.addEventListener("click", event => {
+
+  const button = event.target.closest(
+    '[data-support-section="registrations"]'
+  );
+
+  if (button) {
+    window.atharRegistration
+      ?.loadSupportRegistrations();
+  }
+
+});
+
