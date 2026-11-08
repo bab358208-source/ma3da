@@ -3603,3 +3603,56 @@ button:focus-visible{outline:2px solid var(--ma3da-gold);outline-offset:2px}
 
 /* ATHAR: fixed light appearance; appearance switching has been removed. */
 html, html body { color-scheme: light; }
+/* ATHAR — Registration Review */
+
+.support-registration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.support-registration-actions button {
+  flex: 1 1 130px;
+}
+
+#ownerRegistrationControls {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #eadfc5;
+  border-radius: 14px;
+  background: #fff;
+}
+
+#ownerRegistrationControls h3 {
+  margin-top: 0;
+  color: #9b762e;
+}
+
+#ownerRegistrationControls .owner-admin-subcard {
+  width: 100%;
+  margin: 6px 0;
+}
+
+#ownerRegistrationList,
+#supportRegistrationList {
+  margin-top: 14px;
+}
+
+#ownerRegistrationList textarea,
+#supportRegistrationList textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 11px;
+  border: 1px solid #dfd2b4;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+#ownerRegistrationList .owner-admin-record,
+#supportRegistrationList .owner-admin-record {
+  margin-bottom: 12px;
+}
