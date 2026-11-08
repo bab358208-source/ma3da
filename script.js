@@ -38,21 +38,22 @@ async function ma3daReadUserRows(collectionName, fields, uid){
 */
 console.log("MA3DA SCRIPT LOADED");
 
-/* ATHAR — استعادة إعداد المظهر المحفوظ عند فتح التطبيق */
-(function initAtharSavedAppearance(){
-  function applySaved(){
-    const saved=localStorage.getItem('ma3daTheme')||'system';
-    if(saved==='dark'||saved==='light')document.documentElement.setAttribute('data-theme',saved);
-    else {
-      const dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-    }
-  }
-  applySaved();
-  window.addEventListener('storage',e=>{if(e.key==='ma3daTheme')applySaved();});
-  if(window.matchMedia){const media=window.matchMedia('(prefers-color-scheme: dark)');media.addEventListener?.('change',()=>{if((localStorage.getItem('ma3daTheme')||'system')==='system')applySaved();});}
+/* ATHAR — تثبيت الوضع الفاتح فقط وإزالة أي إعداد سابق للوضع الداكن */
+(function initAtharLightOnly(){
+  const apply=()=>{
+    const root=document.documentElement;
+    root.setAttribute('data-theme','light');
+    root.style.colorScheme='light';
+    document.body?.style.setProperty('color-scheme','light');
+    try{localStorage.setItem('ma3daTheme','light');}catch(_){}
+  };
+  apply();
+  const watch=new MutationObserver(()=>{
+    if(document.documentElement.getAttribute('data-theme')!=='light') apply();
+  });
+  watch.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  window.addEventListener('storage',e=>{if(e.key==='ma3daTheme')apply();});
 })();
-
 
 /* ATHAR — نافذة كتابة داخل التطبيق للأسباب والملاحظات المطلوبة */
 window.ma3daRequestText = function ma3daRequestText(title, placeholder){
@@ -5205,218 +5206,156 @@ Object.assign(atharEnglishDictionary,{
 
 (function initAtharEnglishTranslation(){
   const originalNodes=new WeakMap();
+  const lastApplied=new WeakMap();
   const originalAttrs=new WeakMap();
-  const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
-  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const phrasePairs=Object.entries(atharEnglishDictionary).filter(([ar])=>ar.length>=4||/\s/.test(ar)).sort((a,b)=>b[0].length-a[0].length).concat([["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]]);for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
-  window.ma3daTranslateText=value=>translateText(value);
-  function translateNewAttributes(root){const attrs=['placeholder','aria-label','title','alt'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
-
-  function applyLanguage(language){const english=language==='en';document.documentElement.lang=english?'en':'ar';document.documentElement.dir=english?'ltr':'rtl';document.documentElement.dataset.atharLanguage=english?'en':'ar';
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){if(!node.nodeValue||!normalize(node.nodeValue))return NodeFilter.FILTER_REJECT;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
-    let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);const loginArea=node.parentElement?.closest('#roleScreen,#phoneScreen,#otpScreen,#createAccountScreen,#supportLoginScreen,#supportForgotScreen,#ownerPortalLoginScreen');const cleanedLogin=loginArea?String(original).replace(/\s*التطبيق\s*/g,' ').replace(/\s+/g,' ').trim():original;node.nodeValue=english?translateText(cleanedLogin):cleanedLogin;}
-    const attrs=['placeholder','aria-label','title','alt'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
-    document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
+  let applying=false;
+  const normalize=value=>String(value??'').replace(/\s+/g,' ').trim();
+  const pairs=Object.entries(atharEnglishDictionary)
+    .filter(([ar,en])=>typeof ar==='string'&&ar.length>=4&&typeof en==='string'&&en.length)
+    .sort((a,b)=>b[0].length-a[0].length);
+  const phrasePairs=[
+    ['اختر طريقة استخدامك للتطبيق','Choose how you want to use the app'],
+    ['تسجيل الدخول للمتابعة','Log in to continue'],
+    ['تسجيل الدخول إلى حسابك','Log in to your account'],
+    ['ليس لديك حساب؟',"Don't have an account?"],
+    ['لديك حساب؟','Already have an account?'],
+    ['أدخل بياناتك','Enter your details'],
+    ['أدخل بريدك الإلكتروني','Enter your email address'],
+    ['أدخل كلمة المرور','Enter your password']
+  ];
+  function translateText(value){
+    const source=String(value??'');
+    const key=normalize(source);
+    if(!key)return source;
+    if(Object.prototype.hasOwnProperty.call(atharEnglishDictionary,key))return atharEnglishDictionary[key];
+    let result=source;
+    for(const [ar,en] of pairs){if(result.includes(ar))result=result.split(ar).join(en);}
+    for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.split(ar).join(en);}
+    const prefixes=[['الحالة: ','Status: '],['المبلغ: ','Amount: '],['موظف الدعم: ','Support Agent: '],['سبب التصعيد: ','Escalation reason: '],['رقم الشكوى: ','Ticket number: '],['صاحب المعدة: ','Equipment Owner: '],['الموقع: ','Location: '],['المدة: ','Duration: '],['المبلغ المستحق: ','Amount Due: ']];
+    for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))result=result.replace(ar,en);}
+    return result;
   }
-  window.ma3daSetLanguage=language=>{const selected=language==='en'?'en':'ar';localStorage.setItem('ma3daLanguage',selected);applyLanguage(selected);};
-  window.ma3daApplySavedLanguage=()=>applyLanguage(localStorage.getItem('ma3daLanguage')||'ar');
-  const observer=new MutationObserver(records=>{if((localStorage.getItem('ma3daLanguage')||'ar')!=='en')return;for(const record of records){if(record.type==='childList'){record.addedNodes.forEach(node=>{if(node.nodeType===1){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let textNode;while((textNode=walker.nextNode())){if(!originalNodes.has(textNode))originalNodes.set(textNode,textNode.nodeValue);const loginArea=textNode.parentElement?.closest('#roleScreen,#phoneScreen,#otpScreen,#createAccountScreen,#supportLoginScreen,#supportForgotScreen,#ownerPortalLoginScreen');const raw=originalNodes.get(textNode);const cleaned=loginArea?String(raw).replace(/\s*التطبيق\s*/g,' ').replace(/\s+/g,' ').trim():raw;textNode.nodeValue=translateText(cleaned);}translateNewAttributes(node);}else if(node.nodeType===3){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);node.nodeValue=translateText(originalNodes.get(node));}});}else if(record.type==='characterData'){const n=record.target;let original=originalNodes.get(n);if(original===undefined||n.nodeValue!==translateText(original)){original=n.nodeValue;originalNodes.set(n,original);}const translated=translateText(original);if(n.nodeValue!==translated)n.nodeValue=translated;}}});
-  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
-  const saved=localStorage.getItem('ma3daLanguage')||'ar';applyLanguage(saved);
+  window.ma3daTranslateText=translateText;
+  function rememberAttr(el,attr){
+    let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}
+    if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);
+    return saved[attr];
+  }
+  function translateAttrs(root,english){
+    const attrs=['placeholder','aria-label','title','alt'];
+    const nodes=[];if(root?.nodeType===1)nodes.push(root);
+    if(root?.querySelectorAll)nodes.push(...root.querySelectorAll('[placeholder],[aria-label],[title],[alt]'));
+    for(const el of nodes)for(const attr of attrs){if(!el.hasAttribute?.(attr))continue;const original=rememberAttr(el,attr);el.setAttribute(attr,english?translateText(original):original);}
+  }
+  function processTextNode(node,english){
+    if(!node||node.nodeType!==3)return;
+    if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue||'');
+    const original=originalNodes.get(node);
+    const next=english?translateText(original):original;
+    if(node.nodeValue!==next){node.nodeValue=next;lastApplied.set(node,next);}
+    else lastApplied.set(node,next);
+  }
+  function processTree(root,english){
+    if(!root)return;
+    if(root.nodeType===3){processTextNode(root,english);return;}
+    if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
+    if(root.nodeType===1&&root.closest?.('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
+      const parent=node.parentElement;
+      if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;
+      return normalize(node.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }});
+    let node;while((node=walker.nextNode()))processTextNode(node,english);
+    translateAttrs(root,english);
+  }
+  function applyLanguage(language){
+    const english=language==='en';applying=true;
+    document.documentElement.lang=english?'en':'ar';
+    document.documentElement.dir=english?'ltr':'rtl';
+    document.documentElement.dataset.atharLanguage=english?'en':'ar';
+    processTree(document.body,english);
+    document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
+    applying=false;
+  }
+  window.ma3daSetLanguage=language=>{
+    const selected=language==='en'?'en':'ar';
+    try{localStorage.setItem('ma3daLanguage',selected);}catch(_){}
+    applyLanguage(selected);
+  };
+  window.ma3daApplySavedLanguage=()=>applyLanguage((()=>{try{return localStorage.getItem('ma3daLanguage')||'ar';}catch(_){return 'ar';}})());
+  const observer=new MutationObserver(records=>{
+    if(applying)return;
+    const english=(document.documentElement.dataset.atharLanguage||'ar')==='en';
+    applying=true;
+    for(const record of records){
+      if(record.type==='childList'){
+        record.addedNodes.forEach(node=>processTree(node,english));
+      }else if(record.type==='characterData'){
+        const node=record.target;
+        if(node.nodeValue===lastApplied.get(node))continue;
+        // A genuine application update becomes the new source string; switching back to Arabic restores it exactly.
+        originalNodes.set(node,node.nodeValue||'');
+        processTextNode(node,english);
+      }else if(record.type==='attributes'){
+        const el=record.target,attr=record.attributeName;
+        if(!['placeholder','aria-label','title','alt'].includes(attr))continue;
+        const translated=el.getAttribute(attr);
+        const saved=originalAttrs.get(el)||{};
+        if(saved[attr]!==undefined&&translated=== (english?translateText(saved[attr]):saved[attr]))continue;
+        let bucket=originalAttrs.get(el);if(!bucket){bucket={};originalAttrs.set(el,bucket);}
+        bucket[attr]=translated;
+        el.setAttribute(attr,english?translateText(translated):translated);
+      }
+    }
+    applying=false;
+  });
+  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title','alt']});
+  let saved='ar';try{saved=localStorage.getItem('ma3daLanguage')||'ar';}catch(_){}
+  applyLanguage(saved);
 })();
 
 if(arabicLanguageBtn){arabicLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('ar');alert('تم اختيار اللغة العربية 🇸🇦');});}
 if(englishLanguageBtn){englishLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('en');alert('English language selected 🇬🇧');});}
 
-/* ATHAR — اختصارات اللغة والمظهر في شاشة اختيار طريقة الاستخدام فقط */
-(function initAtharRoleQuickControls(){
+/* ATHAR — اختصارات اللغة فقط؛ لا يوجد زر مظهر أو وضع داكن */
+(function initAtharRoleLanguageControls(){
   function mount(){
     const roleScreen=document.getElementById('roleScreen');
-    if(!roleScreen || roleScreen.querySelector('.athar-role-quick-controls'))return;
-
-    // إخفاء روابط صفحات اللغة والمظهر من قوائم المستخدمين؛ التحكم المختصر موجود في شاشة اختيار الدور.
+    if(!roleScreen)return;
+    document.getElementById('appearanceSettingsBtn')?.remove();
+    document.querySelectorAll('[data-action="appearance"],.appearance-settings-btn').forEach(el=>el.remove());
+    document.getElementById('appearanceSettingsScreen')?.setAttribute('hidden','hidden');
+    const old=roleScreen.querySelector('.athar-role-quick-controls');
+    old?.remove();
     if(!document.getElementById('atharRoleQuickControlsStyle')){
-      const style=document.createElement('style');
-      style.id='atharRoleQuickControlsStyle';
-      style.textContent=`
-        #languageSettingsBtn,#appearanceSettingsBtn{display:none!important}
-        #roleScreen{position:relative!important;padding-top:58px!important}
-        #roleScreen .athar-role-quick-controls{position:absolute;z-index:30;top:12px;inset-inline-end:14px;display:flex;align-items:center;gap:8px;direction:ltr}
-        #roleScreen .athar-role-quick-controls button{width:40px;height:40px;min-width:40px;padding:0;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:50%;background:var(--athar-identity-surface,#fffdf8);color:var(--athar-identity-text,#171717);font-family:inherit;font-size:17px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 3px 12px #00000014;cursor:pointer}
-        #roleScreen .athar-role-quick-controls button[aria-pressed="true"]{background:var(--athar-button-bg,#c8a45b);color:var(--athar-button-text,#171717);border-color:var(--athar-button-border,var(--athar-identity-accent,#c8a45b))}
-        #roleScreen .athar-role-quick-controls button:focus-visible{outline:3px solid var(--athar-identity-accent,#c8a45b);outline-offset:3px}
-        html[data-theme="dark"] #roleScreen .athar-role-quick-controls button{background:#222;color:#f5f5f5;border-color:#777}
-        html[data-theme="dark"] #roleScreen .athar-role-quick-controls button[aria-pressed="true"]{background:var(--athar-button-bg,#c8a45b);color:var(--athar-button-text,#171717)}
-      `;
+      const style=document.createElement('style');style.id='atharRoleQuickControlsStyle';
+      style.textContent=`#languageSettingsBtn,#appearanceSettingsBtn{display:none!important}#roleScreen{position:relative!important;padding-top:58px!important}#roleScreen .athar-role-quick-controls{position:absolute;z-index:30;top:12px;inset-inline-end:14px;display:flex;align-items:center;gap:8px;direction:ltr}#roleScreen .athar-role-quick-controls button{width:40px;height:40px;min-width:40px;padding:0;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:50%;background:var(--athar-identity-surface,#fffdf8);color:var(--athar-identity-text,#171717);font-family:inherit;font-size:17px;font-weight:800;display:grid;place-items:center;cursor:pointer}`;
       (document.head||document.documentElement).appendChild(style);
     }
-
-    const bar=document.createElement('div');
-    bar.className='athar-role-quick-controls';
-    bar.setAttribute('data-no-translate','true');
-    bar.setAttribute('aria-label','Language and appearance controls');
-
-    const english=document.createElement('button');
-    english.type='button';english.textContent='🌐';
-    english.setAttribute('aria-label','Switch to English');
-    english.title='English';
-    english.addEventListener('click',()=>{
-      window.ma3daSetLanguage?.('en');
-      update();
-    });
-
-    const arabic=document.createElement('button');
-    arabic.type='button';arabic.textContent='ع';
-    arabic.setAttribute('aria-label','التبديل إلى العربية');
-    arabic.title='العربية';
-    arabic.addEventListener('click',()=>{
-      window.ma3daSetLanguage?.('ar');
-      update();
-    });
-
-    const theme=document.createElement('button');
-    theme.type='button';
-    theme.setAttribute('aria-label','Toggle dark mode');
-    theme.title='Toggle appearance';
-    theme.addEventListener('click',()=>{
-      const current=document.documentElement.getAttribute('data-theme')||'light';
-      const next=current==='dark'?'light':'dark';
-      document.documentElement.setAttribute('data-theme',next);
-      localStorage.setItem('ma3daTheme',next);
-      update();
-    });
-
-    function update(){
-      const lang=localStorage.getItem('ma3daLanguage')||'ar';
-      const dark=document.documentElement.getAttribute('data-theme')==='dark';
-      english.setAttribute('aria-pressed',lang==='en'?'true':'false');
-      arabic.setAttribute('aria-pressed',lang==='ar'?'true':'false');
-      theme.textContent=dark?'☀️':'🌙';
-      theme.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
-      theme.title=dark?'Light mode':'Dark mode';
-    }
-    bar.append(english,arabic,theme);
-    const hero=roleScreen.querySelector('.hero');
-    if(hero)roleScreen.insertBefore(bar,hero);else roleScreen.prepend(bar);
-    update();
-
-    // إبقاء رمز الوضع متزامنًا مع اختيار المظهر من أي شاشة أخرى.
-    window.addEventListener('storage',e=>{if(e.key==='ma3daTheme'||e.key==='ma3daLanguage')update();});
-    const observer=new MutationObserver(()=>update());
-    observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-athar-language']});
+    const bar=document.createElement('div');bar.className='athar-role-quick-controls';bar.setAttribute('data-no-translate','true');bar.setAttribute('aria-label','Language controls');
+    const english=document.createElement('button');english.type='button';english.textContent='EN';english.setAttribute('aria-label','Switch to English');english.title='English';
+    const arabic=document.createElement('button');arabic.type='button';arabic.textContent='ع';arabic.setAttribute('aria-label','التبديل إلى العربية');arabic.title='العربية';
+    english.addEventListener('click',()=>window.ma3daSetLanguage?.('en'));
+    arabic.addEventListener('click',()=>window.ma3daSetLanguage?.('ar'));
+    bar.append(english,arabic);const hero=roleScreen.querySelector('.hero');if(hero)roleScreen.insertBefore(bar,hero);else roleScreen.prepend(bar);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
-  else mount();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
- 
-/* APPEARANCE */
- 
-const appearanceSettingsBtn =
-  document.getElementById("appearanceSettingsBtn");
- 
-if(appearanceSettingsBtn){
- 
-  appearanceSettingsBtn.addEventListener(
-    "click",
-    ()=>{
-      showScreen(
-        "appearanceSettingsScreen"
-      );
-    }
-  );
- 
-}
- 
-const backFromAppearanceSettingsBtn =
-  document.getElementById("backFromAppearanceSettingsBtn");
- 
-if(backFromAppearanceSettingsBtn){
- 
-  backFromAppearanceSettingsBtn.addEventListener(
-    "click",
-    ()=>{
-      showScreen(
-        "roleScreen"
-      );
-    }
-  );
- 
-}
- 
-const systemAppearanceBtn =
-  document.getElementById("systemAppearanceBtn");
- 
-if(systemAppearanceBtn){
- 
-  systemAppearanceBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      document.documentElement.setAttribute(
-        "data-theme",
-        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      );
- 
-      localStorage.setItem("ma3daTheme", "system");
- 
-      alert(
-        "تم اختيار المظهر التلقائي 📱"
-      );
- 
-    }
-  );
- 
-}
- 
-const lightAppearanceBtn =
-  document.getElementById("lightAppearanceBtn");
- 
-if(lightAppearanceBtn){
- 
-  lightAppearanceBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      document.documentElement.setAttribute(
-        "data-theme",
-        "light"
-      );
- 
-      localStorage.setItem("ma3daTheme", "light");
- 
-      alert(
-        "تم اختيار المظهر الفاتح ☀️"
-      );
- 
-    }
-  );
- 
-}
- 
-const darkAppearanceBtn =
-  document.getElementById("darkAppearanceBtn");
- 
-if(darkAppearanceBtn){
- 
-  darkAppearanceBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      document.documentElement.setAttribute(
-        "data-theme",
-        "dark"
-      );
- 
-      localStorage.setItem("ma3daTheme", "dark");
- 
-      alert(
-        "تم اختيار المظهر الداكن 🌙"
-      );
- 
-    }
-  );
- 
-}
- 
+/* APPEARANCE REMOVED — التطبيق يعمل بالوضع الفاتح فقط */
+(function removeAppearanceControls(){
+  const remove=()=>{
+    document.getElementById('appearanceSettingsBtn')?.remove();
+    document.getElementById('backFromAppearanceSettingsBtn')?.remove();
+    document.getElementById('systemAppearanceBtn')?.remove();
+    document.getElementById('lightAppearanceBtn')?.remove();
+    document.getElementById('darkAppearanceBtn')?.remove();
+    const screen=document.getElementById('appearanceSettingsScreen');if(screen)screen.remove();
+    document.documentElement.setAttribute('data-theme','light');
+  };
+  remove();
+  document.addEventListener('DOMContentLoaded',remove,{once:true});
+})();
+
 /* 03-A — وظائف العميل: الدعم الفني الخاص بالعميل */
 /* TECHNICAL SUPPORT */
  
@@ -14173,7 +14112,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   function backFallback(currentId){
     const groups={
-      customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','appearanceSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
+      customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','languageSettingsScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'],
       operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
       contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
@@ -14182,7 +14121,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='contractorEquipmentPickerScreen') return 'contractorProjectsScreen';
       if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
-      if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen'||currentId==='appearanceSettingsScreen') return 'customerSettingsScreen';
+      if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||currentId==='languageSettingsScreen') return 'customerSettingsScreen';
       if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','paymentScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
       if(['operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
       if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
@@ -17681,73 +17620,4 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",bind,{once:true});
   else bind();
-})();
-
-
-/* ATHAR — الوضع الداكن الشامل: تطبيق السواد على جميع الشاشات الحالية والديناميكية */
-(function initAtharGlobalDarkAppearance(){
-  if(document.getElementById('atharGlobalDarkAppearanceStyles')) return;
-  const style=document.createElement('style');
-  style.id='atharGlobalDarkAppearanceStyles';
-  style.textContent=`
-    html[data-theme="dark"],html[data-theme="dark"] body{
-      background:#000!important;background-color:#000!important;color:#f5f5f5!important;
-      color-scheme:dark;
-    }
-    html[data-theme="dark"] body,
-    html[data-theme="dark"] body .screen,
-    html[data-theme="dark"] body [id$="Screen"],
-    html[data-theme="dark"] body .screen.active,
-    html[data-theme="dark"] body main,
-    html[data-theme="dark"] body .app,
-    html[data-theme="dark"] body .page,
-    html[data-theme="dark"] body .page-content{
-      background:#000!important;background-color:#000!important;color:#f5f5f5!important;
-    }
-    html[data-theme="dark"] body *:not(img):not(video):not(canvas):not(iframe):not(button):not(input):not(textarea):not(select):not(option){
-      background-color:#000!important;color:#f5f5f5!important;border-color:#454545;
-    }
-    html[data-theme="dark"] body input,
-    html[data-theme="dark"] body textarea,
-    html[data-theme="dark"] body select,
-    html[data-theme="dark"] body option{
-      background:#111!important;background-color:#111!important;color:#f5f5f5!important;
-      border-color:#555!important;color-scheme:dark;
-    }
-    html[data-theme="dark"] body button,
-    html[data-theme="dark"] body [role="button"]{
-      background-color:var(--athar-button-bg,#222)!important;
-      color:var(--athar-button-text,#f5f5f5)!important;
-    }
-    html[data-theme="dark"] body button:not(.athar-keep-brand-button){
-      border-color:var(--athar-button-border,#555);
-    }
-    html[data-theme="dark"] body a{color:#d9c18a!important}
-    html[data-theme="dark"] body img,
-    html[data-theme="dark"] body video,
-    html[data-theme="dark"] body canvas,
-    html[data-theme="dark"] body iframe{background-color:transparent!important}
-    html[data-theme="dark"] body table,
-    html[data-theme="dark"] body th,
-    html[data-theme="dark"] body td{background-color:#000!important;color:#f5f5f5!important;border-color:#444!important}
-    html[data-theme="dark"] body ::placeholder{color:#aaa!important;opacity:1}
-    html[data-theme="dark"] body :disabled{opacity:.58}
-    html[data-theme="dark"] body .modal-backdrop,
-    html[data-theme="dark"] body .overlay{background:rgba(0,0,0,.88)!important}
-  `;
-  (document.head||document.documentElement).appendChild(style);
-
-  function sync(){
-    const dark=document.documentElement.getAttribute('data-theme')==='dark';
-    document.documentElement.classList.toggle('athar-dark-active',dark);
-    document.body?.classList.toggle('athar-dark-active',dark);
-  }
-  sync();
-  const observer=new MutationObserver(sync);
-  observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  if(document.body){
-    observer.observe(document.body,{childList:true});
-  }else{
-    document.addEventListener('DOMContentLoaded',sync,{once:true});
-  }
 })();
