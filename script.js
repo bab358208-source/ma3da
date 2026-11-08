@@ -5112,23 +5112,114 @@ Object.assign(atharEnglishDictionary,{
 
 /* ATHAR — استكمال قاموس الواجهة الإنجليزية */
 Object.assign(atharEnglishDictionary, {"الصفحة الرئيسية":"Home Page","الرئيسية":"Home","بوابة العميل":"Customer Portal","بوابة صاحب المعدة":"Equipment Owner Portal","بوابة المشاريع":"Projects Portal","طلب معدة":"Request Equipment","طلباتي":"My Requests","طلباتي الحالية":"My Current Requests","طلباتي السابقة":"My Previous Requests","طلبات العملاء":"Customer Requests","طلبات المعدات":"Equipment Requests","طلبات المشاريع":"Project Requests","إضافة معدة":"Add Equipment","إضافة معدة جديدة":"Add New Equipment","تعديل المعدة":"Edit Equipment","تعديل بيانات المعدة":"Edit Equipment Details","الموافقة على التعديل":"Approve Edit","رفض التعديل":"Reject Edit","اعتماد المعدة":"Approve Equipment","رفض الإضافة":"Reject Addition","مراجعة التعديلات":"Review Edits","التعديلات المقترحة":"Proposed Changes","بيانات المعدة":"Equipment Details","نوع المعدة":"Equipment Type","الموديل":"Model","سنة الصنع":"Year of Manufacture","المدينة":"City","رقم المعدة/اللوحة":"Equipment / Plate Number","السعر بالساعة":"Hourly Rate","التوفر":"Availability","متاحة":"Available","غير متاحة":"Unavailable","تم إرفاق صورة":"Image Attached","لم تُرفق صورة":"No Image Attached","صاحب المعدة":"Equipment Owner","صاحب المعدة:":"Equipment Owner:","مراجعة تعديل بيانات معدة موجودة.":"Review changes to an existing equipment listing.","طلب إضافة معدة جديدة؛ لن تصبح معتمدة قبل موافقة الدعم.":"New equipment submission; it will not be approved until support reviews it.","لا توجد إضافات أو تعديلات معدات بانتظار المراجعة.":"There are no equipment submissions or edits awaiting review.","تعذر تحميل التعديلات. تحقق من صلاحيات قراءة equipment في Firebase.":"Could not load edits. Check Firebase equipment read permissions.","المعدة غير موجودة.":"Equipment not found.","هذا التعديل لم يعد معلّقًا. حدّث القائمة.":"This edit is no longer pending. Refresh the list.","سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.":"A rejection reason is required so the equipment owner knows what to correct.","تمت الموافقة على التعديل وتحديث بيانات المعدة المعتمدة.":"The edit was approved and the equipment details were updated.","تم رفض التعديل وإرسال سبب الرفض لصاحب المعدة.":"The edit was rejected and the reason was sent to the equipment owner.","اكتب سبب رفض التعديل ليظهر لصاحب المعدة:":"Enter the reason for rejecting the equipment edit:","اكتب سبب الرفض وما المطلوب تعديله...":"Explain the rejection reason and what needs to be corrected...","إلغاء":"Cancel","إرسال":"Submit","إرسال الطلب":"Submit Request","حفظ":"Save","حفظ التعديلات":"Save Changes","حفظ الملاحظة":"Save Note","تعديل الملاحظة":"Edit Note","حفظ التعديل":"Save Edit","حذف":"Delete","إغلاق":"Close","رجوع":"Back","تحديث":"Refresh","بحث":"Search","ابحث":"Search","اختر":"Select","اختر نوع المعدة":"Select equipment type","اختر المدينة":"Select city","اختر المدة":"Select duration","ملاحظات":"Notes","الملاحظات":"Notes","التفاصيل":"Details","تفاصيل الطلب":"Request Details","تفاصيل المعدة":"Equipment Details","تفاصيل المشروع":"Project Details","تفاصيل المشكلة":"Issue Details","جارٍ تحميل التعديلات المعلّقة...":"Loading pending edits...","جارٍ تحميل الطلبات...":"Loading requests...","جاري تحميل الطلبات...":"Loading requests...","جارٍ التحميل...":"Loading...","جاري التحميل...":"Loading...","جارٍ الحفظ...":"Saving...","جارٍ الإرسال...":"Sending...","جاري الإرسال...":"Sending...","تم الحفظ بنجاح":"Saved successfully","تم الحفظ بنجاح ✅":"Saved successfully ✅","تم إرسال الطلب بنجاح":"Request submitted successfully","تعذر الحفظ":"Could not save","تعذر الإرسال":"Could not send","حدث خطأ غير متوقع.":"An unexpected error occurred.","حاول مرة أخرى.":"Please try again.","يجب تسجيل الدخول أولًا.":"You must log in first.","يجب تسجيل الدخول أولًا":"You must log in first.","غير محدد":"Not specified","غير معروف":"Unknown","لا توجد بيانات":"No data available","لا توجد نتائج":"No results found","لا توجد طلبات":"No requests","لا توجد ملاحظات.":"No notes.","لا توجد ملاحظات":"No notes","لا توجد بيانات إضافية.":"No additional details.","أكمل جميع البيانات أولًا":"Please complete all fields first.","أكمل جميع الحقول قبل إنشاء الحساب.":"Complete all fields before creating an account.","البريد الإلكتروني غير صحيح":"Invalid email address","رقم الهاتف غير صحيح":"Invalid phone number","كلمة المرور":"Password","تأكيد كلمة المرور":"Confirm Password","الاسم الكامل":"Full Name","رقم الجوال":"Mobile Number","البريد الإلكتروني":"Email Address","نسيت كلمة المرور؟":"Forgot Password?","تسجيل الدخول":"Log In","تسجيل الخروج":"Log Out","إنشاء حساب جديد":"Create New Account","إنشاء الحساب":"Create Account","تسجيل جديد":"Sign Up","ابدأ الآن":"Get Started","عميل":"Customer","صاحب معدة":"Equipment Owner","مشغل":"Operator","مقاول":"Contractor","صاحب مشروع":"Project Owner","المشاريع":"Projects","العملاء":"Customers","المعدات":"Equipment","الحساب":"Account","حسابي":"My Account","الإعدادات":"Settings","الدعم الفني":"Technical Support","مركز الدعم":"Support Center","بوابة موظفي الدعم":"Support Staff Portal","موظف الدعم":"Support Agent","المستخدم":"User","المستخدم الحالي":"Current User","رقم الطلب":"Request Number","رقم الشكوى":"Ticket Number","رقم المعدة":"Equipment Number","الموقع":"Location","الموقع:":"Location:","المدة":"Duration","المدة:":"Duration:","المبلغ":"Amount","المبلغ:":"Amount:","المبلغ المستحق:":"Amount Due:","الحالة":"Status","الحالة:":"Status:","تاريخ الإنشاء":"Created At","تاريخ الطلب":"Request Date","تاريخ التحديث":"Updated At","الوقت":"Time","السعر":"Price","الإجمالي":"Total","الكمية":"Quantity","الوصف":"Description","الاسم":"Name","رقم التواصل":"Contact Number","اتصل":"Call","عرض التفاصيل":"View Details","فتح الموقع":"Open Location","تحديد موقعي":"Set My Location","تحديد موقعي بدقة":"Set My Precise Location","الموقع الحالي":"Current Location","الموقع المسجل":"Saved Location","جاري البحث عن معدة":"Searching for equipment","تم قبول الطلب":"Request Accepted","المعدة وصلت":"Equipment Arrived","جاري العمل":"Work in Progress","مكتمل":"Completed","مرفوض":"Rejected","تم رفض الطلب":"Request Rejected","تم قبول الطلب بنجاح 🚜":"Request accepted successfully 🚜","تعذر قبول الطلب في Firebase":"Could not accept the request in Firebase","تعذر رفض الطلب في Firebase":"Could not reject the request in Firebase","تم رفض طلب المعدة":"The equipment request was rejected","لا توجد طلبات عملاء":"There are no customer requests","لا يوجد طلب searching حالي":"There is no active searching request","ملخص دخلك من أعمالك في آثار":"Your ATHAR Work Income Summary","إجمالي الدخل":"Total Income","أعمال مكتملة":"Completed Jobs","إجمالي الساعات":"Total Hours","تقييمات العملاء لأعمالك":"Customer Ratings for Your Work","التقييم":"Rating","التقييمات":"Ratings","تقييم مقدم الشكوى:":"Requester Rating:","الموظف:":"Staff Member:","لا توجد تقييمات مسجلة حتى الآن.":"No ratings have been recorded yet.","تعذر تحميل التقييمات. تحقق من صلاحيات قراءة الشكاوى.":"Could not load ratings. Check support ticket read permissions.","كيف يمكننا مساعدتك؟":"How can we help you?","إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة، تواصل معنا وسنساعدك.":"If you have an issue with requests, your account, or equipment, contact us and we will help.","التواصل مع الدعم":"Contact Support","إرسال طلب إلى فريق الدعم":"Send a Request to Support","مشكلة في المعدة":"Equipment Issue","مشكلة في الطلبات":"Request Issue","مشكلة في الحساب":"Account Issue","استفسار":"Inquiry","بلاغ":"Report","إرسال إلى الدعم":"Send to Support","افتح شكوى من القائمة أولًا قبل التصعيد.":"Open a ticket from the list before escalating.","اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:":"Explain to the platform owner why you are escalating and what could not be resolved:","اكتب سبب التصعيد بالتفصيل...":"Describe the reason for escalation in detail...","سبب التصعيد:":"Escalation Reason:","تم إرسال الرد لصاحب الشكوى.":"Your reply has been sent to the requester.","تم إغلاق الشكوى ونقلها إلى الشكاوى السابقة.":"The ticket has been closed and moved to previous tickets.","هذه الشكوى مغلقة.":"This ticket is closed.","اكتب الرد أولًا.":"Please write a reply first.","إغلاق الشكوى":"Close Ticket","إرسال الرد":"Send Reply","الردود":"Replies","الشكاوى الحالية":"Current Tickets","الشكاوى السابقة":"Previous Tickets","لا توجد شكاوى":"No tickets","فاتورتي":"My Invoices","فواتيري":"My Invoices","فواتيري والمدفوعات":"My Invoices & Payments","الفواتير":"Invoices","المدفوعات":"Payments","السداد":"Payment","إثبات السداد":"Payment Proof","المبلغ المدفوع":"Amount Paid","المبلغ المتبقي":"Remaining Amount","تأكيد السداد":"Confirm Payment","تم تأكيد السداد":"Payment Confirmed","تم تسجيل السداد وبانتظار التأكيد":"Payment submitted and awaiting confirmation","بوابة الدفع الإلكتروني غير مربوطة بالمشروع بعد. لم يتم خصم أي مبلغ ولم يُسجّل السداد.":"The online payment gateway is not connected yet. No payment has been charged or recorded.","تعذر بدء عملية السداد. لم يتم تأكيد الدفع.":"Could not start payment. Payment has not been confirmed.","مسؤوليتنا":"Our Responsibility","رؤيتنا":"Our Vision","من نحن":"About Us","تواصل معنا":"Contact Us","ثقتكم أمانة":"Your Trust Is Our Responsibility","أثرٌ يواكب طموح وطن":"An Impact That Matches Our Nation’s Ambition","آثار ATHAR — منصة تجمع أطراف الإنجاز":"ATHAR — A Platform Connecting the People Behind Every Achievement","نسعد بتواصلكم":"We Welcome Your Feedback","شعارنا:":"Our Motto:","آثار… نبني اليوم ما يبقى غدًا.":"ATHAR… Building Today What Lasts Tomorrow.","جميع الحقوق محفوظة لآثار ATHAR – 2026":"All rights reserved to ATHAR – 2026","تم اختيار اللغة العربية 🇸🇦":"Arabic language selected 🇸🇦","English language selected 🇬🇧":"English language selected 🇬🇧","تم اختيار المظهر التلقائي 📱":"System appearance selected 📱","تم اختيار المظهر الفاتح ☀️":"Light appearance selected ☀️","تم اختيار المظهر الداكن 🌙":"Dark appearance selected 🌙","المظهر الداكن":"Dark Appearance","المظهر الفاتح":"Light Appearance","تلقائي":"System Default","فاتح":"Light","داكن":"Dark","اللغة":"Language","اختر لغة التطبيق":"Choose App Language","العربية":"Arabic","الإنجليزية":"English","استخدام التطبيق باللغة العربية":"Use the app in Arabic","استخدام التطبيق باللغة الإنجليزية":"Use the app in English"});
+/* ATHAR — استكمال ترجمة بوابات الدخول وإزالة كلمة «التطبيق» من شاشة اختيار الدخول */
+Object.assign(atharEnglishDictionary,{
+"اختر طريقة استخدامك للتطبيق":"اختر طريقة استخدامك",
+"اختر طريقة استخدامك":"Choose how you want to continue",
+"مرحباً بك":"Welcome",
+"مرحبًا":"Welcome",
+"أهلاً":"Hello",
+"أهلاً بك":"Welcome",
+"الدخول":"Login",
+"دخول":"Log In",
+"بوابة الدخول":"Login Portal",
+"بوابة العميل":"Customer Portal",
+"بوابة صاحب المعدة":"Equipment Owner Portal",
+"بوابة المقاول":"Contractor Portal",
+"بوابة المشاريع":"Projects Portal",
+"دخول العميل":"Customer Login",
+"دخول صاحب المعدة":"Equipment Owner Login",
+"دخول المقاول":"Contractor Login",
+"دخول موظف الدعم":"Support Staff Login",
+"تسجيل الدخول إلى حسابك":"Log in to your account",
+"سجل الدخول للمتابعة":"Log in to continue",
+"أدخل بريدك الإلكتروني":"Enter your email address",
+"أدخل كلمة المرور":"Enter your password",
+"البريد الإلكتروني أو رقم الجوال":"Email address or mobile number",
+"البريد أو رقم الجوال":"Email or mobile number",
+"ليس لديك حساب؟":"Don't have an account?",
+"ليس لديك حساب":"Don't have an account",
+"إنشاء حساب":"Create Account",
+"إنشاء حسابك":"Create Your Account",
+"إنشاء حساب جديد":"Create a New Account",
+"ابدأ بإنشاء حسابك":"Start by creating your account",
+"العودة":"Go Back",
+"عودة":"Back",
+"متابعة":"Continue",
+"المتابعة":"Continue",
+"الدخول إلى الحساب":"Access Account",
+"الدخول إلى حسابك":"Log in to your account",
+"تأكيد كلمة المرور":"Confirm Password",
+"أعد كتابة كلمة المرور":"Re-enter your password",
+"كلمة المرور الجديدة":"New Password",
+"نسيت كلمة المرور":"Forgot Password",
+"استعادة كلمة المرور":"Reset Password",
+"إعادة تعيين كلمة المرور":"Reset Password",
+"أرسل رابط استعادة كلمة المرور":"Send Password Reset Link",
+"سيتم إرسال رابط إلى بريدك الإلكتروني":"A link will be sent to your email address",
+"تحقق من بريدك الإلكتروني":"Check your email",
+"تم إرسال رابط التحقق":"Verification link sent",
+"لم يصلك الرمز؟":"Didn't receive the code?",
+"إعادة إرسال الرمز":"Resend Code",
+"إعادة الإرسال":"Resend",
+"تحقق":"Verify",
+"تأكيد الرمز":"Confirm Code",
+"رمز التحقق":"Verification Code",
+"أدخل رمز التحقق المرسل إليك":"Enter the verification code sent to you",
+"رقم الجوال":"Mobile Number",
+"أدخل رقم الجوال":"Enter your mobile number",
+"الاسم":"Name",
+"الاسم الكامل":"Full Name",
+"أدخل اسمك الكامل":"Enter your full name",
+"الموافقة على الشروط والأحكام":"I agree to the Terms and Conditions",
+"أوافق على اتفاقية الاستخدام":"I agree to the Terms of Use",
+"الشروط والأحكام":"Terms and Conditions",
+"اتفاقية الاستخدام":"Terms of Use",
+"عرض كلمة المرور":"Show Password",
+"إخفاء كلمة المرور":"Hide Password",
+"يرجى إدخال البريد الإلكتروني":"Please enter your email address",
+"يرجى إدخال كلمة المرور":"Please enter your password",
+"يرجى إدخال رقم الجوال":"Please enter your mobile number",
+"يرجى إدخال الاسم الكامل":"Please enter your full name",
+"بيانات الدخول غير صحيحة":"The login details are incorrect",
+"البريد الإلكتروني غير صحيح":"The email address is invalid",
+"كلمة المرور قصيرة جدًا":"The password is too short",
+"كلمتا المرور غير متطابقتين":"The passwords do not match",
+"تم تسجيل الدخول بنجاح":"Logged in successfully",
+"تم إنشاء الحساب بنجاح":"Account created successfully",
+"حدث خطأ أثناء تسجيل الدخول":"An error occurred while logging in",
+"تعذر تسجيل الدخول":"Unable to log in",
+"الحساب غير موجود":"Account not found",
+"هذا الحساب غير مفعل":"This account is not active",
+"يرجى المحاولة مرة أخرى":"Please try again",
+"اختر نوع الحساب":"Choose Account Type",
+"اختر طريقة الدخول":"Choose a Login Method",
+"عميل":"Customer",
+"صاحب معدة":"Equipment Owner",
+"مشغل":"Operator",
+"مقاول":"Contractor",
+"صاحب مشروع":"Project Owner",
+"موظف دعم":"Support Agent",
+"مالك المنصة":"Platform Owner"
+});
+
 (function initAtharEnglishTranslation(){
   const originalNodes=new WeakMap();
   const originalAttrs=new WeakMap();
   const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
-  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
+  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const phrasePairs=[["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]];for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
   window.ma3daTranslateText=value=>translateText(value);
   function translateNewAttributes(root){const attrs=['placeholder','aria-label','title'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
 
   function applyLanguage(language){const english=language==='en';document.documentElement.lang=english?'en':'ar';document.documentElement.dir=english?'ltr':'rtl';document.documentElement.dataset.atharLanguage=english?'en':'ar';
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){if(!node.nodeValue||!normalize(node.nodeValue))return NodeFilter.FILTER_REJECT;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
-    let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);node.nodeValue=english?translateText(original):original;}
+    let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);const loginArea=node.parentElement?.closest('#roleScreen,#phoneScreen,#otpScreen,#createAccountScreen,#supportLoginScreen,#supportForgotScreen,#ownerPortalLoginScreen');const cleanedLogin=loginArea?String(original).replace(/\s*التطبيق\s*/g,' ').replace(/\s+/g,' ').trim():original;node.nodeValue=english?translateText(cleanedLogin):cleanedLogin;}
     const attrs=['placeholder','aria-label','title'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
     document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
   }
   window.ma3daSetLanguage=language=>{const selected=language==='en'?'en':'ar';localStorage.setItem('ma3daLanguage',selected);applyLanguage(selected);};
   window.ma3daApplySavedLanguage=()=>applyLanguage(localStorage.getItem('ma3daLanguage')||'ar');
-  const observer=new MutationObserver(records=>{if((localStorage.getItem('ma3daLanguage')||'ar')!=='en')return;for(const record of records){if(record.type==='childList'){record.addedNodes.forEach(node=>{if(node.nodeType===1){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let textNode;while((textNode=walker.nextNode())){if(!originalNodes.has(textNode))originalNodes.set(textNode,textNode.nodeValue);textNode.nodeValue=translateText(originalNodes.get(textNode));}translateNewAttributes(node);}else if(node.nodeType===3){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);node.nodeValue=translateText(originalNodes.get(node));}});}else if(record.type==='characterData'){const n=record.target;let original=originalNodes.get(n);if(original===undefined||n.nodeValue!==translateText(original)){original=n.nodeValue;originalNodes.set(n,original);}const translated=translateText(original);if(n.nodeValue!==translated)n.nodeValue=translated;}}});
+  const observer=new MutationObserver(records=>{if((localStorage.getItem('ma3daLanguage')||'ar')!=='en')return;for(const record of records){if(record.type==='childList'){record.addedNodes.forEach(node=>{if(node.nodeType===1){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let textNode;while((textNode=walker.nextNode())){if(!originalNodes.has(textNode))originalNodes.set(textNode,textNode.nodeValue);const loginArea=textNode.parentElement?.closest('#roleScreen,#phoneScreen,#otpScreen,#createAccountScreen,#supportLoginScreen,#supportForgotScreen,#ownerPortalLoginScreen');const raw=originalNodes.get(textNode);const cleaned=loginArea?String(raw).replace(/\s*التطبيق\s*/g,' ').replace(/\s+/g,' ').trim():raw;textNode.nodeValue=translateText(cleaned);}translateNewAttributes(node);}else if(node.nodeType===3){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);node.nodeValue=translateText(originalNodes.get(node));}});}else if(record.type==='characterData'){const n=record.target;let original=originalNodes.get(n);if(original===undefined||n.nodeValue!==translateText(original)){original=n.nodeValue;originalNodes.set(n,original);}const translated=translateText(original);if(n.nodeValue!==translated)n.nodeValue=translated;}}});
   if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
   const saved=localStorage.getItem('ma3daLanguage')||'ar';applyLanguage(saved);
 })();
