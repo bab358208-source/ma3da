@@ -1524,7 +1524,7 @@ if(emailLoginBtn){
           if(pending?.newRegistration && pending.uid===user.uid && pending.role==="operator"){
             const n=document.getElementById("operatorNameInput"),ph=document.getElementById("operatorPhoneInput");
             if(n)n.value=pending.name||user.displayName||""; if(ph)ph.value=pending.phone||"";
-            const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إرسال المعدة للمراجعة";
+            const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إنشاء الحساب";
             showScreen("addEquipmentScreen");
             return;
           }
@@ -1653,6 +1653,33 @@ function atharFileAsDataUrl(file){
     reader.readAsDataURL(file);
   });
 }
+
+// بيانات التسجيل المؤقتة: كلمة المرور تبقى في الذاكرة فقط ولا تُحفظ في التخزين المحلي.
+let atharRegistrationDraft=null;
+async function atharCreateFinalRegistration({role,personalData,equipment=null,project=null}){
+  const draft=atharRegistrationDraft;
+  if(!draft||draft.role!==role)throw new Error("انتهت بيانات التسجيل المؤقتة. ارجع إلى صفحة التسجيل وابدأ من جديد.");
+  let user=window.ma3daAuth?.currentUser||null;
+  if(user&&user.email?.toLowerCase()!==draft.email)throw new Error("يوجد حساب آخر مسجل الدخول. سجّل الخروج ثم أعد التسجيل.");
+  if(!user){
+    user=await window.ma3daCreateAccount(draft.email,draft.password,draft.name,{accepted:true,version:registerAgreementVersion,role,deferSignOut:true});
+  }
+  if(!user?.uid)throw new Error("تعذر إنشاء الحساب. تحقق من البريد الإلكتروني وحاول مرة أخرى.");
+  const now=Date.now();
+  const request={
+    uid:user.uid,role,registrationType:role==="operator"?"equipment_owner":"project_owner",
+    personalData:{...personalData,email:draft.email},
+    ...(equipment?{equipment:{...equipment,ownerId:user.uid,operatorId:user.uid}}:{}),
+    ...(project?{project:{...project,contractorId:user.uid,ownerId:user.uid}}:{}),
+    status:"pending_support",stage:"submitted",submittedAt:now,
+    createdAt:draft.createdAt||now,updatedAt:now
+  };
+  await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,"registrationRequests",user.uid),request,{merge:true});
+  atharSetPendingRegistration({uid:user.uid,name:draft.name,phone:draft.phone,email:draft.email,role,newRegistration:true,stage:"submitted",createdAt:draft.createdAt||now,submittedAt:now});
+  atharRegistrationDraft=null;
+  try{await window.ma3daSignOut?.();}catch(signOutError){console.warn("تعذر تسجيل الخروج بعد إرسال طلب التسجيل:",signOutError);}
+  atharShowRegistrationSubmitted();
+}
 function atharUpdateRegisterRoleLabel(){
   const role=selectedRole||localStorage.getItem("selectedRole")||"customer";
   const target=document.getElementById("registerRoleDescription");
@@ -1701,6 +1728,27 @@ if (submitCreateAccountBtn) {
       fail("Firebase لم يجهز بعد، أعد تحميل الصفحة."); return;
     }
 
+    const registrationRole = selectedRole || localStorage.getItem("selectedRole") || "customer";
+    if (["operator","contractor"].includes(registrationRole)) {
+      atharRegistrationDraft={name:fullName,email,phone,password,role:registrationRole,createdAt:Date.now()};
+      atharSetPendingRegistration({name:fullName,phone,email,role:registrationRole,newRegistration:true,stage:"personal_data_completed",createdAt:atharRegistrationDraft.createdAt});
+      if (registrationRole === "operator") {
+        const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إنشاء الحساب";
+        const operatorName=document.getElementById("operatorNameInput");const operatorPhone=document.getElementById("operatorPhoneInput");
+        if(operatorName)operatorName.value=fullName;if(operatorPhone)operatorPhone.value=phone;
+        localStorage.setItem("ma3daRole","operator");localStorage.setItem("userRole","operator");
+        showScreen("addEquipmentScreen");
+      } else {
+        const profile={name:fullName,phone,email,role:"contractor"};
+        localStorage.setItem("contractorProfile",JSON.stringify(profile));
+        localStorage.setItem("ma3daRole","contractor");localStorage.setItem("userRole","contractor");localStorage.setItem("selectedRole","contractor");
+        const createProjectButton=document.getElementById("contractorCreateProjectBtn");
+        if(createProjectButton)createProjectButton.click();
+        else {fail("تعذر فتح نموذج إنشاء المشروع الموجود. تحقق من تحميل صفحة المشاريع.");return;}
+      }
+      return;
+    }
+
     submitCreateAccountBtn.disabled = true;
     submitCreateAccountBtn.textContent = "جارٍ إنشاء الحساب...";
     try {
@@ -1733,7 +1781,7 @@ if (submitCreateAccountBtn) {
 
       if (registrationRole === "operator") {
         // التالي لصاحب المعدة يفتح نموذج إضافة المعدة الموجود نفسه مباشرة.
-        const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إرسال المعدة للمراجعة";
+        const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إنشاء الحساب";
         const operatorName = document.getElementById("operatorNameInput");
         const operatorPhone = document.getElementById("operatorPhoneInput");
         if (operatorName) operatorName.value = fullName;
@@ -2370,19 +2418,12 @@ async function saveEquipment(){
  
   }
  
-  const user =
-    window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
+  const isNewOperatorRegistration=!!(atharRegistrationDraft?.newRegistration!==false && atharRegistrationDraft?.role==="operator");
+  const user = isNewOperatorRegistration ? null : (window.ma3daGetCurrentUser ? await window.ma3daGetCurrentUser() : window.ma3daAuth?.currentUser);
  
-  if(!user){
- 
-    alert(
-      "يجب تسجيل الدخول أولاً"
-    );
- 
+  if(!isNewOperatorRegistration&&!user){
+    alert("يجب تسجيل الدخول أولاً");
     return;
- 
   }
  
   if(!window.ma3daDB){
@@ -2414,26 +2455,20 @@ async function saveEquipment(){
     image:"",
  
     ownerId:
-      user.uid,
+      user?.uid || "",
  
     ownerEmail:
-      user.email || ""
+      user?.email || atharRegistrationDraft?.email || ""
  
   };
  
-  const pendingRegistration=atharGetPendingRegistration();
   const saveNewRegistrationEquipment=async()=>{
-    if(!(pendingRegistration?.newRegistration && pendingRegistration.uid===user.uid && pendingRegistration.role==="operator")) return false;
-    const imageFile=equipment.image||"";
-    await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,"registrationRequests",user.uid),{
-      uid:user.uid,role:"operator",registrationType:"equipment_owner",
-      personalData:{name:pendingRegistration.name||"",phone:pendingRegistration.phone||"",city:pendingRegistration.city||"",email:user.email||pendingRegistration.email||""},
-      equipment:{...equipment,image:imageFile},status:"pending_support",stage:"submitted",
-      submittedAt:Date.now(),createdAt:pendingRegistration.createdAt||Date.now(),updatedAt:Date.now()
-    },{merge:true});
-    atharSetPendingRegistration({...pendingRegistration,stage:"submitted",submittedAt:Date.now()});
-    alert("تم إرسال تسجيلك وبيانات المعدة للمراجعة المبدئية لدى موظفي الدعم.");
-    atharShowRegistrationSubmitted();
+    if(!isNewOperatorRegistration)return false;
+    await atharCreateFinalRegistration({
+      role:"operator",
+      personalData:{name:atharRegistrationDraft.name,phone:atharRegistrationDraft.phone,city,email:atharRegistrationDraft.email},
+      equipment:{...equipment,image:equipment.image||""}
+    });
     return true;
   };
 
@@ -3966,7 +4001,7 @@ if(backFromRequestBtn){
       if(pending?.newRegistration && pending.uid===user.uid && pending.role==="operator"){
         const n=document.getElementById("operatorNameInput"),ph=document.getElementById("operatorPhoneInput");
         if(n)n.value=pending.name||user.displayName||""; if(ph)ph.value=pending.phone||"";
-        const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إرسال المعدة للمراجعة";
+        const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إنشاء الحساب";
         showScreen("addEquipmentScreen");
         return;
       }
@@ -11607,7 +11642,7 @@ async function openContractorHome() {
     if(heading)heading.textContent=project?'تعديل بيانات المشروع':'إنشاء مشروعك';
     const submit=document.getElementById('submitContractorRequestBtn');
     const pendingRegistration=atharGetPendingRegistration();
-    if(submit)submit.textContent=project?'حفظ تعديلات المشروع':(pendingRegistration?.newRegistration&&pendingRegistration.role==='contractor'?'إرسال المشروع للمراجعة':'حفظ المشروع');
+    if(submit)submit.textContent=project?'حفظ تعديلات المشروع':(pendingRegistration?.newRegistration&&pendingRegistration.role==='contractor'?'إنشاء الحساب':'حفظ المشروع');
     contractorShowScreen('contractorRequestScreen');
     contractorInitProjectMap().catch(error=>console.warn('Project map initialization skipped:',error));
   }
@@ -11628,6 +11663,25 @@ async function openContractorHome() {
 
   const submitContractorRequestBtn=document.getElementById('submitContractorRequestBtn');
   if(submitContractorRequestBtn)submitContractorRequestBtn.addEventListener('click',async()=>{
+    if(atharRegistrationDraft?.role==="contractor"){
+      const name=document.getElementById('contractorProjectName')?.value.trim()||'';
+      const city=document.getElementById('contractorProjectCity')?.value.trim()||'';
+      const address=document.getElementById('contractorProjectLocationText')?.value.trim()||'';
+      const lat=Number(document.getElementById('contractorProjectLat')?.value);
+      const lng=Number(document.getElementById('contractorProjectLng')?.value);
+      const notes=document.getElementById('contractorProjectNotes')?.value.trim()||'';
+      if(!name||!city){alert('اكتب اسم المشروع والمدينة.');return;}
+      if(!Number.isFinite(lat)||!Number.isFinite(lng)||lat===0||lng===0){alert('حدد موقع المشروع على الخريطة أو استخدم موقعك الحالي.');return;}
+      submitContractorRequestBtn.disabled=true;submitContractorRequestBtn.textContent='جارٍ إنشاء الحساب...';
+      try{
+        let profile={name:atharRegistrationDraft.name,phone:atharRegistrationDraft.phone,city:'',company:'',email:atharRegistrationDraft.email};
+        try{const stored=JSON.parse(localStorage.getItem('contractorProfile')||'null');if(stored)profile={...profile,...stored};}catch(_){}
+        const project={contractorName:profile.name,contractorPhone:profile.phone,contractorCompany:profile.company||'',name,projectName:name,city,address,location:address||city,latitude:lat,longitude:lng,coordinates:{latitude:lat,longitude:lng},notes};
+        await atharCreateFinalRegistration({role:'contractor',personalData:{name:profile.name,phone:profile.phone,city:profile.city||city,company:profile.company||''},project});
+      }catch(error){console.error('Submit new contractor registration error:',error);alert(error?.message||'تعذر إنشاء الحساب وإرسال التسجيل.');}
+      finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='إنشاء الحساب';}
+      return;
+    }
     const user=await getContractorUser();if(!user || !user.uid){alert('يجب تسجيل الدخول أولاً.');return;}
     const name=document.getElementById('contractorProjectName')?.value.trim();
     const city=document.getElementById('contractorProjectCity')?.value.trim();
@@ -11668,7 +11722,7 @@ async function openContractorHome() {
       contractorEditingProjectId=null;contractorSelectedProject=null;
       contractorShowScreen('contractorProjectsScreen');contractorSetProjectFilter(returnProjectFilter);
     }catch(error){console.error('Save contractor project error:',error);alert(error?.code==='permission-denied'?'لا توجد صلاحية لحفظ أو تعديل المشاريع في Firebase.':'تعذر حفظ المشروع. تحقق من الاتصال وقواعد Firebase.');}
-    finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='حفظ المشروع';}
+    finally{submitContractorRequestBtn.disabled=false;submitContractorRequestBtn.textContent='إنشاء الحساب';}
   });
 
   const cancelContractorRequestBtn=document.getElementById('cancelContractorRequestBtn');
