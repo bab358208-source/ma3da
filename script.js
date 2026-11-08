@@ -5207,14 +5207,14 @@ Object.assign(atharEnglishDictionary,{
   const originalNodes=new WeakMap();
   const originalAttrs=new WeakMap();
   const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
-  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const phrasePairs=[["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]];for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
+  function translateText(value){const key=normalize(value);if(!key)return value;if(atharEnglishDictionary[key])return atharEnglishDictionary[key];let result=String(value);const phrasePairs=Object.entries(atharEnglishDictionary).filter(([ar])=>ar.length>=4||/\s/.test(ar)).sort((a,b)=>b[0].length-a[0].length).concat([["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]]);for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
   window.ma3daTranslateText=value=>translateText(value);
-  function translateNewAttributes(root){const attrs=['placeholder','aria-label','title'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
+  function translateNewAttributes(root){const attrs=['placeholder','aria-label','title','alt'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
 
   function applyLanguage(language){const english=language==='en';document.documentElement.lang=english?'en':'ar';document.documentElement.dir=english?'ltr':'rtl';document.documentElement.dataset.atharLanguage=english?'en':'ar';
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){if(!node.nodeValue||!normalize(node.nodeValue))return NodeFilter.FILTER_REJECT;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
     let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);const loginArea=node.parentElement?.closest('#roleScreen,#phoneScreen,#otpScreen,#createAccountScreen,#supportLoginScreen,#supportForgotScreen,#ownerPortalLoginScreen');const cleanedLogin=loginArea?String(original).replace(/\s*التطبيق\s*/g,' ').replace(/\s+/g,' ').trim():original;node.nodeValue=english?translateText(cleanedLogin):cleanedLogin;}
-    const attrs=['placeholder','aria-label','title'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
+    const attrs=['placeholder','aria-label','title','alt'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
     document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
   }
   window.ma3daSetLanguage=language=>{const selected=language==='en'?'en':'ar';localStorage.setItem('ma3daLanguage',selected);applyLanguage(selected);};
@@ -17681,4 +17681,73 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",bind,{once:true});
   else bind();
+})();
+
+
+/* ATHAR — الوضع الداكن الشامل: تطبيق السواد على جميع الشاشات الحالية والديناميكية */
+(function initAtharGlobalDarkAppearance(){
+  if(document.getElementById('atharGlobalDarkAppearanceStyles')) return;
+  const style=document.createElement('style');
+  style.id='atharGlobalDarkAppearanceStyles';
+  style.textContent=`
+    html[data-theme="dark"],html[data-theme="dark"] body{
+      background:#000!important;background-color:#000!important;color:#f5f5f5!important;
+      color-scheme:dark;
+    }
+    html[data-theme="dark"] body,
+    html[data-theme="dark"] body .screen,
+    html[data-theme="dark"] body [id$="Screen"],
+    html[data-theme="dark"] body .screen.active,
+    html[data-theme="dark"] body main,
+    html[data-theme="dark"] body .app,
+    html[data-theme="dark"] body .page,
+    html[data-theme="dark"] body .page-content{
+      background:#000!important;background-color:#000!important;color:#f5f5f5!important;
+    }
+    html[data-theme="dark"] body *:not(img):not(video):not(canvas):not(iframe):not(button):not(input):not(textarea):not(select):not(option){
+      background-color:#000!important;color:#f5f5f5!important;border-color:#454545;
+    }
+    html[data-theme="dark"] body input,
+    html[data-theme="dark"] body textarea,
+    html[data-theme="dark"] body select,
+    html[data-theme="dark"] body option{
+      background:#111!important;background-color:#111!important;color:#f5f5f5!important;
+      border-color:#555!important;color-scheme:dark;
+    }
+    html[data-theme="dark"] body button,
+    html[data-theme="dark"] body [role="button"]{
+      background-color:var(--athar-button-bg,#222)!important;
+      color:var(--athar-button-text,#f5f5f5)!important;
+    }
+    html[data-theme="dark"] body button:not(.athar-keep-brand-button){
+      border-color:var(--athar-button-border,#555);
+    }
+    html[data-theme="dark"] body a{color:#d9c18a!important}
+    html[data-theme="dark"] body img,
+    html[data-theme="dark"] body video,
+    html[data-theme="dark"] body canvas,
+    html[data-theme="dark"] body iframe{background-color:transparent!important}
+    html[data-theme="dark"] body table,
+    html[data-theme="dark"] body th,
+    html[data-theme="dark"] body td{background-color:#000!important;color:#f5f5f5!important;border-color:#444!important}
+    html[data-theme="dark"] body ::placeholder{color:#aaa!important;opacity:1}
+    html[data-theme="dark"] body :disabled{opacity:.58}
+    html[data-theme="dark"] body .modal-backdrop,
+    html[data-theme="dark"] body .overlay{background:rgba(0,0,0,.88)!important}
+  `;
+  (document.head||document.documentElement).appendChild(style);
+
+  function sync(){
+    const dark=document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.classList.toggle('athar-dark-active',dark);
+    document.body?.classList.toggle('athar-dark-active',dark);
+  }
+  sync();
+  const observer=new MutationObserver(sync);
+  observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  if(document.body){
+    observer.observe(document.body,{childList:true});
+  }else{
+    document.addEventListener('DOMContentLoaded',sync,{once:true});
+  }
 })();
