@@ -80,10 +80,6 @@
 #operatorDistanceFeedback{font-size:14px;line-height:1.7;margin:8px 0;color:#6b5527}
 .ma3da-action-grid button:disabled{opacity:.5;cursor:not-allowed}
 
-
-/* ATHAR registration review */
-.athar-registration-card{border:1px solid #d9bd78;border-radius:14px;background:#fffdf8;padding:14px;margin:12px 0;line-height:1.8;overflow-wrap:anywhere}
-.athar-registration-card h3{margin:0 0 8px;color:#79591e}.athar-registration-card img{max-width:100%;max-height:220px;object-fit:contain;border-radius:10px;display:block;margin:8px 0}.athar-registration-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.athar-registration-actions button{flex:1;min-width:130px}.athar-registration-doc{display:inline-block;margin:4px 8px 4px 0;color:#79591e;font-weight:700;text-decoration:underline}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -582,6 +578,7 @@
       <h1>آثار <span>| ATHAR</span></h1>
       <h2>أنشئ حسابك الآن</h2>
       <p>ابدأ رحلتك واترك أثرك معنا</p>
+      <p id="registerRoleDescription" class="athar-register-hint" aria-live="polite">إنشاء حساب جديد</p>
     </div>
     <div class="card athar-register-card">
       <label for="registerFullName">الاسم الكامل</label>
@@ -640,6 +637,11 @@
   </div>
 </section>
 
+
+<section id="atharRegistrationSubmittedScreen" class="screen">
+  <div class="hero"><div class="hero-icon">✓</div><h1>تم إرسال التسجيل للمراجعة</h1><p>استلم فريق الدعم بياناتك ومستنداتك للمراجعة المبدئية. ستصلك النتيجة بعد المراجعة.</p></div>
+  <div class="card"><p>لا يمكنك استخدام خدمات صاحب المعدة أو إدارة المشروع قبل الاعتماد النهائي من مالك التطبيق.</p><button id="atharRegistrationSubmittedBackBtn" class="main-btn" type="button">العودة إلى تسجيل الدخول</button></div>
+</section>
 
 <!-- =====================================================
      بيانات العميل
@@ -959,9 +961,6 @@
       type="file"
       accept="image/*"
     >
-    <label for="atharEquipmentDocuments">📄 الاستمارة ومستندات المعدة</label>
-    <input id="atharEquipmentDocuments" type="file" accept="image/*,.pdf" multiple>
-    <small>أرفق الاستمارة وأي إثباتات مطلوبة للمعدة.</small>
 
 
 
@@ -4804,8 +4803,7 @@
     <div class="contractor-coordinates"><label for="contractorProjectLat">خط العرض</label><input id="contractorProjectLat" inputmode="decimal" placeholder="يُحدد من الخريطة"><label for="contractorProjectLng">خط الطول</label><input id="contractorProjectLng" inputmode="decimal" placeholder="يُحدد من الخريطة"></div>
     <button id="contractorUseMyLocationBtn" class="back-btn" type="button">📍 استخدام موقعي الحالي</button>
     <label for="contractorProjectNotes">تفاصيل المشروع (اختياري)</label><textarea id="contractorProjectNotes" rows="3" placeholder="وصف مختصر للمشروع أو ملاحظات مهمة"></textarea>
-    <label for="atharProjectEvidence">إرفاق إثباتات المشروع</label><input id="atharProjectEvidence" type="file" accept="image/*,.pdf" multiple><small>يمكن إرفاق صور أو ملفات PDF لإثبات بيانات المشروع.</small>
-     <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
+    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
   </div>
 </section>
 <!-- الصفحة: المقاول: اختيار المعدات | المعرّف البرمجي: contractorEquipmentPickerScreen -->
@@ -5150,7 +5148,8 @@
 </section>
 
 <!-- نهاية مركز التحكم الشامل -->
-    <section id="ownerAdminDetails" class="owner-admin-details" hidden aria-live="polite"><div class="owner-admin-details-head"><h2 id="ownerAdminDetailsTitle">التفاصيل</h2><button type="button" class="support-btn" id="ownerAdminDetailsClose">إغلاق ✕</button></div><div id="ownerAdminDetailsContent"></div></section>
+    <section id="ownerAdminDetails" class="owner-admin-details" hidden aria-live="polite"><div class="owner-admin-details-head"><h2 id="ownerAdminDetailsTitle">التفاصيل</h2><button type="button" class="support-btn" id="ownerAdminDetailsClose">إغلاق ✕</button></div><div id="ownerAdminDetailsContent"></div><div id="ownerRegistrationActions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="support-btn support-primary" id="ownerFinalRegistrationsBtn">الاعتماد النهائي للمسجلين الجدد</button><button type="button" class="support-btn" id="ownerRegistrationMonitoringBtn">مراقبة الدعم وطلبات التسجيل المتعثرة</button></div></section>
+    <section id="ownerRegistrationPanel" class="support-panel" hidden><h2 id="ownerRegistrationPanelTitle">طلبات التسجيل</h2><button type="button" class="support-btn" id="ownerRegistrationPanelRefreshBtn">تحديث</button><div id="ownerRegistrationPanelList"></div></section>
   </div></div>
 </section>
 
@@ -5205,7 +5204,7 @@
     </div>
     <div class="support-nav" aria-label="أقسام مركز الدعم">
       <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
-      <button class="support-btn" data-support-section="registrations" type="button">مراجعة تسجيلات أصحاب المعدات والمشاريع</button>
+      <button class="support-btn" data-support-section="registrations" type="button">مراجعة التسجيلات الجديدة</button>
       <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة تعديلات المعدات</button>
       <button class="support-btn" data-support-section="aiQuestions" type="button">
   أسئلة المساعد الذكي
@@ -5216,8 +5215,8 @@
       <button class="support-btn" data-support-section="settings" type="button">الإعدادات</button>
       <button class="support-btn" id="supportLogoutNavBtn" type="button">تسجيل الخروج</button>
     </div>
+    <div id="supportSectionRegistrations" class="support-section support-panel"><h2>مراجعة التسجيلات الجديدة</h2><p>راجع بيانات صاحب المعدة أو مسؤول المشروع والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.</p><button id="supportRegistrationsRefreshBtn" class="support-btn" type="button">تحديث التسجيلات</button><div id="supportRegistrationsList" class="support-list">جارٍ تحميل التسجيلات...</div></div>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionRegistrations" class="support-section support-panel"><h2>مراجعة تسجيلات أصحاب المعدات والمشاريع</h2><p>اطلع على بيانات التسجيل والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.</p><button id="supportRegistrationRefresh" class="support-btn" type="button">تحديث التسجيلات</button><div id="supportRegistrationList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
     <!-- أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم -->
 <div id="supportSectionAiQuestions"
@@ -5729,9 +5728,12 @@ window.ma3daOrderBy =
 
 
 
-        await signOut(auth);
-
-
+        // أصحاب المعدات وأصحاب المشاريع يكملون التسجيل مباشرة بعد البيانات الشخصية.
+        // نبقي جلسة Firebase مفتوحة لهم حتى يحفظوا المعدة أو المشروع في طلب المراجعة.
+        const registrationRole = String(agreementConsent?.role || "customer");
+        if (!["operator", "contractor"].includes(registrationRole)) {
+          await signOut(auth);
+        }
 
         return createdUser;
 
