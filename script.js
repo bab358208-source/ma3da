@@ -5087,7 +5087,7 @@ if(backFromLanguageSettingsBtn){
     "click",
     ()=>{
       showScreen(
-        "customerSettingsScreen"
+        "roleScreen"
       );
     }
   );
@@ -5163,7 +5163,7 @@ if(backFromAppearanceSettingsBtn){
     "click",
     ()=>{
       showScreen(
-        "customerSettingsScreen"
+        "roleScreen"
       );
     }
   );
