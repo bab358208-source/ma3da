@@ -5135,6 +5135,87 @@ Object.assign(atharEnglishDictionary, {"الصفحة الرئيسية":"Home Pag
 
 if(arabicLanguageBtn){arabicLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('ar');alert('تم اختيار اللغة العربية 🇸🇦');});}
 if(englishLanguageBtn){englishLanguageBtn.addEventListener('click',()=>{window.ma3daSetLanguage?.('en');alert('English language selected 🇬🇧');});}
+
+/* ATHAR — اختصارات اللغة والمظهر في شاشة اختيار طريقة الاستخدام فقط */
+(function initAtharRoleQuickControls(){
+  function mount(){
+    const roleScreen=document.getElementById('roleScreen');
+    if(!roleScreen || roleScreen.querySelector('.athar-role-quick-controls'))return;
+
+    // إخفاء روابط صفحات اللغة والمظهر من قوائم المستخدمين؛ التحكم المختصر موجود في شاشة اختيار الدور.
+    if(!document.getElementById('atharRoleQuickControlsStyle')){
+      const style=document.createElement('style');
+      style.id='atharRoleQuickControlsStyle';
+      style.textContent=`
+        #languageSettingsBtn,#appearanceSettingsBtn{display:none!important}
+        #roleScreen{position:relative!important;padding-top:58px!important}
+        #roleScreen .athar-role-quick-controls{position:absolute;z-index:30;top:12px;inset-inline-end:14px;display:flex;align-items:center;gap:8px;direction:ltr}
+        #roleScreen .athar-role-quick-controls button{width:40px;height:40px;min-width:40px;padding:0;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:50%;background:var(--athar-identity-surface,#fffdf8);color:var(--athar-identity-text,#171717);font-family:inherit;font-size:17px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 3px 12px #00000014;cursor:pointer}
+        #roleScreen .athar-role-quick-controls button[aria-pressed="true"]{background:var(--athar-button-bg,#c8a45b);color:var(--athar-button-text,#171717);border-color:var(--athar-button-border,var(--athar-identity-accent,#c8a45b))}
+        #roleScreen .athar-role-quick-controls button:focus-visible{outline:3px solid var(--athar-identity-accent,#c8a45b);outline-offset:3px}
+        html[data-theme="dark"] #roleScreen .athar-role-quick-controls button{background:#222;color:#f5f5f5;border-color:#777}
+        html[data-theme="dark"] #roleScreen .athar-role-quick-controls button[aria-pressed="true"]{background:var(--athar-button-bg,#c8a45b);color:var(--athar-button-text,#171717)}
+      `;
+      (document.head||document.documentElement).appendChild(style);
+    }
+
+    const bar=document.createElement('div');
+    bar.className='athar-role-quick-controls';
+    bar.setAttribute('data-no-translate','true');
+    bar.setAttribute('aria-label','Language and appearance controls');
+
+    const english=document.createElement('button');
+    english.type='button';english.textContent='🌐';
+    english.setAttribute('aria-label','Switch to English');
+    english.title='English';
+    english.addEventListener('click',()=>{
+      window.ma3daSetLanguage?.('en');
+      update();
+    });
+
+    const arabic=document.createElement('button');
+    arabic.type='button';arabic.textContent='ع';
+    arabic.setAttribute('aria-label','التبديل إلى العربية');
+    arabic.title='العربية';
+    arabic.addEventListener('click',()=>{
+      window.ma3daSetLanguage?.('ar');
+      update();
+    });
+
+    const theme=document.createElement('button');
+    theme.type='button';
+    theme.setAttribute('aria-label','Toggle dark mode');
+    theme.title='Toggle appearance';
+    theme.addEventListener('click',()=>{
+      const current=document.documentElement.getAttribute('data-theme')||'light';
+      const next=current==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('ma3daTheme',next);
+      update();
+    });
+
+    function update(){
+      const lang=localStorage.getItem('ma3daLanguage')||'ar';
+      const dark=document.documentElement.getAttribute('data-theme')==='dark';
+      english.setAttribute('aria-pressed',lang==='en'?'true':'false');
+      arabic.setAttribute('aria-pressed',lang==='ar'?'true':'false');
+      theme.textContent=dark?'☀️':'🌙';
+      theme.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+      theme.title=dark?'Light mode':'Dark mode';
+    }
+    bar.append(english,arabic,theme);
+    const hero=roleScreen.querySelector('.hero');
+    if(hero)roleScreen.insertBefore(bar,hero);else roleScreen.prepend(bar);
+    update();
+
+    // إبقاء رمز الوضع متزامنًا مع اختيار المظهر من أي شاشة أخرى.
+    window.addEventListener('storage',e=>{if(e.key==='ma3daTheme'||e.key==='ma3daLanguage')update();});
+    const observer=new MutationObserver(()=>update());
+    observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-athar-language']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
+  else mount();
+})();
  
 /* APPEARANCE */
  
