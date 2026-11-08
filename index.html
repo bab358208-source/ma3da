@@ -80,6 +80,10 @@
 #operatorDistanceFeedback{font-size:14px;line-height:1.7;margin:8px 0;color:#6b5527}
 .ma3da-action-grid button:disabled{opacity:.5;cursor:not-allowed}
 
+
+/* ATHAR registration review */
+.athar-registration-card{border:1px solid #d9bd78;border-radius:14px;background:#fffdf8;padding:14px;margin:12px 0;line-height:1.8;overflow-wrap:anywhere}
+.athar-registration-card h3{margin:0 0 8px;color:#79591e}.athar-registration-card img{max-width:100%;max-height:220px;object-fit:contain;border-radius:10px;display:block;margin:8px 0}.athar-registration-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.athar-registration-actions button{flex:1;min-width:130px}.athar-registration-doc{display:inline-block;margin:4px 8px 4px 0;color:#79591e;font-weight:700;text-decoration:underline}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -955,6 +959,9 @@
       type="file"
       accept="image/*"
     >
+    <label for="atharEquipmentDocuments">📄 الاستمارة ومستندات المعدة</label>
+    <input id="atharEquipmentDocuments" type="file" accept="image/*,.pdf" multiple>
+    <small>أرفق الاستمارة وأي إثباتات مطلوبة للمعدة.</small>
 
 
 
@@ -4797,7 +4804,8 @@
     <div class="contractor-coordinates"><label for="contractorProjectLat">خط العرض</label><input id="contractorProjectLat" inputmode="decimal" placeholder="يُحدد من الخريطة"><label for="contractorProjectLng">خط الطول</label><input id="contractorProjectLng" inputmode="decimal" placeholder="يُحدد من الخريطة"></div>
     <button id="contractorUseMyLocationBtn" class="back-btn" type="button">📍 استخدام موقعي الحالي</button>
     <label for="contractorProjectNotes">تفاصيل المشروع (اختياري)</label><textarea id="contractorProjectNotes" rows="3" placeholder="وصف مختصر للمشروع أو ملاحظات مهمة"></textarea>
-    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
+    <label for="atharProjectEvidence">إرفاق إثباتات المشروع</label><input id="atharProjectEvidence" type="file" accept="image/*,.pdf" multiple><small>يمكن إرفاق صور أو ملفات PDF لإثبات بيانات المشروع.</small>
+     <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
   </div>
 </section>
 <!-- الصفحة: المقاول: اختيار المعدات | المعرّف البرمجي: contractorEquipmentPickerScreen -->
@@ -5197,6 +5205,7 @@
     </div>
     <div class="support-nav" aria-label="أقسام مركز الدعم">
       <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
+      <button class="support-btn" data-support-section="registrations" type="button">مراجعة تسجيلات أصحاب المعدات والمشاريع</button>
       <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة تعديلات المعدات</button>
       <button class="support-btn" data-support-section="aiQuestions" type="button">
   أسئلة المساعد الذكي
@@ -5208,6 +5217,7 @@
       <button class="support-btn" id="supportLogoutNavBtn" type="button">تسجيل الخروج</button>
     </div>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionRegistrations" class="support-section support-panel"><h2>مراجعة تسجيلات أصحاب المعدات والمشاريع</h2><p>اطلع على بيانات التسجيل والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.</p><button id="supportRegistrationRefresh" class="support-btn" type="button">تحديث التسجيلات</button><div id="supportRegistrationList" class="support-list">جارٍ التحميل...</div></div>
     <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
     <!-- أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم -->
 <div id="supportSectionAiQuestions"
