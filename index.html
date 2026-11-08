@@ -631,7 +631,7 @@
         <small id="registerAgreementStatus" class="athar-register-hint" role="status" aria-live="polite">الموافقة مطلوبة لإتمام إنشاء الحساب.</small>
       </section>
       <p id="registerAccountError" class="phone-error" role="alert" aria-live="polite"></p>
-      <button id="submitCreateAccountBtn" class="main-btn" type="button">إنشاء الحساب</button>
+      <button id="submitCreateAccountBtn" class="main-btn" type="button">التالي</button>
       <button id="backToLoginFromRegisterBtn" class="back-btn" type="button">لديك حساب؟ تسجيل الدخول</button>
     </div>
   </div>
@@ -639,7 +639,7 @@
 
 
 <section id="atharRegistrationSubmittedScreen" class="screen">
-  <div class="hero"><div class="hero-icon">✓</div><h1>تم إرسال التسجيل للمراجعة</h1><p>استلم فريق الدعم بياناتك ومستنداتك للمراجعة المبدئية. ستصلك النتيجة بعد المراجعة.</p></div>
+  <div class="hero"><div class="hero-icon">✓</div><h1>تم إنشاء حسابك بنجاح</h1><h2>انتظر حتى مراجعة الفريق المختص</h2><p>سيتم إشعارك بعد انتهاء مراجعة بياناتك ومستنداتك.</p></div>
   <div class="card"><p>لا يمكنك استخدام خدمات صاحب المعدة أو إدارة المشروع قبل الاعتماد النهائي من مالك التطبيق.</p><button id="atharRegistrationSubmittedBackBtn" class="main-btn" type="button">العودة إلى تسجيل الدخول</button></div>
 </section>
 
@@ -1034,7 +1034,7 @@
       type="button"
       class="main-btn"
     >
-      حفظ المعدة
+      إنشاء الحساب
     </button>
 
   </div>
@@ -4803,7 +4803,7 @@
     <div class="contractor-coordinates"><label for="contractorProjectLat">خط العرض</label><input id="contractorProjectLat" inputmode="decimal" placeholder="يُحدد من الخريطة"><label for="contractorProjectLng">خط الطول</label><input id="contractorProjectLng" inputmode="decimal" placeholder="يُحدد من الخريطة"></div>
     <button id="contractorUseMyLocationBtn" class="back-btn" type="button">📍 استخدام موقعي الحالي</button>
     <label for="contractorProjectNotes">تفاصيل المشروع (اختياري)</label><textarea id="contractorProjectNotes" rows="3" placeholder="وصف مختصر للمشروع أو ملاحظات مهمة"></textarea>
-    <button id="submitContractorRequestBtn" class="main-btn" type="button">حفظ المشروع</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
+    <button id="submitContractorRequestBtn" class="main-btn" type="button">إنشاء الحساب</button><button id="cancelContractorRequestBtn" class="back-btn" type="button">إلغاء والعودة إلى مشاريعي</button>
   </div>
 </section>
 <!-- الصفحة: المقاول: اختيار المعدات | المعرّف البرمجي: contractorEquipmentPickerScreen -->
@@ -5546,6 +5546,7 @@
 
     };
 
+  window.ma3daSignOut = async () => signOut(auth);
 
 
   window.ma3daAuth =
@@ -5728,12 +5729,10 @@ window.ma3daOrderBy =
 
 
 
-        // أصحاب المعدات وأصحاب المشاريع يكملون التسجيل مباشرة بعد البيانات الشخصية.
-        // نبقي جلسة Firebase مفتوحة لهم حتى يحفظوا المعدة أو المشروع في طلب المراجعة.
-        const registrationRole = String(agreementConsent?.role || "customer");
-        if (!["operator", "contractor"].includes(registrationRole)) {
+        if (agreementConsent?.deferSignOut !== true) {
           await signOut(auth);
         }
+
 
         return createdUser;
 
