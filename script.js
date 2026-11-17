@@ -86,8 +86,6 @@ window.ma3daRequestText = function ma3daRequestText(title, placeholder){
 };
 
 
-function atharCurrentLocale(){return document.documentElement?.lang==='en'?'en-US':'ar-SA';}
-
 /* 00 — بداية الملف: تهيئة عامة مشتركة للتطبيق */
  
 const screens =
@@ -962,7 +960,7 @@ if(
     const amount = document.getElementById("bookingPaymentAmount");
     if(amount){
       amount.textContent = "المبلغ المستحق: " +
-        Number(data.finalPrice || data.price || 0).toLocaleString(atharCurrentLocale(), {
+        Number(data.finalPrice || data.price || 0).toLocaleString("ar-SA", {
           style: "currency",
           currency: "SAR"
         });
@@ -4835,7 +4833,7 @@ document.addEventListener('click',async event=>{
     const target=screenByStatus[String(data.status||'')]||'matchedScreen';
     if(target==='paymentScreen'){
       const amount=document.getElementById('bookingPaymentAmount');
-      if(amount)amount.textContent='المبلغ المستحق: '+(Number(data.finalPrice||data.price||0).toLocaleString(atharCurrentLocale(),{style:'currency',currency:'SAR'}));
+      if(amount)amount.textContent='المبلغ المستحق: '+(Number(data.finalPrice||data.price||0).toLocaleString('ar-SA',{style:'currency',currency:'SAR'}));
     }
     if(target==='arrivedCustomerScreen'){
       const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
@@ -5343,258 +5341,24 @@ Object.assign(atharEnglishDictionary,{
 /* ATHAR — قاموس واجهة موسّع للصفحات الثابتة */
 Object.assign(atharEnglishDictionary,{"آثار | ATHAR":"ATHAR | ATHAR","آثار":"ATHAR","👤 بوابة العملاء والمقاولين":"👤 Customer & Contractor Portal","🚜 بوابة أصحاب المعدات":"🚜 Equipment Owners Portal","🏗️ بوابة أصحاب ومسؤولي المشاريع":"🏗️ Project Owners & Managers Portal","التطبيق":"App","سيتم إضافة محتوى هذا القسم هنا.":"Content for this section will be added here.","الحساب":"Account","الصفحة الرئيسية":"Home Page","طلبات العملاء":"Customer Requests","سنة الصنع":"Year of Manufacture","0 ريال":"SAR 0","0 تقييم":"0 Ratings","حفظ التعديلات":"Save Changes","🔐 تغيير كلمة المرور":"🔐 Change Password","نوع الطلب":"Request Type","تابع حالة طلباتك الحالية":"Track the status of your current requests","معلومات الحساب":"Account Information","حالة الحساب":"Account Status","نشط":"Active","حدّث رقم الجوال المرتبط بحسابك":"Update the mobile number linked to your account","رقم الجوال الجديد":"New Mobile Number","حفظ رقم الجوال":"Save Mobile Number","حدّث البريد الإلكتروني المرتبط بحسابك":"Update the email address linked to your account","البريد الإلكتروني الجديد":"New Email Address","حفظ البريد الإلكتروني":"Save Email Address","سنرسل رابطًا إلى بريدك الإلكتروني لتغيير كلمة المرور":"We will send a link to your email address to change your password","جاري التحميل...":"Loading...","إرسال رابط التغيير 📧":"Send Change Link 📧","إذا واجهت مشكلة أو لديك استفسار حول آثار، تواصل معنا وسنساعدك.":"If you have an issue or a question about ATHAR, contact us and we will help.","التواصل مع الدعم":"Contact Support","تواصل معنا مباشرة":"Contact us directly","مشكلة في الطلب":"Request Issue","اطلب معدتك الآن":"Request Equipment Now","معدة قريبة منك، في الوقت الذي تحتاجها فيه.":"Equipment near you, whenever you need it.","📍 موقع العمل":"📍 Work Location","📍 تحديد موقعي بدقة":"📍 Set My Exact Location","اختر المعدة":"Choose Equipment","⏱️ مدة العمل":"⏱️ Work Duration","اختر المدة":"Choose Duration","ساعة واحدة":"One Hour","4 ساعات":"4 Hours","8 ساعات":"8 Hours","👷 المشغل":"👷 Operator","📝 ملاحظات":"📝 Notes","اطلب الآن":"Request Now","جاري البحث عن معدة قريبة...":"Searching for nearby equipment...","نبحث عن مشغل متاح بالقرب منك":"Looking for an available operator near you","طلبك تحت المتابعة":"Your Request Is Being Processed","تفاصيل صاحب المعدة :":"Equipment Owner Details:","ف":"F","اسم صاحب المعدة المسجل":"Registered Equipment Owner Name","موقع العمل في الطلب":"Work Location in the Request","موقع العمل المحدد في الطلب":"Specified Work Location","تفاصيل الطلب التي كتبها العميل":"Request Details Entered by the Customer","🗺️ تتبع المعدة عبر Google Maps":"🗺️ Track Equipment with Google Maps","ص":"O","🟢 متصل الآن":"🟢 Online Now","تتبع المعدة":"Track Equipment","2.4 كم":"2.4 km","8 دقائق":"8 minutes","وصلت المعدة 🚜":"Equipment Has Arrived 🚜","وصل صاحب المعدة إلى موقع العمل.":"The equipment owner has arrived at the work location.","بانتظار بدء المشغل للعمل...":"Waiting for the operator to start work...","العمل جارٍ":"Work in Progress","📞 اتصال":"📞 Call","إنهاء العمل":"Finish Work","تم إنهاء العمل":"Work Completed","1,000 ريال":"SAR 1,000","الانتقال للدفع":"Proceed to Payment","تم تسجيل انتهاء العمل بنجاح.":"Work completion was recorded successfully.","المبلغ المستحق لك":"Amount Due","الفاتورة والسداد":"Invoice & Payment","فتح فواتيري والمدفوعات":"Open My Invoices & Payments","قيّم تجربتك":"Rate Your Experience","كيف كانت تجربتك مع آثار؟":"How was your experience with ATHAR?","إرسال التقييم":"Submit Rating","شكرًا لك ❤️":"Thank You ❤️","تم استلام تقييمك بنجاح.":"Your rating has been received successfully.","طلب جديد":"New Request","يوجد عميل قريب منك":"There is a customer nearby","📏 المسافة":"📏 Distance","💰 السعر التقديري":"💰 Estimated Price","📝 ملاحظات العميل":"📝 Customer Notes","🚜 معدتي":"🚜 My Equipment","ستصلك الطلبات القريبة منك":"Nearby requests will appear here","تم قبول الطلب 🚜":"Request Accepted 🚜","📞 اتصال بالعميل":"📞 Call Customer","💬 محادثة مع العميل":"💬 Chat with Customer","وصلت إلى موقع العميل 🚜":"I Have Arrived at the Customer's Location 🚜","▶️ بدء العمل":"▶️ Start Work","بيانات المقاول":"Contractor Details","أكمل بيانات حسابك للمتابعة":"Complete your account details to continue","الاسم الكامل *":"Full Name *","المدينة *":"City *","اسم المؤسسة أو الشركة":"Organization or Company Name","العودة":"Back","🪪 بياناتي":"🪪 My Details","عرض بيانات المقاول وتحديثها.":"View and update contractor details.","فتح بياناتي":"Open My Details","🏗️ مشاريعي":"🏗️ My Projects","إنشاء مشاريع متعددة وإدارة الحالية والسابقة وطلب المعدات من داخل المشروع الحالي.":"Create multiple projects, manage current and previous projects, and request equipment from the active project.","عرض مشاريعي":"View My Projects","🧾 الفواتير والمستحقات":"🧾 Invoices & Dues","إدارة فواتير المشاريع والدفعات وعمولة آثار.":"Manage project invoices, payments, and ATHAR commission.","فتح الفواتير":"Open Invoices","⚙️ الإعدادات":"⚙️ Settings","تفضيلات استخدام التطبيق.":"App preferences.","فتح الإعدادات":"Open Settings","👤 الحساب":"👤 Account","معلومات الحساب وتسجيل الدخول.":"Account information and sign-in.","إدارة الحساب":"Manage Account","🛟 الدعم الفني":"🛟 Technical Support","تواصل مع فريق دعم آثار.":"Contact ATHAR Support.","حدد موقع مشروعك أولاً، ثم اختر المعدة المناسبة من المعدات القريبة.":"First, set your project location, then choose suitable equipment nearby.","اسم المشروع *":"Project Name *","وصف الموقع / العنوان":"Location Description / Address","حدد موقع المشروع على الخريطة أو استخدم موقعك الحالي. نحتاج الإحداثيات لعرض المعدات القريبة بدقة.":"Set the project location on the map or use your current location. We need the coordinates to show nearby equipment accurately.","خط العرض":"Latitude","خط الطول":"Longitude","📍 استخدام موقعي الحالي":"📍 Use My Current Location","تفاصيل المشروع (اختياري)":"Project Details (Optional)","حفظ المشروع":"Save Project","إلغاء والعودة إلى مشاريعي":"Cancel and Return to My Projects","اختر المعدة المناسبة":"Choose Suitable Equipment","المعدات المتاحة بالقرب من مشروعك":"Equipment Available Near Your Project","ملخص المشروع":"Project Summary","راجع المعدات المرتبطة بالمشروع وحالة تشغيلها قبل طلب معدة إضافية.":"Review the equipment linked to the project and its operating status before requesting additional equipment.","طلب معدة لهذا المشروع":"Request Equipment for This Project","اختيار المعدة المطلوبة *":"Select Required Equipment *","جارٍ تحميل المعدات المتاحة…":"Loading available equipment…","اختر المعدة من القائمة، ويمكنك مراجعة تفاصيلها في البطاقات أسفل الطلب.":"Choose equipment from the list. You can review its details in the cards below the request.","تاريخ ووقت بداية العمل *":"Work Start Date and Time *","وحدة المدة *":"Duration Unit *","أيام":"Days","أسابيع":"Weeks","أشهر":"Months","عدد المدة *":"Duration Quantity *","أيام التشغيل *":"Operating Days *","الأحد":"Sunday","الاثنين":"Monday","الثلاثاء":"Tuesday","الأربعاء":"Wednesday","الخميس":"Thursday","الجمعة":"Friday","السبت":"Saturday","وقت بداية التشغيل اليومي *":"Daily Operating Start Time *","وقت نهاية التشغيل اليومي *":"Daily Operating End Time *","المشغل *":"Operator *","طريقة السداد المتفق عليها *":"Agreed Payment Method *","شروط الدفع والتسوية *":"Payment and Settlement Terms *","ملاحظات لصاحب المعدة":"Notes for Equipment Owner","تحديث المعدات القريبة":"Refresh Nearby Equipment","إرسال طلب المعدة":"Send Equipment Request","جارٍ تحميل المعدات القريبة…":"Loading nearby equipment…","🚜 متابعة المعدة بعد القبول":"🚜 Equipment Tracking After Acceptance","مشاريعي":"My Projects","＋ إنشاء مشروعك":"＋ Create a Project","العودة للوحة المقاول":"Return to Contractor Dashboard","الفواتير والمستحقات":"Invoices & Dues","سجل الفواتير المشترك والدفعات والرصيد المستحق.":"Shared invoice, payment, and outstanding balance records.","اختر نوع الفواتير التي تريد مراجعتها.":"Choose the type of invoices you want to review.","فواتير العملاء":"Customer Invoices","فواتير طلبات تأجير المعدات للعملاء وحالة السداد":"Invoices for customer equipment rental requests and payment status","فواتير المقاولين":"Contractor Invoices","فواتير اتفاقات المعدات والدفعات والمستحقات":"Equipment agreements, payments, and dues invoices","← رجوع":"← Back","⟳ تحديث":"⟳ Refresh","← رجوع للفواتير":"← Back to Invoices","المشروع *":"Project *","جارٍ تحميل المشاريع…":"Loading projects…","رقم الفاتورة (اختياري)":"Invoice Number (Optional)","قيمة الفاتورة بالريال *":"Invoice Amount in SAR *","وصف الفاتورة *":"Invoice Description *","حفظ الفاتورة":"Save Invoice","توثيق سداد نقدي / تحويل للمراجعة":"Record Cash Payment / Transfer for Review","الفاتورة *":"Invoice *","حمّل الفواتير أولًا":"Load invoices first","قيمة الدفعة بالريال *":"Payment Amount in SAR *","مرجع التحويل أو ملاحظة":"Transfer Reference or Note","إرسال إثبات السداد للمراجعة":"Submit Payment Proof for Review","إصدار فاتورة طلب عميل":"Issue Customer Request Invoice","الطلب المنتهي *":"Completed Request *","جارٍ تحميل الطلبات…":"Loading requests…","المبلغ النهائي بالريال *":"Final Amount in SAR *","تفاصيل الفاتورة":"Invoice Details","إصدار الفاتورة للطرفين":"Issue Invoice to Both Parties","الدفع عبر آثار":"Pay through ATHAR","لا توجد فواتير لطلباتك حتى الآن.":"There are no invoices for your requests yet.","محفظة صاحب المعدة":"Equipment Owner Wallet","ملخص المستحقات والتحصيلات المسجلة في الفواتير المشتركة.":"Summary of dues and collections recorded in shared invoices.","ستظهر فواتير مشاريعك هنا.":"Your project invoices will appear here.","الحساب والإعدادات":"Account & Settings","تحديث بيانات المقاول":"Update Contractor Details","الاسم *":"Name *","المؤسسة أو الشركة":"Organization or Company","إدارة حساب الدخول في آثار":"Manage Your ATHAR Sign-in Account","البريد الإلكتروني:":"Email:","تفضيلات استخدام التطبيق":"App Preferences","تفعيل تنبيهات الطلبات داخل التطبيق":"Enable In-App Request Notifications","يمكن تعديل تفضيل التنبيهات لاحقًا عند تفعيل نظام الإشعارات.":"You can change notification preferences later when the notification system is enabled.","أرسل استفسارك أو بلاغك إلى فريق دعم آثار":"Send your inquiry or report to the ATHAR Support Team","مشكلة تقنية":"Technical Issue","مشكلة في طلب معدة":"Equipment Request Issue","اقتراح":"Suggestion","تفاصيل الرسالة *":"Message Details *","فتح المحادثة الحالية":"Open Current Conversation","لوحة تحكم آثار":"ATHAR Control Panel","الإدارة العامة للمنصة":"Platform Administration","جارٍ تجهيز لوحة التحكم…":"Preparing the Control Panel…","إجمالي المبالغ الداخلة عبر التطبيق":"Total Amounts Received through the App","ريال سعودي · السجلات المدفوعة المتاحة":"Saudi Riyals · Available Paid Records","إجمالي عمولات التطبيق":"Total App Commissions","ريال سعودي · العمولات المسجلة صراحة":"Saudi Riyals · Explicitly Recorded Commissions","إجمالي الطلبات":"Total Requests","الناجحة وغير الناجحة":"Successful and Unsuccessful","المتصلون الآن":"Currently Online","عدد المستخدمين المتصلين حاليًا":"Number of Users Currently Online","المستخدمون":"Users","العملاء وأصحاب المعدات ومسؤولو المشاريع":"Customers, Equipment Owners, and Project Managers","الشكاوى وموظفو الدعم":"Complaints & Support Staff","الشكاوى وتقييمات الموظفين والتصعيدات الواردة":"Complaints, Staff Ratings, and Incoming Escalations","الطلبات الناجحة والطلبات غير الناجحة":"Successful and Unsuccessful Requests","الملاحظات اليومية":"Daily Notes","سجل يومي لمراجعة أداء التطبيق والعمل":"Daily Log for Reviewing App and Work Performance","مركز التحكم الشامل":"Comprehensive Control Center","إدارة التصميم والنصوص والأسعار والفواتير والحملات":"Manage Design, Text, Prices, Invoices, and Campaigns","جميع إعدادات منصة آثار في مكان واحد":"All ATHAR Platform Settings in One Place","العودة ←":"Back ←","الهويات والأزرار":"Identities & Buttons","المالية والفواتير":"Finance & Invoices","الإشعارات والتسويق":"Notifications & Marketing","إدارة الهويات والأزرار":"Manage Identities & Buttons","هويات آثار الموسمية":"ATHAR Seasonal Identities","اختر الهوية التي تريد تفعيلها على المنصة بالكامل. يتغير المظهر تلقائيًا في جميع الصفحات، ويظل محفوظًا بعد تحديث التطبيق وتسجيل الخروج والدخول.":"Choose the identity you want to activate across the platform. It updates across all pages and remains active after refreshing or signing out and back in.","عيد الفطر":"Eid al-Fitr","تفعيل الهوية":"Activate Identity","اليوم الوطني":"National Day","يوم التأسيس":"Founding Day","عيد الأضحى":"Eid al-Adha","هوية آثار الأساسية":"ATHAR Default Identity","إلغاء الهوية الموسمية والعودة للمظهر الأصلي":"Deactivate Seasonal Identity and Return to the Original Design","العودة للهوية الأساسية":"Return to Default Identity","جارٍ تحميل الهوية النشطة…":"Loading Active Identity…","السياسة المالية":"Financial Policy","عمولة تطبيق آثار (%)":"ATHAR App Commission (%)","ضريبة القيمة المضافة (%)":"Value Added Tax (%)","بادئة رقم الفاتورة":"Invoice Number Prefix","ملاحظة أسفل الفاتورة":"Invoice Footer Note","الحملات والإشعارات":"Campaigns & Notifications","مركز الحملات التسويقية":"Marketing Campaign Center","عنوان الإعلان":"Ad Title","نص الإعلان":"Ad Text","الجمهور المستهدف":"Target Audience","جميع المستخدمين":"All Users","العملاء":"Customers","أصحاب المعدات":"Equipment Owners","مديرو المشاريع":"Project Managers","رابط الصفحة عند الضغط على الإشعار":"Page Link When Notification Is Tapped","نشر الحملة":"Publish Campaign","السجل":"Log","تحديث السجل":"Refresh Log","لا توجد تعديلات معروضة.":"No changes to display.","حفظ واعتماد الإعدادات":"Save and Approve Settings","إلغاء المعاينة":"Cancel Preview","نهاية مركز التحكم الشامل":"End of Comprehensive Control Center","إغلاق ✕":"Close ✕","دخول مالك المنصة":"Platform Owner Login","بوابة خاصة بمالك منصة آثار.":"Private portal for the ATHAR platform owner.","دخول موظفي الدعم":"Support Staff Login","دخول الموظف":"Staff Login","استعادة كلمة مرور موظف الدعم":"Reset Support Staff Password","إرسال رابط الاستعادة":"Send Reset Link","العودة لتسجيل الدخول":"Return to Login","آثار | مركز الدعم":"ATHAR | Support Center","موظف دعم":"Support Agent","➜ رجوع":"➜ Back","طلبات الدعم المفتوحة":"Open Support Requests","مراجعة تعديلات المعدات":"Review Equipment Changes","أسئلة المساعد الذكي":"AI Assistant Questions","إنهاء مبكر للمشاريع":"Early Project Termination","طلبات الدعم المكتملة":"Completed Support Requests","تقييمي":"My Rating","افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.":"Open a complaint to chat directly with its creator, then close it once resolved.","راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.":"Review the previous data and proposed changes before approving a decision.","إعادة تحميل التعديلات":"Reload Changes","أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم":"AI Assistant Questions Requiring Support Staff Intervention","هنا تظهر الأسئلة التي لم يجد المساعد لها إجابة معتمدة. أجب عن السؤال، ثم أغلقه بعد حلّه. لا تُعتمد إجابتك في قاعدة المعرفة إلا بموافقة المالك.":"Questions without an approved assistant answer appear here. Reply and close each question once resolved. Your answer enters the knowledge base only after owner approval.","تحديث الأسئلة":"Refresh Questions","جارٍ تحميل الأسئلة...":"Loading questions...","الرد على السؤال":"Reply to Question","الرد":"Reply","اقتراح الرد للمالك لاعتماده ضمن إجابات المساعد":"Suggest the reply to the owner for approval as an assistant answer","حفظ الرد":"Save Reply","إغلاق السؤال":"Close Question","أرشيف الشكاوى التي انتهت معالجتها وأُغلقت.":"Archive of complaints that have been handled and closed.","سيتم عرض التقييمات المسجلة هنا.":"Recorded ratings will be displayed here.","البريد:":"Email:","الصلاحية:":"Permission:","لون الواجهة":"Interface Color","ذهبي وأسود":"Gold and Black","بيانات العملاء":"Customer Data","أصحاب المعدات والمعدات":"Equipment Owners & Equipment","محادثات الدعم":"Support Conversations","البلاغات والمشاكل":"Reports & Issues","استعادة كلمة المرور":"Password Recovery","أدخل بريدك الإلكتروني وسنرسل لك رابطًا لإعادة تعيين كلمة المرور.":"Enter your email address and we will send you a password reset link.","مساعد آثار الذكي":"ATHAR AI Assistant","كيف أستطيع مساعدتك؟":"How can I help you?","أهلًا بك في آثار. اكتب سؤالك وسأبحث في الإجابات المعتمدة. إذا لم أجد إجابة موثوقة، سأحوّل سؤالك إلى فريق الدعم.":"Welcome to ATHAR. Type your question and I will search approved answers. If I cannot find a reliable answer, I will forward your question to the support team.","الأسئلة التي لم يجد المساعد لها إجابة معتمدة":"Questions Without an Approved Assistant Answer","الأسئلة الجديدة":"New Questions","تم الرد":"Answered","المغلقة":"Closed","إغلاق المحادثة":"Close Conversation","صفحة إدارة المالك فقط":"Owner Management Page Only","إدارة المساعد الذكي":"Manage AI Assistant","إدارة قاعدة المعرفة واعتماد إجابات الدعم":"Manage the Knowledge Base and Approve Support Answers","الأسئلة المحوّلة للدعم":"Questions Forwarded to Support","إجابات تنتظر اعتمادك":"Answers Awaiting Your Approval","الإجابات المعتمدة":"Approved Answers","إضافة سؤال وإجابة":"Add a Question and Answer","السؤال":"Question","الإجابة":"Answer","أسئلة بديلة (افصل بينها بفاصلة)":"Alternative Questions (Separate with Commas)","حفظ واعتماد الإجابة":"Save and Approve Answer","إلغاء التعديل":"Cancel Edit","إجابات الدعم بانتظار اعتمادك":"Support Answers Awaiting Your Approval","قاعدة المعرفة":"Knowledge Base","1. طبيعة المنصة":"1. Nature of the Platform","آثار ATHAR منصة إلكترونية لتنظيم التواصل وطلبات تأجير المعدات الثقيلة والخدمات المرتبطة بالمشاريع. ولا يعني عرض المعدة أو التحقق من بياناتها أن المنصة تضمن حالتها أو أداءها إلا في حدود ما تعلنه صراحة.":"ATHAR is an electronic platform for coordinating communication, heavy equipment rental requests, and project-related services. Listing equipment or verifying its information does not mean the platform guarantees its condition or performance, except to the extent expressly stated.","2. الحساب وصحة البيانات":"2. Accounts and Accuracy of Information","يلتزم المستخدم بتقديم بيانات صحيحة ومحدثة، والمحافظة على سرية بيانات الدخول، وعدم انتحال صفة الغير أو تقديم مستندات غير صحيحة.":"Users must provide accurate and up-to-date information, keep their login credentials confidential, and must not impersonate others or submit false documents.","3. التزامات العميل":"3. Customer Obligations","يلتزم العميل بدقة بيانات المعدة المطلوبة والموقع والمدة وطبيعة العمل، ومراجعة السعر والفاتورة وشروط الطلب قبل التأكيد، وسداد المبالغ المستحقة وفق الاتفاق.":"The customer must provide accurate details about the requested equipment, location, duration, and nature of the work; review the price, invoice, and request terms before confirmation; and pay amounts due under the agreement.","4. التزامات صاحب المعدة":"4. Equipment Owner Obligations","يلتزم صاحب المعدة بصحة بيانات المعدة وتوافرها وسعرها، وتقديم ما يثبت ملكيتها أو حقه في استخدامها عند الطلب، والالتزام بالاتفاق ومتطلبات الصيانة والسلامة والتشغيل التي تقع عليه نظامًا أو تعاقدًا.":"The equipment owner must ensure that equipment details, availability, and pricing are accurate; provide proof of ownership or the right to use the equipment when requested; and comply with the agreement and applicable maintenance, safety, and operating requirements.","5. التزامات المقاول وصاحب المشروع":"5. Contractor and Project Owner Obligations","يلتزم بتقديم بيانات صحيحة عن المشروع وموقعه ومدته واحتياجاته، وتوثيق طلبات المعدات والتمديدات والتغييرات، والوفاء بالالتزامات المالية ومتطلبات الموقع التي تقع ضمن مسؤوليته.":"The contractor or project owner must provide accurate information about the project, its location, duration, and needs; document equipment requests, extensions, and changes; and meet the financial obligations and site requirements under their responsibility.","6. الطلبات والاتفاقات":"6. Requests and Agreements","إنشاء الطلب لا يعني قبوله. ويجب على الأطراف مراجعة تفاصيل السعر والمدة ونطاق العمل قبل اعتماد الاتفاق. ولا يُعتد بالتغيير الجوهري إلا بعد موافقة الأطراف المعنية وتوثيقه.":"Creating a request does not mean it has been accepted. The parties must review the price, duration, and scope of work before approving the agreement. A material change is valid only after the relevant parties approve and document it.","7. الأسعار والفواتير والعمولات":"7. Prices, Invoices, and Commissions","تُعرض الأسعار والرسوم والعمولات وآلية احتسابها والطرف الملزم بها قبل اعتماد العملية. وإصدار الفاتورة لا يعني سدادها، ولا يُسجل الدفع ناجحًا إلا بعد تأكيده بالطريقة المعتمدة.":"Prices, fees, commissions, their calculation method, and the responsible party must be displayed before a transaction is approved. Issuing an invoice does not mean it has been paid; a payment is recorded as successful only after confirmation through the approved method.","8. الإلغاء والتأخير والنزاعات":"8. Cancellations, Delays, and Disputes","تسري شروط الإلغاء المعلنة والمتفق عليها. ويجب توثيق الخلافات عبر قنوات الدعم. ومراجعة المنصة للشكوى لا تحل محل الجهات القضائية أو المختصة ولا تعفي أي طرف من مسؤولياته.":"Published and agreed cancellation terms apply. Disputes must be documented through support channels. The platform's review of a complaint does not replace judicial or competent authorities and does not release any party from its responsibilities.","9. السلامة والمسؤولية":"9. Safety and Liability","يلتزم كل طرف بالأنظمة ومتطلبات السلامة والتصاريح التي تقع ضمن مسؤوليته. ويتحمل كل طرف تبعات أفعاله وإخلاله بالتزاماته وفق الأنظمة والعقود، ولا يعفي هذا الاتفاق من مسؤولية لا يجوز نظامًا الإعفاء منها.":"Each party must comply with the laws, safety requirements, and permits under its responsibility. Each party is liable for its actions and breaches under applicable laws and contracts. This agreement does not waive liability that cannot legally be excluded.","10. الخصوصية والبيانات":"10. Privacy and Data","تُعالج البيانات اللازمة لتشغيل الخدمات والتحقق من الحسابات وتنفيذ الطلبات والفوترة والدعم وفق سياسة الخصوصية والأنظمة المعمول بها. ويُستخدم الموقع عند الحاجة وبحسب إذن المستخدم وإعدادات جهازه.":"Data required to operate the services, verify accounts, process requests, issue invoices, and provide support is processed in accordance with the privacy policy and applicable laws. Location is used when necessary and subject to the user's permission and device settings.","11. التقييمات والمحتوى":"11. Ratings and Content","يجب أن تكون التقييمات صادقة وألا تتضمن إساءة أو تضليلًا أو انتهاكًا لحقوق الآخرين أو نشر بياناتهم دون مسوغ.":"Ratings must be honest and must not contain abuse, misleading information, violations of others' rights, or disclosure of their data without a valid basis.","12. التحقق من المعدات":"12. Equipment Verification","إتمام التحقق يعني تنفيذ إجراء التحقق المحدد فقط، ولا يمثل ضمانًا مطلقًا لسلامة المعدة أو صلاحيتها لكل استخدام.":"Completing verification means only that the specified verification procedure was carried out. It is not an absolute guarantee of the equipment's safety or suitability for every use.","13. تعليق الحساب والاعتراض":"13. Account Suspension and Appeals","يجوز تقييد الحساب عند وجود مخالفة أو إساءة استخدام أو اشتباه جدي، مع مراعاة إبلاغ المستخدم وإتاحة الاعتراض متى كان ذلك ممكنًا ومناسبًا، دون إهدار حقوقه النظامية.":"An account may be restricted in cases of violations, misuse, or serious suspicion. Where possible and appropriate, the user will be notified and given an opportunity to appeal, without prejudice to their legal rights.","14. الملكية الفكرية":"14. Intellectual Property","تظل حقوق العلامات والتصاميم والبرمجيات والمحتوى المملوك للمنصة لأصحابها، ولا يجوز استخدامها تجاريًا دون إذن. ويمنح المستخدم المنصة حق استخدام المحتوى الذي يرفعه بالقدر اللازم لتقديم الخدمة.":"Rights to the platform's trademarks, designs, software, and owned content remain with their respective owners and may not be used commercially without permission. Users grant the platform the right to use uploaded content to the extent necessary to provide the service.","15. تعديل الاتفاقية":"15. Amendments to the Agreement","قد تُحدّث الاتفاقية عند تطوير الخدمات أو استجابة للمتطلبات النظامية. ويُطلب قبول إصدار جديد قبل استخدام الخدمة متى كان التغيير جوهريًا أو كانت الموافقة الجديدة مطلوبة.":"This agreement may be updated as services develop or in response to legal requirements. Acceptance of a new version may be required before using the service when a change is material or renewed consent is required.","16. الدعم والشكاوى":"16. Support and Complaints","يمكن التواصل مع الدعم عبر القنوات المتاحة، مع تقديم رقم الطلب والمعلومات اللازمة. ولا يمنع ذلك المستخدم من اللجوء إلى الجهات المختصة.":"Support can be contacted through the available channels by providing the request number and necessary information. This does not prevent users from contacting the competent authorities.","17. أحكام عامة":"17. General Provisions","تخضع الاتفاقية للأنظمة المعمول بها في المملكة العربية السعودية بالقدر المنطبق، ولا تنتقص من أي حق إلزامي للمستهلك أو المستخدم.":"This agreement is governed by the applicable laws of the Kingdom of Saudi Arabia and does not diminish any mandatory rights of consumers or users.","إصدار الاتفاقية: ATHAR-TERMS-1.0 — تاريخ السريان عند اعتماد الإصدار.":"Agreement Version: ATHAR-TERMS-1.0 — Effective date: upon approval of this version.","هذه صياغة تشغيلية أولية، ويجب مراجعتها واعتمادها قانونيًا قبل النشر النهائي وفق الأنظمة السعودية، بما فيها أنظمة التجارة الإلكترونية وحماية البيانات الشخصية.":"This is an initial operational draft and must be legally reviewed and approved before final publication in accordance with Saudi regulations, including e-commerce and personal data protection laws.","قرأت اتفاقية الاستخدام والشروط والأحكام وأوافق عليها.":"I have read and agree to the ATHAR Terms of Use and Conditions.","إنشاء الحساب":"Create Account","🔢 رمز التحقق":"🔢 Verification Code","👤 الاسم الكامل":"👤 Full Name","تُعرض الفاتورة وحالة السداد في صفحة «فواتيري والمدفوعات». لن نعرض طريقة دفع غير مربوطة ببوابة معتمدة، ولن يُغلق الطلب قبل تأكيد السداد من مزود الدفع.":"The invoice and payment status are shown on the “My Invoices & Payments” page. We will not display a payment method that is not connected to an approved gateway, and the request will not be closed until the payment provider confirms payment.","تُحسب أيام التشغيل وفق جدول العمل وأيام الراحة التي تحددها، ولا تُحتسب أيام الراحة ضمن أيام التشغيل.":"Operating days are calculated according to the work schedule and the rest days you specify. Rest days are not counted as operating days.","50% مقدّمًا و50% عند انتهاء العمل":"50% in advance and 50% upon completion","أربع دفعات بمواعيد استحقاق محددة":"Four installments with specified due dates","دفع كامل مقدّمًا قبل بدء التشغيل":"Full payment in advance before operations begin","دفع كامل عند انتهاء العمل":"Full payment upon completion","الدفع النقدي (كاش) مع توثيق وتأكيد الاستلام":"Cash payment with documented and confirmed receipt","بعد قبول صاحب المعدة، تُنشأ فواتير الدفعات تلقائيًا في سجل موحّد يظهر للطرفين. لا يُثبت السداد الإلكتروني إلا بعد تأكيد موثوق من بوابة الدفع، والكاش يحتاج توثيقًا ومراجعة.":"After the equipment owner accepts, installment invoices are automatically created in a shared record visible to both parties. Electronic payment is recorded only after reliable confirmation from the payment gateway. Cash payments require documentation and review.","بعد إرسال الطلب ستظهر حالته هنا، وبعد قبول صاحب المعدة تظهر متابعة التشغيل والتمديد والدفعات والرصيد.":"After you submit the request, its status will appear here. Once the equipment owner accepts, you can track operations, extensions, installments, and the balance.","لا توجد طلبات معدات لهذا المشروع حتى الآن.":"There are no equipment requests for this project yet.","⟳ تحديث متابعة المعدة":"⟳ Refresh Equipment Tracking","العودة للمشروع":"Return to Project","أنشئ أكثر من مشروع، وأدر المشاريع الحالية والسابقة. طلب المعدة يبدأ من المشروع الحالي فقط.":"Create multiple projects and manage current and previous projects. Equipment requests can only be started from the current project.","إنشاء فاتورة مشروع (إيقاف — الفواتير تُنشأ تلقائيًا بعد قبول الطلب)":"Create Project Invoice (Disabled — invoices are created automatically after request acceptance)","يُسجّل إنشاء الفاتورة كبيان مالي داخل آثار، ولا يعني بحد ذاته تحصيل المبلغ أو إصدار فاتورة ضريبية معتمدة.":"Creating an invoice records a financial entry in ATHAR. It does not by itself mean that payment has been collected or that an approved tax invoice has been issued.","هذا المسار لتوثيق الكاش أو التحويل فقط. لا يُعدّ المبلغ مدفوعًا حتى يؤكد صاحب المعدة الاستلام؛ الدفع الإلكتروني يتطلب بوابة دفع مربوطة.":"This option is only for documenting cash or bank transfers. The amount is not considered paid until the equipment owner confirms receipt. Electronic payments require a connected payment gateway.","لا يُغلق الطلب عند انتهاء العمل. اختر الطلب المنتهي، راجع القيمة، ثم أرسل الفاتورة لتظهر لدى العميل وصاحب المعدة.":"The request is not closed when work ends. Select the completed request, review the amount, and send the invoice so it appears for both the customer and equipment owner.","تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.":"Invoices and payment statuses appear here. Actual electronic payments are enabled only after connecting an approved payment gateway and verifying its payment notification. A transfer screenshot or a button press by either party is not proof of payment.","الرصيد القابل للتحويل لا يُعرض كأموال مضمونة إلا عند وجود تسوية مالية فعلية وسجل تحويلات موثّق.":"A transferable balance is not shown as guaranteed funds unless an actual financial settlement and a verified transfer record exist.","بوابة مالك المنصة: لا يوجد رابط ظاهر لها في خيارات الاستخدام":"Platform Owner Portal: no visible link is provided in the usage options","حقول توافق داخلية لإبقاء وحدة الإعدادات الحالية سليمة":"Internal compatibility fields to keep the current settings module working","هذه إعدادات السياسة المستقبلية. لن تتغير الفواتير القديمة أو تُعاد حساباتها تلقائياً عند تعديل هذه القيم.":"These settings define future policy. Existing invoices will not be changed or recalculated when these values are edited.","يتطلب التسليم الفعلي إلى شاشة الجوال ربط Firebase Cloud Messaging وخادم إرسال آمن وتسجيل رموز أجهزة المستخدمين. حفظ الحملة هنا لا يعني أنها أُرسلت بالفعل.":"Actual delivery to mobile devices requires Firebase Cloud Messaging, a secure sending server, and registration of user device tokens. Saving a campaign here does not mean it has been sent.","سجل التعديلات":"Change Log","مراجعة الإعدادات السابقة ومن قام بالتعديل.":"Review previous settings and see who made each change.","بوابة دخول مالك المنصة المستقلة والمخفية":"Separate Hidden Platform Owner Login Portal","هذه البوابة مخصصة لموظفي آثار المصرح لهم فقط.":"This portal is restricted to authorized ATHAR staff only.","مراجعة طلبات الإنهاء واتخاذ القرار وفق الصلاحيات الحالية. لا يُنفذ هذا القسم دفعًا أو استردادًا تلقائيًا.":"Review termination requests and make decisions according to current permissions. This section does not automatically issue payments or refunds.","تظهر هنا تقييمات وملاحظات مقدمي الشكاوى على موظف الدعم عند توفر بيانات التقييم المرتبطة في النظام.":"Ratings and feedback submitted by complainants about support staff will appear here when the related rating data is available in the system.","تُدار صلاحيات الموظفين من مجموعة":"Staff permissions are managed through the","في Firebase.":"group in Firebase.","صفحة صندوق أسئلة المساعد لموظفي الدعم":"Assistant Question Inbox for Support Staff","إرسال الرد للمالك لمراجعته كإجابة مقترحة لقاعدة المعرفة":"Send the reply to the owner for review as a suggested knowledge-base answer","فتح بوابة موظفي الدعم":"Open Support Staff Portal","معلومات منصة آثار":"ATHAR Platform Information","معلومات المنصة":"Platform Information","اكتب اسمك الكامل":"Enter your full name","05xxxxxxxx أو +9665xxxxxxxx":"05xxxxxxxx or +9665xxxxxxxx","أدخل رمز التحقق 1234":"Enter verification code 1234","6 أحرف على الأقل":"At least 6 characters","اكتب اسمك":"Enter your name","مثال: جدة":"Example: Jeddah","اكتب نوع المعدة":"Enter equipment type","مثال: كوماتسو PC200":"Example: Komatsu PC200","مثال: 250":"Example: 250","الصفحة الرئيسية لصاحب المعدة":"Equipment Owner Home Page","نوع الطلبات":"Request Type","طلبات العملاء الحالية والسابقة":"Current and Previous Customer Requests","طلبات المشاريع الحالية والسابقة":"Current and Previous Project Requests","اكتب تفاصيل المشكلة أو استفسارك هنا":"Enter details of your issue or inquiry here","اضغط لتحديد موقع العمل":"Tap to set the work location","أي ملاحظات إضافية":"Any additional notes","اكتب رسالتك...":"Type your message...","مثال: مشروع إنشاء مبنى سكني":"Example: Residential Building Construction Project","الحي أو الشارع أو علامة قريبة":"Neighborhood, street, or nearby landmark","يُحدد من الخريطة":"Set on the map","وصف مختصر للمشروع أو ملاحظات مهمة":"Brief project description or important notes","اكتب مواعيد الاستحقاق وشروط التوثيق والاعتراض والإلغاء والاسترداد":"Enter due dates and the terms for documentation, disputes, cancellation, and refunds","تفاصيل إضافية (اختياري)":"Additional Details (Optional)","تصنيف المشاريع":"Project Categories","يُنشأ تلقائيًا إذا تركته فارغًا":"Generated automatically if left blank","مثال: 25000":"Example: 25,000","مثال: دفعة تأجير معدات لشهر أكتوبر":"Example: Equipment rental installment for October","قيمة الدفعة المستلمة":"Received Payment Amount","رقم تحويل أو تفاصيل مختصرة":"Transfer number or brief details","المبلغ المتفق عليه":"Agreed Amount","مدة التشغيل وأي تفاصيل متفق عليها":"Operating duration and any agreed details","اكتب كيف يمكننا مساعدتك...":"Tell us how we can help...","لوحة تحكم مالك المنصة":"Platform Owner Dashboard","اختيار هوية آثار":"Choose ATHAR Identity","مثلاً: عروض آثار الجديدة":"For example: New ATHAR Offers","اكتب رسالتك التسويقية هنا":"Enter your marketing message here","اختياري":"Optional","بريد مالك المنصة":"Platform Owner Email","بريد الموظف":"Staff Email","تحديث البيانات":"Refresh Data","أقسام مركز الدعم":"Support Center Sections","اكتب ردك على السؤال":"Enter your answer to the question","فتح مساعد آثار الذكي":"Open ATHAR AI Assistant","محادثة المساعد الذكي":"AI Assistant Conversation","إغلاق المساعد":"Close Assistant","اكتب سؤالك هنا...":"Type your question here...","اكتب ردك للمستخدم":"Enter your reply to the user","ابحث في الأسئلة والإجابات":"Search questions and answers"});
 
-/* ATHAR — تغطية الترجمة العامة وتصحيح النصوص التي بقيت بالعربية */
-Object.assign(atharEnglishDictionary,{
-  "اختر طريقة استخدامك للتطبيق":"Choose how you want to use ATHAR",
-  "اختر طريقة استخدامك":"Choose how you want to use ATHAR",
-  "© جميع الحقوق محفوظة لآثار ATHAR – 2026":"© All rights reserved to ATHAR – 2026",
-  "راجع بيانات صاحب المعدة أو مسؤول المشروع والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.":"Review the equipment owner or project manager details and attachments, then choose preliminary approval or rejection with a reason.",
-  "تم إنشاء حسابك بنجاح":"Your account has been created successfully",
-  "تم إنشاء الحساب بنجاح. أرسلنا رابط توثيق إلى بريدك الإلكتروني. افتح الرسالة واضغط رابط التحقق، ثم سجّل الدخول. تم قبول رمز الجوال التجريبي 1234.":"Your account has been created successfully. We sent an email verification link to your inbox. Open the message and follow the link, then sign in. The temporary mobile verification code 1234 was accepted.",
-  "انتظر حتى مراجعة الفريق المختص":"Please wait while our team reviews your registration",
-  "سيتم إشعارك بعد انتهاء مراجعة بياناتك ومستنداتك.":"You will be notified when your information and documents have been reviewed.",
-  "لا يمكنك استخدام خدمات صاحب المعدة أو إدارة المشروع قبل الاعتماد النهائي من مالك التطبيق.":"You cannot use equipment-owner or project-management services until the platform owner gives final approval.",
-  "العودة إلى تسجيل الدخول":"Back to Login",
-  "الاعتماد النهائي للمسجلين الجدد":"Final Approval for New Registrations",
-  "مراقبة الدعم وطلبات التسجيل المتعثرة":"Support Monitoring and Delayed Registrations",
-  "طلبات التسجيل":"Registration Requests",
-  "مراجعة المالك قبل الاعتماد النهائي":"Owner Review Before Final Approval",
-  "مراجعة التسجيلات الجديدة":"Review New Registrations",
-  "تحديث التسجيلات":"Refresh Registrations",
-  "جارٍ تحميل التسجيلات...":"Loading registrations...",
-  "← العودة إلى التسجيلات":"← Back to Registrations",
-  "صفحة تدقيق بيانات التسجيل":"Registration Details Review",
-  "صورة المعدة":"Equipment Image",
-  "هوية عيد الفطر":"Eid al-Fitr Identity",
-  "هوية اليوم الوطني":"National Day Identity",
-  "هوية يوم التأسيس":"Founding Day Identity",
-  "هوية عيد الأضحى":"Eid al-Adha Identity",
-  "فتح الصورة بالحجم الكامل":"Open Full-Size Image",
-  "فتح المستند PDF":"Open PDF Document",
-  "فتح الملف بالحجم الكامل":"Open Full-Size File",
-  "فتح الرابط / المرفق":"Open Link / Attachment",
-  "مرفق طويل محفوظ في السجل (تعذر عرضه كنص).":"A large attachment is saved in the record and cannot be displayed as text.",
-  "لا توجد عناصر.":"No items.",
-  "لا توجد بيانات.":"No data available.",
-  "لا توجد طلبات ضمن هذا القسم.":"There are no requests in this section.",
-  "تم القبول المبدئي وإحالة الطلب لمالك التطبيق.":"Preliminary approval completed. The request has been sent to the platform owner.",
-  "تم الرفض المبدئي مع حفظ السبب.":"The registration was preliminarily rejected and the reason was saved.",
-  "تم الاعتماد النهائي وإنشاء سجلات الحساب والمعدة أو المشروع.":"Final approval completed. The account and equipment or project records have been created.",
-  "تم رفض التسجيل نهائياً مع حفظ السبب.":"The registration was finally rejected and the reason was saved."
-});
-
-Object.assign(atharEnglishDictionary,{
-  "اعتماد التسجيلات الجديدة":"Approve New Registrations",
-  "مراجعة جميع بيانات التسجيل بعد القبول المبدئي واعتماد الحساب نهائيًا":"Review all registration details after preliminary approval and activate the account with final approval",
-  "البيانات الشخصية":"Personal Information",
-  "بيانات المعدة":"Equipment Information",
-  "بيانات المشروع":"Project Information",
-  "المرفقات":"Attachments",
-  "بيانات التسجيل والحالة":"Registration and Status Details",
-  "بقية بيانات السجل":"Additional Registration Data",
-  "الاسم:":"Name:",
-  "الجوال:":"Mobile:",
-  "البريد:":"Email:",
-  "تاريخ الإرسال:":"Submitted:",
-  "مدة الانتظار:":"Waiting Time:",
-  "الإنذارات:":"Alerts:",
-  "التصعيدات:":"Escalations:",
-  "ملاحظة الدعم:":"Support Note:",
-  "لا توجد تسجيلات بانتظار المراجعة المبدئية.":"There are no registrations awaiting preliminary review.",
-  "لا يمكن الاعتماد النهائي قبل إكمال موظف الدعم للمراجعة المبدئية.":"Final approval is unavailable until a support employee completes the preliminary review.",
-  "الاعتماد النهائي مخصص لمالك التطبيق فقط.":"Final approval is restricted to the platform owner.",
-  "لا يمكن اتخاذ قرار نهائي قبل قبول موظف الدعم المبدئي.":"A final decision cannot be made until support has granted preliminary approval.",
-  "أدوات الاستعلام الآمن في Firebase غير جاهزة":"Secure Firebase query tools are not ready",
-  "هذا الحقل مطلوب.":"This field is required.",
-  "تعذر تجهيز Firebase. أعد تحميل الصفحة.":"Firebase could not be initialized. Please reload the page.",
-  "لا يوجد مستخدم مسجل الدخول":"No user is signed in",
-  "لا يوجد مستخدم مسجل":"No signed-in user was found",
-  "Firebase غير متصل":"Firebase is not connected",
-  "أدوات حفظ الطلب غير جاهزة":"The request-saving tools are not ready",
-  "بيانات الطلب:":"Request details:",
-  "تعذر حفظ الطلب":"Unable to save the request",
-  "موقع العميل غير محفوظ كإحداثيات أو عنوان. اطلب من العميل تحديد موقعه بدقة.":"The customer's location is not saved as coordinates or an address. Ask the customer to set the location accurately.",
-  "انتهى العمل بالمعدة — يمكنك السداد الآن":"The equipment work is complete — you can pay now",
-  "صدرت فاتورة السداد لطلبك":"A payment invoice has been issued for your request",
-  "تسجيل الدخول كعميل":"Customer Login",
-  "تسجيل الدخول كصاحب معدة / مشغل":"Equipment Owner / Operator Login",
-  "أدخل بريدك الإلكتروني أولاً":"Please enter your email address first",
-  "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني 📧":"A password-reset link has been sent to your email 📧",
-  "لا يوجد حساب بهذا البريد الإلكتروني":"No account was found for this email address",
-  "تعذر إرسال رابط إعادة تعيين كلمة المرور":"Unable to send the password-reset link",
-  "تعذر استعادة تسجيل الدخول":"Unable to restore your login",
-  "أدخل البريد الإلكتروني وكلمة المرور":"Enter your email address and password",
-  "تم تسجيل الدخول بنجاح:":"Successfully signed in:",
-  "تعذر التحقق من حساب العميل الحالي":"Unable to verify the current customer account",
-  "تعذر فتح صفحة المقاول، أعد تحميل الصفحة":"Unable to open the contractor page. Please reload the page",
-  "تم تحديد الموافقة. يمكنك إكمال إنشاء الحساب.":"Your consent has been recorded. You can continue creating your account.",
-  "يجب قراءة اتفاقية الاستخدام والموافقة عليها قبل إنشاء الحساب.":"You must read and accept the Terms of Use before creating an account.",
-  "أدخل بريدًا إلكترونيًا صحيحًا.":"Please enter a valid email address.",
-  "أدخل رقم جوال سعودي صحيحًا يبدأ بـ 05 أو +9665.":"Enter a valid Saudi mobile number starting with 05 or +9665.",
-  "رمز التحقق غير صحيح. استخدم الرمز التجريبي 1234.":"The verification code is incorrect. Use the temporary demo code 1234.",
-  "كلمة المرور يجب أن تكون 6 أحرف أو أكثر.":"Your password must be at least 6 characters long.",
-  "كلمتا المرور غير متطابقتين.":"The passwords do not match.",
-  "جارٍ إنشاء الحساب...":"Creating your account...",
-  "تعذر إنشاء الحساب. حاول مرة أخرى.":"Unable to create the account. Please try again.",
-  "انتهت بيانات التسجيل المؤقتة. ارجع إلى صفحة التسجيل وابدأ من جديد.":"Your temporary registration data has expired. Return to registration and start again.",
-  "يوجد حساب آخر مسجل الدخول. سجّل الخروج ثم أعد التسجيل.":"Another account is signed in. Log out before registering again.",
-  "تم إرسال تسجيلك. تعذر تحديث الحالة الآن؛ حاول لاحقاً.":"Your registration was submitted. Its status could not be refreshed right now; please try again later.",
-  "تسجيلك مكتمل، وهو الآن ضمن المراجعة المبدئية لدى موظفي الدعم ثم الاعتماد النهائي من مالك التطبيق.":"Your registration is complete and is awaiting preliminary review by the support team, followed by final approval from the platform owner.",
-  "فضلاً اكتب نوع المعدة":"Please enter the equipment type",
-  "فضلاً أكمل جميع بيانات المعدة":"Please complete all equipment details",
-  "تم حفظ المعدة بنجاح 🚜":"Equipment saved successfully 🚜",
-  "لا توجد بيانات للمعدة":"No equipment information is available",
-  "يجب تسجيل الدخول لإرسال الرسائل.":"Please sign in to send messages.",
-  "لا يوجد طلب مرتبط بهذه المحادثة. افتح الطلب الحالي أولاً.":"There is no request linked to this conversation. Open the current request first.",
-  "تعذر إرسال الرسالة":"Unable to send the message",
-  "تعذر تحميل رسائل المحادثة. تحقق من اتصال Firebase وصلاحيات Firestore.":"Unable to load conversation messages. Check your Firebase connection and Firestore permissions.",
-  "وصلت المعدة إلى موقعك":"The equipment has arrived at your location",
-  "رقم صاحب المعدة غير متوفر حاليًا.":"The equipment owner's phone number is currently unavailable.",
-  "تعذر الاتصال حاليًا.":"Unable to place the call right now.",
-  "اختر التقييم أولًا.":"Please select a rating first.",
-  "تقييم المعدة متاح بعد تأكيد سداد الفاتورة بالكامل.":"You can rate the equipment after the invoice has been fully paid.",
-  "أدخل الاسم أولًا.":"Please enter the name first.",
-  "تم حفظ التعديلات بنجاح ✅":"Changes saved successfully ✅",
-  "لا يوجد بريد إلكتروني مرتبط بالحساب.":"There is no email address linked to this account.",
-  "تعذر إرسال رابط تغيير كلمة المرور.":"Unable to send the password-change link.",
-  "لا توجد طلبات مشاريع جديدة":"There are no new project requests",
-  "لا توجد طلبات عملاء جديدة":"There are no new customer requests",
-  "ستظهر هنا طلبات المقاولين وأصحاب المشاريع الموجهة لمعدتك.":"Project requests sent to your equipment will appear here.",
-  "ستظهر هنا طلبات الأفراد المناسبة لمعدتك.":"Suitable individual customer requests will appear here.",
-  "طلب تمديد بانتظار موافقتك":"An extension request is awaiting your approval",
-  "بانتظار قبولك":"Awaiting your acceptance",
-  "قيد التشغيل":"In Progress",
-  "انتهت المدة — بانتظار الإنهاء":"The agreed duration has ended — awaiting completion",
-  "مقبول — بانتظار بدء التشغيل":"Accepted — awaiting work to begin",
-  "مقبول — بانتظار التشغيل/مستمر":"Accepted — awaiting work / in progress",
-  "مدفوع":"Paid",
-  "ملغي":"Cancelled",
-  "مرفوض":"Rejected",
-  "منتهي":"Completed",
-  "غير مسجل":"Not recorded",
-  "الموقع الحالي عبر GPS":"Current location via GPS",
-  "الموقع المسجل أو الوجهة فقط":"Saved location or destination only",
-  "المسار من موقع المعدة الحالي إلى موقع العمل":"Route from the equipment's current location to the work site",
-  "المسار إلى موقع العمل؛ لم يتوفر موقع حالي لصاحب المعدة":"Route to the work site; the equipment owner's current location is unavailable",
-  "آخر تحديث: ":"Last updated: ",
-  "دون مرجع":"No reference"
-});
-
 (function initAtharEnglishTranslation(){
   const originalNodes=new WeakMap();
   const originalAttrs=new WeakMap();
   const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
-  function translateText(value){
-    const raw=String(value??'');
-    const key=normalize(raw);
-    if(!key)return value;
-    if(atharEnglishDictionary[key]){
-      const lead=raw.match(/^\s*/)?.[0]||'';
-      const tail=raw.match(/\s*$/)?.[0]||'';
-      return lead+atharEnglishDictionary[key]+tail;
-    }
-    let result=raw;
-    const phrasePairs=[
-      ["اختر طريقة استخدامك للتطبيق","Choose how you want to use ATHAR"],
-      ["تسجيل الدخول للمتابعة","Log in to continue"],
-      ["تسجيل الدخول إلى حسابك","Log in to your account"],
-      ["ليس لديك حساب؟","Don't have an account?"],
-      ["لديك حساب؟","Already have an account?"],
-      ["أدخل بياناتك","Enter your details"],
-      ["أدخل بريدك الإلكتروني","Enter your email address"],
-      ["أدخل كلمة المرور","Enter your password"]
-    ];
-    for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}
-    if(result!==raw)return result;
-    const prefixes=[
-      ["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],
-      ["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],
-      ["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],
-      ["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]
-    ];
-    for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}
-    return value;
-  }
+  function translateText(value){const raw=String(value??'');const key=normalize(raw);if(!key)return value;if(atharEnglishDictionary[key]){const lead=raw.match(/^\s*/)?.[0]||'';const tail=raw.match(/\s*$/)?.[0]||'';return lead+atharEnglishDictionary[key]+tail;}let result=raw;const phrasePairs=[["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]];for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
   window.ma3daTranslateText=value=>translateText(value);
-  const nativeAlert=window.alert?.bind(window);
-  const nativeConfirm=window.confirm?.bind(window);
-  const nativePrompt=window.prompt?.bind(window);
-  const isEnglish=()=>document.documentElement.lang==='en';
-  if(nativeAlert)window.alert=message=>nativeAlert(isEnglish()?translateText(message):message);
-  if(nativeConfirm)window.confirm=message=>nativeConfirm(isEnglish()?translateText(message):message);
-  if(nativePrompt)window.prompt=(message,defaultValue)=>nativePrompt(isEnglish()?translateText(message):message,defaultValue);
-  const translatableAttrs=['placeholder','aria-label','title','alt'];
-  function attrsFor(el){
-    const attrs=[...translatableAttrs];
-    if(el?.tagName==='INPUT'&&['button','submit','reset'].includes(String(el.type||'').toLowerCase()))attrs.push('value');
-    return attrs;
-  }
-  function translateElementAttributes(el,english){
-    if(!el||el.nodeType!==1)return;
-    let saved=originalAttrs.get(el);
-    if(!saved){saved={};originalAttrs.set(el,saved);}
-    for(const attr of attrsFor(el)){
-      if(!el.hasAttribute?.(attr))continue;
-      const current=el.getAttribute(attr);
-      if(english){
-        if(saved[attr]===undefined)saved[attr]=current;
-        else if(current!==translateText(saved[attr]))saved[attr]=current;
-        const translated=translateText(saved[attr]);
-        if(current!==translated)el.setAttribute(attr,translated);
-      }else{
-        if(saved[attr]!==undefined){
-          const original=saved[attr];
-          if(current===translateText(original))el.setAttribute(attr,original);
-          else saved[attr]=current;
-        }else saved[attr]=current;
-      }
-    }
-  }
-  function walkText(root,english){
-    if(!root)return;
-    if(root.nodeType===3){
-      const parent=root.parentElement;
-      if(!parent||parent.closest('script,style,textarea,input,[contenteditable="true"],[data-no-translate]'))return;
-      if(english){
-        if(!originalNodes.has(root))originalNodes.set(root,root.nodeValue);
-        const original=originalNodes.get(root),translated=translateText(original);
-        if(root.nodeValue!==translated)root.nodeValue=translated;
-      }else{
-        const original=originalNodes.get(root);
-        if(original!==undefined&&root.nodeValue===translateText(original))root.nodeValue=original;
-        else originalNodes.set(root,root.nodeValue);
-      }
-      return;
-    }
-    if(root.nodeType===1){
-      if(root.matches?.('script,style'))return;
-      translateElementAttributes(root,english);
-      if(root.matches?.('textarea,input,[contenteditable="true"],[data-no-translate]'))return;
-      if(root.matches?.('option')||root.querySelector?.('option')){/* option labels are translated as normal text nodes */}
-      const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-      let node;while((node=walker.nextNode()))walkText(node,english);
-      if(root.querySelectorAll)root.querySelectorAll('input,textarea,button,[aria-label],[title],img').forEach(el=>translateElementAttributes(el,english));
-    }
-  }
-  function applyLanguage(language){
-    const english=language==='en';
-    document.documentElement.lang=english?'en':'ar';
-    document.documentElement.dir=english?'ltr':'rtl';
-    document.documentElement.dataset.atharLanguage=english?'en':'ar';
-    if(document.body)walkText(document.body,english);
+  function translateNewAttributes(root){const attrs=['placeholder','aria-label','title'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
+
+  function applyLanguage(language){const english=language==='en';document.documentElement.lang=english?'en':'ar';document.documentElement.dir=english?'ltr':'rtl';document.documentElement.dataset.atharLanguage=english?'en':'ar';
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){if(!node.nodeValue||!normalize(node.nodeValue))return NodeFilter.FILTER_REJECT;const parent=node.parentElement;if(!parent||parent.closest('script,style,textarea,input,select,[contenteditable="true"],[data-no-translate]'))return NodeFilter.FILTER_REJECT;return NodeFilter.FILTER_ACCEPT;}});
+    let node;while((node=walker.nextNode())){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);const original=originalNodes.get(node);node.nodeValue=english?translateText(original):original;}
+    const attrs=['placeholder','aria-label','title'];document.querySelectorAll('input,textarea,button,[aria-label],[title]').forEach(el=>{attrs.forEach(attr=>{if(!el.hasAttribute(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,english?translateText(saved[attr]):saved[attr]);});});
     document.querySelectorAll('.screen').forEach(screen=>screen.classList.toggle('athar-english-screen',english));
   }
   window.ma3daSetLanguage=language=>{const selected=language==='en'?'en':'ar';localStorage.setItem('ma3daLanguage',selected);applyLanguage(selected);};
   window.ma3daApplySavedLanguage=()=>applyLanguage(localStorage.getItem('ma3daLanguage')||'ar');
-  const observer=new MutationObserver(records=>{
-    const english=(localStorage.getItem('ma3daLanguage')||'ar')==='en';
-    for(const record of records){
-      if(record.type==='childList')record.addedNodes.forEach(node=>walkText(node,english));
-      else if(record.type==='characterData')walkText(record.target,english);
-      else if(record.type==='attributes')translateElementAttributes(record.target,english);
-    }
-  });
-  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title','alt','value']});
+  const observer=new MutationObserver(records=>{if((localStorage.getItem('ma3daLanguage')||'ar')!=='en')return;for(const record of records){if(record.type==='childList'){record.addedNodes.forEach(node=>{if(node.nodeType===1){const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let textNode;while((textNode=walker.nextNode())){if(!originalNodes.has(textNode))originalNodes.set(textNode,textNode.nodeValue);const raw=originalNodes.get(textNode);textNode.nodeValue=translateText(raw);}translateNewAttributes(node);}else if(node.nodeType===3){if(!originalNodes.has(node))originalNodes.set(node,node.nodeValue);node.nodeValue=translateText(originalNodes.get(node));}});}else if(record.type==='characterData'){const n=record.target;let original=originalNodes.get(n);if(original===undefined||n.nodeValue!==translateText(original)){original=n.nodeValue;originalNodes.set(n,original);}const translated=translateText(original);if(n.nodeValue!==translated)n.nodeValue=translated;}}});
+  if(document.body)observer.observe(document.body,{subtree:true,childList:true,characterData:true});
   const saved=localStorage.getItem('ma3daLanguage')||'ar';applyLanguage(saved);
 })();
 
@@ -6075,7 +5839,7 @@ async function loadOperatorDashboard(){
       equipment.hourlyPrice
         ? `${Number(
             equipment.hourlyPrice
-          ).toLocaleString(atharCurrentLocale())} ريال/ساعة`
+          ).toLocaleString("ar-SA")} ريال/ساعة`
         : "-"
  
   };
@@ -6167,9 +5931,9 @@ function renderOperatorRequestCards(list, requests, kind){
         ${projectLine}
         <div class="operator-info-row"><span>📍 موقع العمل</span><strong>${request.location || request.projectCity || "-"}</strong></div>
         <div class="operator-info-row"><span>⏱️ مدة العمل</span><strong>${request.duration || "-"}</strong></div>
-        <div class="operator-info-row"><span>💰 السعر</span><strong>${price.toLocaleString(atharCurrentLocale())} ريال</strong></div>
+        <div class="operator-info-row"><span>💰 السعر</span><strong>${price.toLocaleString("ar-SA")} ريال</strong></div>
         <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>${request.status === "extension_requested" ? "طلب تمديد بانتظار موافقتك" : "بانتظار قبولك"}</strong></div>
-        ${kind === "projects" && request.paymentPlan ? `<div class="operator-info-row"><span>💳 طريقة الدفع</span><strong>${({half_half:"50% مقدّمًا و50% عند انتهاء العمل",four_installments:"أربع دفعات",full_upfront:"كامل المبلغ مقدّمًا",full_end:"كامل المبلغ عند انتهاء العمل",cash:"نقدًا مع توثيق الاستلام"})[request.paymentPlan] || request.paymentPlan}</strong></div><div class="operator-info-row"><span>🗓️ جدول العمل</span><strong>${request.dailyStartTime || "—"} - ${request.dailyEndTime || "—"} · أيام التشغيل: ${(request.workDays || []).map(Number).join("، ") || "—"}</strong></div><div class="operator-info-row"><span>📅 البداية والنهاية</span><strong>${request.scheduledStartAt?new Date(operatorRequestDateValue(request.scheduledStartAt)).toLocaleString(atharCurrentLocale()):"—"} — ${request.scheduledEndAt?new Date(operatorRequestDateValue(request.scheduledEndAt)).toLocaleString(atharCurrentLocale()):"—"}</strong></div><div class="operator-info-row"><span>🧾 شروط التسوية</span><strong>${request.paymentTerms || "—"}</strong></div>` : ""}
+        ${kind === "projects" && request.paymentPlan ? `<div class="operator-info-row"><span>💳 طريقة الدفع</span><strong>${({half_half:"50% مقدّمًا و50% عند انتهاء العمل",four_installments:"أربع دفعات",full_upfront:"كامل المبلغ مقدّمًا",full_end:"كامل المبلغ عند انتهاء العمل",cash:"نقدًا مع توثيق الاستلام"})[request.paymentPlan] || request.paymentPlan}</strong></div><div class="operator-info-row"><span>🗓️ جدول العمل</span><strong>${request.dailyStartTime || "—"} - ${request.dailyEndTime || "—"} · أيام التشغيل: ${(request.workDays || []).map(Number).join("، ") || "—"}</strong></div><div class="operator-info-row"><span>📅 البداية والنهاية</span><strong>${request.scheduledStartAt?new Date(operatorRequestDateValue(request.scheduledStartAt)).toLocaleString("ar-SA"):"—"} — ${request.scheduledEndAt?new Date(operatorRequestDateValue(request.scheduledEndAt)).toLocaleString("ar-SA"):"—"}</strong></div><div class="operator-info-row"><span>🧾 شروط التسوية</span><strong>${request.paymentTerms || "—"}</strong></div>` : ""}
       </div>
       <div class="operator-notes"><span>📝 ملاحظات ${kind === "projects" ? "المشروع" : "العميل"}</span><p>${request.notes || "لا توجد ملاحظات"}</p></div>
       <div class="operator-buttons">${request.status === "extension_requested" ? `<button class="reject-btn" type="button" data-reject-extension="${request.id}">رفض التمديد</button><button class="accept-btn" type="button" data-approve-extension="${request.id}">الموافقة على التمديد</button>` : `<button class="reject-btn" type="button" data-reject-request="${request.id}">رفض الطلب</button><button class="accept-btn" type="button" data-accept-request="${request.id}">قبول الطلب</button>`}</div>`;
@@ -6224,7 +5988,7 @@ async function loadOperatorNewRequests(){
     renderOperatorRequestCards(customerList,customerRequests,"customers");
     renderOperatorRequestCards(projectList,projectRequests,"projects");
     if(updatedLabel){
-      updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString(atharCurrentLocale(),{hour:"2-digit",minute:"2-digit"});
+      updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
     }
   }catch(error){
     console.error("خطأ في تحميل طلبات صاحب المعدة:",error);
@@ -6278,16 +6042,16 @@ function renderOwnerProjectOrderCards(list, requests, previous){
         <div class="operator-info-row"><span>👤 مسؤول المشروع</span><strong>${esc(r.contractorName||r.contractorCompany||r.requesterName||"مسؤول المشروع")}</strong></div>
         <div class="operator-info-row"><span>📍 موقع المشروع</span><strong>${esc(r.location||r.projectCity||"—")}</strong></div>
         <div class="operator-info-row"><span>📌 حالة الطلب</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
-        <div class="operator-info-row"><span>💰 قيمة الاتفاق</span><strong>${Number(r.price||0).toLocaleString(atharCurrentLocale())} ريال</strong></div>
-        <div class="operator-info-row"><span>💵 المدفوع</span><strong>${Number(r.paidTotal||0).toLocaleString(atharCurrentLocale())} ريال</strong></div>
-        <div class="operator-info-row"><span>🧾 المتبقي</span><strong>${Number(r.remainingBalance??r.price??0).toLocaleString(atharCurrentLocale())} ريال</strong></div>
+        <div class="operator-info-row"><span>💰 قيمة الاتفاق</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>💵 المدفوع</span><strong>${Number(r.paidTotal||0).toLocaleString("ar-SA")} ريال</strong></div>
+        <div class="operator-info-row"><span>🧾 المتبقي</span><strong>${Number(r.remainingBalance??r.price??0).toLocaleString("ar-SA")} ريال</strong></div>
         <div class="operator-info-row"><span>💳 خطة الدفع</span><strong>${esc(planLabels[r.paymentPlan]||r.paymentPlan||"—")}</strong></div>
         <div class="operator-info-row"><span>🗓️ أوقات التشغيل</span><strong>${esc(r.dailyStartTime||"—")} - ${esc(r.dailyEndTime||"—")}</strong></div>
-        <div class="operator-info-row"><span>📅 المدة</span><strong>${r.scheduledStartAt?new Date(operatorRequestDateValue(r.scheduledStartAt)).toLocaleString(atharCurrentLocale()):"—"} — ${r.scheduledEndAt?new Date(operatorRequestDateValue(r.scheduledEndAt)).toLocaleString(atharCurrentLocale()):"—"}</strong></div>
+        <div class="operator-info-row"><span>📅 المدة</span><strong>${r.scheduledStartAt?new Date(operatorRequestDateValue(r.scheduledStartAt)).toLocaleString("ar-SA"):"—"} — ${r.scheduledEndAt?new Date(operatorRequestDateValue(r.scheduledEndAt)).toLocaleString("ar-SA"):"—"}</strong></div>
       </div>
       <div class="operator-notes"><span>📝 ملاحظات المشروع</span><p>${esc(r.notes||"لا توجد ملاحظات")}</p></div>
-      ${pending.length?`<div class="card"><strong>إثباتات سداد بانتظار المراجعة</strong>${pending.map(x=>`<p>${Number(x.amount||0).toLocaleString(atharCurrentLocale())} ريال — ${esc(x.reference||"دون مرجع")}</p>`).join("")}<p>افتح صفحة الدخل والفواتير المشتركة لتأكيد الإثباتات.</p></div>`:""}
-      ${!previous?`<div class="operator-buttons">${startBtn}${finishBtn}${stageBtn}</div>`:`<div class="operator-buttons"><span class="muted">تاريخ الانتهاء: ${r.workCompletedAt?new Date(operatorRequestDateValue(r.workCompletedAt)).toLocaleString(atharCurrentLocale()):r.completedAt?new Date(operatorRequestDateValue(r.completedAt)).toLocaleString(atharCurrentLocale()):"غير مسجل"}</span></div>`}`;
+      ${pending.length?`<div class="card"><strong>إثباتات سداد بانتظار المراجعة</strong>${pending.map(x=>`<p>${Number(x.amount||0).toLocaleString("ar-SA")} ريال — ${esc(x.reference||"دون مرجع")}</p>`).join("")}<p>افتح صفحة الدخل والفواتير المشتركة لتأكيد الإثباتات.</p></div>`:""}
+      ${!previous?`<div class="operator-buttons">${startBtn}${finishBtn}${stageBtn}</div>`:`<div class="operator-buttons"><span class="muted">تاريخ الانتهاء: ${r.workCompletedAt?new Date(operatorRequestDateValue(r.workCompletedAt)).toLocaleString("ar-SA"):r.completedAt?new Date(operatorRequestDateValue(r.completedAt)).toLocaleString("ar-SA"):"غير مسجل"}</span></div>`}`;
     list.appendChild(card);
   });
 }
@@ -6746,7 +6510,7 @@ function updateOperatorCurrentUI(
     price.textContent =
       `${Number(
         data.price || 0
-      ).toLocaleString(atharCurrentLocale())} ريال`;
+      ).toLocaleString("ar-SA")} ريال`;
  
   if(arrivedBtn){
     arrivedBtn.style.display = "none";
@@ -7257,7 +7021,7 @@ async function operatorFinishWork(){
  
     if(priceElement)
       priceElement.textContent =
-        `${finalPrice.toLocaleString(atharCurrentLocale())} ريال`;
+        `${finalPrice.toLocaleString("ar-SA")} ريال`;
  
     if(
       document.getElementById("operatorCompletedScreen")
@@ -7323,7 +7087,7 @@ function renderOwnerCustomerOrderCards(list, requests, previous){
         <div class="operator-info-row"><span>👤 العميل</span><strong>${esc(r.customerName||r.requesterName||"عميل")}</strong></div>
         <div class="operator-info-row"><span>📍 الموقع</span><strong>${esc(r.location||"—")}</strong></div>
         <div class="operator-info-row"><span>⏱️ المدة</span><strong>${esc(r.duration||"—")}</strong></div>
-        <div class="operator-info-row"><span>💰 المبلغ</span><strong>${Number(r.price||0).toLocaleString(atharCurrentLocale())} ريال</strong></div>
+        <div class="operator-info-row"><span>💰 المبلغ</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
         <div class="operator-info-row"><span>📌 الحالة</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
       </div>
       ${!previous?`<button type="button" class="main-btn" data-owner-customer-open="${esc(r.id)}">عرض تفاصيل الطلب</button>`:`<div class="operator-current-status"><strong>${r.status==="completed"?"تم إكمال الطلب":"انتهى الطلب دون إكمال"}</strong></div>`}`;
@@ -7509,7 +7273,7 @@ async function loadOperatorPreviousOrders(){
             <strong>
               ${Number(
                 request.price || 0
-              ).toLocaleString(atharCurrentLocale())}
+              ).toLocaleString("ar-SA")}
               ريال
             </strong>
  
@@ -7630,7 +7394,7 @@ async function loadOperatorIncome(){
  
   if(incomeElement)
     incomeElement.textContent =
-      `${totalIncome.toLocaleString(atharCurrentLocale())} ريال`;
+      `${totalIncome.toLocaleString("ar-SA")} ريال`;
  
   if(countElement)
     countElement.textContent =
@@ -7685,7 +7449,7 @@ async function loadOperatorIncome(){
             <strong>
               ${Number(
                 request.price || 0
-              ).toLocaleString(atharCurrentLocale())}
+              ).toLocaleString("ar-SA")}
               ريال
             </strong>
  
@@ -10295,8 +10059,8 @@ async function loadSupportProjectClosures(){
     const snapshot=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));
     const rows=[];const disputes=[];snapshot.forEach(doc=>{const r=doc.data()||{};if(!r.projectId)return;const row={id:doc.id,...r};if(r.earlyFinishStatus==='pending_support')rows.push(row);(Array.isArray(r.paymentDisputes)?r.paymentDisputes:[]).forEach(d=>{if(d.status==='pending_support')disputes.push({...row,dispute:d});});});
     if(!rows.length&&!disputes.length){target.innerHTML='<div class="support-card">لا توجد طلبات إنهاء مبكر أو نزاعات دفعات معلقة.</div>';return;}
-    const closures=rows.map(r=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(r.projectName||'مشروع')} — ${supportEscapeHtml(r.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> إنهاء مبكر</p><p><strong>المقاول:</strong> ${supportEscapeHtml(r.contractorName||r.contractorCompany||r.contractorId||'—')}</p><p><strong>صاحب المعدة:</strong> ${supportEscapeHtml(r.operatorName||r.equipmentOwnerId||'—')}</p><p><strong>السبب:</strong> ${supportEscapeHtml(r.earlyFinishRequest?.reason||'—')}</p><p><strong>القيمة المتفق عليها:</strong> ${Number(r.price||0).toLocaleString(atharCurrentLocale())} ريال</p><p><strong>المدفوع المسجل:</strong> ${Number(r.paidTotal||0).toLocaleString(atharCurrentLocale())} ريال — <strong>المتبقي:</strong> ${Number(r.remainingBalance??r.price??0).toLocaleString(atharCurrentLocale())} ريال</p><p><strong>شروط التسوية المتفق عليها:</strong> ${supportEscapeHtml(r.settlementPolicy||r.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-approve-early-finish="${r.id}">اعتماد إنهاء العمل ومراجعة التسوية</button><button class="support-btn support-danger" type="button" data-support-reject-early-finish="${r.id}">رفض الإنهاء واستمرار الطلب</button></div>`).join('');
-    const disputeHtml=disputes.map(row=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(row.projectName||'مشروع')} — ${supportEscapeHtml(row.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> نزاع دفعة</p><p><strong>الدفعة:</strong> ${supportEscapeHtml(row.dispute.label||('دفعة '+(Number(row.dispute.installmentIndex)+1)))}</p><p><strong>المبلغ محل النزاع:</strong> ${Number(row.dispute.amount||0).toLocaleString(atharCurrentLocale())} ريال</p><p><strong>السبب:</strong> ${supportEscapeHtml(row.dispute.reason||'—')}</p><p><strong>شروط التسوية:</strong> ${supportEscapeHtml(row.settlementPolicy||row.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-uphold-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تثبيت الاستحقاق حسب الاتفاق</button><button class="support-btn support-danger" type="button" data-support-settle-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تسجيل مبلغ تسوية متفق عليه</button></div>`).join('');
+    const closures=rows.map(r=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(r.projectName||'مشروع')} — ${supportEscapeHtml(r.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> إنهاء مبكر</p><p><strong>المقاول:</strong> ${supportEscapeHtml(r.contractorName||r.contractorCompany||r.contractorId||'—')}</p><p><strong>صاحب المعدة:</strong> ${supportEscapeHtml(r.operatorName||r.equipmentOwnerId||'—')}</p><p><strong>السبب:</strong> ${supportEscapeHtml(r.earlyFinishRequest?.reason||'—')}</p><p><strong>القيمة المتفق عليها:</strong> ${Number(r.price||0).toLocaleString('ar-SA')} ريال</p><p><strong>المدفوع المسجل:</strong> ${Number(r.paidTotal||0).toLocaleString('ar-SA')} ريال — <strong>المتبقي:</strong> ${Number(r.remainingBalance??r.price??0).toLocaleString('ar-SA')} ريال</p><p><strong>شروط التسوية المتفق عليها:</strong> ${supportEscapeHtml(r.settlementPolicy||r.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-approve-early-finish="${r.id}">اعتماد إنهاء العمل ومراجعة التسوية</button><button class="support-btn support-danger" type="button" data-support-reject-early-finish="${r.id}">رفض الإنهاء واستمرار الطلب</button></div>`).join('');
+    const disputeHtml=disputes.map(row=>`<div class="ma3da-closure-card"><h3>${supportEscapeHtml(row.projectName||'مشروع')} — ${supportEscapeHtml(row.equipment||'معدة')}</h3><p><strong>نوع المراجعة:</strong> نزاع دفعة</p><p><strong>الدفعة:</strong> ${supportEscapeHtml(row.dispute.label||('دفعة '+(Number(row.dispute.installmentIndex)+1)))}</p><p><strong>المبلغ محل النزاع:</strong> ${Number(row.dispute.amount||0).toLocaleString('ar-SA')} ريال</p><p><strong>السبب:</strong> ${supportEscapeHtml(row.dispute.reason||'—')}</p><p><strong>شروط التسوية:</strong> ${supportEscapeHtml(row.settlementPolicy||row.paymentTerms||'لم تُسجل')}</p><button class="support-btn" type="button" data-support-uphold-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تثبيت الاستحقاق حسب الاتفاق</button><button class="support-btn support-danger" type="button" data-support-settle-payment-dispute="${row.id}" data-dispute-id="${supportEscapeHtml(row.dispute.id)}">تسجيل مبلغ تسوية متفق عليه</button></div>`).join('');
     target.innerHTML=(closures?'<h3>طلبات الإنهاء المبكر</h3>'+closures:'')+(disputeHtml?'<h3>نزاعات الدفعات</h3>'+disputeHtml:'');
   }catch(error){console.error('Load support project closures:',error);target.innerHTML='<div class="support-card">تعذر تحميل طلبات الإنهاء المبكر. تحقق من صلاحيات قراءة requests.</div>';}
 }
@@ -10349,7 +10113,7 @@ async function loadOwnerInformationCenter(){
   const statusEl=document.getElementById("ownerInfoStatus");
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   const safe=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const money=v=>Number(v||0).toLocaleString(atharCurrentLocale(),{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
+  const money=v=>Number(v||0).toLocaleString("ar-SA",{minimumFractionDigits:2,maximumFractionDigits:2})+" ر.س";
   if(!window.ma3daOwnerOnlineListenerStarted && typeof window.ma3daListenOnlineUsers==="function"){
     window.ma3daOwnerOnlineListenerStarted=true;
     window.ma3daListenOnlineUsers((count,error)=>{
@@ -10390,11 +10154,11 @@ async function loadOwnerInformationCenter(){
     const commissions=commissionRecords.reduce((sum,x)=>{for(const k of commissionKeys){if(x[k]!==undefined&&x[k]!==null&&Number.isFinite(Number(x[k])))return sum+Math.max(0,Number(x[k]));}return sum;},0);
     set("ownerInfoRevenue",available("projectInvoices")||available("requests")?money(revenue):"غير متاح");
     set("ownerInfoCommissions",available("requests")||available("projectInvoices")?money(commissions):"غير متاح");
-    set("ownerInfoRequests",requestRows.length.toLocaleString(atharCurrentLocale()));
+    set("ownerInfoRequests",requestRows.length.toLocaleString("ar-SA"));
     if(statusEl)statusEl.textContent="تم تحميل السجلات المتاحة. افتح أي قسم لعرض التفاصيل.";
 
     const details=document.getElementById("ownerAdminDetails"),title=document.getElementById("ownerAdminDetailsTitle"),content=document.getElementById("ownerAdminDetailsContent");
-    const dateText=x=>{const v=x?.updatedAt||x?.createdAt||x?.created_at||x?.timestamp;if(!v)return "التاريخ غير مسجل";const d=v?.toDate?v.toDate():new Date(v);return Number.isNaN(d.getTime())?"التاريخ غير مسجل":d.toLocaleString(atharCurrentLocale());};
+    const dateText=x=>{const v=x?.updatedAt||x?.createdAt||x?.created_at||x?.timestamp;if(!v)return "التاريخ غير مسجل";const d=v?.toDate?v.toDate():new Date(v);return Number.isNaN(d.getTime())?"التاريخ غير مسجل":d.toLocaleString("ar-SA");};
     const record=(heading,sub="",extra="")=>`<article class="owner-admin-record"><strong>${safe(heading)}</strong>${sub?`<span>${safe(sub)}</span>`:""}${extra?`<small>${safe(extra)}</small>`:""}</article>`;
     const empty=msg=>`<div class="owner-admin-empty">${safe(msg)}</div>`;
     const listHtml=(rows,headingFn,subFn,extraFn,emptyMsg)=>rows.length?rows.map(x=>record(headingFn(x),subFn?subFn(x):"",extraFn?extraFn(x):dateText(x))).join(""):empty(emptyMsg);
@@ -10404,7 +10168,7 @@ async function loadOwnerInformationCenter(){
       details.hidden=false;let html="";
       if(view==="users"){
         title.textContent="المستخدمون";
-        html=`<div class="owner-admin-subcards">${subcard("عدد العملاء",available("customers")?customerRows.length.toLocaleString(atharCurrentLocale()):"غير متاح","customers")}${subcard("أصحاب المعدات",available("contractors")?contractorRows.length.toLocaleString(atharCurrentLocale()):"غير متاح","contractors")}${subcard("عدد المعدات",available("equipment")?equipmentRows.length.toLocaleString(atharCurrentLocale()):"غير متاح","equipment")}${subcard("مسؤولو المشاريع",available("operators")?operatorRows.length.toLocaleString(atharCurrentLocale()):"غير متاح","operators")}${subcard("المشاريع القائمة",projectRows.filter(x=>!['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString(atharCurrentLocale()),"projectsCurrent")}${subcard("المشاريع السابقة",projectRows.filter(x=>['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString(atharCurrentLocale()),"projectsPrevious")}</div><p>اختر أي بطاقة لعرض البيانات التفصيلية.</p>`;
+        html=`<div class="owner-admin-subcards">${subcard("عدد العملاء",available("customers")?customerRows.length.toLocaleString("ar-SA"):"غير متاح","customers")}${subcard("أصحاب المعدات",available("contractors")?contractorRows.length.toLocaleString("ar-SA"):"غير متاح","contractors")}${subcard("عدد المعدات",available("equipment")?equipmentRows.length.toLocaleString("ar-SA"):"غير متاح","equipment")}${subcard("مسؤولو المشاريع",available("operators")?operatorRows.length.toLocaleString("ar-SA"):"غير متاح","operators")}${subcard("المشاريع القائمة",projectRows.filter(x=>!['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsCurrent")}${subcard("المشاريع السابقة",projectRows.filter(x=>['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsPrevious")}</div><p>اختر أي بطاقة لعرض البيانات التفصيلية.</p>`;
       }else if(view==="customers"){
         title.textContent="العملاء وبياناتهم";html=listHtml(customerRows,x=>x.name||x.fullName||x.displayName||x.email||x.id,x=>x.phone||x.mobile||x.email||"بيانات التواصل غير مسجلة",x=>`المعرّف: ${x.id}`,"لا توجد بيانات عملاء في مجموعة customers أو تعذرت قراءتها.");
       }else if(view==="contractors"){
@@ -10416,7 +10180,7 @@ async function loadOwnerInformationCenter(){
       }else if(view==="projectsCurrent"||view==="projectsPrevious"||view==="projects"){
         const previous=view==="projectsPrevious";title.textContent=previous?"المشاريع السابقة":"المشاريع القائمة";const rows=projectRows.filter(x=>{const done=['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase());return view==="projects"?true:previous?done:!done;});html=listHtml(rows,x=>x.name||x.title||x.projectName||x.id,x=>`الحالة: ${x.status||"غير محددة"}`,x=>`المعرّف: ${x.id}`,"لا توجد مشاريع ضمن هذا القسم.");
       }else if(view==="complaints"){
-        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString(atharCurrentLocale()):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString(atharCurrentLocale()):"غير متاح","staff")}${subcard("التصعيدات الواردة","عرض التصعيدات","escalations")}</div><p>اختر الشكاوى أو موظفي الدعم أو التصعيدات الواردة لعرض التفاصيل.</p>`;
+        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}${subcard("التصعيدات الواردة","عرض التصعيدات","escalations")}</div><p>اختر الشكاوى أو موظفي الدعم أو التصعيدات الواردة لعرض التفاصيل.</p>`;
       }else if(view==="tickets"){
         title.textContent="الشكاوى";html=listHtml(ticketRows,x=>x.subject||x.title||x.category||"شكوى",x=>x.message||x.description||"لا يوجد وصف مسجل",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد شكاوى مسجلة أو تعذرت قراءتها.");
       }else if(view==="staff"){
@@ -10447,7 +10211,7 @@ async function loadOwnerInformationCenter(){
           const notes=[];ns.forEach(d=>notes.push({id:d.id,...(d.data()||{})}));
           notes.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
           const list=document.getElementById("ownerDailyNotesList");
-          if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record" data-owner-note-card="${safe(n.id)}"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString(atharCurrentLocale()):"")}</strong><span data-owner-note-text style="white-space:pre-wrap;display:block">${safe(n.text||"")}</span><textarea data-owner-note-editor rows="3" maxlength="5000" hidden>${safe(n.text||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="support-btn" data-edit-owner-note="${safe(n.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-owner-note="${safe(n.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
+          if(list)list.innerHTML=notes.length?notes.map(n=>`<article class="owner-admin-record" data-owner-note-card="${safe(n.id)}"><strong>${safe(n.createdByEmail||"مالك التطبيق")} · ${safe(n.createdAtMs?new Date(n.createdAtMs).toLocaleString("ar-SA"):"")}</strong><span data-owner-note-text style="white-space:pre-wrap;display:block">${safe(n.text||"")}</span><textarea data-owner-note-editor rows="3" maxlength="5000" hidden>${safe(n.text||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="support-btn" data-edit-owner-note="${safe(n.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-owner-note="${safe(n.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد ملاحظات محفوظة بعد.";
         }catch(e){
           console.error("تعذر تحميل الملاحظات اليومية:",e);
           const list=document.getElementById("ownerDailyNotesList");
@@ -10460,13 +10224,13 @@ async function loadOwnerInformationCenter(){
           const es=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,"supportEscalations"));
           const rows=[];es.forEach(d=>rows.push({id:d.id,...(d.data()||{})}));
           rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));
-          html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString(atharCurrentLocale()):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة" disabled>${safe(x.ownerNote||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="support-btn" data-edit-escalation-note="${safe(x.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
+          html=rows.length?rows.map(x=>`<article class="owner-admin-record"><strong>${safe(x.ticketSubject||"شكوى")} · ${safe(x.status||"open")==="open"?"مفتوحة":"قيد المتابعة"}</strong><span>موظف الدعم: ${safe(x.staffName||x.staffEmail||x.staffId||"غير محدد")}</span><span>سبب التصعيد: ${safe(x.reason||"—")}</span><small>رقم الشكوى: ${safe(x.ticketId||"—")} · ${safe(x.createdAtMs?new Date(x.createdAtMs).toLocaleString("ar-SA"):"")}</small><label>ملاحظة مالك التطبيق</label><textarea data-escalation-note="${safe(x.id)}" rows="2" maxlength="2000" placeholder="اكتب الإجراء أو الملاحظة" disabled>${safe(x.ownerNote||"")}</textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="support-btn" data-edit-escalation-note="${safe(x.id)}">تعديل الملاحظة</button><button type="button" class="support-btn support-primary" data-save-escalation-note="${safe(x.id)}" hidden>حفظ التعديل</button></div></article>`).join(""):"لا توجد تصعيدات حتى الآن.";
         }catch(e){
           console.error("تعذر تحميل التصعيدات:",e);
           html=`<div class="owner-admin-empty">${safe(e.code==="permission-denied"?"رفضت قواعد Firebase قراءة التصعيدات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة supportEscalations.":"تعذر تحميل التصعيدات: "+(e.message||"خطأ غير معروف."))}</div>`;
         }
       }else if(view==="requests"){
-        title.textContent="الطلبات الناجحة وغير الناجحة";html=`<div class="owner-admin-subcards">${subcard("عدد الطلبات الناجحة",successful.length.toLocaleString(atharCurrentLocale()),"requestsSuccess")}${subcard("عدد الطلبات غير الناجحة",failed.length.toLocaleString(atharCurrentLocale()),"requestsFailed")}</div>`;
+        title.textContent="الطلبات الناجحة وغير الناجحة";html=`<div class="owner-admin-subcards">${subcard("عدد الطلبات الناجحة",successful.length.toLocaleString("ar-SA"),"requestsSuccess")}${subcard("عدد الطلبات غير الناجحة",failed.length.toLocaleString("ar-SA"),"requestsFailed")}</div>`;
       }else if(view==="requestsSuccess"||view==="requestsFailed"){
         const rows=view==="requestsSuccess"?successful:failed;title.textContent=view==="requestsSuccess"?"الطلبات الناجحة":"الطلبات غير الناجحة";html=listHtml(rows,x=>x.equipmentName||x.title||x.requestType||x.id,x=>`الحالة: ${x.status||"غير محددة"} · المبلغ: ${money(amountOf(x))}`,x=>`المعرّف: ${x.id}`,"لا توجد طلبات في هذا القسم.");
       }else if(view==="money"){
@@ -12235,7 +11999,7 @@ async function openContractorHome() {
           try{await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'requests',r.id),{status:'duration_expired',durationExpiredAt:new Date(),workStatus:'duration_expired',updatedAt:new Date()});r.status='duration_expired';r.workStatus='duration_expired';}catch(expiryError){console.warn('Could not mark project duration expiry:',expiryError);}
         }
       }
-      const money=n=>`${Number(n||0).toLocaleString(atharCurrentLocale(),{maximumFractionDigits:2})} ريال`;
+      const money=n=>`${Number(n||0).toLocaleString('ar-SA',{maximumFractionDigits:2})} ريال`;
       target.innerHTML=rows.sort((a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt)).map(r=>{
         const endDate=r.scheduledEndAt?.toDate?r.scheduledEndAt.toDate():r.scheduledEndAt?new Date(r.scheduledEndAt):null;
         const paid=Number(r.paidTotal||0);const remaining=Number(r.remainingBalance??Math.max(0,Number(r.price||0)-paid));
@@ -12243,7 +12007,7 @@ async function openContractorHome() {
         const paymentHtml=schedule.length?'<h4>خطة الدفعات</h4>'+schedule.map((p,i)=>{const statusText=({due:'مستحقة',not_due:'غير مستحقة',pending_review:'بانتظار مراجعة صاحب المعدة',paid:'مدفوعة',disputed:'متنازع عليها'})[p.status]||p.status||'—';const dueAmount=Math.max(0,Number(p.amount||0)-Number(p.paidAmount||0));return `<div class="ma3da-payment-line"><strong>${escapeContractorHtml(p.label||('الدفعة '+(i+1)))}</strong><p>${money(dueAmount)} — ${escapeContractorHtml(statusText)}</p>${p.status==='due'?`<button type="button" class="back-btn" data-project-payment-submit="${escapeContractorHtml(r.id)}" data-installment-index="${i}">إرسال إثبات الدفعة للمراجعة</button>`:''}${['due','pending_review','paid'].includes(p.status)?`<button type="button" class="back-btn" data-project-payment-dispute="${escapeContractorHtml(r.id)}" data-installment-index="${i}">اعتراض على هذه الدفعة</button>`:''}</div>`;}).join(''):'<p>لا توجد خطة دفعات مسجلة.</p>';
         const canExtend=(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))&&r.extensionStatus!=='pending'&&!['approved','pending_support'].includes(r.earlyFinishStatus);
         const canEarlyFinish=(['working','duration_expired'].includes(String(r.status||''))||['working','duration_expired'].includes(String(r.workStatus||'')))&&!['pending_support','approved'].includes(r.earlyFinishStatus);
-        return `<div class="contractor-tracking-item"><h3>${escapeContractorHtml(r.equipment||'معدة')} — ${escapeContractorHtml(r.equipmentModel||'')}</h3><p><strong>الحالة:</strong> ${escapeContractorHtml(({searching:'بانتظار صاحب المعدة',accepted:'مقبول — بانتظار التشغيل/مستمر',working:'قيد التشغيل',duration_expired:'انتهت المدة — بانتظار قرار الأطراف',extension_requested:'طلب تمديد معلّق',rejected:'مرفوض',completed:'منتهٍ',cancelled:'ملغى'})[r.status]||r.status||'—')}</p><p><strong>المدة:</strong> ${escapeContractorHtml(r.duration||'—')} · ${escapeContractorHtml(r.dailyStartTime||'—')}–${escapeContractorHtml(r.dailyEndTime||'—')}</p><p><strong>أيام التشغيل:</strong> ${escapeContractorHtml((r.workDays||[]).map(d=>['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][Number(d)]||'').filter(Boolean).join('، ')||'—')}</p><p><strong>نهاية المدة:</strong> ${endDate&&!Number.isNaN(endDate.getTime())?escapeContractorHtml(endDate.toLocaleString(atharCurrentLocale())):'—'}</p><p><strong>القيمة المتفق عليها:</strong> ${money(r.price)} · <strong>المدفوع:</strong> ${money(paid)} · <strong>المتبقي:</strong> ${money(remaining)}</p><p><strong>طريقة الدفع:</strong> ${escapeContractorHtml(({half_half:'50% مقدّمًا و50% عند انتهاء العمل',four_installments:'أربع دفعات',full_upfront:'كامل المبلغ مقدّمًا',full_end:'كامل المبلغ عند انتهاء العمل',cash:'نقدًا مع توثيق الاستلام'})[r.paymentPlan]||r.paymentPlan||'—')}</p><p><strong>شروط التسوية:</strong> ${escapeContractorHtml(r.settlementPolicy||r.paymentTerms||'—')}</p>${paymentHtml}${r.extensionStatus==='pending'?'<p>طلب التمديد بانتظار صاحب المعدة. لا تتغير المدة أو القيمة قبل الموافقة.</p>':r.extensionStatus==='rejected'?'<p>رُفض التمديد. تواصل مع صاحب المعدة والدعم إذا استمر العمل.</p>':''}${r.earlyFinishStatus==='pending_support'?'<p>طلب الإنهاء المبكر بانتظار قرار موظف الدعم.</p>':''}${r.earlyFinishStatus==='approved'?'<p>اعتمد الدعم إنهاء العمل؛ التسوية المالية ما زالت بحاجة إلى مراجعة.</p>':''}${canExtend?`<button type="button" class="main-btn" data-contractor-extend="${escapeContractorHtml(r.id)}">طلب تمديد المدة</button>`:''}${canEarlyFinish?`<button type="button" class="back-btn" data-contractor-early-finish="${escapeContractorHtml(r.id)}">طلب إنهاء مبكر عبر الدعم</button>`:''}</div>`;
+        return `<div class="contractor-tracking-item"><h3>${escapeContractorHtml(r.equipment||'معدة')} — ${escapeContractorHtml(r.equipmentModel||'')}</h3><p><strong>الحالة:</strong> ${escapeContractorHtml(({searching:'بانتظار صاحب المعدة',accepted:'مقبول — بانتظار التشغيل/مستمر',working:'قيد التشغيل',duration_expired:'انتهت المدة — بانتظار قرار الأطراف',extension_requested:'طلب تمديد معلّق',rejected:'مرفوض',completed:'منتهٍ',cancelled:'ملغى'})[r.status]||r.status||'—')}</p><p><strong>المدة:</strong> ${escapeContractorHtml(r.duration||'—')} · ${escapeContractorHtml(r.dailyStartTime||'—')}–${escapeContractorHtml(r.dailyEndTime||'—')}</p><p><strong>أيام التشغيل:</strong> ${escapeContractorHtml((r.workDays||[]).map(d=>['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][Number(d)]||'').filter(Boolean).join('، ')||'—')}</p><p><strong>نهاية المدة:</strong> ${endDate&&!Number.isNaN(endDate.getTime())?escapeContractorHtml(endDate.toLocaleString('ar-SA')):'—'}</p><p><strong>القيمة المتفق عليها:</strong> ${money(r.price)} · <strong>المدفوع:</strong> ${money(paid)} · <strong>المتبقي:</strong> ${money(remaining)}</p><p><strong>طريقة الدفع:</strong> ${escapeContractorHtml(({half_half:'50% مقدّمًا و50% عند انتهاء العمل',four_installments:'أربع دفعات',full_upfront:'كامل المبلغ مقدّمًا',full_end:'كامل المبلغ عند انتهاء العمل',cash:'نقدًا مع توثيق الاستلام'})[r.paymentPlan]||r.paymentPlan||'—')}</p><p><strong>شروط التسوية:</strong> ${escapeContractorHtml(r.settlementPolicy||r.paymentTerms||'—')}</p>${paymentHtml}${r.extensionStatus==='pending'?'<p>طلب التمديد بانتظار صاحب المعدة. لا تتغير المدة أو القيمة قبل الموافقة.</p>':r.extensionStatus==='rejected'?'<p>رُفض التمديد. تواصل مع صاحب المعدة والدعم إذا استمر العمل.</p>':''}${r.earlyFinishStatus==='pending_support'?'<p>طلب الإنهاء المبكر بانتظار قرار موظف الدعم.</p>':''}${r.earlyFinishStatus==='approved'?'<p>اعتمد الدعم إنهاء العمل؛ التسوية المالية ما زالت بحاجة إلى مراجعة.</p>':''}${canExtend?`<button type="button" class="main-btn" data-contractor-extend="${escapeContractorHtml(r.id)}">طلب تمديد المدة</button>`:''}${canEarlyFinish?`<button type="button" class="back-btn" data-contractor-early-finish="${escapeContractorHtml(r.id)}">طلب إنهاء مبكر عبر الدعم</button>`:''}</div>`;
       }).join('');
     }catch(err){console.error('Project request tracking failed:',err);const trackingSection=document.getElementById('contractorProjectTrackingSection');if(trackingSection)trackingSection.hidden=false;target.innerHTML='<div class="card">تعذر تحميل متابعة الطلب الآن. اضغط تحديث للمحاولة مجددًا.</div>';}
   }
@@ -13322,7 +13086,7 @@ document.addEventListener("click", function(event){
     if (typeof value.seconds === 'number') return new Date(value.seconds * 1000);
     const d = new Date(value); return Number.isNaN(d.getTime()) ? null : d;
   };
-  const dateLabel = value => { const d=normalizeDate(value); return d ? d.toLocaleString(atharCurrentLocale()) : '—'; };
+  const dateLabel = value => { const d=normalizeDate(value); return d ? d.toLocaleString('ar-SA') : '—'; };
   const isClosed = ticket => ['closed','resolved','complete','completed','مغلقة','مغلق','تم الحل'].includes(String(ticket.status||'').toLowerCase());
   const statusLabel = ticket => isClosed(ticket) ? 'مغلقة' : (String(ticket.status||'').toLowerCase()==='replied' ? 'بانتظار متابعة صاحب الشكوى' : (ticket.status==='in_progress' ? 'قيد المعالجة' : 'جديدة / قيد المعالجة'));
   const setText = (id, value) => { const el=$(id); if(el) el.textContent=value ?? ''; };
@@ -13920,7 +13684,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   let financeInvoicesUnsub=null, financePaymentsUnsub=null;
   let financeInvoiceSnapshotReady=false, financePaymentSnapshotReady=false;
   let financeRealtimeRefreshQueued=false;
-  const money = n => (Number(n)||0).toLocaleString(atharCurrentLocale(),{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ر.س';
+  const money = n => (Number(n)||0).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ر.س';
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const say = (id, message, error=false) => { const el=$f(id); if(el){el.textContent=message;el.style.color=error?'#a12622':'#356b37';} };
   const getUser = async () => {
@@ -13933,7 +13697,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     snap.forEach(d=>rows.push({id:d.id,...(d.data()||{})})); return rows;
   };
   const when = v => {
-    try { const d=v?.toDate?v.toDate():(v instanceof Date?v:new Date(v)); return Number.isNaN(d.getTime())?'—':d.toLocaleDateString(atharCurrentLocale()); }
+    try { const d=v?.toDate?v.toDate():(v instanceof Date?v:new Date(v)); return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('ar-SA'); }
     catch(_){return '—';}
   };
   function statusLabel(status){
@@ -15052,7 +14816,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           : null;
 
     return date && !Number.isNaN(date.getTime())
-      ? date.toLocaleString(atharCurrentLocale())
+      ? date.toLocaleString("ar-SA")
       : "غير محدد";
   }
 
@@ -17172,7 +16936,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
           " · " +
           new Date(
             Number(record.createdAtMs || 0)
-          ).toLocaleString(atharCurrentLocale());
+          ).toLocaleString("ar-SA");
 
         const restore = document.createElement("button");
         restore.type = "button";
@@ -17363,7 +17127,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const defaults = {
     classic: {
       name: "آثار الأساسية", primary: "#171717", accent: "#c8a45b",
-      buttonBg: "#FFFFFF", buttonText: "#171717",
+      buttonBg: "#D6B45E", buttonText: "#171717",
       surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
         customer: "خطوتك الأولى نحو مشروع يليق بطموحك.",
@@ -17757,7 +17521,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       classic: "#C8A45B"
     })[activeIdentity] || "#C8A45B";
     root.style.setProperty("--athar-identity-frame", frameColor);
-    root.style.setProperty("--athar-button-bg", activeIdentity === "classic" ? "#FFFFFF" : (identity.buttonBg || "#D6B45E"));
+    root.style.setProperty("--athar-button-bg", identity.buttonBg || "#D6B45E");
     root.style.setProperty("--athar-button-text", identity.buttonText || "#171717");
     root.style.setProperty("--athar-identity-surface", identity.surface);
     root.style.setProperty("--athar-identity-text", identity.text);
@@ -17979,7 +17743,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function rows(){if(!window.ma3daDB||!window.ma3daGetDocs)throw new Error('Firebase غير جاهز');const snap=await window.ma3daGetDocs(collection());return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));}
   let selectedSupportRegistration=null;
   let selectedOwnerRegistration=null;
-  const dateLabel=value=>{if(!value)return 'غير مسجل';const d=typeof value==='number'?new Date(value):(value?.toDate?value.toDate():new Date(value));return Number.isNaN(d.getTime())?'غير مسجل':d.toLocaleString(atharCurrentLocale());};
+  const dateLabel=value=>{if(!value)return 'غير مسجل';const d=typeof value==='number'?new Date(value):(value?.toDate?value.toDate():new Date(value));return Number.isNaN(d.getTime())?'غير مسجل':d.toLocaleString('ar-SA');};
   const isImageKey=key=>/(image|photo|picture|avatar|صورة)/i.test(String(key||''));
   const renderReviewValue=(key,value)=>{
     if(value===null||value===undefined||value==='')return '';
@@ -18009,7 +17773,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const roleName=item.role==='operator'?'صاحب معدة':'صاحب / مسؤول مشروع';
     const knownRootFields=new Set(['id','personalData','equipment','project','attachments','status','stage','submittedAt','createdAt','createdAtMs','updatedAt','assignedStaff','assignedStaffUid','assignedAt','supportReviewedBy','supportReviewedByUid','supportReviewedAt','supportReason','ownerReviewedBy','ownerReviewedByUid','ownerReviewedAt','ownerReason']);
     const extraRootFields=Object.fromEntries(Object.entries(item).filter(([key])=>!knownRootFields.has(key)));
-    const roots=[['البيانات الشخصية',item.personalData||{}],...(item.equipment?[['بيانات المعدة',item.equipment]]:[]),...(item.project?[['بيانات المشروع',item.project]]:[]),...(item.attachments?[['المرفقات',item.attachments]]:[]),['بيانات التسجيل والحالة',{uid:item.uid||'',role:item.role||'',registrationType:item.registrationType||'',status:item.status||'',stage:item.stage||'',submittedAt:dateLabel(item.submittedAt),createdAt:dateLabel(item.createdAt),updatedAt:dateLabel(item.updatedAt),assignedStaff:item.assignedStaff||'',assignedStaffUid:item.assignedStaffUid||'',assignedAt:dateLabel(item.assignedAt),supportReviewedBy:item.supportReviewedBy||'',supportReviewedByUid:item.supportReviewedByUid||'',supportReviewedAt:dateLabel(item.supportReviewedAt),supportReason:item.supportReason||'',supportNotes:item.supportNotes||'',ownerReviewedBy:item.ownerReviewedBy||'',ownerReviewedByUid:item.ownerReviewedByUid||'',ownerReviewedAt:dateLabel(item.ownerReviewedAt),ownerReason:item.ownerReason||''}],...(Object.keys(extraRootFields).length?[['بقية بيانات السجل',extraRootFields]]:[])];
+    const roots=[['البيانات الشخصية',item.personalData||{}],...(item.equipment?[['بيانات المعدة',item.equipment]]:[]),...(item.project?[['بيانات المشروع',item.project]]:[]),...(item.attachments?[['المرفقات',item.attachments]]:[]),['بيانات التسجيل والحالة',{uid:item.uid||'',role:item.role||'',registrationType:item.registrationType||'',status:item.status||'',stage:item.stage||'',submittedAt:dateLabel(item.submittedAt),createdAt:dateLabel(item.createdAt),updatedAt:dateLabel(item.updatedAt),assignedStaff:item.assignedStaff||'',assignedStaffUid:item.assignedStaffUid||'',assignedAt:dateLabel(item.assignedAt),supportReviewedBy:item.supportReviewedBy||'',supportReviewedByUid:item.supportReviewedByUid||'',supportReviewedAt:dateLabel(item.supportReviewedAt),supportReason:item.supportReason||'',ownerReviewedBy:item.ownerReviewedBy||'',ownerReviewedByUid:item.ownerReviewedByUid||'',ownerReviewedAt:dateLabel(item.ownerReviewedAt),ownerReason:item.ownerReason||'',supportNotes:item.supportNotes||''}],...(Object.keys(extraRootFields).length?[['بقية بيانات السجل',extraRootFields]]:[])];
     const ownerCanDecide=['support_approved','pending_owner'].includes(item.status);
     const decisionButtons=kind==='support'?`<button type="button" class="support-btn support-primary" data-athar-support-approve="${esc(item.id)}">قبول مبدئي</button><button type="button" class="support-btn support-danger" data-athar-support-reject="${esc(item.id)}">رفض مبدئي</button>`:ownerCanDecide?`<button type="button" class="support-btn support-primary" data-athar-owner-approve="${esc(item.id)}">اعتماد نهائي</button><button type="button" class="support-btn support-danger" data-athar-owner-reject="${esc(item.id)}">رفض نهائي</button>`:`<p class="support-empty">لا يمكن الاعتماد النهائي قبل إكمال موظف الدعم للمراجعة المبدئية.</p>`;
     target.innerHTML=`<div class="athar-review-detail-head"><div><h3>${kind==='support'?'مراجعة تسجيل':'تفاصيل التسجيل للاعتماد النهائي'} · ${roleName}</h3><p>رقم التسجيل: ${esc(item.id)} · الحالة: ${esc(item.status||'غير محددة')}</p></div></div>${roots.map(([label,data])=>renderReviewValue(label,data)).join('')}<div class="athar-review-decision">${decisionButtons}</div>`;
@@ -18053,7 +17817,6 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(t.dataset.atharSupportOpen){const list=await rows();openSupportReview(t.dataset.atharSupportOpen,list);return;}
       if(t.dataset.atharSupportApprove){await decision(t.dataset.atharSupportApprove,'support_approved','support');closeSupportReview();await loadSupport();alert('تم القبول المبدئي وإحالة الطلب لمالك التطبيق.');return;}
       if(t.dataset.atharSupportReject){await decision(t.dataset.atharSupportReject,'support_rejected','support');closeSupportReview();await loadSupport();alert('تم الرفض المبدئي مع حفظ السبب.');return;}
-      if(t.id==='ownerFinalRegistrationsDashboardBtn'){await loadOwner('final');return;}
       if(t.id==='ownerFinalRegistrationsBtn'){await loadOwner('final');return;}
       if(t.dataset.atharOwnerOpen){const list=await rows();const item=list.find(x=>x.id===t.dataset.atharOwnerOpen);if(item){selectedOwnerRegistration=item;renderRegistrationDetail(item,'owner');const box=$('ownerRegistrationDetail');if(box)box.hidden=false;box?.scrollIntoView({behavior:'smooth',block:'start'});}return;}
       if(t.id==='ownerRegistrationMonitoringBtn'){await loadOwner('monitor');return;}
