@@ -4059,13 +4059,6 @@
     </div>
 
 
-    <button
-      id="paymentBtn"
-      class="main-btn"
-      type="button"
-    >
-      الانتقال للدفع
-    </button>
 
 
   </div>
@@ -4133,19 +4126,6 @@
 ===================================================== -->
 
 
-<!-- الصفحة: صفحة من صفحات آثار: paymentScreen | المعرّف البرمجي: paymentScreen -->
-<section
-  id="paymentScreen"
-  class="screen"
->
-  <div class="card">
-    <h2>الفاتورة والسداد</h2>
-    <p>تُعرض الفاتورة وحالة السداد في صفحة «فواتيري والمدفوعات». لن نعرض طريقة دفع غير مربوطة ببوابة معتمدة، ولن يُغلق الطلب قبل تأكيد السداد من مزود الدفع.</p>
-    <button id="confirmPaymentBtn" class="main-btn" type="button">فتح فواتيري والمدفوعات</button>
-  </div>
-</section>
-
-
 <!-- =====================================================
      التقييم
 ===================================================== -->
@@ -4162,13 +4142,14 @@
 
 
     <h2>
-      قيّم تجربتك
+      قيّم المعدة
     </h2>
 
 
     <p>
-      كيف كانت تجربتك مع آثار؟
+      كيف كانت المعدة خلال تنفيذ العمل؟
     </p>
+    <p id="atharRatingEquipmentName" class="athar-new-flow-badge"></p>
 
 
     <div class="stars">
@@ -4886,23 +4867,6 @@
     <button id="contractorSubmitPaymentBtn" class="main-btn" type="button">إرسال إثبات السداد للمراجعة</button>
     <p id="contractorPaymentFeedback" role="status" aria-live="polite"></p>
   </div>
-  <div class="card" id="ownerBookingInvoiceCard" hidden>
-    <h3>إصدار فاتورة طلب عميل</h3>
-    <p>لا يُغلق الطلب عند انتهاء العمل. اختر الطلب المنتهي، راجع القيمة، ثم أرسل الفاتورة لتظهر لدى العميل وصاحب المعدة.</p>
-    <label for="ownerBookingInvoiceRequest">الطلب المنتهي *</label>
-    <select id="ownerBookingInvoiceRequest"><option value="">جارٍ تحميل الطلبات…</option></select>
-    <label for="ownerBookingInvoiceAmount">المبلغ النهائي بالريال *</label>
-    <input id="ownerBookingInvoiceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="المبلغ المتفق عليه">
-    <label for="ownerBookingInvoiceDescription">تفاصيل الفاتورة</label>
-    <textarea id="ownerBookingInvoiceDescription" rows="2" maxlength="500" placeholder="مدة التشغيل وأي تفاصيل متفق عليها"></textarea>
-    <button id="ownerIssueBookingInvoiceBtn" class="main-btn" type="button">إصدار الفاتورة للطرفين</button>
-    <p id="ownerBookingInvoiceFeedback" role="status" aria-live="polite"></p>
-  </div>
-  <div class="card" id="bookingInvoiceGatewayNotice" hidden>
-    <h3>الدفع عبر آثار</h3>
-    <p>تظهر الفواتير وحالة السداد هنا. الدفع الإلكتروني الفعلي لا يُفعّل إلا بعد ربط بوابة دفع معتمدة والتحقق من إشعار الدفع من البوابة؛ لا تعتمد على صورة تحويل أو ضغط زر من أحد الطرفين كتأكيد سداد.</p>
-  </div>
-  <div id="bookingInvoicesList" hidden><div class="card">لا توجد فواتير لطلباتك حتى الآن.</div></div>
   <div class="card" id="ma3daOwnerWalletSummary" hidden><h3>محفظة صاحب المعدة</h3><p>ملخص المستحقات والتحصيلات المسجلة في الفواتير المشتركة.</p><div id="ma3daOwnerWalletMetrics"></div><p class="muted">الرصيد القابل للتحويل لا يُعرض كأموال مضمونة إلا عند وجود تسوية مالية فعلية وسجل تحويلات موثّق.</p></div>
   <div id="contractorInvoicesList"><div class="card">ستظهر فواتير مشاريعك هنا.</div></div>
   <button id="contractorFinanceBackBtn" class="back-btn" type="button">العودة للوحة المقاول</button>
@@ -6069,7 +6033,7 @@ window.ma3daOrderBy =
 
 
   script.src =
-    "./script.js?v=athar-20261108-fix-reject-english";
+    "./script.js?v=athar-20261118-rental-booking-otp";
 
 
 
