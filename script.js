@@ -88,12 +88,10 @@ window.ma3daRequestText = function ma3daRequestText(title, placeholder){
 
 /* 00 — بداية الملف: تهيئة عامة مشتركة للتطبيق */
  
-const screens =
-  document.querySelectorAll(".screen");
- 
 function showScreen(id){
-  
-  screens.forEach(
+  // Re-query on every navigation so screens created later by feature modules
+  // are also deactivated. A static NodeList misses dynamically added screens.
+  document.querySelectorAll(".screen").forEach(
     s=>s.classList.remove("active")
   );
  
@@ -5980,7 +5978,7 @@ document.addEventListener(
  
     if(acceptBtn){
  
-      await acceptOperatorRequest(
+      await (window.acceptOperatorRequest || acceptOperatorRequest)(
         acceptBtn.dataset.acceptRequest
       );
  
@@ -5995,7 +5993,7 @@ document.addEventListener(
  
     if(rejectBtn){
  
-      await rejectOperatorRequest(
+      await (window.rejectOperatorRequest || rejectOperatorRequest)(
         rejectBtn.dataset.rejectRequest
       );
  
@@ -6015,7 +6013,7 @@ if(operatorNewRequestsBtn){
     "click",
     async()=>{
  
-      await loadOperatorNewRequests();
+      await (window.loadOperatorNewRequests || loadOperatorNewRequests)();
  
       showScreen(
         "operatorNewRequestsScreen"
