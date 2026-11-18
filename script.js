@@ -88,10 +88,12 @@ window.ma3daRequestText = function ma3daRequestText(title, placeholder){
 
 /* 00 — بداية الملف: تهيئة عامة مشتركة للتطبيق */
  
+const screens =
+  document.querySelectorAll(".screen");
+ 
 function showScreen(id){
-  // Re-query on every navigation so screens created later by feature modules
-  // are also deactivated. A static NodeList misses dynamically added screens.
-  document.querySelectorAll(".screen").forEach(
+  
+  screens.forEach(
     s=>s.classList.remove("active")
   );
  
@@ -5978,7 +5980,7 @@ document.addEventListener(
  
     if(acceptBtn){
  
-      await (window.acceptOperatorRequest || acceptOperatorRequest)(
+      await acceptOperatorRequest(
         acceptBtn.dataset.acceptRequest
       );
  
@@ -5993,7 +5995,7 @@ document.addEventListener(
  
     if(rejectBtn){
  
-      await (window.rejectOperatorRequest || rejectOperatorRequest)(
+      await rejectOperatorRequest(
         rejectBtn.dataset.rejectRequest
       );
  
@@ -6013,7 +6015,7 @@ if(operatorNewRequestsBtn){
     "click",
     async()=>{
  
-      await (window.loadOperatorNewRequests || loadOperatorNewRequests)();
+      await loadOperatorNewRequests();
  
       showScreen(
         "operatorNewRequestsScreen"
@@ -16023,7 +16025,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   async function loadAvailable(){
     try{
       if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
-      const equipmentQuery=window.ma3daQuery(equipmentCollection(),window.ma3daWhere('availability','==','available'),window.ma3daWhere('approved','==',true),window.ma3daWhere('equipmentStatus','==','active'),window.ma3daWhere('verificationStatus','in',['verified','approved']));const snap=await window.ma3daGetDocs(equipmentQuery);available=[];
+      const equipmentQuery=window.ma3daQuery(equipmentCollection(),window.ma3daWhere('availability','==','available'));const snap=await window.ma3daGetDocs(equipmentQuery);available=[];
       const user=await readUser();
       const customerProfile= user?.uid && window.ma3daDoc&&window.ma3daGetDoc ? await (async()=>{try{const s=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'customers',user.uid));return s.exists()?s.data()||{}:{};}catch(_){return {};}})():{};
       const city=String(customerProfile.city||customerProfile.locationCity||'').trim();
@@ -16143,6 +16145,44 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   // Customer OTP panel also appears on the arrival screen, so the customer can show it at the site.
   if(!$('atharCustomerOtpArrivalPanel')){const panel=document.createElement('div');panel.id='atharCustomerOtpArrivalPanel';panel.className='card';panel.hidden=true;panel.innerHTML='<h3>رمز التحقق</h3><strong id="atharCustomerOtpArrival" style="font-size:2rem;letter-spacing:.2em"></strong><p>أعط الرمز لصاحب المعدة بعد وصوله.</p>'; $('arrivedCustomerScreen')?.appendChild(panel);}
   window.loadCustomerOrders=async function(type){const list=$(type==='current'?'currentOrdersList':'previousOrdersList');if(!list)return;list.innerHTML='<p>جاري تحميل الطلبات...</p>';try{const user=await readUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');const rows=await ma3daReadUserRows('requests',['customerId','requesterId'],user.uid);const current=['owner_decision_pending','owner_accepted','booking_confirmed','owner_arrived','otp_verified','working','completed'];const previous=['rated','rejected','cancelled'];const orders=rows.filter(d=>(d.customerId||d.requesterId)===user.uid&&(type==='current'?current.includes(String(d.status||'')):previous.includes(String(d.status||'')))).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));if(!orders.length){list.innerHTML=`<div class="empty-state"><h3>${type==='current'?'لا توجد طلبات حالية':'لا توجد طلبات سابقة'}</h3><p>${type==='current'?'عند تقديم طلب جديد ستظهر تفاصيله هنا.':'ستظهر الطلبات المنتهية أو المرفوضة هنا.'}</p></div>`;return;}list.innerHTML='';orders.forEach(d=>{const card=document.createElement('article');card.className='customer-order-card';card.innerHTML=`<div class="customer-order-header"><strong>🚜 ${esc(d.equipment||'معدة')}</strong><span class="customer-order-status">${esc(window.ma3daNewRentalStatusText(d.status))}</span></div><div class="customer-order-info"><div>رقم الطلب: <strong>${esc(d.orderNumber||d.id)}</strong></div><div>الموقع: ${esc(d.location||'—')}</div><div>المدة: ${esc(d.duration||'—')}</div><div>المبلغ المحجوز/التقديري: ${money(d.reservedAmount||d.price)}</div><div>تاريخ: ${esc(new Date(Number(d.createdAt||Date.now())).toLocaleDateString('ar-SA'))}</div></div><button type="button" class="main-btn" data-customer-open-order="${esc(d.id)}">فتح الطلب ومتابعته</button>`;list.appendChild(card);});}catch(error){console.error('new customer order list error',error);list.innerHTML='<div class="empty-state">تعذر تحميل الطلبات؛ تحقق من الاتصال.</div>';}};
+  // استعادة تحديث بطاقة آخر طلب في الصفحة الرئيسية للعميل بعد استبدال دورة الطلب القديمة.
+  // لا يعيد هذا المقطع نظام المنافسة؛ بل يقرأ أحدث طلب للعميل ويعرض حالته من دورة ATHAR الجديدة.
+  window.loadLatestCustomerRequest=async function(){
+    try{
+      const user=await readUser();
+      if(!user?.uid) return false;
+      const rows=await ma3daReadUserRows('requests',['customerId','requesterId'],user.uid);
+      const toMillis=value=>{
+        if(value&&typeof value.toMillis==='function') return value.toMillis();
+        if(value&&typeof value.seconds==='number') return value.seconds*1000;
+        if(value instanceof Date) return value.getTime();
+        const n=Number(value||0);
+        return Number.isFinite(n)?n:0;
+      };
+      const latest=rows
+        .filter(row=>(row.customerId||row.requesterId)===user.uid)
+        .sort((a,b)=>toMillis(b.createdAt||b.createdAtMs||b.updatedAt)-toMillis(a.createdAt||a.createdAtMs||a.updatedAt))[0];
+      if(!latest) return false;
+      localStorage.setItem('currentRequestId',latest.id);
+      localStorage.setItem('orderState',String(latest.status||''));
+      localStorage.setItem('currentOrder',JSON.stringify({
+        orderNumber:latest.orderNumber||'',
+        location:latest.location||'',
+        equipment:latest.equipment||'',
+        duration:latest.duration||'',
+        operator:latest.operator||'',
+        notes:latest.notes||'',
+        price:Number(latest.reservedAmount||latest.price||0)
+      }));
+      showCustomerOrder({...latest,id:latest.id});
+      if(!['completed','rated','rejected','cancelled'].includes(String(latest.status||''))) window.startAcceptanceWatcher?.();
+      return latest;
+    }catch(error){
+      console.error('تعذر تحديث أحدث طلب للعميل:',error);
+      return false;
+    }
+  };
+
   window.loadOperatorCustomerOrders=async function(){const current=$('operatorCustomerCurrentList'),previous=$('operatorCustomerPreviousList');if(!current&&!previous)return;try{const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');const rows=await ma3daReadUserRows('requests',['equipmentOwnerId','ownerId','operatorId'],user.uid);const cur=['owner_accepted','booking_confirmed','owner_arrived','otp_verified','working','completed'];const prev=['rated','rejected','cancelled'];const currentRows=rows.filter(d=>(d.equipmentOwnerId||d.ownerId||d.operatorId)===user.uid&&cur.includes(d.status)).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));const previousRows=rows.filter(d=>(d.equipmentOwnerId||d.ownerId||d.operatorId)===user.uid&&prev.includes(d.status)).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));function render(target,arr,isPrevious){if(!target)return;if(!arr.length){target.innerHTML=`<div class="card center"><h3>${isPrevious?'لا توجد طلبات سابقة':'لا توجد طلبات حالية'}</h3></div>`;return;}target.innerHTML='';arr.forEach(d=>{const card=document.createElement('article');card.className='card';card.innerHTML=`<h3>${esc(d.orderNumber||d.id)} · ${esc(d.equipment||'معدة')}</h3><p>العميل: ${esc(d.customerName||'العميل')}</p><p>الحالة: ${esc(window.ma3daNewRentalStatusText(d.status))}</p><p>الحجز: ${money(d.reservedAmount||d.price)} · النهائي: ${money(d.finalAmount||0)}</p><p>الوقت الفعلي: ${Number(d.actualMinutes||0)} دقيقة</p><button type="button" class="main-btn" data-athar-owner-open-order="${esc(d.id)}">فتح الطلب</button>`;target.appendChild(card);});}render(current,currentRows,false);render(previous,previousRows,true);}catch(error){if(current)current.textContent=error.message||'تعذر تحميل الطلبات';if(previous)previous.textContent=error.message||'تعذر تحميل الطلبات';}};
   document.addEventListener('click',event=>{const b=event.target.closest('[data-athar-owner-open-order]');if(!b)return;const id=b.dataset.atharOwnerOpenOrder;localStorage.setItem('currentRequestId',id);window.loadOperatorCurrentOrder?.().then(()=>showScreen('operatorCurrentOrderScreen'));});
   window.ma3daNewRentalStatusText=status=>({owner_decision_pending:'بانتظار موافقة صاحب المعدة',owner_accepted:'وافق صاحب المعدة — بانتظار حجز المبلغ',booking_confirmed:'الحجز مؤكد — بيانات التواصل ورمز التحقق متاحان',owner_arrived:'صاحب المعدة وصل — بانتظار التحقق',otp_verified:'تم التحقق — جاهز لبدء العمل',working:'العمل جارٍ',completed:'انتهى العمل وتمت التسوية التجريبية',rated:'تم تقييم المعدة',rejected:'تم رفض الطلب'})[status]||status;
