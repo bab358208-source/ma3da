@@ -6033,7 +6033,7 @@ window.ma3daOrderBy =
 
 
   script.src =
-    "./script.js?v=athar-20261118-rental-booking-otp";
+    "./script.js?v=athar-20261118-rental-booking-otp-button-init-fix";
 
 
 
@@ -6126,9 +6126,30 @@ window.ma3daOrderBy =
 
 
 
-  document.body.appendChild(
-    script
-  );
+  // إبقاء DOMContentLoaded مؤجلاً حتى ينتهي script.js من التحميل والتنفيذ.
+  // هذا مهم لأن بعض وحدات script.js تربط الأزرار عبر DOMContentLoaded فقط.
+  await new Promise((resolve) => {
+    const previousOnload = script.onload;
+    const previousOnerror = script.onerror;
+
+    script.onload = (event) => {
+      try {
+        if (typeof previousOnload === "function") previousOnload(event);
+      } finally {
+        resolve();
+      }
+    };
+
+    script.onerror = (error) => {
+      try {
+        if (typeof previousOnerror === "function") previousOnerror(error);
+      } finally {
+        resolve();
+      }
+    };
+
+    document.body.appendChild(script);
+  });
 
 
 </script>
