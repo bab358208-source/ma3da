@@ -1,4 +1,4 @@
-/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
+* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
 async function ma3daReadUserRows(collectionName, fields, uid){
   if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
     throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
@@ -92,17 +92,16 @@ const screens =
   document.querySelectorAll(".screen");
  
 function showScreen(id){
-  // Include screens created dynamically after the initial page load.
-  document.querySelectorAll(".screen").forEach(
-    s=>s.classList.remove("active")
-  );
- 
-  const screen = document.getElementById(id);
- 
+  // Include dynamically-created screens (such as the available-equipment screen).
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  const screen=document.getElementById(id);
   if(screen){
     screen.classList.add("active");
     window.scrollTo(0,0);
+    return true;
   }
+  console.error("ATHAR: الشاشة المطلوبة غير موجودة:",id);
+  return false;
 }
  
 /* STATE */
@@ -15964,17 +15963,40 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   const equipmentCollection=()=>window.ma3daCollection(window.ma3daDB,'equipment');
   const requestRef=id=>window.ma3daDoc(window.ma3daDB,'requests',id);
   let draft=null,available=[];
+  let availableMap=null,availableMarkers=[],availableCustomerMarker=null,availableMapLoadPromise=null;
   let watcher=null;
   const legacyAcceptOperatorRequest=window.atharLegacyProjectAcceptOperatorRequest;
   const legacyRejectOperatorRequest=window.atharLegacyProjectRejectOperatorRequest;
   let otpDraft='';
   const styles=`<style id="atharNewRentalStyle">
-  #atharAvailableScreen .card,#atharBookingScreen .card{background:#fff;border:1px solid #c8a45b;border-radius:16px;padding:16px;margin:12px 0;color:#171717}
+  #atharAvailableScreen{position:relative;min-height:calc(100vh - 24px);padding:0!important;overflow:hidden;background:#f7f5ef}
+  #atharAvailableScreen .athar-uber-top{position:absolute;z-index:1002;top:12px;right:12px;left:12px;display:flex;align-items:center;gap:10px;pointer-events:none}
+  #atharAvailableScreen .athar-uber-top>*{pointer-events:auto}
+  #atharAvailableScreen .athar-uber-top .back-btn{width:44px;height:44px;padding:0;border-radius:50%;background:#fff;color:#171717;border:0;box-shadow:0 2px 12px #0002;font-size:20px}
+  #atharAvailableScreen .athar-map-shell{position:relative;height:calc(100vh - 24px);min-height:560px;background:#e9e6dc}
+  #atharAvailableMap{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+  #atharAvailableScreen .athar-map-status{position:absolute;z-index:500;top:68px;right:14px;left:14px;width:max-content;max-width:calc(100% - 28px);padding:8px 12px;border-radius:20px;background:#fff;color:#252525;box-shadow:0 2px 12px #0002;font-size:12px;font-weight:800}
+  #atharAvailableScreen .athar-bottom-sheet{position:absolute;z-index:600;right:0;bottom:0;left:0;max-height:53%;min-height:178px;display:flex;flex-direction:column;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -5px 24px #0002;transition:max-height .22s ease;overflow:hidden}
+  #atharAvailableScreen .athar-bottom-sheet.is-collapsed{max-height:112px;min-height:112px}
+  #atharAvailableScreen .athar-sheet-head{flex:none;padding:9px 16px 12px;border-bottom:1px solid #eee;cursor:pointer;touch-action:pan-y}
+  #atharAvailableScreen .athar-sheet-handle{width:42px;height:5px;border-radius:8px;background:#c9c9c9;margin:0 auto 10px}
+  #atharAvailableScreen .athar-sheet-title{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#171717;font-weight:900}
+  #atharAvailableScreen .athar-sheet-title small{font-size:12px;font-weight:600;color:#777}
+  #atharAvailableScreen .athar-sheet-content{overflow:auto;padding:4px 12px 18px;overscroll-behavior:contain}
+  #atharAvailableScreen .athar-bottom-sheet.is-collapsed .athar-sheet-content{display:none}
+  #atharAvailableScreen .card,#atharBookingScreen .card{background:#fff;border:1px solid #e5dfd2;border-radius:16px;padding:14px;margin:10px 0;color:#171717}
   #atharAvailableScreen button,#atharBookingScreen button{background:#fff;color:#171717;border:1px solid #c8a45b;border-radius:12px;padding:12px;font:inherit;font-weight:700}
-  .athar-equip-choice{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center;border:1px solid #d8c18b;border-radius:14px;padding:12px;margin:10px 0;background:#fff}
-  .athar-equip-choice img{width:72px;height:72px;object-fit:cover;border-radius:10px}
-  .athar-equip-choice .pick{grid-column:1/-1;width:100%;}
+  #atharAvailableScreen .athar-uber-top button{border:0}
+  .athar-equip-choice{display:grid;grid-template-columns:68px 1fr;gap:10px;align-items:center;border:1px solid #e8e3d8;border-radius:15px;padding:11px;margin:9px 0;background:#fff;scroll-margin:12px}
+  .athar-equip-choice.is-active{border:2px solid #c8a45b;background:#fffdf7}
+  .athar-equip-choice img{width:68px;height:68px;object-fit:cover;border-radius:11px}
+  .athar-equip-choice .pick{grid-column:1/-1;width:100%;background:#171717!important;color:#fff!important;border-color:#171717!important}
+  .athar-equip-choice .athar-distance{font-size:12px;color:#8a682b;font-weight:800}
+  .athar-map-pin{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:2px solid #fff;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);background:#171717;color:#fff;box-shadow:0 2px 8px #0005;font-size:18px}
+  .athar-map-pin span{transform:rotate(45deg)}
+  .athar-map-pin.customer{background:#c8a45b;color:#171717;width:42px;height:42px}
   .athar-new-flow-badge{border:1px solid #c8a45b;border-radius:999px;padding:6px 10px;display:inline-block;font-weight:700}
+  @media(max-width:600px){#atharAvailableScreen .athar-map-shell{height:calc(100dvh - 24px);min-height:520px}#atharAvailableScreen .athar-bottom-sheet{max-height:55%}}
   </style>`;
   if(!$('atharNewRentalStyle'))document.head.insertAdjacentHTML('beforeend',styles);
   function mountScreens(){
@@ -15987,7 +16009,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
     }
     if(!$('atharAvailableScreen')){
       const s=document.createElement('section');s.id='atharAvailableScreen';s.className='screen';
-      s.innerHTML=`<button type="button" class="back-btn" data-athar-back-request>← الرجوع</button><div class="hero"><div class="hero-icon">🚜</div><h1>المعدات المتاحة في منطقتك</h1><p>اختر المعدة المناسبة من المعدات المتاحة</p></div><div id="atharAvailableEquipmentList"><div class="card center">جاري البحث عن المعدات...</div></div>`;
+      s.innerHTML=`<div class="athar-map-shell"><div id="atharAvailableMap" aria-label="خريطة المعدات المتاحة"></div><div class="athar-uber-top"><button type="button" class="back-btn" data-athar-back-request aria-label="رجوع">←</button></div><div class="athar-map-status" id="atharMapStatus">جارٍ البحث عن المعدات القريبة…</div><div class="athar-bottom-sheet" id="atharEquipmentSheet"><div class="athar-sheet-head" id="atharEquipmentSheetHead"><div class="athar-sheet-handle"></div><div class="athar-sheet-title"><span>المعدات القريبة منك</span><small id="atharEquipmentCount">جارٍ البحث…</small></div></div><div class="athar-sheet-content" id="atharAvailableEquipmentList"><div class="card center">جاري البحث عن المعدات...</div></div></div></div>`;
       $('requestScreen')?.insertAdjacentElement('afterend',s);
     }
     if(!$('atharBookingScreen')){
@@ -16032,19 +16054,81 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   }
   if(!$('atharOwnerContactPanel')){const p=document.createElement('div');p.id='atharOwnerContactPanel';p.className='card';p.hidden=true;p.innerHTML='<h3>مشاركة بيانات التواصل</h3><p>بعد تأكيد الحجز، شارك رقمك مع العميل ليظهر لديه الاتصال المباشر.</p><button type="button" id="atharShareOwnerContactBtn" class="main-btn">إظهار بيانات التواصل للعميل</button><p id="atharOwnerContactFeedback"></p>'; $('operatorCurrentOrderScreen')?.querySelector('.card')?.appendChild(p);}
   mountScreens();
-  // Remove the old submit listener by replacing its button; unrelated handlers are preserved elsewhere.
+  function ensureAvailableMapLibrary(){
+    if(window.L)return Promise.resolve(window.L);
+    if(availableMapLoadPromise)return availableMapLoadPromise;
+    availableMapLoadPromise=new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-athar-leaflet]');
+      if(existing){existing.addEventListener('load',()=>window.L?resolve(window.L):reject(new Error('تعذر تشغيل مكتبة الخريطة.')),{once:true});existing.addEventListener('error',()=>reject(new Error('تعذر تحميل مكتبة الخريطة.')),{once:true});return;}
+      const tag=document.createElement('script');tag.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';tag.dataset.atharLeaflet='1';tag.onload=()=>window.L?resolve(window.L):reject(new Error('تعذر تشغيل مكتبة الخريطة.'));tag.onerror=()=>reject(new Error('تعذر تحميل مكتبة الخريطة.'));document.head.appendChild(tag);
+    });
+    return availableMapLoadPromise;
+  }
+  async function renderAvailableMap(){
+    const mapEl=$('atharAvailableMap'),status=$('atharMapStatus');if(!mapEl||!draft)return;
+    try{
+      const L=await ensureAvailableMapLibrary();
+      if(!availableMap){availableMap=L.map(mapEl,{zoomControl:false,preferCanvas:true}).setView([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(availableMap);L.control.zoom({position:'bottomright'}).addTo(availableMap);}
+      else{availableMap.setView([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],12);availableMarkers.forEach(m=>availableMap.removeLayer(m));availableMarkers=[];if(availableCustomerMarker)availableMap.removeLayer(availableCustomerMarker);availableCustomerMarker=null;}
+      const customerIcon=L.divIcon({className:'',html:'<div class="athar-map-pin customer"><span>📍</span></div>',iconSize:[42,42],iconAnchor:[21,38]});
+      availableCustomerMarker=L.marker([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],{icon:customerIcon,zIndexOffset:1000}).addTo(availableMap).bindPopup('موقع العمل المحدد');
+      const bounds=[[draft.locationCoordinates.latitude,draft.locationCoordinates.longitude]];
+      available.forEach((e,index)=>{if(!e.mapPoint)return;const pin=L.divIcon({className:'',html:'<div class="athar-map-pin"><span>🚜</span></div>',iconSize:[38,38],iconAnchor:[19,35]});const marker=L.marker([e.mapPoint.lat,e.mapPoint.lng],{icon:pin}).addTo(availableMap);marker.bindPopup(`<strong>${esc(e.type||e.equipmentType||draft.type)}</strong><br>${esc(e.model||'')}${e.distanceKm!=null?`<br>${e.distanceKm.toFixed(1)} كم`:''}`);marker.on('click',()=>{document.querySelectorAll('.athar-equip-choice').forEach(c=>c.classList.remove('is-active'));const card=$(`[data-athar-card="${index}"]`);if(card){card.classList.add('is-active');card.scrollIntoView({behavior:'smooth',block:'nearest'});}const sheet=$('atharEquipmentSheet');sheet?.classList.remove('is-collapsed');});availableMarkers.push(marker);bounds.push([e.mapPoint.lat,e.mapPoint.lng]);});
+      if(bounds.length>1)availableMap.fitBounds(bounds,{padding:[35,35],maxZoom:13});
+      if(status)status.textContent=`${available.length} معدة مطابقة لطلبك`;
+      requestAnimationFrame(()=>availableMap?.invalidateSize());
+    }catch(error){console.warn('ATHAR map unavailable:',error);if(status)status.textContent='تعذر تحميل الخريطة؛ يمكنك اختيار المعدة من القائمة';}
+  }
+  function bindEquipmentSheet(){const head=$('atharEquipmentSheetHead'),sheet=$('atharEquipmentSheet');if(!head||head.dataset.bound)return;head.dataset.bound='1';let startY=0,suppressClickUntil=0;head.addEventListener('click',()=>{if(Date.now()<suppressClickUntil)return;sheet.classList.toggle('is-collapsed');});head.addEventListener('touchstart',e=>{startY=e.touches?.[0]?.clientY||0;},{passive:true});head.addEventListener('touchend',e=>{const endY=e.changedTouches?.[0]?.clientY||startY,delta=endY-startY;if(Math.abs(delta)>25){suppressClickUntil=Date.now()+450;if(delta>0)sheet.classList.add('is-collapsed');else sheet.classList.remove('is-collapsed');}},{passive:true});}
+  // Bind the request button after Firebase setup; keep its visible Arabic label unchanged.
   const oldRequestBtn=$('requestBtn');
-  if(oldRequestBtn){const fresh=oldRequestBtn.cloneNode(true);oldRequestBtn.replaceWith(fresh);}
+  if(oldRequestBtn){
+    const fresh=oldRequestBtn.cloneNode(true);
+    fresh.type='button';
+    oldRequestBtn.replaceWith(fresh);
+  }
   const requestBtn=$('requestBtn');
-  if(requestBtn){requestBtn.textContent='عرض المعدات المتاحة';requestBtn.addEventListener('click',async()=>{
-    const location=$('locationInput')?.value.trim()||'',type=$('equipmentSelect')?.value||'',duration=$('durationSelect')?.value||'',operator=$('operatorSelect')?.value||'مع مشغل',notes=$('notesInput')?.value.trim()||'';
-    if(!location||!type||!duration){alert('حدد موقع العمل ونوع المعدة والمدة أولاً.');return;}
-    const user=await readUser();if(!user?.uid){alert('سجّل الدخول أولاً.');return;}
-    const coordMatch=location.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)\s*$/);if(!coordMatch||Math.abs(Number(coordMatch[1]))>90||Math.abs(Number(coordMatch[2]))>180){alert('حدد موقع العمل بإحداثيات دقيقة وصحيحة من زر «تحديد موقعي بدقة» قبل متابعة الطلب.');return;}draft={location,type,duration,operator,notes,customerId:user.uid,locationCoordinates:{latitude:Number(coordMatch[1]),longitude:Number(coordMatch[2])},createdAt:Date.now()};
-    $('atharAvailableEquipmentList').innerHTML='<div class="card center">جاري البحث عن المعدات المتاحة...</div>';
-    showScreen('atharAvailableScreen');
-    await loadAvailable();
-  });}
+  if(requestBtn){
+    requestBtn.addEventListener('click',async()=>{
+      if(requestBtn.disabled)return;
+      const location=String($('locationInput')?.value||'').trim();
+      const type=String($('equipmentSelect')?.value||'').trim();
+      const duration=String($('durationSelect')?.value||'').trim();
+      const operator=String($('operatorSelect')?.value||'مع مشغل').trim();
+      const notes=String($('notesInput')?.value||'').trim();
+      if(!location||!type||!duration){alert('حدد موقع العمل ونوع المعدة ومدة العمل أولاً.');return;}
+      const coordMatch=location.match(/(-?\d+(?:\.\d+)?)\s*[,،]\s*(-?\d+(?:\.\d+)?)/);
+      if(!coordMatch){alert('تعذر قراءة إحداثيات الموقع. اضغط «تحديد موقعي بدقة» مرة أخرى.');return;}
+      const latitude=Number(coordMatch[1]),longitude=Number(coordMatch[2]);
+      if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180){alert('إحداثيات الموقع غير صحيحة. أعد تحديد موقع العمل.');return;}
+      requestBtn.disabled=true;
+      const originalText=requestBtn.textContent;
+      requestBtn.textContent='جارٍ البحث عن المعدات…';
+      try{
+        if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
+        const user=await readUser();
+        if(!user?.uid)throw new Error('انتهت جلسة الدخول أو لم يكتمل تسجيل الدخول. سجّل الدخول ثم حاول مجددًا.');
+        if(typeof window.ma3daCollection!=='function'||typeof window.ma3daWhere!=='function'||typeof window.ma3daQuery!=='function'||typeof window.ma3daGetDocs!=='function'){
+          throw new Error('خدمات قاعدة البيانات لم تجهز بعد. أعد تحميل الصفحة وحاول مرة أخرى.');
+        }
+        draft={location,type,duration,operator,notes,customerId:user.uid,locationCoordinates:{latitude,longitude},createdAt:Date.now()};
+        const list=$('atharAvailableEquipmentList');
+        if(!list)throw new Error('تعذر تجهيز شاشة المعدات المتاحة. أعد تحميل الصفحة.');
+        list.innerHTML='<div class="card center">جاري البحث عن المعدات المتاحة…</div>';
+        if(!showScreen('atharAvailableScreen'))throw new Error('تعذر فتح شاشة المعدات المتاحة.');
+        requestAnimationFrame(()=>availableMap?.invalidateSize());
+        await loadAvailable();
+      }catch(error){
+        console.error('ATHAR request button failed:',error);
+        alert(error?.message||'تعذر تنفيذ طلب المعدة. تحقق من الاتصال ثم حاول مرة أخرى.');
+      }finally{
+        requestBtn.disabled=false;
+        requestBtn.textContent=originalText||'اطلب الآن';
+      }
+    });
+  }else{
+    console.error('ATHAR: لم يتم العثور على زر requestBtn لربط إجراء الطلب.');
+  }
   async function loadAvailable(){
     try{
       if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
@@ -16053,7 +16137,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
       const profileCollection=(selectedRole==='contractor'||localStorage.getItem('selectedRole')==='contractor')?'contractors':'customers';const customerProfile= user?.uid && window.ma3daDoc&&window.ma3daGetDoc ? await (async()=>{try{const s=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,profileCollection,user.uid));return s.exists()?s.data()||{}:{};}catch(_){return {};}})():{};
       const city=String(customerProfile.city||customerProfile.locationCity||'').trim();
       const customerPoint=draft.locationCoordinates;
-      const coordOf=e=>{const lat=Number(e.latitude??e.locationLatitude??e.coordinates?.latitude),lng=Number(e.longitude??e.locationLongitude??e.coordinates?.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat,lng}:null;};
+      const coordOf=e=>{const lat=Number(e.latitude??e.locationLatitude??e.locationCoordinates?.latitude??e.equipmentLocationLatitude??e.equipmentLatitude??e.coordinates?.latitude),lng=Number(e.longitude??e.locationLongitude??e.locationCoordinates?.longitude??e.equipmentLocationLongitude??e.equipmentLongitude??e.coordinates?.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat,lng}:null;};
       const distanceKm=(a,b)=>{const rad=v=>v*Math.PI/180,dl=rad(b.lat-a.lat),dn=rad(b.lng-a.lng),x=Math.sin(dl/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dn/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));};
       let locationFiltered=false;
       snap.forEach(doc=>{const e=doc.data()||{};const owner=e.ownerId||doc.id;if(owner===user?.uid||e.availability!=='available')return;
@@ -16061,11 +16145,16 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
         if(e.approved!==true||!['verified','approved'].includes(String(e.verificationStatus||'').toLowerCase())||String(e.equipmentStatus||'active').toLowerCase()!=='active')return;const approval=String(e.registrationStatus||e.ownerApprovalStatus||e.accountStatus||'approved').toLowerCase();if(['pending','pending_approval','rejected','suspended'].includes(approval))return;
         const eCity=String(e.city||e.locationCity||e.locationAddress||'').trim();const cityMatch=!!(city&&eCity&&(eCity.toLowerCase().includes(city.toLowerCase())||city.toLowerCase().includes(eCity.toLowerCase())));if(city&&eCity&&!cityMatch)return;
         const ePoint=coordOf(e);if(customerPoint&&ePoint&&distanceKm(customerPoint,ePoint)>50)return;if(cityMatch||customerPoint&&ePoint)locationFiltered=true;
-        available.push({id:doc.id,ownerId:owner,...e});
+        const distance=ePoint?distanceKm(customerPoint,ePoint):null;
+        available.push({id:doc.id,ownerId:owner,...e,mapPoint:ePoint,distanceKm:distance});
       });
+      available.sort((a,b)=>(a.distanceKm??Infinity)-(b.distanceKm??Infinity));
       const list=$('atharAvailableEquipmentList');if(!list)return;
-      if(!available.length){list.innerHTML='<div class="card center"><h3>لا توجد معدات متاحة مطابقة</h3><p>جرّب نوعًا آخر أو عدّل الموقع/المدة.</p></div>';return;}
-      list.innerHTML='';if(!locationFiltered){const note=document.createElement('div');note.className='card';note.textContent='لا تتوفر بيانات مدينة/إحداثيات لجميع المعدات؛ يعرض النظام المعدات المعتمدة والمتاحة من النوع المختار، وقد لا تكون كلها في منطقتك. حدّث مدينة حسابك للحصول على فلترة أدق.';list.appendChild(note);}available.forEach((e,i)=>{const card=document.createElement('article');card.className='athar-equip-choice';card.innerHTML=`${e.image?`<img src="${esc(e.image)}" alt="معدة">`:'<div style="font-size:2rem">🚜</div>'}<div><strong>${esc(e.type||e.equipmentType||draft.type)}</strong><div>${esc(e.model||'')}</div><small>${esc(e.city||e.locationAddress||'')}</small><div>سعر الساعة: ${money(e.hourlyPrice)}</div></div><button class="pick" type="button" data-athar-pick="${i}">اختيار هذه المعدة</button>`;list.appendChild(card);});
+      bindEquipmentSheet();
+      const count=$('atharEquipmentCount');if(count)count.textContent=`${available.length} نتيجة`;
+      if(!available.length){list.innerHTML='<div class="card center"><h3>لا توجد معدات متاحة مطابقة</h3><p>جرّب نوعًا آخر أو عدّل الموقع/المدة.</p></div>';const status=$('atharMapStatus');if(status)status.textContent='لا توجد معدات مطابقة بالقرب منك';await renderAvailableMap();return;}
+      list.innerHTML='';if(!locationFiltered){const note=document.createElement('div');note.className='card';note.textContent='بعض المعدات لا تملك إحداثيات دقيقة؛ تظهر في القائمة دون علامة على الخريطة.';list.appendChild(note);}available.forEach((e,i)=>{const card=document.createElement('article');card.className='athar-equip-choice';card.dataset.atharCard=String(i);card.innerHTML=`${e.image?`<img src="${esc(e.image)}" alt="معدة">`:'<div style="font-size:2rem">🚜</div>'}<div><strong>${esc(e.type||e.equipmentType||draft.type)}</strong><div>${esc(e.model||'')}</div><small>${esc(e.city||e.locationAddress||'')}</small><div>سعر الساعة: ${money(e.hourlyPrice)}</div><div class="athar-distance">${e.distanceKm!=null?`يبعد ${e.distanceKm.toFixed(1)} كم`:'المسافة غير متاحة'}</div></div><button class="pick" type="button" data-athar-pick="${i}">اختيار هذه المعدة</button>`;list.appendChild(card);});
+      await renderAvailableMap();
     }catch(error){console.error('تعذر عرض المعدات المتاحة:',error);$('atharAvailableEquipmentList').innerHTML='<div class="card center"><h3>تعذر تحميل المعدات</h3><p>تحقق من الاتصال وصلاحيات Firebase ثم أعد المحاولة.</p></div>';}
   }
   async function nextOrderNumber(){
