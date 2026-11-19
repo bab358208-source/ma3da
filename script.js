@@ -4594,10 +4594,218 @@ document.addEventListener("click",event=>{
   if(event.target.closest("#refreshOperatorRequestsBtn")) loadOperatorNewRequests();
 });
 
-/* OLD CUSTOMER/OWNER RENTAL ACCEPT-REJECT HANDLERS REMOVED.
-   Customer rental decisions are handled only by atharNewRentalFlow.
-   Project decisions are handled by atharLegacyProjectAccept/RejectOperatorRequest. */
-
+/* ACCEPT */
+ 
+async function acceptOperatorRequest(
+  requestId
+){
+ 
+  try{
+ 
+    const user =
+      await getOperatorCurrentUser();
+ 
+    if(!user)
+      return;
+ 
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+ 
+    const requestSnap =
+      await window.ma3daGetDoc(
+        requestRef
+      );
+ 
+    if(!requestSnap.exists()){
+ 
+      alert(
+        "الطلب غير موجود."
+      );
+ 
+      return;
+ 
+    }
+ 
+    const request =
+      requestSnap.data() || {};
+    let customerProfile = {};
+    if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
+      try {
+        const customerSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "customers", request.customerId));
+        if (customerSnap.exists()) customerProfile = customerSnap.data() || {};
+      } catch (customerProfileError) { console.warn("تعذر تحميل بيانات العميل:", customerProfileError); }
+    }
+ 
+    if(
+      request.status !==
+      "searching"
+    ){
+ 
+      alert(
+        "هذا الطلب لم يعد متاحًا."
+      );
+ 
+      await loadOperatorNewRequests();
+ 
+      return;
+ 
+    }
+ 
+    const operatorRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "operators",
+        user.uid
+      );
+ 
+    const operatorSnap =
+      await window.ma3daGetDoc(
+        operatorRef
+      );
+ 
+    const operatorData =
+      operatorSnap.exists()
+        ? operatorSnap.data()
+        : {};
+ 
+    const equipment =
+      await getOperatorEquipment();
+ 
+    const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
+    const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
+    if(isProjectRequest && (!request.scheduledStartAt || !request.scheduledEndAt || !Array.isArray(request.workDays) || !request.workDays.length || !request.dailyStartTime || !request.dailyEndTime || !request.paymentTerms || !Array.isArray(request.paymentSchedule) || !request.paymentSchedule.length)){
+      alert('لا يمكن قبول الطلب: بيانات الجدول أو شروط الدفع أو خطة الدفعات غير مكتملة.');return;
+    }
+    if(isProjectRequest && (!request.equipmentOwnerId || request.equipmentOwnerId !== user.uid)){
+      alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
+    }
+    const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_installments'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+ 
+        status:
+          "accepted",
+        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
+ 
+        operatorId:
+          user.uid,
+ 
+        operatorName:
+          operatorData.name ||
+          "صاحب المعدة",
+ 
+        operatorPhone:
+          operatorData.phone ||
+          "",
+        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
+ 
+        operatorRating:
+          Number(
+            operatorData.rating || 5
+          ),
+ 
+        operatorEquipment:
+          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
+        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
+        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
+        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
+ 
+        acceptedAt:
+          Date.now(),
+        agreedDuration: request.duration || "",
+        agreedPrice: Number(request.price || 0),
+        agreedHourlyPrice: Number(request.hourlyPrice || 0),
+        agreementVersion: 1,
+        extensionStatus: "none",
+        workStatus: "scheduled"
+ 
+      }
+    );
+    if(isProjectRequest){
+      const acceptedSchedule=(acceptedPaymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||index===0&&request.paymentPlan==='four_installments')?'due':item.status||'not_due'}));
+      await window.ma3daCreateSharedProjectInvoices(requestId,{...request,operatorId:user.uid},acceptedSchedule);
+    }
+ 
+    localStorage.setItem("currentRequestId", requestId);
+ 
+    localStorage.setItem("orderState", "accepted");
+ 
+    if(isProjectRequest){
+      await loadOperatorProjectOrders();
+      setOperatorProjectOrdersFilter("current");
+      showScreen("operatorProjectOrdersScreen");
+    }else{
+      await loadOperatorCurrentOrder();
+      showScreen("operatorCurrentOrderScreen");
+    }
+ 
+  }catch(error){
+ 
+    console.error(
+      "خطأ في قبول الطلب:",
+      error
+    );
+ 
+    alert(
+      "تعذر قبول الطلب."
+    );
+ 
+  }
+ 
+}
+ 
+/* REJECT */
+ 
+async function rejectOperatorRequest(
+  requestId
+){
+ 
+  try{
+    const user=await getOperatorCurrentUser();
+    if(!user?.uid){alert('سجّل الدخول بحساب صاحب المعدة.');return;}
+    const requestRef =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "requests",
+        requestId
+      );
+ 
+    const snap=await window.ma3daGetDoc(requestRef);
+    if(!snap.exists()){alert('الطلب غير موجود.');return;}
+    const data=snap.data()||{};
+    const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
+    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
+    if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
+    await window.ma3daUpdateDoc(
+      requestRef,
+      {
+        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
+        rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
+      }
+    );
+ 
+    await loadOperatorNewRequests();
+ 
+  }catch(error){
+ 
+    console.error(
+      "خطأ في رفض الطلب:",
+      error
+    );
+ 
+    alert(
+      "تعذر رفض الطلب."
+    );
+ 
+  }
+ 
+}
+ 
 /* آثار 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
 let ma3daOwnerPosition = null;
 let ma3daArrivalDistanceKm = null;
@@ -5755,36 +5963,40 @@ async function saveOperatorSettings(){
  
 /* OPERATOR EVENTS */
  
-/* ATHAR RENTAL ROUTER — يمنع دورة التأجير القديمة من استقبال طلبات العملاء.
-   طلبات العملاء تمر حصريًا عبر دورة ATHAR الجديدة؛ طلبات المشاريع تبقى مستقلة. */
-document.addEventListener("click", async event => {
-  const acceptBtn = event.target.closest("[data-accept-request]");
-  const rejectBtn = event.target.closest("[data-reject-request]");
-  const button = acceptBtn || rejectBtn;
-  if (!button) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  const requestId = acceptBtn ? acceptBtn.dataset.acceptRequest : rejectBtn.dataset.rejectRequest;
-  try {
-    const snap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "requests", requestId));
-    if (!snap.exists()) throw new Error("الطلب غير موجود.");
-    const data = snap.data() || {};
-    if (data.projectId) {
-      const projectAction = acceptBtn
-        ? window.atharLegacyProjectAcceptOperatorRequest
-        : window.atharLegacyProjectRejectOperatorRequest;
-      if (typeof projectAction !== "function") throw new Error("مسار طلب المشروع غير متاح.");
-      await projectAction(requestId);
+document.addEventListener(
+  "click",
+  async event=>{
+ 
+    const acceptBtn =
+      event.target.closest(
+        "[data-accept-request]"
+      );
+ 
+    if(acceptBtn){
+ 
+      await acceptOperatorRequest(
+        acceptBtn.dataset.acceptRequest
+      );
+ 
       return;
+ 
     }
-    const rentalAction = acceptBtn ? window.acceptOperatorRequest : window.rejectOperatorRequest;
-    if (typeof rentalAction !== "function") throw new Error("نظام طلبات التأجير الجديد غير جاهز؛ أعد المحاولة بعد تحميل الصفحة.");
-    await rentalAction(requestId);
-  } catch (error) {
-    console.error("ATHAR request routing:", error);
-    alert(error.message || "تعذر تحديث الطلب.");
+ 
+    const rejectBtn =
+      event.target.closest(
+        "[data-reject-request]"
+      );
+ 
+    if(rejectBtn){
+ 
+      await rejectOperatorRequest(
+        rejectBtn.dataset.rejectRequest
+      );
+ 
+    }
+ 
   }
-}, true);
+);
  
 /* OPERATOR DASHBOARD BUTTONS */
  
@@ -10602,8 +10814,7 @@ document.addEventListener("click", function(event){
     const previousShowScreen = showScreen;
     showScreen = function(id){
       document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
-      // Preserve the original return value (true/false) for callers that verify navigation.
-      return previousShowScreen(id);
+      previousShowScreen(id);
     };
     window.__ma3daDynamicScreenNavigation = true;
   }
@@ -15562,10 +15773,6 @@ async function atharLegacyProjectAcceptOperatorRequest(
 }
  
 
-window.atharLegacyProjectAcceptOperatorRequest = atharLegacyProjectAcceptOperatorRequest;
-
-window.atharLegacyProjectRejectOperatorRequest = atharLegacyProjectRejectOperatorRequest;
-
 async function atharLegacyProjectRejectOperatorRequest(
   requestId
 ){
@@ -15888,14 +16095,8 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   if(requestBtn){
     requestBtn.disabled=false;
     requestBtn.removeAttribute('disabled');
-  }
-  document.addEventListener('click', async event => {
-    const requestButton = event.target.closest('#requestBtn');
-    if (!requestButton) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    const requestBtn = requestButton;
-    if(requestBtn.disabled)return;
+    requestBtn.addEventListener('click',async()=>{
+      if(requestBtn.disabled)return;
       const location=String($('locationInput')?.value||'').trim();
       const type=String($('equipmentSelect')?.value||'').trim();
       const duration=String($('durationSelect')?.value||'').trim();
@@ -15930,8 +16131,8 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
         requestBtn.disabled=false;
         requestBtn.textContent=originalText||'اطلب الآن';
       }
-  }, true);
-  if(!requestBtn){
+    });
+  }else{
     console.error('ATHAR: لم يتم العثور على زر requestBtn لربط إجراء الطلب.');
   }
   async function loadAvailable(){
