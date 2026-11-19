@@ -104,28 +104,133 @@ function showScreen(id){
   return false;
 }
  
-/* STATE — shared identity/session state only; rental lifecycle state is owned by ATHAR NEW RENTAL FLOW. */
+/* STATE */
+ 
 let selectedRole="";
+ 
+let workStartTime=null;
+ 
+let timerInterval=null;
+ 
+ 
+let selectedPayment="";
+ 
 let selectedRating=0;
-
-/* أسعار المعدّات العامة التي تقرؤها إعدادات المنصة؛ ليست جزءًا من دورة الطلب القديمة. */
+ 
+let order={
+  location:"",
+  equipment:"",
+  duration:"",
+  operator:"",
+  notes:"",
+  price:0
+};
+ 
 const hourlyPrices={
+ 
   "بوكلين":250,
   "شيول":220,
   "قلاب":180,
   "كرين":350,
   "حفار":250,
   "بلدوزر":300
+ 
 };
-
-/* تحديث بيانات شاشة العمل من سجل الطلب الجديد فقط. */
-function updateWorkingScreen(data={}){
-  const equipment=document.getElementById("workingEquipment");
-  const location=document.getElementById("workingLocation");
-  if(equipment) equipment.textContent=data.equipment||"بوكلين";
-  if(location) location.textContent=data.location||"موقع العميل";
+ 
+const durationHours={
+ 
+  "ساعة واحدة":1,
+  "4 ساعات":4,
+  "8 ساعات":8,
+  "يوم كامل":10
+ 
+};
+ 
+/* ORDER */
+ 
+/* SCREEN DATA */
+ 
+function updateMatchedScreen(){
+ 
+  const equipment =
+    document.getElementById("matchedEquipment");
+ 
+  const location =
+    document.getElementById("matchedLocation");
+ 
+  if(equipment)
+    equipment.textContent = order.equipment || "نوع المعدة";
+ 
+  if(location)
+    location.textContent =
+      order.location ||
+      "موقع العميل";
+ 
 }
-
+ 
+function updateWorkingScreen(){
+ 
+  const equipment =
+    document.getElementById("workingEquipment");
+ 
+  const location =
+    document.getElementById("workingLocation");
+ 
+  if(equipment)
+    equipment.textContent =
+      order.equipment ||
+      "بوكلين";
+ 
+  if(location)
+    location.textContent =
+      order.location ||
+      "موقع العميل";
+ 
+}
+ 
+function updateOperatorScreen(){
+ 
+  const equipment =
+    document.getElementById("operatorEquipment");
+ 
+  const location =
+    document.getElementById("operatorLocation");
+ 
+  const duration =
+    document.getElementById("operatorDuration");
+ 
+  const price =
+    document.getElementById("operatorPrice");
+ 
+  const notes =
+    document.getElementById("operatorNotes");
+ 
+  if(equipment)
+    equipment.textContent =
+      order.equipment ||
+      "بوكلين";
+ 
+  if(location)
+    location.textContent =
+      order.location ||
+      "موقع العميل";
+ 
+  if(duration)
+    duration.textContent =
+      order.duration ||
+      "4 ساعات";
+ 
+  if(price)
+    price.textContent =
+      `${order.price || 1000} ريال`;
+ 
+  if(notes)
+    notes.textContent =
+      order.notes ||
+      "لا توجد ملاحظات";
+ 
+}
+ 
 /* 03 — وظائف العميل: نموذج طلب المعدة وإرسال الطلب */
 /* 03/04 — متابعة قبول الطلب: ربط حالة الطلب بين العميل وصاحب المعدة */
 /* ACCEPTANCE WATCHER */
@@ -155,6 +260,30 @@ function ma3daOpenCustomerMap(data){
   window.open(url,'_blank','noopener,noreferrer');
 }
 
+function ma3daNotifyCustomerStatus(requestId,data){
+  const status=String(data?.status||'');
+  const labels={owner_decision_pending:'طلبك بانتظار موافقة صاحب المعدة',owner_accepted:'وافق صاحب المعدة — بانتظار الحجز',booking_confirmed:'تم تأكيد الحجز التجريبي',owner_arrived:'صاحب المعدة وصل إلى الموقع',otp_verified:'تم التحقق من رمز العميل',working:'بدأ تنفيذ العمل',completed_pending_customer:'انتهى العمل — بانتظار تأكيد العميل',disputed:'الطلب قيد مراجعة الدعم',completed:'اكتمل العمل والتسوية',rated:'اكتمل الطلب والتقييم',rejected:'تم رفض طلب المعدة'};
+  const paymentStatus=String(data?.paymentStatus||'');
+  const invoiceLabel=labels[status] || '';
+  const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
+  const previous=localStorage.getItem('ma3daLastCustomerNotice:'+requestId);
+  if(!invoiceLabel||previous===token)return;
+  localStorage.setItem('ma3daLastCustomerNotice:'+requestId,token);
+  const wasInitialized=localStorage.getItem('ma3daCustomerNoticeInitialized:'+requestId)==='1';
+  localStorage.setItem('ma3daCustomerNoticeInitialized:'+requestId,'1');
+  if(!wasInitialized)return;
+  // Browser notifications work only while this page is active; closed-app push requires FCM/service-worker setup.
+  if(document.visibilityState==='visible'){
+    const toast=document.createElement('div');
+    toast.setAttribute('role','status');
+    toast.style.cssText='position:fixed;z-index:99999;bottom:18px;left:16px;right:16px;padding:14px 16px;background:#171717;color:#fff;border-radius:12px;box-shadow:0 6px 24px #0003;text-align:center;font-weight:700';
+    toast.textContent=invoiceLabel+(data?.invoiceNumber?' — فاتورتك متاحة في «فواتيري»':'');
+    document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
+  }
+  if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
+    try{new Notification('آثار — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
+  }
+}
 
 /* 02 — تسجيل الدخول والحسابات: اختيار نوع المستخدم */
 /* ROLE */
@@ -956,8 +1085,21 @@ if (submitCreateAccountBtn) {
   });
 }
 
-/* Owner rental dashboard is provided by ATHAR NEW RENTAL FLOW. */
-
+/* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
+/* OPERATOR */
+ 
+async function openOperatorScreen(){
+ 
+  await displayMyEquipment();
+ 
+  updateOperatorScreen();
+ 
+  showScreen(
+    "operatorScreen"
+  );
+ 
+}
+/* 04 — وظائف صاحب المعدة: تحميل طلبات العملاء */
 /* 04 — وظائف صاحب المعدة: حفظ بيانات المعدات والتحقق منها */
 /* EQUIPMENT */
 const saveEquipmentBtn =
@@ -1712,7 +1854,52 @@ document.addEventListener("keydown", event => {
   void sendChatMessage();
 });
  
-/* Customer work timer is owned by ATHAR NEW RENTAL FLOW. */
+/* CUSTOMER WORKING TIMER */
+ 
+function updateTimer(){
+ 
+  if(!workStartTime)
+    return;
+ 
+  const elapsed =
+    Math.max(
+      0,
+      Math.floor(
+        (
+          Date.now() -
+          workStartTime
+        ) / 1000
+      )
+    );
+ 
+  const hours =
+    Math.floor(
+      elapsed / 3600
+    );
+ 
+  const minutes =
+    Math.floor(
+      (elapsed % 3600) / 60
+    );
+ 
+  const seconds =
+    elapsed % 60;
+ 
+  const timer =
+    document.getElementById("timer");
+ 
+  if(timer){
+ 
+    timer.textContent =
+      `${String(hours).padStart(2,"0")}:` +
+      `${String(minutes).padStart(2,"0")}:` +
+      `${String(seconds).padStart(2,"0")}`;
+ 
+  }
+ 
+}
+ 
+/* تم حذف أزرار إنهاء العمل والدفع والتقييم القديمة؛ النظام الجديد يملك هذه المراحل. */
 
 /* أزرار الرجوع للقائمة الرئيسية بعد التقييم أو إنهاء العمل */
 const thankYouHomeBtn=document.getElementById("thankYouHomeBtn");
@@ -1817,7 +2004,12 @@ async function ma3daLogout(){
       stopAcceptanceWatcher();
  
     }
-clearInterval(
+ 
+    clearInterval(
+      timerInterval
+    );
+ 
+    clearInterval(
       operatorTimerInterval
     );
  
@@ -1843,7 +2035,14 @@ clearInterval(
  
     selectedRole =
       "";
-selectedRating =
+ 
+    workStartTime =
+      null;
+ 
+    selectedPayment =
+      "";
+ 
+    selectedRating =
       0;
  
     showScreen(
@@ -3860,6 +4059,7 @@ function setOperatorCustomerOrdersFilter(filter){
   if(previousPanel)previousPanel.hidden=operatorCustomerOrdersFilter!=="previous";
 }
 
+window.loadOperatorCustomerOrders=loadOperatorCustomerOrders;
 
 document.addEventListener("click",event=>{
   const tab=event.target.closest("[data-owner-customer-filter]");
@@ -3924,7 +4124,10 @@ async function loadOperatorIncome(){
  
         completedCount++;
  
-        const hours = Number(data.durationHours || 0);
+        const hours =
+          durationHours[
+            data.duration
+          ] || 0;
  
         totalHours +=
           hours;
@@ -4067,14 +4270,13 @@ async function loadOperatorRatings(){
         docSnap.data();
  
       if(
-        (data.equipmentOwnerId === user.uid || data.ownerId === user.uid || data.operatorId === user.uid) &&
-        data.flowVersion === "ATHAR-RENTAL-2026-NEW" &&
-        data.status === "rated"
+        data.operatorId === user.uid &&
+        data.status === "completed"
       ){
  
         const rating =
           Number(
-            data.equipmentRating || data.rating || 0
+            data.rating || 0
           );
  
         if(
@@ -4701,7 +4903,7 @@ const operatorCustomerOrdersBtn=document.getElementById("operatorCustomerOrdersB
 if(operatorCustomerOrdersBtn){
   operatorCustomerOrdersBtn.addEventListener("click",async()=>{
     setOperatorCustomerOrdersFilter("current");
-    await window.loadOperatorCustomerOrders?.();
+    await loadOperatorCustomerOrders();
     showScreen("operatorCustomerOrdersScreen");
   });
 }
@@ -6304,17 +6506,14 @@ async function loadSupportOrders(){
   const current =
     rows.filter(
       row =>
-        row.flowVersion === "ATHAR-RENTAL-2026-NEW" &&
         [
-          "owner_decision_pending",
-          "owner_accepted",
-          "booking_confirmed",
-          "owner_arrived",
-          "otp_verified",
-          "working",
-          "completed_pending_customer",
-          "disputed"
-        ].includes(String(row.status || ""))
+          "searching",
+          "accepted",
+          "arrived",
+          "working"
+        ].includes(
+          row.status
+        )
     );
  
  
@@ -14326,9 +14525,6 @@ async function atharLegacyProjectAcceptOperatorRequest(
  
     const request =
       requestSnap.data() || {};
-    if(!request.projectId){
-      throw new Error("تم إيقاف دورة التأجير القديمة؛ طلبات العملاء تُدار حصريًا عبر نظام ATHAR الجديد.");
-    }
     let customerProfile = {};
     if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
       try {
@@ -14478,9 +14674,6 @@ async function atharLegacyProjectRejectOperatorRequest(
     const snap=await window.ma3daGetDoc(requestRef);
     if(!snap.exists()){alert('الطلب غير موجود.');return;}
     const data=snap.data()||{};
-    if(!data.projectId){
-      throw new Error("تم إيقاف رفض طلبات التأجير القديمة؛ استخدم دورة ATHAR الجديدة.");
-    }
     const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
     if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
     if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
@@ -14924,24 +15117,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
        const extPanel=$('atharCustomerExtensionPanel');if(extPanel){const x=data.extensionRequest||{};extPanel.hidden=!(data.status==='working'&&x.status==='pending_customer');const detail=$('atharCustomerExtensionDetails');if(detail)detail.textContent=`طلب صاحب المعدة تمديد ${Number(x.hours||0)} ساعة بمبلغ ${money(x.amount||0)}. لن يتم اعتماد التمديد قبل موافقتك وتأكيد الدفع التجريبي.`;}
 
       if(screen==='arrivedCustomerScreen'){const e=$('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';const l=$('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';}
-      if(screen==='workingScreen'){
-         updateWorkingScreen(data);
-         const start=Number(data.workStartedAt||Date.now());
-         if(start!==customerTimerStart){
-           customerTimerStart=start;
-           clearInterval(customerWorkTimer);
-           const tick=()=>{
-             const elapsed=Math.max(0,Math.floor((Date.now()-customerTimerStart)/1000));
-             const timer=$('timer');
-             if(timer)timer.textContent=[Math.floor(elapsed/3600),Math.floor((elapsed%3600)/60),elapsed%60].map(v=>String(v).padStart(2,'0')).join(':');
-           };
-           tick();
-           customerWorkTimer=setInterval(tick,1000);
-         }
-       }else if(customerTimerStart){
-         clearInterval(customerWorkTimer);
-         customerTimerStart=0;
-       }
+      if(screen==='workingScreen'){updateWorkingScreen();const start=Number(data.workStartedAt||Date.now());if(start!==customerTimerStart){customerTimerStart=start;workStartTime=start;clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();}}else if(customerTimerStart){clearInterval(timerInterval);customerTimerStart=0;}
       if(screen==='ratingScreen')showScreen('ratingScreen');else showScreen(screen);
     }
   }
@@ -15005,8 +15181,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   if($('operatorStartWorkBtn'))$('operatorStartWorkBtn').addEventListener('click',window.operatorStartWork);
   if($('operatorEndWorkBtn'))$('operatorEndWorkBtn').addEventListener('click',window.operatorFinishWork);
   // طلب التمديد: لا يعتمد إلا بموافقة العميل وتأكيد الدفع التجريبي.
-  $
-  ('atharRequestExtensionBtn')?.addEventListener('click',async()=>{
+  $('atharRequestExtensionBtn')?.addEventListener('click',async()=>{
     const id=localStorage.getItem('currentRequestId'),hours=Number($('atharExtensionHours')?.value||0),feedback=$('atharExtensionOwnerFeedback');
     try{
       if(!Number.isInteger(hours)||hours<1||hours>240)throw new Error('أدخل عدد ساعات صحيحًا بين 1 و240.');
