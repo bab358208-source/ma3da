@@ -10814,7 +10814,8 @@ document.addEventListener("click", function(event){
     const previousShowScreen = showScreen;
     showScreen = function(id){
       document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
-      previousShowScreen(id);
+      // Preserve the original return value (true/false) for callers that verify navigation.
+      return previousShowScreen(id);
     };
     window.__ma3daDynamicScreenNavigation = true;
   }
