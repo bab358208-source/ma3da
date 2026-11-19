@@ -1,4 +1,4 @@
-/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
+* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
 async function ma3daReadUserRows(collectionName, fields, uid){
   if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
     throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
@@ -15969,6 +15969,66 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   const legacyAcceptOperatorRequest=window.atharLegacyProjectAcceptOperatorRequest;
   const legacyRejectOperatorRequest=window.atharLegacyProjectRejectOperatorRequest;
   let otpDraft='';
+
+  // ربط زر الطلب مبكرًا وبالتفويض من document؛ حتى لا يعتمد على بقاء
+  // عنصر الزر نفسه أو على وصول التنفيذ إلى نهاية وحدة الطلبات.
+  const initialRequestButton=$('requestBtn');
+  if(initialRequestButton){
+    const cleanRequestButton=initialRequestButton.cloneNode(true);
+    cleanRequestButton.type='button';
+    cleanRequestButton.disabled=false;
+    cleanRequestButton.removeAttribute('disabled');
+    initialRequestButton.replaceWith(cleanRequestButton);
+  }
+  document.addEventListener('click', async function atharRequestButtonClick(event){
+    const button=event.target?.closest?.('#requestBtn');
+    if(!button) return;
+    event.preventDefault();
+    if(button.dataset.atharBusy==='1') return;
+
+    const location=String($('locationInput')?.value||'').trim();
+    const type=String($('equipmentSelect')?.value||'').trim();
+    const duration=String($('durationSelect')?.value||'').trim();
+    const operator=String($('operatorSelect')?.value||'مع مشغل').trim();
+    const notes=String($('notesInput')?.value||'').trim();
+    if(!location||!type||!duration){alert('حدد موقع العمل ونوع المعدة ومدة العمل أولاً.');return;}
+    const coordMatch=location.match(/(-?\d+(?:\.\d+)?)\s*[,،]\s*(-?\d+(?:\.\d+)?)/);
+    if(!coordMatch){alert('تعذر قراءة إحداثيات الموقع. اضغط «تحديد موقعي بدقة» مرة أخرى.');return;}
+    const latitude=Number(coordMatch[1]),longitude=Number(coordMatch[2]);
+    if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180){alert('إحداثيات الموقع غير صحيحة. أعد تحديد موقع العمل.');return;}
+
+    button.dataset.atharBusy='1';
+    button.disabled=true;
+    const originalText=button.textContent;
+    button.textContent='جارٍ البحث عن المعدات…';
+    try{
+      if(window.ma3daFirebaseReady){
+        await Promise.race([
+          window.ma3daFirebaseReady,
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error('تأخر تجهيز الاتصال بقاعدة البيانات. أعد تحميل الصفحة وحاول مجددًا.')),12000))
+        ]);
+      }
+      const user=await readUser();
+      if(!user?.uid) throw new Error('انتهت جلسة الدخول أو لم يكتمل تسجيل الدخول. سجّل الدخول ثم حاول مجددًا.');
+      if(typeof window.ma3daCollection!=='function'||typeof window.ma3daWhere!=='function'||typeof window.ma3daQuery!=='function'||typeof window.ma3daGetDocs!=='function'){
+        throw new Error('خدمات قاعدة البيانات لم تجهز بعد. أعد تحميل الصفحة وحاول مرة أخرى.');
+      }
+      draft={location,type,duration,operator,notes,customerId:user.uid,locationCoordinates:{latitude,longitude},createdAt:Date.now()};
+      const list=$('atharAvailableEquipmentList');
+      if(!list) throw new Error('تعذر تجهيز شاشة المعدات المتاحة. أعد تحميل الصفحة.');
+      list.innerHTML='<div class="card center">جاري البحث عن المعدات المتاحة…</div>';
+      if(!showScreen('atharAvailableScreen')) throw new Error('تعذر فتح شاشة المعدات المتاحة.');
+      requestAnimationFrame(()=>availableMap?.invalidateSize());
+      await loadAvailable();
+    }catch(error){
+      console.error('ATHAR request button failed:',error);
+      alert(error?.message||'تعذر تنفيذ طلب المعدة. تحقق من الاتصال ثم حاول مرة أخرى.');
+    }finally{
+      button.dataset.atharBusy='0';
+      button.disabled=false;
+      button.textContent=originalText||'اطلب الآن';
+    }
+  }, true);
   const styles=`<style id="atharNewRentalStyle">
   #atharAvailableScreen{position:relative;min-height:calc(100vh - 24px);padding:0!important;overflow:hidden;background:#f7f5ef}
   #atharAvailableScreen .athar-uber-top{position:absolute;z-index:1002;top:12px;right:12px;left:12px;display:flex;align-items:center;gap:10px;pointer-events:none}
@@ -16082,60 +16142,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   }
   function bindEquipmentSheet(){const head=$('atharEquipmentSheetHead'),sheet=$('atharEquipmentSheet');if(!head||head.dataset.bound)return;head.dataset.bound='1';let startY=0,suppressClickUntil=0;head.addEventListener('click',()=>{if(Date.now()<suppressClickUntil)return;sheet.classList.toggle('is-collapsed');});head.addEventListener('touchstart',e=>{startY=e.touches?.[0]?.clientY||0;},{passive:true});head.addEventListener('touchend',e=>{const endY=e.changedTouches?.[0]?.clientY||startY,delta=endY-startY;if(Math.abs(delta)>25){suppressClickUntil=Date.now()+450;if(delta>0)sheet.classList.add('is-collapsed');else sheet.classList.remove('is-collapsed');}},{passive:true});}
   window.loadCustomerOrders=async function(type){const list=$(type==='current'?'currentOrdersList':'previousOrdersList');if(!list)return;list.innerHTML='<p>جاري تحميل الطلبات...</p>';try{const user=await Promise.race([readUser(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة التحقق من تسجيل الدخول. أعد تحميل الصفحة ثم حاول مرة أخرى.')),15000))]);if(!user?.uid)throw new Error('سجّل الدخول أولًا.');const rows=await Promise.race([ma3daReadUserRows('requests',['customerId','requesterId'],user.uid),new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة تحميل الطلبات بعد 15 ثانية. تحقق من اتصال Firebase وقواعد قراءة الطلبات.' )),15000))]);const current=['owner_decision_pending','owner_accepted','booking_confirmed','owner_arrived','otp_verified','working','completed_pending_customer','disputed'];const previous=['completed','rated','rejected','cancelled'];const orders=rows.filter(d=>(d.customerId||d.requesterId)===user.uid&&(type==='current'?current.includes(String(d.status||'')):previous.includes(String(d.status||'')))).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));if(!orders.length){list.innerHTML=`<div class="empty-state"><h3>${type==='current'?'لا توجد طلبات حالية':'لا توجد طلبات سابقة'}</h3><p>${type==='current'?'عند تقديم طلب جديد ستظهر تفاصيله هنا.':'ستظهر الطلبات المنتهية أو المرفوضة هنا.'}</p></div>`;return;}list.innerHTML='';orders.forEach(d=>{const card=document.createElement('article');card.className='customer-order-card';card.innerHTML=`<div class="customer-order-header"><strong>🚜 ${esc(d.equipment||'معدة')}</strong><span class="customer-order-status">${esc(window.ma3daNewRentalStatusText(d.status))}</span></div><div class="customer-order-info"><div>رقم الطلب: <strong>${esc(d.orderNumber||d.id)}</strong></div><div>الموقع: ${esc(d.location||'—')}</div><div>المدة: ${esc(d.duration||'—')}</div><div>المبلغ المحجوز/التقديري: ${money(d.reservedAmount||d.price)}</div><div>تاريخ: ${esc(new Date(Number(d.createdAt||Date.now())).toLocaleDateString('ar-SA'))}</div></div><button type="button" class="main-btn" data-customer-open-order="${esc(d.id)}">فتح الطلب ومتابعته</button>`;list.appendChild(card);});}catch(error){console.error('new customer order list error',error);list.innerHTML='<div class="empty-state">تعذر تحميل الطلبات؛ تحقق من الاتصال.</div>';}};
-  // Bind the request button after Firebase setup; keep its visible Arabic label unchanged.
-  const oldRequestBtn=$('requestBtn');
-  if(oldRequestBtn){
-    const fresh=oldRequestBtn.cloneNode(true);
-    fresh.type='button';
-    // Do not carry a stale disabled state from an earlier screen lifecycle.
-    fresh.disabled=false;
-    fresh.removeAttribute('disabled');
-    oldRequestBtn.replaceWith(fresh);
-  }
-  const requestBtn=$('requestBtn');
-  if(requestBtn){
-    requestBtn.disabled=false;
-    requestBtn.removeAttribute('disabled');
-    requestBtn.addEventListener('click',async()=>{
-      if(requestBtn.disabled)return;
-      const location=String($('locationInput')?.value||'').trim();
-      const type=String($('equipmentSelect')?.value||'').trim();
-      const duration=String($('durationSelect')?.value||'').trim();
-      const operator=String($('operatorSelect')?.value||'مع مشغل').trim();
-      const notes=String($('notesInput')?.value||'').trim();
-      if(!location||!type||!duration){alert('حدد موقع العمل ونوع المعدة ومدة العمل أولاً.');return;}
-      const coordMatch=location.match(/(-?\d+(?:\.\d+)?)\s*[,،]\s*(-?\d+(?:\.\d+)?)/);
-      if(!coordMatch){alert('تعذر قراءة إحداثيات الموقع. اضغط «تحديد موقعي بدقة» مرة أخرى.');return;}
-      const latitude=Number(coordMatch[1]),longitude=Number(coordMatch[2]);
-      if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180){alert('إحداثيات الموقع غير صحيحة. أعد تحديد موقع العمل.');return;}
-      requestBtn.disabled=true;
-      const originalText=requestBtn.textContent;
-      requestBtn.textContent='جارٍ البحث عن المعدات…';
-      try{
-        if(window.ma3daFirebaseReady)await Promise.race([window.ma3daFirebaseReady,new Promise((_,reject)=>setTimeout(()=>reject(new Error('تأخر تجهيز الاتصال بقاعدة البيانات. أعد تحميل الصفحة وحاول مجددًا.')),12000))]);
-        const user=await readUser();
-        if(!user?.uid)throw new Error('انتهت جلسة الدخول أو لم يكتمل تسجيل الدخول. سجّل الدخول ثم حاول مجددًا.');
-        if(typeof window.ma3daCollection!=='function'||typeof window.ma3daWhere!=='function'||typeof window.ma3daQuery!=='function'||typeof window.ma3daGetDocs!=='function'){
-          throw new Error('خدمات قاعدة البيانات لم تجهز بعد. أعد تحميل الصفحة وحاول مرة أخرى.');
-        }
-        draft={location,type,duration,operator,notes,customerId:user.uid,locationCoordinates:{latitude,longitude},createdAt:Date.now()};
-        const list=$('atharAvailableEquipmentList');
-        if(!list)throw new Error('تعذر تجهيز شاشة المعدات المتاحة. أعد تحميل الصفحة.');
-        list.innerHTML='<div class="card center">جاري البحث عن المعدات المتاحة…</div>';
-        if(!showScreen('atharAvailableScreen'))throw new Error('تعذر فتح شاشة المعدات المتاحة.');
-        requestAnimationFrame(()=>availableMap?.invalidateSize());
-        await loadAvailable();
-      }catch(error){
-        console.error('ATHAR request button failed:',error);
-        alert(error?.message||'تعذر تنفيذ طلب المعدة. تحقق من الاتصال ثم حاول مرة أخرى.');
-      }finally{
-        requestBtn.disabled=false;
-        requestBtn.textContent=originalText||'اطلب الآن';
-      }
-    });
-  }else{
-    console.error('ATHAR: لم يتم العثور على زر requestBtn لربط إجراء الطلب.');
-  }
+  // تم نقل ربط زر الطلب إلى بداية مسار التأجير باستخدام تفويض أحداث موحد.
   async function loadAvailable(){
     try{
       if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
