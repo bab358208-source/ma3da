@@ -1,4 +1,4 @@
-/*قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
+/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
 async function ma3daReadUserRows(collectionName, fields, uid){
   if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
     throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
@@ -16085,10 +16085,15 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   if(oldRequestBtn){
     const fresh=oldRequestBtn.cloneNode(true);
     fresh.type='button';
+    // Do not carry a stale disabled state from an earlier screen lifecycle.
+    fresh.disabled=false;
+    fresh.removeAttribute('disabled');
     oldRequestBtn.replaceWith(fresh);
   }
   const requestBtn=$('requestBtn');
   if(requestBtn){
+    requestBtn.disabled=false;
+    requestBtn.removeAttribute('disabled');
     requestBtn.addEventListener('click',async()=>{
       if(requestBtn.disabled)return;
       const location=String($('locationInput')?.value||'').trim();
