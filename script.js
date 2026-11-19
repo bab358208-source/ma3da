@@ -104,179 +104,36 @@ function showScreen(id){
   return false;
 }
  
-/* STATE */
- 
+/* STATE — shared identity/session state only; rental lifecycle state is owned by ATHAR NEW RENTAL FLOW. */
 let selectedRole="";
- 
-let workStartTime=null;
- 
-let timerInterval=null;
- 
-let acceptanceWatcher=null;
- 
-let selectedPayment="";
- 
 let selectedRating=0;
- 
-let order={
-  location:"",
-  equipment:"",
-  duration:"",
-  operator:"",
-  notes:"",
-  price:0
-};
- 
+
+/* أسعار المعدّات العامة التي تقرؤها إعدادات المنصة؛ ليست جزءًا من دورة الطلب القديمة. */
 const hourlyPrices={
- 
   "بوكلين":250,
   "شيول":220,
   "قلاب":180,
   "كرين":350,
   "حفار":250,
   "بلدوزر":300
- 
 };
- 
-const durationHours={
- 
-  "ساعة واحدة":1,
-  "4 ساعات":4,
-  "8 ساعات":8,
-  "يوم كامل":10
- 
-};
- 
-/* ORDER */
- 
-function setOrderState(state){
- 
-  localStorage.setItem("orderState", state);
- 
+
+/* تحديث بيانات شاشة العمل من سجل الطلب الجديد فقط. */
+function updateWorkingScreen(data={}){
+  const equipment=document.getElementById("workingEquipment");
+  const location=document.getElementById("workingLocation");
+  if(equipment) equipment.textContent=data.equipment||"بوكلين";
+  if(location) location.textContent=data.location||"موقع العميل";
 }
- 
-function getOrderState(){
- 
-  return (
-    localStorage.getItem("orderState") || ""
-  );
- 
-}
- 
-/* LOAD ORDER */
- 
-function calculatePrice(){
- 
-  return (
-    hourlyPrices[order.equipment] || 250
-  ) *
-  (
-    durationHours[order.duration] || 4
-  );
- 
-}
- 
-/* SCREEN DATA */
- 
-function updateMatchedScreen(){
- 
-  const equipment =
-    document.getElementById("matchedEquipment");
- 
-  const location =
-    document.getElementById("matchedLocation");
- 
-  if(equipment)
-    equipment.textContent = order.equipment || "نوع المعدة";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-}
- 
-function updateWorkingScreen(){
- 
-  const equipment =
-    document.getElementById("workingEquipment");
- 
-  const location =
-    document.getElementById("workingLocation");
- 
-  if(equipment)
-    equipment.textContent =
-      order.equipment ||
-      "بوكلين";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-}
- 
-function updateOperatorScreen(){
- 
-  const equipment =
-    document.getElementById("operatorEquipment");
- 
-  const location =
-    document.getElementById("operatorLocation");
- 
-  const duration =
-    document.getElementById("operatorDuration");
- 
-  const price =
-    document.getElementById("operatorPrice");
- 
-  const notes =
-    document.getElementById("operatorNotes");
- 
-  if(equipment)
-    equipment.textContent =
-      order.equipment ||
-      "بوكلين";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-  if(duration)
-    duration.textContent =
-      order.duration ||
-      "4 ساعات";
- 
-  if(price)
-    price.textContent =
-      `${order.price || 1000} ريال`;
- 
-  if(notes)
-    notes.textContent =
-      order.notes ||
-      "لا توجد ملاحظات";
- 
-}
- 
+
 /* 03 — وظائف العميل: نموذج طلب المعدة وإرسال الطلب */
 /* 03/04 — متابعة قبول الطلب: ربط حالة الطلب بين العميل وصاحب المعدة */
 /* ACCEPTANCE WATCHER */
  
 function stopAcceptanceWatcher(){
- 
-  if(acceptanceWatcher){
- 
-    clearInterval(
-      acceptanceWatcher
-    );
- 
-    acceptanceWatcher=null;
- 
-  }
- 
+  if(typeof window.stopAcceptanceWatcher === "function") window.stopAcceptanceWatcher();
 }
- 
+
 function ma3daCustomerCoordinates(data){
   const lat=Number(data?.locationLatitude ?? data?.latitude ?? data?.locationCoordinates?.latitude ?? data?.coordinates?.latitude);
   const lng=Number(data?.locationLongitude ?? data?.longitude ?? data?.locationCoordinates?.longitude ?? data?.coordinates?.longitude);
@@ -298,30 +155,6 @@ function ma3daOpenCustomerMap(data){
   window.open(url,'_blank','noopener,noreferrer');
 }
 
-function ma3daNotifyCustomerStatus(requestId,data){
-  const status=String(data?.status||'');
-  const labels={owner_decision_pending:'طلبك بانتظار موافقة صاحب المعدة',owner_accepted:'وافق صاحب المعدة — بانتظار الحجز',booking_confirmed:'تم تأكيد الحجز التجريبي',owner_arrived:'صاحب المعدة وصل إلى الموقع',otp_verified:'تم التحقق من رمز العميل',working:'بدأ تنفيذ العمل',completed_pending_customer:'انتهى العمل — بانتظار تأكيد العميل',disputed:'الطلب قيد مراجعة الدعم',completed:'اكتمل العمل والتسوية',rated:'اكتمل الطلب والتقييم',rejected:'تم رفض طلب المعدة'};
-  const paymentStatus=String(data?.paymentStatus||'');
-  const invoiceLabel=labels[status] || '';
-  const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
-  const previous=localStorage.getItem('ma3daLastCustomerNotice:'+requestId);
-  if(!invoiceLabel||previous===token)return;
-  localStorage.setItem('ma3daLastCustomerNotice:'+requestId,token);
-  const wasInitialized=localStorage.getItem('ma3daCustomerNoticeInitialized:'+requestId)==='1';
-  localStorage.setItem('ma3daCustomerNoticeInitialized:'+requestId,'1');
-  if(!wasInitialized)return;
-  // Browser notifications work only while this page is active; closed-app push requires FCM/service-worker setup.
-  if(document.visibilityState==='visible'){
-    const toast=document.createElement('div');
-    toast.setAttribute('role','status');
-    toast.style.cssText='position:fixed;z-index:99999;bottom:18px;left:16px;right:16px;padding:14px 16px;background:#171717;color:#fff;border-radius:12px;box-shadow:0 6px 24px #0003;text-align:center;font-weight:700';
-    toast.textContent=invoiceLabel+(data?.invoiceNumber?' — فاتورتك متاحة في «فواتيري»':'');
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
-  }
-  if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
-    try{new Notification('آثار — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
-  }
-}
 
 /* 02 — تسجيل الدخول والحسابات: اختيار نوع المستخدم */
 /* ROLE */
@@ -1123,21 +956,8 @@ if (submitCreateAccountBtn) {
   });
 }
 
-/* 04 — وظائف صاحب المعدة: فتح لوحة صاحب المعدة */
-/* OPERATOR */
- 
-async function openOperatorScreen(){
- 
-  await displayMyEquipment();
- 
-  updateOperatorScreen();
- 
-  showScreen(
-    "operatorScreen"
-  );
- 
-}
-/* 04 — وظائف صاحب المعدة: تحميل طلبات العملاء */
+/* Owner rental dashboard is provided by ATHAR NEW RENTAL FLOW. */
+
 /* 04 — وظائف صاحب المعدة: حفظ بيانات المعدات والتحقق منها */
 /* EQUIPMENT */
 const saveEquipmentBtn =
@@ -1659,52 +1479,8 @@ async function displayMyEquipment(){
  
 }
  
-/* MATCHED */
- 
-const trackingBtn =
-  document.getElementById("trackingBtn");
- 
-if(trackingBtn){
-  trackingBtn.addEventListener("click",async()=>{
-    const requestId=localStorage.getItem('currentRequestId');
-    if(!requestId){alert('لا يوجد طلب حالي.');return;}
-    try{
-      const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
-      if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
-      const data=snap.data()||{};
-      const destination=ma3daCustomerCoordinates(data);
-      if(!destination){alert('لا يمكن إنشاء مسار دقيق لأن موقع العمل غير محفوظ بإحداثيات العميل. حدّد الموقع بدقة في الطلب أولًا.');return;}
-      let origin=null;
-      // استخدم موقع الجهاز الحالي الحقيقي عند السماح به، وإلا فالموقع المسجل لصاحب المعدة.
-      if(navigator.geolocation){
-        try{origin=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude}),reject,{enableHighAccuracy:true,timeout:8000,maximumAge:30000}));}catch(_){origin=null;}
-      }
-      let ownerEquipment={};
-      const ownerId=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
-      if(ownerId){try{const equipmentSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'equipment',ownerId));if(equipmentSnap.exists())ownerEquipment=equipmentSnap.data()||{};}catch(e){console.warn('تعذر قراءة موقع المعدة المسجل:',e);}}
-      if(!origin){
-        const lat=Number(data.equipmentLocationLatitude??data.ownerLocationLatitude??data.equipmentLatitude??data.equipmentCoordinates?.latitude??data.ownerEquipmentLocation?.latitude??ownerEquipment.latitude??ownerEquipment.lat??ownerEquipment.locationLatitude??ownerEquipment.coordinates?.latitude);
-        const lng=Number(data.equipmentLocationLongitude??data.ownerLocationLongitude??data.equipmentLongitude??data.equipmentCoordinates?.longitude??data.ownerEquipmentLocation?.longitude??ownerEquipment.longitude??ownerEquipment.lng??ownerEquipment.locationLongitude??ownerEquipment.coordinates?.longitude);
-        if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&(lat!==0||lng!==0))origin={lat,lng};
-      }
-      const originAddress=String(data.equipmentLocationAddress??data.ownerEquipmentAddress??data.equipmentAddress??data.ownerEquipmentLocation?.address??ownerEquipment.address??ownerEquipment.locationAddress??'').trim();
-      const url=origin
-        ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin.lat+','+origin.lng)}&destination=${encodeURIComponent(destination.lat+','+destination.lng)}&travelmode=driving`
-        : originAddress
-          ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originAddress)}&destination=${encodeURIComponent(destination.lat+','+destination.lng)}&travelmode=driving`
-          : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination.lat+','+destination.lng)}&travelmode=driving`;
-      const status=document.getElementById('trackingStatus');
-      const distance=document.getElementById('distanceText');
-      const eta=document.getElementById('etaText');
-      if(status)status.textContent=origin?'المسار من موقع المعدة الحالي إلى موقع العمل':'المسار إلى موقع العمل؛ لم يتوفر موقع حالي لصاحب المعدة';
-      if(distance)distance.textContent=`موقع العمل: ${destination.lat.toFixed(5)}, ${destination.lng.toFixed(5)}`;
-      if(eta)eta.textContent=origin?'الموقع الحالي عبر GPS':'الموقع المسجل أو الوجهة فقط';
-      showScreen('trackingScreen');
-      window.open(url,'_blank','noopener,noreferrer');
-    }catch(error){console.error('تعذر تحميل مسار المعدة:',error);alert('تعذر تحميل المسار حاليًا.');}
-  });
-}
- 
+/* تم حذف شاشة المطابقة والتتبع القديمة؛ متابعة الرحلة تتم حصريًا عبر ATHAR NEW RENTAL FLOW. */
+
 /* وظائف المحادثة المشتركة: العميل وصاحب المعدة — أبقيناها مشتركة لتجنب كسر الربط */
 /* CHAT: CUSTOMER + EQUIPMENT OWNER */
 let chatMessagesUnsubscribe = null;
@@ -1936,466 +1712,8 @@ document.addEventListener("keydown", event => {
   void sendChatMessage();
 });
  
-/* TRACKING */
- 
-function startTracking(){
- 
-  const marker =
-    document.getElementById("equipmentMarker");
- 
-  const distance =
-    document.getElementById("distanceText");
- 
-  const eta =
-    document.getElementById("etaText");
- 
-  const status =
-    document.getElementById("trackingStatus");
- 
-  if(
-    !marker ||
-    !distance ||
-    !eta ||
-    !status
-  )
-    return;
- 
-  const steps = [
- 
-    [
-      "18%",
-      "55%",
-      "2.4 كم",
-      "8 دقائق"
-    ],
- 
-    [
-      "30%",
-      "45%",
-      "2.0 كم",
-      "7 دقائق"
-    ],
- 
-    [
-      "42%",
-      "40%",
-      "1.5 كم",
-      "5 دقائق"
-    ],
- 
-    [
-      "55%",
-      "30%",
-      "900 م",
-      "3 دقائق"
-    ],
- 
-    [
-      "65%",
-      "20%",
-      "400 م",
-      "1 دقيقة"
-    ],
- 
-    [
-      "75%",
-      "12%",
-      "0 م",
-      "الآن"
-    ]
- 
-  ];
- 
-  let index = 0;
- 
-  function move(){
- 
-    const step =
-      steps[index];
- 
-    marker.style.top =
-      step[0];
- 
-    marker.style.right =
-      step[1];
- 
-    distance.textContent =
-      step[2];
- 
-    eta.textContent =
-      step[3];
- 
-    if(
-      index ===
-      steps.length - 1
-    ){
- 
-      status.textContent =
-        "وصلت المعدة إلى موقعك";
- 
-      console.log(
-        "اكتمل التتبع - بانتظار وصول صاحب المعدة"
-      );
- 
-      return;
- 
-    }
- 
-    index++;
- 
-    setTimeout(
-      move,
-      1400
-    );
- 
-  }
- 
-  move();
- 
-}
- 
-/* CUSTOMER WORKING TIMER */
- 
-function updateTimer(){
- 
-  if(!workStartTime)
-    return;
- 
-  const elapsed =
-    Math.max(
-      0,
-      Math.floor(
-        (
-          Date.now() -
-          workStartTime
-        ) / 1000
-      )
-    );
- 
-  const hours =
-    Math.floor(
-      elapsed / 3600
-    );
- 
-  const minutes =
-    Math.floor(
-      (elapsed % 3600) / 60
-    );
- 
-  const seconds =
-    elapsed % 60;
- 
-  const timer =
-    document.getElementById("timer");
- 
-  if(timer){
- 
-    timer.textContent =
-      `${String(hours).padStart(2,"0")}:` +
-      `${String(minutes).padStart(2,"0")}:` +
-      `${String(seconds).padStart(2,"0")}`;
- 
-  }
- 
-}
- 
-function startCustomerWorkTimer(
-  startTime
-){
- 
-  clearInterval(
-    timerInterval
-  );
- 
-  workStartTime =
-    Number(
-      startTime ||
-      Date.now()
-    );
- 
-  updateTimer();
- 
-  timerInterval =
-    setInterval(
-      updateTimer,
-      1000
-    );
- 
-}
- 
-function stopCustomerWorkTimer(){
- 
-  clearInterval(
-    timerInterval
-  );
- 
-  timerInterval =
-    null;
- 
-}
- 
-/* CUSTOMER CALL */
- 
-const callBtn =
-  document.getElementById("callBtn");
- 
-if(callBtn){
- 
-  callBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      try{
- 
-        const requestId =
-          localStorage.getItem("currentRequestId");
- 
-        if(!requestId){
- 
-          alert(
-            "لا يوجد طلب حالي."
-          );
- 
-          return;
- 
-        }
- 
-        const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
- 
-        const snapshot =
-          await window.ma3daGetDoc(
-            requestRef
-          );
- 
-        if(!snapshot.exists()){
- 
-          alert(
-            "تعذر العثور على الطلب."
-          );
- 
-          return;
- 
-        }
- 
-        const data =
-          snapshot.data();
- 
-        const phone =
-          data.operatorPhone ||
-          "";
- 
-        if(!phone){
- 
-          alert(
-            "رقم صاحب المعدة غير متوفر حاليًا."
-          );
- 
-          return;
- 
-        }
- 
-        window.location.href =
-          `tel:${phone}`;
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر الاتصال بصاحب المعدة:",
-          error
-        );
- 
-        alert(
-          "تعذر الاتصال حاليًا."
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* CUSTOMER END WORK */
- 
-const customerStartWorkButton =
-  document.getElementById("startWorkBtn");
- 
-if(customerStartWorkButton){
- 
-  customerStartWorkButton.style.display =
-    "none";
- 
-  customerStartWorkButton.disabled =
-    true;
- 
-}
- 
-/* 03/04 — وظائف مالية مشتركة: الدفع وإغلاق الطلب */
-/* RATING */
- 
-document
-  .querySelectorAll(
-    ".stars button"
-  )
-  .forEach(
-    button=>{
- 
-      button.addEventListener(
-        "click",
-        ()=>{
- 
-          selectedRating =
-            Number(
-              button.dataset.rating
-            );
- 
-          document
-            .querySelectorAll(
-              ".stars button"
-            )
-            .forEach(
-              star=>{
- 
-                star.classList.toggle(
-                  "selected",
-                  Number(
-                    star.dataset.rating
-                  ) <=
-                  selectedRating
-                );
- 
-              }
-            );
- 
-          const ratingBtn =
-            document.getElementById("ratingBtn");
- 
-          if(ratingBtn)
-            ratingBtn.disabled =
-              false;
- 
-        }
-      );
- 
-    }
-  );
- 
-const ratingBtn =
-  document.getElementById("ratingBtn");
- 
-if(ratingBtn){
- 
-  ratingBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      if(!selectedRating){
- 
-        alert(
-          "اختر التقييم أولًا."
-        );
- 
-        return;
- 
-      }
- 
-      const requestId =
-        localStorage.getItem("currentRequestId");
- 
-      try{
- 
-        if(requestId){
- 
-          const requestRef =
-            window.ma3daDoc(
-              window.ma3daDB,
-              "requests",
-              requestId
-            );
- 
-          const requestSnapshot = await window.ma3daGetDoc(requestRef);
-          if(!requestSnapshot.exists()){
-            alert("تعذر العثور على الطلب.");
-            return;
-          }
-          const requestData = requestSnapshot.data() || {};
-          if(requestData.paymentStatus !== "paid" || requestData.status !== "paid"){
-            alert("تقييم المعدة متاح بعد تأكيد سداد الفاتورة بالكامل.");
-            return;
-          }
+/* Customer work timer is owned by ATHAR NEW RENTAL FLOW. */
 
-          await window.ma3daUpdateDoc(
-            requestRef,
-            {
- 
-              rating:
-                selectedRating,
- 
-              ratedAt:
-                Date.now()
- 
-            }
-          );
- 
-        }
- 
-        showScreen(
-          "thankYouScreen"
-        );
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر حفظ التقييم:",
-          error
-        );
- 
-        alert(
-          "تعذر حفظ التقييم، حاول مرة أخرى."
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* NEW REQUEST */
- 
-const newRequestButtons =
-  document.querySelectorAll(
-    "#newRequestBtn, #thankYouNewRequestBtn"
-  );
- 
-newRequestButtons.forEach(
-  button=>{
- 
-    button.addEventListener(
-      "click",
-      ()=>{
- 
-        selectedPayment =
-          "";
- 
-        selectedRating =
-          0;
- 
-        showScreen(
-          "requestScreen"
-        );
- 
-      }
-    );
- 
-  }
-);
- 
 /* أزرار الرجوع للقائمة الرئيسية بعد التقييم أو إنهاء العمل */
 const thankYouHomeBtn=document.getElementById("thankYouHomeBtn");
 if(thankYouHomeBtn){
@@ -2499,12 +1817,7 @@ async function ma3daLogout(){
       stopAcceptanceWatcher();
  
     }
- 
-    clearInterval(
-      timerInterval
-    );
- 
-    clearInterval(
+clearInterval(
       operatorTimerInterval
     );
  
@@ -2530,14 +1843,7 @@ async function ma3daLogout(){
  
     selectedRole =
       "";
- 
-    workStartTime =
-      null;
- 
-    selectedPayment =
-      "";
- 
-    selectedRating =
+selectedRating =
       0;
  
     showScreen(
@@ -2581,26 +1887,6 @@ if(logoutBtn){
   logoutBtn.addEventListener(
     "click",
     ma3daLogout
-  );
- 
-}
- 
-/* BACK CUSTOMER REQUEST */
- 
-const backFromRequestBtn =
-  document.getElementById("backFromRequestBtn");
- 
-if(backFromRequestBtn){
- 
-  backFromRequestBtn.addEventListener(
-    "click",
-    ()=>{
- 
-      showScreen(
-        "customerHomeScreen"
-      );
- 
-    }
   );
  
 }
@@ -3222,11 +2508,6 @@ if(getLocationBtn){
  
 /* 03 — وظائف العميل: الصفحة الرئيسية وطلبات العميل */
 /* CUSTOMER HOME */
-if(document.getElementById('currentOrderBtn')){
-  const customerOrdersStartup=()=>{if((localStorage.getItem('selectedRole')||selectedRole)==='customer')startCustomerOrdersRealtime();};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')customerOrdersStartup();});
-}
- 
 const currentOrderBtn =
   document.getElementById("currentOrderBtn");
  
@@ -3241,7 +2522,6 @@ if(currentOrderBtn){
       );
  
       await loadCustomerOrders("current");
-      startCustomerOrdersRealtime();
  
     }
   );
@@ -3262,71 +2542,13 @@ if(previousOrdersBtn){
       );
  
       await loadCustomerOrders("previous");
-      startCustomerOrdersRealtime();
  
     }
   );
  
 }
  
-/* فتح الطلب من قائمة الطلبات الحالية/السابقة */
-document.addEventListener('click',async event=>{
-  const button=event.target.closest('[data-customer-open-order]');
-  if(!button)return;
-  const requestId=button.dataset.customerOpenOrder;
-  if(!requestId)return;
-  localStorage.setItem('currentRequestId',requestId);
-  try{
-    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
-    if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
-    const data=snap.data()||{};
-    order={location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)};
-    localStorage.setItem('currentOrder',JSON.stringify(order));
-    if(typeof startAcceptanceWatcher==='function')startAcceptanceWatcher();
-    const screenByStatus={owner_decision_pending:'searchingScreen',owner_accepted:'atharBookingScreen',booking_confirmed:'matchedScreen',owner_arrived:'arrivedCustomerScreen',otp_verified:'arrivedCustomerScreen',working:'workingScreen',completed_pending_customer:'completedScreen',disputed:'completedScreen',completed:'completedScreen',rated:'thankYouScreen',rejected:'roleScreen',searching:'searchingScreen',accepted:'matchedScreen',arrived:'arrivedCustomerScreen'};
-    const target=screenByStatus[String(data.status||'')]||'matchedScreen';
-    if(target==='atharBookingScreen'){const details=document.getElementById('atharBookingDetails');if(details)details.textContent=`${data.orderNumber||''} · ${data.equipment||'معدة'} · ${data.duration||''} · ${Number(data.reservedAmount||data.price||0).toLocaleString('ar-SA')} ريال`;}
-    if(target==='arrivedCustomerScreen'){const panel=document.getElementById('atharCustomerOtpArrivalPanel');if(panel){panel.hidden=false;const code=document.getElementById('atharCustomerOtpArrival');if(code)code.textContent=data.otpCodeCustomer||'------';}
-
-      const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
-      const l=document.getElementById('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';
-    }
-    if(target==='matchedScreen'){updateMatchedScreen();updateWorkingScreen();}
-    if(target==='workingScreen'){updateWorkingScreen();}
-    showScreen(target);
-  }catch(error){console.error('تعذر فتح طلب العميل:',error);alert('تعذر تحميل تفاصيل الطلب. تحقق من الاتصال.');}
-});
-
-/* 03 — وظائف العميل: تحديث الطلبات الحالية آليًا من Firebase */
-let customerOrdersRealtimeUnsubscribe=null;
-let customerOrdersRealtimeUserId='';
-async function startCustomerOrdersRealtime(){
-  try{
-    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
-    if(!user?.uid||!window.ma3daDB||typeof window.ma3daCollection!=='function'||typeof window.ma3daOnSnapshot!=='function')return;
-    if(customerOrdersRealtimeUnsubscribe&&customerOrdersRealtimeUserId===user.uid)return;
-    if(customerOrdersRealtimeUnsubscribe){customerOrdersRealtimeUnsubscribe();customerOrdersRealtimeUnsubscribe=null;}
-    customerOrdersRealtimeUserId=user.uid;
-    customerOrdersRealtimeUnsubscribe=window.ma3daOnSnapshot(window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'requests'),window.ma3daWhere('customerId','==',user.uid)),snapshot=>{
-      const currentActive=document.getElementById('currentOrdersScreen')?.classList.contains('active');
-      const previousActive=document.getElementById('previousOrdersScreen')?.classList.contains('active');
-      let currentChanged=false,previousChanged=false;
-      snapshot.forEach(doc=>{
-        const data=doc.data()||{};
-        if(data.customerId!==user.uid)return;
-        const id=doc.id;
-        ma3daNotifyCustomerStatus(id,data);
-        if(id===localStorage.getItem('currentRequestId')){
-          localStorage.setItem('currentOrder',JSON.stringify({location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)}));
-        }
-        if(['rejected','cancelled'].includes(String(data.status||''))||(data.status==='completed'&&Number(data.remainingBalance??data.invoiceAmount??data.price??0)<=0&&(data.paymentStatus==='paid'||data.settlementStatus==='settled')))previousChanged=true;
-        else currentChanged=true;
-      });
-      if(currentActive&&currentChanged)loadCustomerOrders('current');
-      if(previousActive&&previousChanged)loadCustomerOrders('previous');
-    },error=>console.error('Customer orders realtime listener failed:',error));
-  }catch(error){console.warn('تعذر تفعيل تحديث طلبات العميل المباشر:',error);}
-}
+/* فتح الطلبات ومتابعتها أصبح من اختصاص دورة ATHAR الجديدة فقط. */
 
 /* CUSTOMER ORDER BACK */
  
@@ -4393,65 +3615,7 @@ function renderOperatorRequestCards(list, requests, kind){
   });
 }
 
-async function loadOperatorNewRequests(){
-  const customerList = document.getElementById("operatorNewRequestsList");
-  const projectList = document.getElementById("operatorProjectRequestsList");
-  const refreshButton = document.getElementById("refreshOperatorRequestsBtn");
-  const updatedLabel = document.getElementById("operatorRequestsLastUpdated");
-  if(!customerList && !projectList) return;
-  if(refreshButton){refreshButton.disabled=true;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> جارٍ التحديث...';}
-  if(customerList) customerList.innerHTML='<div class="card center"><p>جاري تحميل طلبات العملاء...</p></div>';
-  if(projectList) projectList.innerHTML='<div class="card center"><p>جاري تحميل طلبات المشاريع...</p></div>';
-  try{
-    const user = await getOperatorCurrentUser();
-    if(!user || !user.uid){
-      const message='<div class="card center"><p>سجّل الدخول أولاً لعرض الطلبات.</p></div>';
-      if(customerList) customerList.innerHTML=message;
-      if(projectList) projectList.innerHTML=message;
-      return;
-    }
-    const equipment = await getOperatorEquipment();
-    if(!equipment){
-      const message='<div class="card center"><p>لم يتم العثور على بيانات المعدة. تأكد من حفظ بيانات معدتك أولاً.</p></div>';
-      if(customerList) customerList.innerHTML=message;
-      if(projectList) projectList.innerHTML=message;
-      return;
-    }
-    const ownerRequestRows = await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
-    const customerRequests=[];
-    const projectRequests=[];
-    ownerRequestRows.forEach(data=>{
-      data = data || {};
-      const eligibleStatus = data.status === "searching" || (data.status === "extension_requested" && !!(data.projectId || data.contractorId));
-      if(!eligibleStatus) return;
-      const targetedOwner = data.equipmentOwnerId || data.ownerId || data.operatorId || "";
-      const ownerMatches = targetedOwner ? targetedOwner === user.uid : (data.equipment === equipment.type || data.equipmentType === equipment.type || data.equipment === equipment.name);
-      if(!ownerMatches) return;
-      const role=String(data.requesterRole || data.requesterType || data.role || "").toLowerCase();
-      const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
-      if(legacyContractorRequest)return;
-      const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||role==='project_manager'||!!data.contractorId);
-      const request={...data};
-      (isProjectRequest ? projectRequests : customerRequests).push(request);
-    });
-    const sortNewest=(a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt);
-    customerRequests.sort(sortNewest);
-    projectRequests.sort(sortNewest);
-    renderOperatorRequestCards(customerList,customerRequests,"customers");
-    renderOperatorRequestCards(projectList,projectRequests,"projects");
-    if(updatedLabel){
-      updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
-    }
-  }catch(error){
-    console.error("خطأ في تحميل طلبات صاحب المعدة:",error);
-    const message='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال وصلاحيات قراءة الطلبات في Firebase، ثم اضغط تحديث الطلبات.</p></div>';
-    if(customerList) customerList.innerHTML=message;
-    if(projectList) projectList.innerHTML=message;
-    if(updatedLabel) updatedLabel.textContent='لم يكتمل التحديث. حاول مرة أخرى.';
-  }finally{
-    if(refreshButton){refreshButton.disabled=false;refreshButton.innerHTML='<span aria-hidden="true">⟳</span> تحديث الطلبات';}
-  }
-}
+/* تم حذف محمّل طلبات التأجير القديم الذي كان يبحث عن حالة searching؛ محمّل ATHAR الجديد فقط هو المستخدم. */
 
 /* 04 — وظائف صاحب المعدة: طلبات المشاريع الحالية والسابقة، مستقلة عن طلبات العملاء */
 let operatorProjectOrdersFilter = "current";
@@ -4594,221 +3758,11 @@ document.addEventListener("click",event=>{
   if(event.target.closest("#refreshOperatorRequestsBtn")) loadOperatorNewRequests();
 });
 
-/* ACCEPT */
- 
-async function acceptOperatorRequest(
-  requestId
-){
- 
-  try{
- 
-    const user =
-      await getOperatorCurrentUser();
- 
-    if(!user)
-      return;
- 
-    const requestRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "requests",
-        requestId
-      );
- 
-    const requestSnap =
-      await window.ma3daGetDoc(
-        requestRef
-      );
- 
-    if(!requestSnap.exists()){
- 
-      alert(
-        "الطلب غير موجود."
-      );
- 
-      return;
- 
-    }
- 
-    const request =
-      requestSnap.data() || {};
-    let customerProfile = {};
-    if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
-      try {
-        const customerSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "customers", request.customerId));
-        if (customerSnap.exists()) customerProfile = customerSnap.data() || {};
-      } catch (customerProfileError) { console.warn("تعذر تحميل بيانات العميل:", customerProfileError); }
-    }
- 
-    if(
-      request.status !==
-      "searching"
-    ){
- 
-      alert(
-        "هذا الطلب لم يعد متاحًا."
-      );
- 
-      await loadOperatorNewRequests();
- 
-      return;
- 
-    }
- 
-    const operatorRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "operators",
-        user.uid
-      );
- 
-    const operatorSnap =
-      await window.ma3daGetDoc(
-        operatorRef
-      );
- 
-    const operatorData =
-      operatorSnap.exists()
-        ? operatorSnap.data()
-        : {};
- 
-    const equipment =
-      await getOperatorEquipment();
- 
-    const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
-    const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
-    if(isProjectRequest && (!request.scheduledStartAt || !request.scheduledEndAt || !Array.isArray(request.workDays) || !request.workDays.length || !request.dailyStartTime || !request.dailyEndTime || !request.paymentTerms || !Array.isArray(request.paymentSchedule) || !request.paymentSchedule.length)){
-      alert('لا يمكن قبول الطلب: بيانات الجدول أو شروط الدفع أو خطة الدفعات غير مكتملة.');return;
-    }
-    if(isProjectRequest && (!request.equipmentOwnerId || request.equipmentOwnerId !== user.uid)){
-      alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
-    }
-    const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_installments'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
-    await window.ma3daUpdateDoc(
-      requestRef,
-      {
- 
-        status:
-          "accepted",
-        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
- 
-        operatorId:
-          user.uid,
- 
-        operatorName:
-          operatorData.name ||
-          "صاحب المعدة",
- 
-        operatorPhone:
-          operatorData.phone ||
-          "",
-        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
- 
-        operatorRating:
-          Number(
-            operatorData.rating || 5
-          ),
- 
-        operatorEquipment:
-          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
-        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
-        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
-        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
- 
-        acceptedAt:
-          Date.now(),
-        agreedDuration: request.duration || "",
-        agreedPrice: Number(request.price || 0),
-        agreedHourlyPrice: Number(request.hourlyPrice || 0),
-        agreementVersion: 1,
-        extensionStatus: "none",
-        workStatus: "scheduled"
- 
-      }
-    );
-    if(isProjectRequest){
-      const acceptedSchedule=(acceptedPaymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||index===0&&request.paymentPlan==='four_installments')?'due':item.status||'not_due'}));
-      await window.ma3daCreateSharedProjectInvoices(requestId,{...request,operatorId:user.uid},acceptedSchedule);
-    }
- 
-    localStorage.setItem("currentRequestId", requestId);
- 
-    localStorage.setItem("orderState", "accepted");
- 
-    if(isProjectRequest){
-      await loadOperatorProjectOrders();
-      setOperatorProjectOrdersFilter("current");
-      showScreen("operatorProjectOrdersScreen");
-    }else{
-      await loadOperatorCurrentOrder();
-      showScreen("operatorCurrentOrderScreen");
-    }
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في قبول الطلب:",
-      error
-    );
- 
-    alert(
-      "تعذر قبول الطلب."
-    );
- 
-  }
- 
-}
- 
-/* REJECT */
- 
-async function rejectOperatorRequest(
-  requestId
-){
- 
-  try{
-    const user=await getOperatorCurrentUser();
-    if(!user?.uid){alert('سجّل الدخول بحساب صاحب المعدة.');return;}
-    const requestRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "requests",
-        requestId
-      );
- 
-    const snap=await window.ma3daGetDoc(requestRef);
-    if(!snap.exists()){alert('الطلب غير موجود.');return;}
-    const data=snap.data()||{};
-    const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
-    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
-    if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
-    await window.ma3daUpdateDoc(
-      requestRef,
-      {
-        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
-        rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
-      }
-    );
- 
-    await loadOperatorNewRequests();
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في رفض الطلب:",
-      error
-    );
- 
-    alert(
-      "تعذر رفض الطلب."
-    );
- 
-  }
- 
-}
- 
-/* آثار 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
-let ma3daOwnerPosition = null;
-let ma3daArrivalDistanceKm = null;
+/* OLD CUSTOMER/OWNER RENTAL ACCEPT-REJECT HANDLERS REMOVED.
+   Customer rental decisions are handled only by atharNewRentalFlow.
+   Project decisions are handled by atharLegacyProjectAccept/RejectOperatorRequest. */
+
+/* تم حذف واجهة التحقق القديمة؛ أبقينا أدوات GPS والمسافة التي يستخدمها المسار الجديد. */
 function ma3daDistanceKm(a,b){
   if(!a||!b)return Infinity;
   const rad=v=>v*Math.PI/180;
@@ -4816,21 +3770,7 @@ function ma3daDistanceKm(a,b){
   const x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
   return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));
 }
-function ma3daUpdateArrivalEligibility(data){
-  const btn=document.getElementById('operatorArrivedBtn');
-  const feedback=document.getElementById('operatorDistanceFeedback');
-  const target=ma3daCustomerCoordinates(data||window.ma3daActiveRequestData||{});
-  const distance=target&&ma3daOwnerPosition?ma3daDistanceKm(ma3daOwnerPosition,target):Infinity;
-  ma3daArrivalDistanceKm=distance;
-  const eligible=Number.isFinite(distance)&&distance<=1&&Number(ma3daOwnerPosition?.accuracy||Infinity)<=100&&String((data||{}).status||'accepted')==='accepted';
-  if(btn){btn.disabled=!eligible;btn.setAttribute('aria-disabled',String(!eligible));}
-  if(feedback){
-    if(!target)feedback.textContent='موقع العميل غير محفوظ بإحداثيات دقيقة؛ لا يمكن تأكيد الوصول حتى يحدد العميل موقعه بدقة.';
-    else if(!ma3daOwnerPosition)feedback.textContent='اضغط «التحقق من المسافة» للسماح بتحديد موقعك والتحقق من أنك ضمن كيلومتر واحد.';
-    else feedback.textContent=eligible?`أنت ضمن نطاق الوصول (${(distance*1000).toFixed(0)} متر). يمكنك تأكيد الوصول.`:`أنت على بُعد ${(distance).toFixed(2)} كم من العميل. زر الوصول سيتاح عند دخول نطاق 1 كم.`;
-  }
-  return eligible;
-}
+
 function ma3daGetOwnerPosition(){
   return new Promise((resolve,reject)=>{
     if(!navigator.geolocation){reject(new Error('هذا الجهاز لا يدعم تحديد الموقع.'));return;}
@@ -4841,30 +3781,6 @@ function ma3daGetOwnerPosition(){
     );
   });
 }
-const operatorCheckDistanceBtn=document.getElementById('operatorCheckDistanceBtn');
-if(operatorCheckDistanceBtn){operatorCheckDistanceBtn.addEventListener('click',async()=>{
-  const original=operatorCheckDistanceBtn.textContent;
-  operatorCheckDistanceBtn.disabled=true;operatorCheckDistanceBtn.textContent='جارٍ التحقق من موقعك…';
-  try{
-    ma3daOwnerPosition=await ma3daGetOwnerPosition();
-    let latest=window.ma3daActiveRequestData||{};
-    const id=localStorage.getItem('currentRequestId');
-    if(id&&window.ma3daDB&&window.ma3daDoc&&window.ma3daGetDoc){const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));if(snap.exists())latest=window.ma3daActiveRequestData=snap.data()||latest;}
-    if(!ma3daCustomerCoordinates(latest)){throw new Error('موقع العميل غير محفوظ كإحداثيات دقيقة؛ لا يمكن حساب المسافة بأمان.');}
-    ma3daUpdateArrivalEligibility(latest);
-  }catch(error){ma3daOwnerPosition=null;ma3daUpdateArrivalEligibility(window.ma3daActiveRequestData||{});alert(error.message||'تعذر التحقق من المسافة.');}
-  finally{operatorCheckDistanceBtn.disabled=false;operatorCheckDistanceBtn.textContent=original;}
-});}
-const operatorCustomerMapBtn=document.getElementById('operatorCustomerMapBtn');
-if(operatorCustomerMapBtn){operatorCustomerMapBtn.addEventListener('click',async()=>{
-  try{
-    const id=localStorage.getItem('currentRequestId');if(!id)throw new Error('لا يوجد طلب حالي.');
-    if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
-    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));
-    if(!snap.exists())throw new Error('الطلب غير موجود.');
-    ma3daOpenCustomerMap(snap.data()||{});
-  }catch(error){alert(error.message||'تعذر فتح موقع العميل.');}
-});}
 
 /* OPERATOR TIMER */
  
@@ -4944,248 +3860,15 @@ function setOperatorCustomerOrdersFilter(filter){
   if(previousPanel)previousPanel.hidden=operatorCustomerOrdersFilter!=="previous";
 }
 
-function renderOwnerCustomerOrderCards(list, requests, previous){
-  if(!list)return;
-  if(!requests.length){
-    list.innerHTML=`<div class="card center"><div class="success-icon">${previous?'✓':'🚜'}</div><h3>${previous?'لا توجد طلبات عملاء سابقة':'لا توجد طلبات عملاء حالية'}</h3><p>${previous?'ستظهر هنا الطلبات بعد اكتمالها أو رفضها.':'ستظهر هنا طلبات العملاء المقبولة أو الجاري تنفيذها.'}</p></div>`;
-    return;
-  }
-  list.innerHTML="";
-  requests.forEach(r=>{
-    const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const card=document.createElement("article");
-    card.className="card operator-new-request-card";
-    const statusLabels={accepted:"مقبول",arrived:"وصلت المعدة",working:"قيد العمل",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي",in_progress:"قيد التنفيذ"};
-    card.innerHTML=`
-      <div class="request-title"><span>🚜</span><div><h2>${esc(r.equipment||r.equipmentType||"معدة")}</h2><p>طلب عميل</p></div></div>
-      <div class="operator-info">
-        <div class="operator-info-row"><span>👤 العميل</span><strong>${esc(r.customerName||r.requesterName||"عميل")}</strong></div>
-        <div class="operator-info-row"><span>📍 الموقع</span><strong>${esc(r.location||"—")}</strong></div>
-        <div class="operator-info-row"><span>⏱️ المدة</span><strong>${esc(r.duration||"—")}</strong></div>
-        <div class="operator-info-row"><span>💰 المبلغ</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
-        <div class="operator-info-row"><span>📌 الحالة</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
-      </div>
-      ${!previous?`<button type="button" class="main-btn" data-owner-customer-open="${esc(r.id)}">عرض تفاصيل الطلب</button>`:`<div class="operator-current-status"><strong>${r.status==="completed"?"تم إكمال الطلب":"انتهى الطلب دون إكمال"}</strong></div>`}`;
-    list.appendChild(card);
-  });
-}
-
-async function loadOperatorCustomerOrders(){
-  const currentList=document.getElementById("operatorCustomerCurrentList");
-  const previousList=document.getElementById("operatorCustomerPreviousList");
-  const updated=document.getElementById("operatorCustomerOrdersUpdated");
-  if(!currentList&&!previousList)return;
-  if(currentList)currentList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div>';
-  if(previousList)previousList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div>';
-  try{
-    const user=await getOperatorCurrentUser();
-    if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات العملاء.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const ownerCustomerRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
-    const current=[],previous=[];
-    ownerCustomerRows.forEach(d=>{
-      d=d||{};
-      const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
-      const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
-      const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
-      if(owner!==user.uid||isProject)return;
-      const r={...d};
-      if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
-      else if(["accepted","arrived","working","in_progress","duration_expired"].includes(String(d.status||"")))current.push(r);
-    });
-    const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
-    current.sort(sort);
-    previous.sort((a,b)=>operatorRequestDateValue(b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.completedAt||a.updatedAt||a.createdAt));
-    renderOwnerCustomerOrderCards(currentList,current,false);
-    renderOwnerCustomerOrderCards(previousList,previous,true);
-  }catch(error){
-    console.error("تعذر تحميل طلبات العملاء لصاحب المعدة:",error);
-    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم أعد فتح الصفحة.</p></div>';
-    if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;
-  }
-}
-
-window.loadOperatorCustomerOrders=loadOperatorCustomerOrders;
 
 document.addEventListener("click",event=>{
   const tab=event.target.closest("[data-owner-customer-filter]");
   if(tab){setOperatorCustomerOrdersFilter(tab.dataset.ownerCustomerFilter);return;}
-  if(event.target.closest("#refreshOperatorCustomerOrdersBtn")){loadOperatorCustomerOrders();return;}
-  const open=event.target.closest("[data-owner-customer-open]");
-  if(open){localStorage.setItem("currentRequestId",open.dataset.ownerCustomerOpen);loadOperatorCurrentOrder().then(()=>showScreen("operatorCurrentOrderScreen"));}
+  if(event.target.closest("#refreshOperatorCustomerOrdersBtn")){window.loadOperatorCustomerOrders?.();return;}
 });
 
-/* OPERATOR PREVIOUS ORDERS */
- 
-async function loadOperatorPreviousOrders(){
- 
-  const list =
-    document.getElementById("operatorPreviousOrdersList");
- 
-  if(!list)
-    return;
- 
-  list.innerHTML = `
-    <div class="card center">
-      <p>جاري تحميل الطلبات...</p>
-    </div>
-  `;
- 
-  try{
- 
-    const user =
-      await getOperatorCurrentUser();
- 
-    if(!user)
-      return;
- 
-    const previousRows = await ma3daReadUserRows("requests", ["operatorId", "equipmentOwnerId", "ownerId"], user.uid);
- 
-    const requests = [];
- 
-    previousRows.forEach(
-      data=>{
-        data = data || {};
- 
-        if(
-          data.operatorId === user.uid &&
-          (
-            data.status === "completed" ||
-            data.status === "rejected"
-          )
-        ){
- 
-          requests.push({ ...data });
- 
-        }
- 
-      }
-    );
- 
-    requests.sort(
-      (a,b)=>
-        Number(
-          b.completedAt ||
-          b.createdAt ||
-          0
-        ) -
-        Number(
-          a.completedAt ||
-          a.createdAt ||
-          0
-        )
-    );
- 
-    if(!requests.length){
- 
-      list.innerHTML = `
-        <div class="card center">
-          <p>
-            لا توجد طلبات سابقة حتى الآن.
-          </p>
-        </div>
-      `;
- 
-      return;
- 
-    }
- 
-    list.innerHTML =
-      "";
- 
-    requests.forEach(
-      request=>{
- 
-        const card =
-          document.createElement(
-            "div"
-          );
- 
-        card.className =
-          "card";
- 
-        const status =
-          request.status ===
-          "completed"
-            ? "مكتمل ✅"
-            : "مرفوض ❌";
- 
-        card.innerHTML = `
- 
-          <h3>
-            ${request.equipment || "-"}
-          </h3>
- 
-          <div class="info-row">
- 
-            <span>
-              الموقع
-            </span>
- 
-            <strong>
-              ${request.location || "-"}
-            </strong>
- 
-          </div>
- 
-          <div class="info-row">
- 
-            <span>
-              المدة
-            </span>
- 
-            <strong>
-              ${request.duration || "-"}
-            </strong>
- 
-          </div>
- 
-          <div class="info-row">
- 
-            <span>
-              المبلغ
-            </span>
- 
-            <strong>
-              ${Number(
-                request.price || 0
-              ).toLocaleString("ar-SA")}
-              ريال
-            </strong>
- 
-          </div>
- 
-          <div class="info-row">
- 
-            <span>
-              الحالة
-            </span>
- 
-            <strong>
-              ${status}
-            </strong>
- 
-          </div>
- 
-        `;
- 
-        list.appendChild(
-          card
-        );
- 
-      }
-    );
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في الطلبات السابقة:",
-      error
-    );
- 
-  }
- 
-}
- 
+/* تم حذف عارض الطلبات السابقة القديم؛ يعرض النظام الجديد الطلبات الحالية والسابقة وفق حالات ATHAR الجديدة. */
+
 /* 04 — وظائف صاحب المعدة: الدخل والفواتير */
 /* OPERATOR INCOME */
  
@@ -5241,10 +3924,7 @@ async function loadOperatorIncome(){
  
         completedCount++;
  
-        const hours =
-          durationHours[
-            data.duration
-          ] || 0;
+        const hours = Number(data.durationHours || 0);
  
         totalHours +=
           hours;
@@ -5387,13 +4067,14 @@ async function loadOperatorRatings(){
         docSnap.data();
  
       if(
-        data.operatorId === user.uid &&
-        data.status === "completed"
+        (data.equipmentOwnerId === user.uid || data.ownerId === user.uid || data.operatorId === user.uid) &&
+        data.flowVersion === "ATHAR-RENTAL-2026-NEW" &&
+        data.status === "rated"
       ){
  
         const rating =
           Number(
-            data.rating || 0
+            data.equipmentRating || data.rating || 0
           );
  
         if(
@@ -5963,40 +4644,36 @@ async function saveOperatorSettings(){
  
 /* OPERATOR EVENTS */
  
-document.addEventListener(
-  "click",
-  async event=>{
- 
-    const acceptBtn =
-      event.target.closest(
-        "[data-accept-request]"
-      );
- 
-    if(acceptBtn){
- 
-      await acceptOperatorRequest(
-        acceptBtn.dataset.acceptRequest
-      );
- 
+/* ATHAR RENTAL ROUTER — يمنع دورة التأجير القديمة من استقبال طلبات العملاء.
+   طلبات العملاء تمر حصريًا عبر دورة ATHAR الجديدة؛ طلبات المشاريع تبقى مستقلة. */
+document.addEventListener("click", async event => {
+  const acceptBtn = event.target.closest("[data-accept-request]");
+  const rejectBtn = event.target.closest("[data-reject-request]");
+  const button = acceptBtn || rejectBtn;
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const requestId = acceptBtn ? acceptBtn.dataset.acceptRequest : rejectBtn.dataset.rejectRequest;
+  try {
+    const snap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "requests", requestId));
+    if (!snap.exists()) throw new Error("الطلب غير موجود.");
+    const data = snap.data() || {};
+    if (data.projectId) {
+      const projectAction = acceptBtn
+        ? window.atharLegacyProjectAcceptOperatorRequest
+        : window.atharLegacyProjectRejectOperatorRequest;
+      if (typeof projectAction !== "function") throw new Error("مسار طلب المشروع غير متاح.");
+      await projectAction(requestId);
       return;
- 
     }
- 
-    const rejectBtn =
-      event.target.closest(
-        "[data-reject-request]"
-      );
- 
-    if(rejectBtn){
- 
-      await rejectOperatorRequest(
-        rejectBtn.dataset.rejectRequest
-      );
- 
-    }
- 
+    const rentalAction = acceptBtn ? window.acceptOperatorRequest : window.rejectOperatorRequest;
+    if (typeof rentalAction !== "function") throw new Error("نظام طلبات التأجير الجديد غير جاهز؛ أعد المحاولة بعد تحميل الصفحة.");
+    await rentalAction(requestId);
+  } catch (error) {
+    console.error("ATHAR request routing:", error);
+    alert(error.message || "تعذر تحديث الطلب.");
   }
-);
+}, true);
  
 /* OPERATOR DASHBOARD BUTTONS */
  
@@ -6024,7 +4701,7 @@ const operatorCustomerOrdersBtn=document.getElementById("operatorCustomerOrdersB
 if(operatorCustomerOrdersBtn){
   operatorCustomerOrdersBtn.addEventListener("click",async()=>{
     setOperatorCustomerOrdersFilter("current");
-    await loadOperatorCustomerOrders();
+    await window.loadOperatorCustomerOrders?.();
     showScreen("operatorCustomerOrdersScreen");
   });
 }
@@ -7627,14 +6304,17 @@ async function loadSupportOrders(){
   const current =
     rows.filter(
       row =>
+        row.flowVersion === "ATHAR-RENTAL-2026-NEW" &&
         [
-          "searching",
-          "accepted",
-          "arrived",
-          "working"
-        ].includes(
-          row.status
-        )
+          "owner_decision_pending",
+          "owner_accepted",
+          "booking_confirmed",
+          "owner_arrived",
+          "otp_verified",
+          "working",
+          "completed_pending_customer",
+          "disputed"
+        ].includes(String(row.status || ""))
     );
  
  
@@ -10814,7 +9494,8 @@ document.addEventListener("click", function(event){
     const previousShowScreen = showScreen;
     showScreen = function(id){
       document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
-      previousShowScreen(id);
+      // Preserve the original return value (true/false) for callers that verify navigation.
+      return previousShowScreen(id);
     };
     window.__ma3daDynamicScreenNavigation = true;
   }
@@ -15645,6 +14326,9 @@ async function atharLegacyProjectAcceptOperatorRequest(
  
     const request =
       requestSnap.data() || {};
+    if(!request.projectId){
+      throw new Error("تم إيقاف دورة التأجير القديمة؛ طلبات العملاء تُدار حصريًا عبر نظام ATHAR الجديد.");
+    }
     let customerProfile = {};
     if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
       try {
@@ -15773,6 +14457,10 @@ async function atharLegacyProjectAcceptOperatorRequest(
 }
  
 
+window.atharLegacyProjectAcceptOperatorRequest = atharLegacyProjectAcceptOperatorRequest;
+
+window.atharLegacyProjectRejectOperatorRequest = atharLegacyProjectRejectOperatorRequest;
+
 async function atharLegacyProjectRejectOperatorRequest(
   requestId
 ){
@@ -15790,6 +14478,9 @@ async function atharLegacyProjectRejectOperatorRequest(
     const snap=await window.ma3daGetDoc(requestRef);
     if(!snap.exists()){alert('الطلب غير موجود.');return;}
     const data=snap.data()||{};
+    if(!data.projectId){
+      throw new Error("تم إيقاف رفض طلبات التأجير القديمة؛ استخدم دورة ATHAR الجديدة.");
+    }
     const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
     if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
     if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
@@ -16095,8 +14786,14 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   if(requestBtn){
     requestBtn.disabled=false;
     requestBtn.removeAttribute('disabled');
-    requestBtn.addEventListener('click',async()=>{
-      if(requestBtn.disabled)return;
+  }
+  document.addEventListener('click', async event => {
+    const requestButton = event.target.closest('#requestBtn');
+    if (!requestButton) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const requestBtn = requestButton;
+    if(requestBtn.disabled)return;
       const location=String($('locationInput')?.value||'').trim();
       const type=String($('equipmentSelect')?.value||'').trim();
       const duration=String($('durationSelect')?.value||'').trim();
@@ -16131,8 +14828,8 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
         requestBtn.disabled=false;
         requestBtn.textContent=originalText||'اطلب الآن';
       }
-    });
-  }else{
+  }, true);
+  if(!requestBtn){
     console.error('ATHAR: لم يتم العثور على زر requestBtn لربط إجراء الطلب.');
   }
   async function loadAvailable(){
@@ -16211,6 +14908,7 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   async function otpHash(code){const bytes=new TextEncoder().encode(String(code));const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');}
   function showBooking(data){$('atharBookingDetails').textContent=`${data.orderNumber||''} · ${data.equipment||'معدة'} · ${data.duration||''} · مبلغ الحجز ${money(data.reservedAmount||data.price)}`;const method=$('atharPaymentMethod');if(method)method.value='cash_test';const feedback=$('atharBookingFeedback');if(feedback)feedback.textContent='';showScreen('atharBookingScreen');}
   function showCustomerOrder(data){
+    order={location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.reservedAmount||data.price||0)};
     if(data.status==='owner_accepted'){showBooking(data);return;}
     if(data.status==='rejected'){stopAcceptanceWatcher();alert('اعتذر صاحب المعدة عن الطلب.');showScreen('roleScreen');return;}
     if(['booking_confirmed','owner_arrived','otp_verified','working','completed_pending_customer','disputed','completed','rated'].includes(data.status)){
@@ -16226,7 +14924,24 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
        const extPanel=$('atharCustomerExtensionPanel');if(extPanel){const x=data.extensionRequest||{};extPanel.hidden=!(data.status==='working'&&x.status==='pending_customer');const detail=$('atharCustomerExtensionDetails');if(detail)detail.textContent=`طلب صاحب المعدة تمديد ${Number(x.hours||0)} ساعة بمبلغ ${money(x.amount||0)}. لن يتم اعتماد التمديد قبل موافقتك وتأكيد الدفع التجريبي.`;}
 
       if(screen==='arrivedCustomerScreen'){const e=$('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';const l=$('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';}
-      if(screen==='workingScreen'){updateWorkingScreen();const start=Number(data.workStartedAt||Date.now());if(start!==customerTimerStart){customerTimerStart=start;workStartTime=start;clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();}}else if(customerTimerStart){clearInterval(timerInterval);customerTimerStart=0;}
+      if(screen==='workingScreen'){
+         updateWorkingScreen(data);
+         const start=Number(data.workStartedAt||Date.now());
+         if(start!==customerTimerStart){
+           customerTimerStart=start;
+           clearInterval(customerWorkTimer);
+           const tick=()=>{
+             const elapsed=Math.max(0,Math.floor((Date.now()-customerTimerStart)/1000));
+             const timer=$('timer');
+             if(timer)timer.textContent=[Math.floor(elapsed/3600),Math.floor((elapsed%3600)/60),elapsed%60].map(v=>String(v).padStart(2,'0')).join(':');
+           };
+           tick();
+           customerWorkTimer=setInterval(tick,1000);
+         }
+       }else if(customerTimerStart){
+         clearInterval(customerWorkTimer);
+         customerTimerStart=0;
+       }
       if(screen==='ratingScreen')showScreen('ratingScreen');else showScreen(screen);
     }
   }
@@ -16290,7 +15005,8 @@ Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipm
   if($('operatorStartWorkBtn'))$('operatorStartWorkBtn').addEventListener('click',window.operatorStartWork);
   if($('operatorEndWorkBtn'))$('operatorEndWorkBtn').addEventListener('click',window.operatorFinishWork);
   // طلب التمديد: لا يعتمد إلا بموافقة العميل وتأكيد الدفع التجريبي.
-  $('atharRequestExtensionBtn')?.addEventListener('click',async()=>{
+  $
+  ('atharRequestExtensionBtn')?.addEventListener('click',async()=>{
     const id=localStorage.getItem('currentRequestId'),hours=Number($('atharExtensionHours')?.value||0),feedback=$('atharExtensionOwnerFeedback');
     try{
       if(!Number.isInteger(hours)||hours<1||hours>240)throw new Error('أدخل عدد ساعات صحيحًا بين 1 و240.');
