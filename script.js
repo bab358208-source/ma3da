@@ -508,6 +508,13 @@ if(emailLoginBtn){
   emailLoginBtn.addEventListener(
     "click",
     async()=>{
+      // تثبيت الدور المختار قبل الدخول حتى لا يضيع بسبب فحص الجلسة المتأخر.
+      const roleLabel = document.getElementById("phoneRoleText")?.textContent || "";
+      const storedRole = localStorage.getItem("selectedRole") || "";
+      selectedRole = storedRole || (
+        roleLabel.includes("صاحب معدة") || roleLabel.includes("مشغل") ? "operator" :
+        roleLabel.includes("عميل") ? "customer" : selectedRole
+      );
  
       const {
         email,
@@ -1790,18 +1797,15 @@ if(backFromRequestBtn){
     }
  
     if(!user){
- 
-      selectedRole =
-        "";
- 
-      localStorage.removeItem("selectedRole");
- 
-      showScreen(
-        "introScreen"
-      );
- 
+      // لا تلغِ اختيار الدور إذا اكتمل فحص الجلسة بعد فتح شاشة تسجيل الدخول.
+      const loginScreenIsActive =
+        document.getElementById("phoneScreen")?.classList.contains("active");
+      if(!loginScreenIsActive){
+        selectedRole = "";
+        localStorage.removeItem("selectedRole");
+        showScreen("introScreen");
+      }
       return;
- 
     }
  
     if(!savedRole){
@@ -14460,5 +14464,4 @@ if(stage==='arrived')buttons='<label>رمز OTP الذي أعطاك العميل
   const originalShow=window.showScreen;
   if(typeof originalShow==='function'&&!window.__atharShowWrapped){window.__atharShowWrapped=true;window.showScreen=function(id){const result=originalShow.apply(this,arguments);if(id==='atharCustomerOrderScreen')renderCustomerOrder().catch(e=>console.warn(e));if(id==='operatorNewRequestsScreen')renderOwnerCustomerOrders().catch(e=>console.warn(e));return result;};}
   window.atharLoadCustomerOrder=renderCustomerOrder;
-  window.atharLoadOwnerCustomerOrders=renderOwnerCustomerOrders;
-})();
+  
