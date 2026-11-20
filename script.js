@@ -200,9 +200,7 @@ if(operatorRoleBtn){
  
       localStorage.setItem("selectedRole", "operator");
  
-      if (typeof stopAcceptanceWatcher === "function") {
-        stopAcceptanceWatcher();
-      }
+      stopAcceptanceWatcher();
  
       const text =
         document.getElementById("phoneRoleText");
@@ -415,96 +413,35 @@ if(backFromForgotPasswordBtn){
  
 }
  
-/* فتح صفحة صاحب المعدة حسب وجود */
- 
+/* فتح بوابة صاحب المعدة بعد تسجيل الدخول.
+   نعتمد مسار لوحة التحكم الموحد لأنه يبحث عن المعدة بواسطة ownerId/operatorId/userId
+   ويدعم الوثائق ذات المعرّفات التلقائية، وليس equipment/{uid} فقط. */
 async function openOperatorAfterLogin(){
- 
-  const user =
-    window.ma3daGetCurrentUser
+  try{
+    await Promise.resolve(window.ma3daFirebaseReady);
+
+    const user = window.ma3daGetCurrentUser
       ? await window.ma3daGetCurrentUser()
       : window.ma3daAuth?.currentUser;
- 
-  if(!user){
- 
-    alert(
-      "تعذر استعادة تسجيل الدخول"
-    );
- 
-    showScreen(
-      "phoneScreen"
-    );
- 
-    return;
- 
-  }
- 
-  if(!window.ma3daDB){
- 
-    alert(
-      "Firebase غير متصل"
-    );
- 
-    return;
- 
-  }
- 
-  try{
- 
-    const ref =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "equipment",
-        user.uid
-      );
- 
-    const snapshot =
-      await window.ma3daGetDoc(ref);
- 
-    if(snapshot.exists()){
- 
-      await displayMyEquipment();
- 
-      const hasOperatorData =
-        await loadOperatorData();
- 
-      if(!hasOperatorData){
- 
-        showScreen(
-          "operatorDataScreen"
-        );
- 
-        return;
- 
-      }
- 
-      await loadOperatorHome();
- 
-      showScreen(
-        "operatorHomeScreen"
-      );
- 
-    }else{
- 
-      showScreen(
-        "addEquipmentScreen"
-      );
- 
+
+    if(!user?.uid){
+      throw new Error("تعذر استعادة جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.");
     }
- 
+    if(!window.ma3daDB || typeof window.ma3daDoc !== "function" || typeof window.ma3daGetDoc !== "function"){
+      throw new Error("اتصال Firebase غير مكتمل. أعد تحميل الصفحة وحاول مرة أخرى.");
+    }
+
+    // openOperatorDashboard يتولى تحديد الصفحة الصحيحة:
+    // بيانات صاحب المعدة، إضافة المعدة، أو الصفحة الرئيسية.
+    await openOperatorDashboard();
   }catch(error){
- 
-    console.error(
-      "خطأ في فحص المعدة:",
-      error
-    );
- 
-    alert(
-      "تعذر تحميل بيانات المعدة"
-    );
- 
+    console.error("خطأ في فتح بوابة صاحب المعدة بعد تسجيل الدخول:", error);
+    const errorElement = document.getElementById("emailError");
+    if(errorElement) errorElement.textContent = error?.message || "تعذر فتح بوابة أصحاب المعدات.";
+    else alert(error?.message || "تعذر فتح بوابة أصحاب المعدات.");
   }
- 
 }
+
 if(emailLoginBtn){
  
   emailLoginBtn.addEventListener(
@@ -14243,6 +14180,16 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pending=()=>{try{return JSON.parse(localStorage.getItem('atharPendingRegistration')||'null')}catch(_){return null}};
   const user=async()=>{await Promise.resolve(window.ma3daFirebaseReady);return window.ma3daAuth?.currentUser||(await window.ma3daGetCurrentUser?.());};
+  async function requirePlatformOwner(){
+    await Promise.resolve(window.ma3daFirebaseReady);
+    const current=await user();
+    if(!current?.uid)throw new Error('سجّل الدخول بحساب مالك التطبيق أولاً.');
+    if(!window.ma3daDB||typeof window.ma3daDoc!=='function'||typeof window.ma3daGetDoc!=='function')throw new Error('اتصال Firebase غير جاهز.');
+    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'supportStaff',current.uid));
+    const profile=snap.exists()?(snap.data()||{}):{};
+    if(profile.role!=='owner'||profile.active===false)throw new Error('هذه الصفحة مخصصة لمالك التطبيق فقط.');
+    return current;
+  }
   const collection=()=>window.ma3daCollection(window.ma3daDB,'registrationRequests');
   async function rows(){if(!window.ma3daDB||!window.ma3daGetDocs)throw new Error('Firebase غير جاهز');const snap=await window.ma3daGetDocs(collection());return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));}
   let selectedSupportRegistration=null;
@@ -14288,13 +14235,13 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   async function loadSupport(){const authorized=await requireSupportEmployee();if(!authorized)return;const target=$('supportRegistrationsList');if(target)target.textContent='جارٍ تحميل التسجيلات...';try{const list=await rows();const staff=await user();for(const item of list){if(item.status==='pending_support'&&!item.assignedStaffUid){try{await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'registrationRequests',item.id),{assignedStaffUid:staff.uid,assignedStaff:staff.email||staff.uid,assignedAt:Date.now()});item.assignedStaffUid=staff.uid;item.assignedStaff=staff.email||staff.uid;}catch(assignError){console.warn('تعذر إسناد التسجيل لموظف الدعم:',assignError);}}}renderSupport(list)}catch(e){if(target)target.textContent=e.message||'تعذر تحميل التسجيلات.';}}
   window.atharLoadSupportRegistrations=loadSupport;
   function renderOwner(list,mode){const target=$('ownerRegistrationPanelList');if(!target)return;const items=mode==='final'?list.filter(x=>['support_approved','pending_owner'].includes(x.status)):list.filter(x=>!['owner_approved','owner_rejected'].includes(x.status));if(!items.length){target.innerHTML='<div class="support-empty">لا توجد طلبات ضمن هذا القسم.</div>';return;}target.innerHTML=items.map(x=>{const p=x.personalData||{};const wait=Math.max(0,Date.now()-Number(x.submittedAt||x.createdAt||Date.now()));const hours=Math.floor(wait/3600000);return `<article class="support-row"><h3>${x.role==='operator'?'صاحب معدة':'صاحب / مسؤول مشروع'} — ${esc(p.name)}</h3><p>الجوال: ${esc(p.phone)} · البريد: ${esc(p.email)}</p><p>الحالة: ${esc(x.status)} · موظف الدعم: ${esc(x.assignedStaff||x.supportReviewedBy||'غير مسند')}</p><p>مدة الانتظار: ${hours} ساعة · الإنذارات: ${Number(x.alertCount||0)} · التصعيدات: ${Number(x.escalationCount||0)}</p>${x.supportReason?`<p>ملاحظة الدعم: ${esc(x.supportReason)}</p>`:''}<button type="button" class="support-btn" data-athar-owner-open="${esc(x.id)}">عرض البيانات والمرفقات</button></article>`}).join('');}
-  async function loadOwner(mode){const target=$('ownerRegistrationPanelList');if(target)target.textContent='جارٍ تحميل الطلبات...';try{renderOwner(await rows(),mode);const panel=$('ownerRegistrationPanel');if(panel)panel.hidden=false;$('ownerRegistrationPanelTitle').textContent=mode==='final'?'الاعتماد النهائي للمسجلين الجدد':'مراقبة الدعم وطلبات التسجيل المتعثرة';}catch(e){if(target)target.textContent=e.message||'تعذر تحميل الطلبات.';}}
+  async function loadOwner(mode){const target=$('ownerRegistrationPanelList');if(target)target.textContent='جارٍ تحميل الطلبات...';try{await requirePlatformOwner();renderOwner(await rows(),mode);const panel=$('ownerRegistrationPanel');if(panel)panel.hidden=false;const title=$('ownerRegistrationPanelTitle');if(title)title.textContent=mode==='final'?'تدقيق التسجيلات الجديدة — الاعتماد النهائي':'مراقبة الدعم وطلبات التسجيل المتعثرة';panel?.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){if(target)target.textContent=e.message||'تعذر تحميل الطلبات.';else alert(e.message||'تعذر تحميل الطلبات.');}}
   async function decision(id,status,role){
     const supportActive=$('supportDashboardScreen')?.classList.contains('active');
     const ownerActive=$('ownerPortalDashboardScreen')?.classList.contains('active');
     if(role==='support'&&!supportActive)throw new Error('هذا الإجراء مخصص لموظفي الدعم داخل بوابتهم.');if(role==='support'&&!await requireSupportEmployee())throw new Error('يجب تسجيل الدخول بحساب موظف دعم معتمد.');
     if(role==='owner'&&!ownerActive)throw new Error('الاعتماد النهائي مخصص لمالك التطبيق فقط.');
-    const u=await user();if(!u?.uid)throw new Error('سجّل الدخول أولاً.');const ref=window.ma3daDoc(window.ma3daDB,'registrationRequests',id);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب التسجيل غير موجود.');const x=snap.data()||{};
+    const u=role==='owner'?await requirePlatformOwner():await user();if(!u?.uid)throw new Error('سجّل الدخول أولاً.');const ref=window.ma3daDoc(window.ma3daDB,'registrationRequests',id);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب التسجيل غير موجود.');const x=snap.data()||{};
     if(role==='support'&&x.status!=='pending_support')throw new Error('هذا التسجيل لم يعد بانتظار المراجعة المبدئية. حدّث القائمة.');
     if(role==='owner'&&!['support_approved','pending_owner'].includes(x.status))throw new Error('لا يمكن اتخاذ قرار نهائي قبل قبول موظف الدعم المبدئي.');
     const reason=status.endsWith('rejected')?String(await window.ma3daRequestText?.('سبب الرفض','اكتب سبب الرفض')||prompt('اكتب سبب الرفض:')||'').trim():'';if(status.endsWith('rejected')&&!reason)throw new Error('سبب الرفض مطلوب.');const now=Date.now();const update={status,updatedAt:now};if(role==='support'){update.supportReviewedBy=u.email||u.uid;update.supportReviewedByUid=u.uid;update.supportReviewedAt=now;if(reason)update.supportReason=reason;}else{update.ownerReviewedBy=u.email||u.uid;update.ownerReviewedByUid=u.uid;update.ownerReviewedAt=now;if(reason)update.ownerReason=reason;}
@@ -14321,9 +14268,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(t.dataset.atharSupportOpen){const list=await rows();openSupportReview(t.dataset.atharSupportOpen,list);return;}
       if(t.dataset.atharSupportApprove){await decision(t.dataset.atharSupportApprove,'support_approved','support');closeSupportReview();await loadSupport();alert('تم القبول المبدئي وإحالة الطلب لمالك التطبيق.');return;}
       if(t.dataset.atharSupportReject){await decision(t.dataset.atharSupportReject,'support_rejected','support');closeSupportReview();await loadSupport();alert('تم الرفض المبدئي مع حفظ السبب.');return;}
-      if(t.id==='ownerFinalRegistrationsBtn'){await loadOwner('final');return;}
+      if(t.id==='ownerRegistrationReviewEntryBtn'||t.id==='ownerFinalRegistrationsBtn'){await loadOwner('final');return;}
       if(t.dataset.atharOwnerOpen){const list=await rows();const item=list.find(x=>x.id===t.dataset.atharOwnerOpen);if(item){selectedOwnerRegistration=item;renderRegistrationDetail(item,'owner');const box=$('ownerRegistrationDetail');if(box)box.hidden=false;box?.scrollIntoView({behavior:'smooth',block:'start'});}return;}
       if(t.id==='ownerRegistrationMonitoringBtn'){await loadOwner('monitor');return;}
+      if(t.id==='ownerRegistrationPanelBackBtn'){if($('ownerRegistrationDetail'))$('ownerRegistrationDetail').hidden=true;if($('ownerRegistrationPanel'))$('ownerRegistrationPanel').hidden=true;return;}
       if(t.id==='ownerRegistrationPanelRefreshBtn'){const title=$('ownerRegistrationPanelTitle')?.textContent||'';await loadOwner(title.includes('الاعتماد')?'final':'monitor');return;}
       if(t.dataset.atharOwnerApprove){await decision(t.dataset.atharOwnerApprove,'owner_approved','owner');if($('ownerRegistrationDetail'))$('ownerRegistrationDetail').hidden=true;await loadOwner('final');alert('تم الاعتماد النهائي وإنشاء سجلات الحساب والمعدة أو المشروع.');return;}
       if(t.dataset.atharOwnerReject){await decision(t.dataset.atharOwnerReject,'owner_rejected','owner');if($('ownerRegistrationDetail'))$('ownerRegistrationDetail').hidden=true;await loadOwner('final');alert('تم رفض التسجيل نهائياً مع حفظ السبب.');return;}
