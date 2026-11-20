@@ -1,4 +1,4 @@
-/*قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
+/* قراءة آمنة للمستندات المرتبطة بالمستخدم عبر استعلامات محددة بدل قراءة المجموعة كاملة. */
 async function ma3daReadUserRows(collectionName, fields, uid){
   if(!uid || !window.ma3daDB || typeof window.ma3daCollection!=="function" || typeof window.ma3daQuery!=="function" || typeof window.ma3daWhere!=="function" || typeof window.ma3daGetDocs!=="function"){
     throw new Error("أدوات الاستعلام الآمن في Firebase غير جاهزة");
@@ -92,16 +92,22 @@ const screens =
   document.querySelectorAll(".screen");
  
 function showScreen(id){
-  // Include dynamically-created screens (such as the available-equipment screen).
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  const screen=document.getElementById(id);
+  
+  document.querySelectorAll(".screen").forEach(
+    s=>s.classList.remove("active")
+  );
+ 
+  const screen =
+    document.getElementById(id);
+ 
   if(screen){
+ 
     screen.classList.add("active");
+ 
     window.scrollTo(0,0);
-    return true;
+ 
   }
-  console.error("ATHAR: الشاشة المطلوبة غير موجودة:",id);
-  return false;
+ 
 }
  
 /* STATE */
@@ -147,182 +153,6 @@ const durationHours={
  
 };
  
-/* ORDER */
- 
-function setOrderState(state){
- 
-  localStorage.setItem("orderState", state);
- 
-}
- 
-function getOrderState(){
- 
-  return (
-    localStorage.getItem("orderState") || ""
-  );
- 
-}
- 
-/* LOAD ORDER */
- 
-function calculatePrice(){
- 
-  return (
-    hourlyPrices[order.equipment] || 250
-  ) *
-  (
-    durationHours[order.duration] || 4
-  );
- 
-}
- 
-/* SCREEN DATA */
- 
-function updateMatchedScreen(){
- 
-  const equipment =
-    document.getElementById("matchedEquipment");
- 
-  const location =
-    document.getElementById("matchedLocation");
- 
-  if(equipment)
-    equipment.textContent = order.equipment || "نوع المعدة";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-}
- 
-function updateWorkingScreen(){
- 
-  const equipment =
-    document.getElementById("workingEquipment");
- 
-  const location =
-    document.getElementById("workingLocation");
- 
-  if(equipment)
-    equipment.textContent =
-      order.equipment ||
-      "بوكلين";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-}
- 
-function updateOperatorScreen(){
- 
-  const equipment =
-    document.getElementById("operatorEquipment");
- 
-  const location =
-    document.getElementById("operatorLocation");
- 
-  const duration =
-    document.getElementById("operatorDuration");
- 
-  const price =
-    document.getElementById("operatorPrice");
- 
-  const notes =
-    document.getElementById("operatorNotes");
- 
-  if(equipment)
-    equipment.textContent =
-      order.equipment ||
-      "بوكلين";
- 
-  if(location)
-    location.textContent =
-      order.location ||
-      "موقع العميل";
- 
-  if(duration)
-    duration.textContent =
-      order.duration ||
-      "4 ساعات";
- 
-  if(price)
-    price.textContent =
-      `${order.price || 1000} ريال`;
- 
-  if(notes)
-    notes.textContent =
-      order.notes ||
-      "لا توجد ملاحظات";
- 
-}
- 
-/* 03 — وظائف العميل: نموذج طلب المعدة وإرسال الطلب */
-/* 03/04 — متابعة قبول الطلب: ربط حالة الطلب بين العميل وصاحب المعدة */
-/* ACCEPTANCE WATCHER */
- 
-function stopAcceptanceWatcher(){
- 
-  if(acceptanceWatcher){
- 
-    clearInterval(
-      acceptanceWatcher
-    );
- 
-    acceptanceWatcher=null;
- 
-  }
- 
-}
- 
-function ma3daCustomerCoordinates(data){
-  const lat=Number(data?.locationLatitude ?? data?.latitude ?? data?.locationCoordinates?.latitude ?? data?.coordinates?.latitude);
-  const lng=Number(data?.locationLongitude ?? data?.longitude ?? data?.locationCoordinates?.longitude ?? data?.coordinates?.longitude);
-  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180)return {lat,lng};
-  const raw=String(data?.location||'');
-  const match=raw.match(/(-?\d+(?:\.\d+)?)\s*[,، ]\s*(-?\d+(?:\.\d+)?)/);
-  if(!match)return null;
-  const parsedLat=Number(match[1]),parsedLng=Number(match[2]);
-  return Math.abs(parsedLat)<=90&&Math.abs(parsedLng)<=180?{lat:parsedLat,lng:parsedLng}:null;
-}
-
-function ma3daOpenCustomerMap(data){
-  const point=ma3daCustomerCoordinates(data||{});
-  const location=String(data?.location||'').trim();
-  const url=point
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(point.lat+','+point.lng)}&travelmode=driving`
-    : location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}` : '';
-  if(!url){alert('موقع العميل غير محفوظ كإحداثيات أو عنوان. اطلب من العميل تحديد موقعه بدقة.');return;}
-  window.open(url,'_blank','noopener,noreferrer');
-}
-
-function ma3daNotifyCustomerStatus(requestId,data){
-  const status=String(data?.status||'');
-  const labels={owner_decision_pending:'طلبك بانتظار موافقة صاحب المعدة',owner_accepted:'وافق صاحب المعدة — بانتظار الحجز',booking_confirmed:'تم تأكيد الحجز التجريبي',owner_arrived:'صاحب المعدة وصل إلى الموقع',otp_verified:'تم التحقق من رمز العميل',working:'بدأ تنفيذ العمل',completed_pending_customer:'انتهى العمل — بانتظار تأكيد العميل',disputed:'الطلب قيد مراجعة الدعم',completed:'اكتمل العمل والتسوية',rated:'اكتمل الطلب والتقييم',rejected:'تم رفض طلب المعدة'};
-  const paymentStatus=String(data?.paymentStatus||'');
-  const invoiceLabel=labels[status] || '';
-  const token=`${requestId}:${status}:${paymentStatus}:${data?.invoiceNumber||''}`;
-  const previous=localStorage.getItem('ma3daLastCustomerNotice:'+requestId);
-  if(!invoiceLabel||previous===token)return;
-  localStorage.setItem('ma3daLastCustomerNotice:'+requestId,token);
-  const wasInitialized=localStorage.getItem('ma3daCustomerNoticeInitialized:'+requestId)==='1';
-  localStorage.setItem('ma3daCustomerNoticeInitialized:'+requestId,'1');
-  if(!wasInitialized)return;
-  // Browser notifications work only while this page is active; closed-app push requires FCM/service-worker setup.
-  if(document.visibilityState==='visible'){
-    const toast=document.createElement('div');
-    toast.setAttribute('role','status');
-    toast.style.cssText='position:fixed;z-index:99999;bottom:18px;left:16px;right:16px;padding:14px 16px;background:#171717;color:#fff;border-radius:12px;box-shadow:0 6px 24px #0003;text-align:center;font-weight:700';
-    toast.textContent=invoiceLabel+(data?.invoiceNumber?' — فاتورتك متاحة في «فواتيري»':'');
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),6000);
-  }
-  if('Notification' in window&&Notification.permission==='granted'&&document.visibilityState!=='visible'){
-    try{new Notification('آثار — تحديث طلبك',{body:invoiceLabel+(data?.invoiceNumber?' يمكنك مراجعة الفاتورة من «فواتيري».':''),tag:token});}catch(_){ }
-  }
-}
-
 /* 02 — تسجيل الدخول والحسابات: اختيار نوع المستخدم */
 /* ROLE */
  
@@ -1137,7 +967,6 @@ async function openOperatorScreen(){
   );
  
 }
-/* 04 — وظائف صاحب المعدة: تحميل طلبات العملاء */
 /* 04 — وظائف صاحب المعدة: حفظ بيانات المعدات والتحقق منها */
 /* EQUIPMENT */
 const saveEquipmentBtn =
@@ -1706,715 +1535,6 @@ if(trackingBtn){
 }
  
 /* وظائف المحادثة المشتركة: العميل وصاحب المعدة — أبقيناها مشتركة لتجنب كسر الربط */
-/* CHAT: CUSTOMER + EQUIPMENT OWNER */
-let chatMessagesUnsubscribe = null;
-// Keep the existing order-chat wiring; only make sender/receiver bubbles visually distinct.
-(function ensureMa3daChatBubbleColors(){
-  if(document.getElementById("ma3daChatBubbleColors")) return;
-  const style=document.createElement("style");
-  style.id="ma3daChatBubbleColors";
-  style.textContent=`
-    #chatMessages{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;padding:12px!important;box-sizing:border-box!important}
-    #chatMessages .message{display:block!important;box-sizing:border-box!important;flex:0 0 auto!important;width:fit-content!important;max-width:82%!important;padding:10px 14px!important;margin-top:6px!important;margin-bottom:6px!important;border-radius:16px!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;line-height:1.55!important;clear:none!important}
-    #chatMessages .message.sent{align-self:flex-end!important;margin-left:18%!important;margin-right:0!important;background:#d9fdd3!important;color:#173b23!important;border:1px solid #b9e7b0!important;border-bottom-right-radius:5px!important;text-align:right!important}
-    #chatMessages .message.received{align-self:flex-start!important;margin-right:18%!important;margin-left:0!important;background:#ffffff!important;color:#263238!important;border:1px solid #e1e5e8!important;border-bottom-left-radius:5px!important;text-align:right!important}
-  `;
-  document.head.appendChild(style);
-})();
-let chatSending = false;
- 
-function getMa3daActiveRole(){
-  const savedRole = localStorage.getItem("selectedRole") || "";
-  if (savedRole) selectedRole = savedRole;
-  return selectedRole;
-}
- 
-let ma3daChatReturnScreen='';
-function openMa3daChat(){
-  getMa3daActiveRole();
-  const active=document.querySelector('.screen.active')?.id||'';
-  ma3daChatReturnScreen=active==='chatScreen'?'':active;
-  if(!ma3daChatReturnScreen)ma3daChatReturnScreen=getMa3daActiveRole()==='customer'?'matchedScreen':'operatorCurrentOrderScreen';
-  showScreen("chatScreen");
-  startChatListener();
-  setTimeout(() => document.getElementById("chatInput")?.focus(), 100);
-}
- 
-const chatBtn = document.getElementById("chatBtn");
-if (chatBtn) chatBtn.addEventListener("click", openMa3daChat);
- 
-const operatorChatCustomerBtn = document.getElementById("operatorChatCustomerBtn");
-if (operatorChatCustomerBtn) operatorChatCustomerBtn.addEventListener("click", openMa3daChat);
-const operatorChatBtn = document.getElementById("operatorChatBtn");
-if (operatorChatBtn) operatorChatBtn.addEventListener("click", openMa3daChat);
-const backFromChatBtn = document.getElementById("backFromChatBtn");
-if(backFromChatBtn)backFromChatBtn.addEventListener('click',()=>{
-  if(chatMessagesUnsubscribe){chatMessagesUnsubscribe();chatMessagesUnsubscribe=null;}
-  const role=getMa3daActiveRole();
-  let target=ma3daChatReturnScreen;
-  if(!target||target==='chatScreen')target=role==='customer'?'currentOrdersScreen':'operatorCurrentOrderScreen';
-  if(!document.getElementById(target))target=role==='customer'?'customerHomeScreen':'operatorHomeScreen';
-  showScreen(target);
-  if(role==='customer'&&target==='currentOrdersScreen')loadCustomerOrders('current');
-  if(role!=='customer'&&target==='operatorCurrentOrderScreen'&&typeof loadOperatorCurrentOrder==='function')loadOperatorCurrentOrder();
-});
- 
-async function sendChatMessage(){
-  if (chatSending) return;
- 
-  const input = document.getElementById("chatInput");
-  if (!input) return;
- 
-  const messageText = input.value.trim();
-  if (!messageText) return;
- 
-  chatSending = true;
-  const sendButton = document.getElementById("sendChatBtn");
-  if (sendButton) sendButton.disabled = true;
- 
-  try {
-    if (window.ma3daFirebaseReady) await window.ma3daFirebaseReady;
- 
-    const user = window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
-      : window.ma3daAuth?.currentUser;
- 
-    if (!user) {
-      alert("يجب تسجيل الدخول لإرسال الرسائل.");
-      return;
-    }
- 
-    if (!window.ma3daDB || typeof window.ma3daCollection !== "function" || typeof window.ma3daAddDoc !== "function") {
-      throw new Error("أدوات Firestore اللازمة لإرسال الرسالة غير جاهزة.");
-    }
- 
-    const requestId = localStorage.getItem("currentRequestId");
-    if (!requestId) {
-      alert("لا يوجد طلب مرتبط بهذه المحادثة. افتح الطلب الحالي أولاً.");
-      return;
-    }
- 
-    const role = getMa3daActiveRole();
-    const messagesCollection = window.ma3daCollection(
-      window.ma3daDB, "requests", requestId, "messages"
-    );
- 
-    await window.ma3daAddDoc(messagesCollection, {
-      text: messageText,
-      senderId: user.uid,
-      senderRole: role,
-      createdAt: Date.now(),
-      createdAtServer: new Date()
-    });
- 
-    input.value = "";
-    input.focus();
-  } catch (error) {
-    console.error("تعذر إرسال الرسالة:", error);
-    alert("تعذر إرسال الرسالة إلى Firebase.\n" + (error?.code || "") + "\n" + (error?.message || "يرجى المحاولة مرة أخرى."));
-  } finally {
-    chatSending = false;
-    if (sendButton) sendButton.disabled = false;
-  }
-}
- 
-function startChatListener(){
-  if (chatMessagesUnsubscribe) {
-    chatMessagesUnsubscribe();
-    chatMessagesUnsubscribe = null;
-  }
- 
-  const requestId = localStorage.getItem("currentRequestId");
-  if (!requestId) {
-    console.warn("لا يوجد طلب مرتبط بالمحادثة حالياً.");
-    return;
-  }
- 
-  if (!window.ma3daDB || typeof window.ma3daCollection !== "function" ||
-      typeof window.ma3daOnSnapshot !== "function" ||
-      typeof window.ma3daQuery !== "function" ||
-      typeof window.ma3daOrderBy !== "function") {
-    console.error("أدوات الشات في Firebase غير جاهزة.");
-    return;
-  }
- 
-  const messagesCollection = window.ma3daCollection(
-    window.ma3daDB, "requests", requestId, "messages"
-  );
-  const messagesQuery = window.ma3daQuery(
-    messagesCollection, window.ma3daOrderBy("createdAt", "asc")
-  );
- 
-  // Resolve the authenticated user before classifying messages, so a late Firebase auth
-  // initialization does not incorrectly put every message on the same side.
-  const resolveCurrentUid = async () => {
-    try {
-      if (window.ma3daFirebaseReady) await window.ma3daFirebaseReady;
-      const user = window.ma3daGetCurrentUser
-        ? await window.ma3daGetCurrentUser()
-        : window.ma3daAuth?.currentUser;
-      return user?.uid || window.ma3daAuth?.currentUser?.uid || "";
-    } catch (error) {
-      console.warn("تعذر تحديد المستخدم الحالي للشات:", error);
-      return window.ma3daAuth?.currentUser?.uid || "";
-    }
-  };
-  let chatCurrentUid = "";
-  void resolveCurrentUid().then(uid => { chatCurrentUid = uid; });
-
-  chatMessagesUnsubscribe = window.ma3daOnSnapshot(messagesQuery, snapshot => {
-    const container = document.getElementById("chatMessages");
-    if (!container) return;
- 
-    const role = getMa3daActiveRole();
-    const currentUid = chatCurrentUid || window.ma3daAuth?.currentUser?.uid || "";
-    container.replaceChildren();
-    snapshot.forEach(messageDoc => {
-      const data = messageDoc.data();
-      const bubble = document.createElement("div");
-      const senderId = data.senderId || data.uid || data.userId || "";
-      const senderRole = String(data.senderRole || data.role || "").toLowerCase();
-      // Use UID when both sides have one; legacy messages fall back to role.
-      const isOwnMessage = senderId && currentUid
-        ? String(senderId) === String(currentUid)
-        : (senderRole ? senderRole === String(role || "").toLowerCase() : false);
-      bubble.className = isOwnMessage ? "message sent" : "message received";
-      // Set the bubble colors inline as well as in CSS so another stylesheet cannot
-      // accidentally make both sides green. Keep the existing sender-side logic.
-      bubble.style.setProperty("display", "block", "important");
-      bubble.style.setProperty("width", "fit-content", "important");
-      bubble.style.setProperty("max-width", "82%", "important");
-      bubble.style.setProperty("padding", "10px 14px", "important");
-      bubble.style.setProperty("margin-top", "6px", "important");
-      bubble.style.setProperty("margin-bottom", "6px", "important");
-      bubble.style.setProperty("border-radius", "16px", "important");
-      bubble.style.setProperty("white-space", "pre-wrap", "important");
-      bubble.style.setProperty("overflow-wrap", "anywhere", "important");
-      bubble.style.setProperty("box-sizing", "border-box", "important");
-      bubble.style.setProperty("text-align", "right", "important");
-      if (isOwnMessage) {
-        bubble.style.setProperty("align-self", "flex-end", "important");
-        bubble.style.setProperty("margin-left", "18%", "important");
-        bubble.style.setProperty("margin-right", "0", "important");
-        bubble.style.setProperty("background-color", "#d9fdd3", "important");
-        bubble.style.setProperty("background", "#d9fdd3", "important");
-        bubble.style.setProperty("color", "#173b23", "important");
-        bubble.style.setProperty("border", "1px solid #b9e7b0", "important");
-        bubble.style.setProperty("border-bottom-right-radius", "5px", "important");
-      } else {
-        bubble.style.setProperty("align-self", "flex-start", "important");
-        bubble.style.setProperty("margin-right", "18%", "important");
-        bubble.style.setProperty("margin-left", "0", "important");
-        bubble.style.setProperty("background-color", "#ffffff", "important");
-        bubble.style.setProperty("background", "#ffffff", "important");
-        bubble.style.setProperty("color", "#263238", "important");
-        bubble.style.setProperty("border", "1px solid #e1e5e8", "important");
-        bubble.style.setProperty("border-bottom-left-radius", "5px", "important");
-      }
-      bubble.textContent = data.text || data.message || "";
-      container.appendChild(bubble);
-    });
-    container.scrollTop = container.scrollHeight;
-  }, error => {
-    console.error("تعذر استقبال رسائل الشات:", error);
-    alert("تعذر تحميل رسائل المحادثة. تحقق من اتصال Firebase وصلاحيات Firestore.");
-  });
-}
- 
-/* Send button: delegated listener supports buttons rendered later. */
-document.addEventListener("click", event => {
-  const button = event.target.closest("#sendChatBtn");
-  if (!button) return;
-  event.preventDefault();
-  void sendChatMessage();
-});
- 
-document.addEventListener("keydown", event => {
-  if (event.key !== "Enter" || event.shiftKey) return;
-  if (!event.target.closest("#chatInput")) return;
-  event.preventDefault();
-  void sendChatMessage();
-});
- 
-/* TRACKING */
- 
-function startTracking(){
- 
-  const marker =
-    document.getElementById("equipmentMarker");
- 
-  const distance =
-    document.getElementById("distanceText");
- 
-  const eta =
-    document.getElementById("etaText");
- 
-  const status =
-    document.getElementById("trackingStatus");
- 
-  if(
-    !marker ||
-    !distance ||
-    !eta ||
-    !status
-  )
-    return;
- 
-  const steps = [
- 
-    [
-      "18%",
-      "55%",
-      "2.4 كم",
-      "8 دقائق"
-    ],
- 
-    [
-      "30%",
-      "45%",
-      "2.0 كم",
-      "7 دقائق"
-    ],
- 
-    [
-      "42%",
-      "40%",
-      "1.5 كم",
-      "5 دقائق"
-    ],
- 
-    [
-      "55%",
-      "30%",
-      "900 م",
-      "3 دقائق"
-    ],
- 
-    [
-      "65%",
-      "20%",
-      "400 م",
-      "1 دقيقة"
-    ],
- 
-    [
-      "75%",
-      "12%",
-      "0 م",
-      "الآن"
-    ]
- 
-  ];
- 
-  let index = 0;
- 
-  function move(){
- 
-    const step =
-      steps[index];
- 
-    marker.style.top =
-      step[0];
- 
-    marker.style.right =
-      step[1];
- 
-    distance.textContent =
-      step[2];
- 
-    eta.textContent =
-      step[3];
- 
-    if(
-      index ===
-      steps.length - 1
-    ){
- 
-      status.textContent =
-        "وصلت المعدة إلى موقعك";
- 
-      console.log(
-        "اكتمل التتبع - بانتظار وصول صاحب المعدة"
-      );
- 
-      return;
- 
-    }
- 
-    index++;
- 
-    setTimeout(
-      move,
-      1400
-    );
- 
-  }
- 
-  move();
- 
-}
- 
-/* CUSTOMER WORKING TIMER */
- 
-function updateTimer(){
- 
-  if(!workStartTime)
-    return;
- 
-  const elapsed =
-    Math.max(
-      0,
-      Math.floor(
-        (
-          Date.now() -
-          workStartTime
-        ) / 1000
-      )
-    );
- 
-  const hours =
-    Math.floor(
-      elapsed / 3600
-    );
- 
-  const minutes =
-    Math.floor(
-      (elapsed % 3600) / 60
-    );
- 
-  const seconds =
-    elapsed % 60;
- 
-  const timer =
-    document.getElementById("timer");
- 
-  if(timer){
- 
-    timer.textContent =
-      `${String(hours).padStart(2,"0")}:` +
-      `${String(minutes).padStart(2,"0")}:` +
-      `${String(seconds).padStart(2,"0")}`;
- 
-  }
- 
-}
- 
-function startCustomerWorkTimer(
-  startTime
-){
- 
-  clearInterval(
-    timerInterval
-  );
- 
-  workStartTime =
-    Number(
-      startTime ||
-      Date.now()
-    );
- 
-  updateTimer();
- 
-  timerInterval =
-    setInterval(
-      updateTimer,
-      1000
-    );
- 
-}
- 
-function stopCustomerWorkTimer(){
- 
-  clearInterval(
-    timerInterval
-  );
- 
-  timerInterval =
-    null;
- 
-}
- 
-/* CUSTOMER CALL */
- 
-const callBtn =
-  document.getElementById("callBtn");
- 
-if(callBtn){
- 
-  callBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      try{
- 
-        const requestId =
-          localStorage.getItem("currentRequestId");
- 
-        if(!requestId){
- 
-          alert(
-            "لا يوجد طلب حالي."
-          );
- 
-          return;
- 
-        }
- 
-        const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
- 
-        const snapshot =
-          await window.ma3daGetDoc(
-            requestRef
-          );
- 
-        if(!snapshot.exists()){
- 
-          alert(
-            "تعذر العثور على الطلب."
-          );
- 
-          return;
- 
-        }
- 
-        const data =
-          snapshot.data();
- 
-        const phone =
-          data.operatorPhone ||
-          "";
- 
-        if(!phone){
- 
-          alert(
-            "رقم صاحب المعدة غير متوفر حاليًا."
-          );
- 
-          return;
- 
-        }
- 
-        window.location.href =
-          `tel:${phone}`;
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر الاتصال بصاحب المعدة:",
-          error
-        );
- 
-        alert(
-          "تعذر الاتصال حاليًا."
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* CUSTOMER END WORK */
- 
-const customerStartWorkButton =
-  document.getElementById("startWorkBtn");
- 
-if(customerStartWorkButton){
- 
-  customerStartWorkButton.style.display =
-    "none";
- 
-  customerStartWorkButton.disabled =
-    true;
- 
-}
- 
-/* 03/04 — وظائف مالية مشتركة: الدفع وإغلاق الطلب */
-/* RATING */
- 
-document
-  .querySelectorAll(
-    ".stars button"
-  )
-  .forEach(
-    button=>{
- 
-      button.addEventListener(
-        "click",
-        ()=>{
- 
-          selectedRating =
-            Number(
-              button.dataset.rating
-            );
- 
-          document
-            .querySelectorAll(
-              ".stars button"
-            )
-            .forEach(
-              star=>{
- 
-                star.classList.toggle(
-                  "selected",
-                  Number(
-                    star.dataset.rating
-                  ) <=
-                  selectedRating
-                );
- 
-              }
-            );
- 
-          const ratingBtn =
-            document.getElementById("ratingBtn");
- 
-          if(ratingBtn)
-            ratingBtn.disabled =
-              false;
- 
-        }
-      );
- 
-    }
-  );
- 
-const ratingBtn =
-  document.getElementById("ratingBtn");
- 
-if(ratingBtn){
- 
-  ratingBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      if(!selectedRating){
- 
-        alert(
-          "اختر التقييم أولًا."
-        );
- 
-        return;
- 
-      }
- 
-      const requestId =
-        localStorage.getItem("currentRequestId");
- 
-      try{
- 
-        if(requestId){
- 
-          const requestRef =
-            window.ma3daDoc(
-              window.ma3daDB,
-              "requests",
-              requestId
-            );
- 
-          const requestSnapshot = await window.ma3daGetDoc(requestRef);
-          if(!requestSnapshot.exists()){
-            alert("تعذر العثور على الطلب.");
-            return;
-          }
-          const requestData = requestSnapshot.data() || {};
-          if(requestData.paymentStatus !== "paid" || requestData.status !== "paid"){
-            alert("تقييم المعدة متاح بعد تأكيد سداد الفاتورة بالكامل.");
-            return;
-          }
-
-          await window.ma3daUpdateDoc(
-            requestRef,
-            {
- 
-              rating:
-                selectedRating,
- 
-              ratedAt:
-                Date.now()
- 
-            }
-          );
- 
-        }
- 
-        showScreen(
-          "thankYouScreen"
-        );
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر حفظ التقييم:",
-          error
-        );
- 
-        alert(
-          "تعذر حفظ التقييم، حاول مرة أخرى."
-        );
- 
-      }
- 
-    }
-  );
- 
-}
- 
-/* NEW REQUEST */
- 
-const newRequestButtons =
-  document.querySelectorAll(
-    "#newRequestBtn, #thankYouNewRequestBtn"
-  );
- 
-newRequestButtons.forEach(
-  button=>{
- 
-    button.addEventListener(
-      "click",
-      ()=>{
- 
-        selectedPayment =
-          "";
- 
-        selectedRating =
-          0;
- 
-        showScreen(
-          "requestScreen"
-        );
- 
-      }
-    );
- 
-  }
-);
- 
-/* أزرار الرجوع للقائمة الرئيسية بعد التقييم أو إنهاء العمل */
-const thankYouHomeBtn=document.getElementById("thankYouHomeBtn");
-if(thankYouHomeBtn){
-  thankYouHomeBtn.addEventListener("click",()=>{
-    showScreen("customerHomeScreen");
-  });
-}
-const operatorCompletedHomeBtn=document.getElementById("operatorCompletedHomeBtn");
-if(operatorCompletedHomeBtn){
-  operatorCompletedHomeBtn.addEventListener("click",async()=>{
-    try{
-      if(typeof loadOperatorHome==="function") await loadOperatorHome();
-    }catch(error){
-      console.error("تعذر تحديث الصفحة الرئيسية لصاحب المعدة:",error);
-    }
-    showScreen("operatorHomeScreen");
-  });
-}
-
 /* BACK ROLE */
  
 const backRoleBtn =
@@ -3220,148 +2340,6 @@ if(getLocationBtn){
  
 }
  
-/* 03 — وظائف العميل: الصفحة الرئيسية وطلبات العميل */
-/* CUSTOMER HOME */
-if(document.getElementById('currentOrderBtn')){
-  const customerOrdersStartup=()=>{if((localStorage.getItem('selectedRole')||selectedRole)==='customer')startCustomerOrdersRealtime();};
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')customerOrdersStartup();});
-}
- 
-const currentOrderBtn =
-  document.getElementById("currentOrderBtn");
- 
-if(currentOrderBtn){
- 
-  currentOrderBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      showScreen(
-        "currentOrdersScreen"
-      );
- 
-      await loadCustomerOrders("current");
-      startCustomerOrdersRealtime();
- 
-    }
-  );
- 
-}
- 
-const previousOrdersBtn =
-  document.getElementById("previousOrdersBtn");
- 
-if(previousOrdersBtn){
- 
-  previousOrdersBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      showScreen(
-        "previousOrdersScreen"
-      );
- 
-      await loadCustomerOrders("previous");
-      startCustomerOrdersRealtime();
- 
-    }
-  );
- 
-}
- 
-/* فتح الطلب من قائمة الطلبات الحالية/السابقة */
-document.addEventListener('click',async event=>{
-  const button=event.target.closest('[data-customer-open-order]');
-  if(!button)return;
-  const requestId=button.dataset.customerOpenOrder;
-  if(!requestId)return;
-  localStorage.setItem('currentRequestId',requestId);
-  try{
-    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',requestId));
-    if(!snap.exists()){alert('تعذر العثور على الطلب.');return;}
-    const data=snap.data()||{};
-    order={location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)};
-    localStorage.setItem('currentOrder',JSON.stringify(order));
-    if(typeof startAcceptanceWatcher==='function')startAcceptanceWatcher();
-    const screenByStatus={owner_decision_pending:'searchingScreen',owner_accepted:'atharBookingScreen',booking_confirmed:'matchedScreen',owner_arrived:'arrivedCustomerScreen',otp_verified:'arrivedCustomerScreen',working:'workingScreen',completed_pending_customer:'completedScreen',disputed:'completedScreen',completed:'completedScreen',rated:'thankYouScreen',rejected:'roleScreen',searching:'searchingScreen',accepted:'matchedScreen',arrived:'arrivedCustomerScreen'};
-    const target=screenByStatus[String(data.status||'')]||'matchedScreen';
-    if(target==='atharBookingScreen'){const details=document.getElementById('atharBookingDetails');if(details)details.textContent=`${data.orderNumber||''} · ${data.equipment||'معدة'} · ${data.duration||''} · ${Number(data.reservedAmount||data.price||0).toLocaleString('ar-SA')} ريال`;}
-    if(target==='arrivedCustomerScreen'){const panel=document.getElementById('atharCustomerOtpArrivalPanel');if(panel){panel.hidden=false;const code=document.getElementById('atharCustomerOtpArrival');if(code)code.textContent=data.otpCodeCustomer||'------';}
-
-      const e=document.getElementById('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';
-      const l=document.getElementById('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';
-    }
-    if(target==='matchedScreen'){updateMatchedScreen();updateWorkingScreen();}
-    if(target==='workingScreen'){updateWorkingScreen();}
-    showScreen(target);
-  }catch(error){console.error('تعذر فتح طلب العميل:',error);alert('تعذر تحميل تفاصيل الطلب. تحقق من الاتصال.');}
-});
-
-/* 03 — وظائف العميل: تحديث الطلبات الحالية آليًا من Firebase */
-let customerOrdersRealtimeUnsubscribe=null;
-let customerOrdersRealtimeUserId='';
-async function startCustomerOrdersRealtime(){
-  try{
-    const user=window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser;
-    if(!user?.uid||!window.ma3daDB||typeof window.ma3daCollection!=='function'||typeof window.ma3daOnSnapshot!=='function')return;
-    if(customerOrdersRealtimeUnsubscribe&&customerOrdersRealtimeUserId===user.uid)return;
-    if(customerOrdersRealtimeUnsubscribe){customerOrdersRealtimeUnsubscribe();customerOrdersRealtimeUnsubscribe=null;}
-    customerOrdersRealtimeUserId=user.uid;
-    customerOrdersRealtimeUnsubscribe=window.ma3daOnSnapshot(window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'requests'),window.ma3daWhere('customerId','==',user.uid)),snapshot=>{
-      const currentActive=document.getElementById('currentOrdersScreen')?.classList.contains('active');
-      const previousActive=document.getElementById('previousOrdersScreen')?.classList.contains('active');
-      let currentChanged=false,previousChanged=false;
-      snapshot.forEach(doc=>{
-        const data=doc.data()||{};
-        if(data.customerId!==user.uid)return;
-        const id=doc.id;
-        ma3daNotifyCustomerStatus(id,data);
-        if(id===localStorage.getItem('currentRequestId')){
-          localStorage.setItem('currentOrder',JSON.stringify({location:data.location||'',equipment:data.equipment||'',duration:data.duration||'',operator:data.operator||'',notes:data.notes||'',price:Number(data.price||0)}));
-        }
-        if(['rejected','cancelled'].includes(String(data.status||''))||(data.status==='completed'&&Number(data.remainingBalance??data.invoiceAmount??data.price??0)<=0&&(data.paymentStatus==='paid'||data.settlementStatus==='settled')))previousChanged=true;
-        else currentChanged=true;
-      });
-      if(currentActive&&currentChanged)loadCustomerOrders('current');
-      if(previousActive&&previousChanged)loadCustomerOrders('previous');
-    },error=>console.error('Customer orders realtime listener failed:',error));
-  }catch(error){console.warn('تعذر تفعيل تحديث طلبات العميل المباشر:',error);}
-}
-
-/* CUSTOMER ORDER BACK */
- 
-const backFromCurrentOrdersBtn =
-  document.getElementById("backFromCurrentOrdersBtn");
- 
-if(backFromCurrentOrdersBtn){
- 
-  backFromCurrentOrdersBtn.addEventListener(
-    "click",
-    ()=>{
-      showScreen(
-        "customerHomeScreen"
-      );
-    }
-  );
- 
-}
- 
-const backFromPreviousOrdersBtn =
-  document.getElementById("backFromPreviousOrdersBtn");
- 
-if(backFromPreviousOrdersBtn){
- 
-  backFromPreviousOrdersBtn.addEventListener(
-    "click",
-    ()=>{
-      showScreen(
-        "customerHomeScreen"
-      );
-    }
-  );
- 
-}
- 
 /* 03 — وظائف العميل: الإعدادات */
 /* CUSTOMER SETTINGS */
  
@@ -3700,7 +2678,7 @@ Object.assign(atharEnglishDictionary,{
 Object.assign(atharEnglishDictionary, {"الصفحة الرئيسية":"Home Page","الرئيسية":"Home","بوابة العميل":"Customer Portal","بوابة صاحب المعدة":"Equipment Owner Portal","بوابة المشاريع":"Projects Portal","طلب معدة":"Request Equipment","طلباتي":"My Requests","طلباتي الحالية":"My Current Requests","طلباتي السابقة":"My Previous Requests","طلبات العملاء":"Customer Requests","طلبات المعدات":"Equipment Requests","طلبات المشاريع":"Project Requests","إضافة معدة":"Add Equipment","إضافة معدة جديدة":"Add New Equipment","تعديل المعدة":"Edit Equipment","تعديل بيانات المعدة":"Edit Equipment Details","الموافقة على التعديل":"Approve Edit","رفض التعديل":"Reject Edit","اعتماد المعدة":"Approve Equipment","رفض الإضافة":"Reject Addition","مراجعة التعديلات":"Review Edits","التعديلات المقترحة":"Proposed Changes","بيانات المعدة":"Equipment Details","نوع المعدة":"Equipment Type","الموديل":"Model","سنة الصنع":"Year of Manufacture","المدينة":"City","رقم المعدة/اللوحة":"Equipment / Plate Number","السعر بالساعة":"Hourly Rate","التوفر":"Availability","متاحة":"Available","غير متاحة":"Unavailable","تم إرفاق صورة":"Image Attached","لم تُرفق صورة":"No Image Attached","صاحب المعدة":"Equipment Owner","صاحب المعدة:":"Equipment Owner:","مراجعة تعديل بيانات معدة موجودة.":"Review changes to an existing equipment listing.","طلب إضافة معدة جديدة؛ لن تصبح معتمدة قبل موافقة الدعم.":"New equipment submission; it will not be approved until support reviews it.","لا توجد إضافات أو تعديلات معدات بانتظار المراجعة.":"There are no equipment submissions or edits awaiting review.","تعذر تحميل التعديلات. تحقق من صلاحيات قراءة equipment في Firebase.":"Could not load edits. Check Firebase equipment read permissions.","المعدة غير موجودة.":"Equipment not found.","هذا التعديل لم يعد معلّقًا. حدّث القائمة.":"This edit is no longer pending. Refresh the list.","سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.":"A rejection reason is required so the equipment owner knows what to correct.","تمت الموافقة على التعديل وتحديث بيانات المعدة المعتمدة.":"The edit was approved and the equipment details were updated.","تم رفض التعديل وإرسال سبب الرفض لصاحب المعدة.":"The edit was rejected and the reason was sent to the equipment owner.","اكتب سبب رفض التعديل ليظهر لصاحب المعدة:":"Enter the reason for rejecting the equipment edit:","اكتب سبب الرفض وما المطلوب تعديله...":"Explain the rejection reason and what needs to be corrected...","إلغاء":"Cancel","إرسال":"Submit","إرسال الطلب":"Submit Request","حفظ":"Save","حفظ التعديلات":"Save Changes","حفظ الملاحظة":"Save Note","تعديل الملاحظة":"Edit Note","حفظ التعديل":"Save Edit","حذف":"Delete","إغلاق":"Close","رجوع":"Back","تحديث":"Refresh","بحث":"Search","ابحث":"Search","اختر":"Select","اختر نوع المعدة":"Select equipment type","اختر المدينة":"Select city","اختر المدة":"Select duration","ملاحظات":"Notes","الملاحظات":"Notes","التفاصيل":"Details","تفاصيل الطلب":"Request Details","تفاصيل المعدة":"Equipment Details","تفاصيل المشروع":"Project Details","تفاصيل المشكلة":"Issue Details","جارٍ تحميل التعديلات المعلّقة...":"Loading pending edits...","جارٍ تحميل الطلبات...":"Loading requests...","جاري تحميل الطلبات...":"Loading requests...","جارٍ التحميل...":"Loading...","جاري التحميل...":"Loading...","جارٍ الحفظ...":"Saving...","جارٍ الإرسال...":"Sending...","جاري الإرسال...":"Sending...","تم الحفظ بنجاح":"Saved successfully","تم الحفظ بنجاح ✅":"Saved successfully ✅","تم إرسال الطلب بنجاح":"Request submitted successfully","تعذر الحفظ":"Could not save","تعذر الإرسال":"Could not send","حدث خطأ غير متوقع.":"An unexpected error occurred.","حاول مرة أخرى.":"Please try again.","يجب تسجيل الدخول أولًا.":"You must log in first.","يجب تسجيل الدخول أولًا":"You must log in first.","غير محدد":"Not specified","غير معروف":"Unknown","لا توجد بيانات":"No data available","لا توجد نتائج":"No results found","لا توجد طلبات":"No requests","لا توجد ملاحظات.":"No notes.","لا توجد ملاحظات":"No notes","لا توجد بيانات إضافية.":"No additional details.","أكمل جميع البيانات أولًا":"Please complete all fields first.","أكمل جميع الحقول قبل إنشاء الحساب.":"Complete all fields before creating an account.","البريد الإلكتروني غير صحيح":"Invalid email address","رقم الهاتف غير صحيح":"Invalid phone number","كلمة المرور":"Password","تأكيد كلمة المرور":"Confirm Password","الاسم الكامل":"Full Name","رقم الجوال":"Mobile Number","البريد الإلكتروني":"Email Address","نسيت كلمة المرور؟":"Forgot Password?","تسجيل الدخول":"Log In","تسجيل الخروج":"Log Out","إنشاء حساب جديد":"Create New Account","إنشاء الحساب":"Create Account","تسجيل جديد":"Sign Up","ابدأ الآن":"Get Started","عميل":"Customer","صاحب معدة":"Equipment Owner","مشغل":"Operator","مقاول":"Contractor","صاحب مشروع":"Project Owner","المشاريع":"Projects","العملاء":"Customers","المعدات":"Equipment","الحساب":"Account","حسابي":"My Account","الإعدادات":"Settings","الدعم الفني":"Technical Support","مركز الدعم":"Support Center","بوابة موظفي الدعم":"Support Staff Portal","موظف الدعم":"Support Agent","المستخدم":"User","المستخدم الحالي":"Current User","رقم الطلب":"Request Number","رقم الشكوى":"Ticket Number","رقم المعدة":"Equipment Number","الموقع":"Location","الموقع:":"Location:","المدة":"Duration","المدة:":"Duration:","المبلغ":"Amount","المبلغ:":"Amount:","المبلغ المستحق:":"Amount Due:","الحالة":"Status","الحالة:":"Status:","تاريخ الإنشاء":"Created At","تاريخ الطلب":"Request Date","تاريخ التحديث":"Updated At","الوقت":"Time","السعر":"Price","الإجمالي":"Total","الكمية":"Quantity","الوصف":"Description","الاسم":"Name","رقم التواصل":"Contact Number","اتصل":"Call","عرض التفاصيل":"View Details","فتح الموقع":"Open Location","تحديد موقعي":"Set My Location","تحديد موقعي بدقة":"Set My Precise Location","الموقع الحالي":"Current Location","الموقع المسجل":"Saved Location","جاري البحث عن معدة":"Searching for equipment","تم قبول الطلب":"Request Accepted","المعدة وصلت":"Equipment Arrived","جاري العمل":"Work in Progress","مكتمل":"Completed","مرفوض":"Rejected","تم رفض الطلب":"Request Rejected","تم قبول الطلب بنجاح 🚜":"Request accepted successfully 🚜","تعذر قبول الطلب في Firebase":"Could not accept the request in Firebase","تعذر رفض الطلب في Firebase":"Could not reject the request in Firebase","تم رفض طلب المعدة":"The equipment request was rejected","لا توجد طلبات عملاء":"There are no customer requests","لا يوجد طلب searching حالي":"There is no active searching request","ملخص دخلك من أعمالك في آثار":"Your ATHAR Work Income Summary","إجمالي الدخل":"Total Income","أعمال مكتملة":"Completed Jobs","إجمالي الساعات":"Total Hours","تقييمات العملاء لأعمالك":"Customer Ratings for Your Work","التقييم":"Rating","التقييمات":"Ratings","تقييم مقدم الشكوى:":"Requester Rating:","الموظف:":"Staff Member:","لا توجد تقييمات مسجلة حتى الآن.":"No ratings have been recorded yet.","تعذر تحميل التقييمات. تحقق من صلاحيات قراءة الشكاوى.":"Could not load ratings. Check support ticket read permissions.","كيف يمكننا مساعدتك؟":"How can we help you?","إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة، تواصل معنا وسنساعدك.":"If you have an issue with requests, your account, or equipment, contact us and we will help.","التواصل مع الدعم":"Contact Support","إرسال طلب إلى فريق الدعم":"Send a Request to Support","مشكلة في المعدة":"Equipment Issue","مشكلة في الطلبات":"Request Issue","مشكلة في الحساب":"Account Issue","استفسار":"Inquiry","بلاغ":"Report","إرسال إلى الدعم":"Send to Support","افتح شكوى من القائمة أولًا قبل التصعيد.":"Open a ticket from the list before escalating.","اشرح لمالك التطبيق سبب التصعيد وما الذي تعذر حله:":"Explain to the platform owner why you are escalating and what could not be resolved:","اكتب سبب التصعيد بالتفصيل...":"Describe the reason for escalation in detail...","سبب التصعيد:":"Escalation Reason:","تم إرسال الرد لصاحب الشكوى.":"Your reply has been sent to the requester.","تم إغلاق الشكوى ونقلها إلى الشكاوى السابقة.":"The ticket has been closed and moved to previous tickets.","هذه الشكوى مغلقة.":"This ticket is closed.","اكتب الرد أولًا.":"Please write a reply first.","إغلاق الشكوى":"Close Ticket","إرسال الرد":"Send Reply","الردود":"Replies","الشكاوى الحالية":"Current Tickets","الشكاوى السابقة":"Previous Tickets","لا توجد شكاوى":"No tickets","فاتورتي":"My Invoices","فواتيري":"My Invoices","فواتيري والمدفوعات":"My Invoices & Payments","الفواتير":"Invoices","المدفوعات":"Payments","السداد":"Payment","إثبات السداد":"Payment Proof","المبلغ المدفوع":"Amount Paid","المبلغ المتبقي":"Remaining Amount","تأكيد السداد":"Confirm Payment","تم تأكيد السداد":"Payment Confirmed","تم تسجيل السداد وبانتظار التأكيد":"Payment submitted and awaiting confirmation","بوابة الدفع الإلكتروني غير مربوطة بالمشروع بعد. لم يتم خصم أي مبلغ ولم يُسجّل السداد.":"The online payment gateway is not connected yet. No payment has been charged or recorded.","تعذر بدء عملية السداد. لم يتم تأكيد الدفع.":"Could not start payment. Payment has not been confirmed.","مسؤوليتنا":"Our Responsibility","رؤيتنا":"Our Vision","من نحن":"About Us","تواصل معنا":"Contact Us","ثقتكم أمانة":"Your Trust Is Our Responsibility","أثرٌ يواكب طموح وطن":"An Impact That Matches Our Nation’s Ambition","آثار ATHAR — منصة تجمع أطراف الإنجاز":"ATHAR — A Platform Connecting the People Behind Every Achievement","نسعد بتواصلكم":"We Welcome Your Feedback","شعارنا:":"Our Motto:","آثار… نبني اليوم ما يبقى غدًا.":"ATHAR… Building Today What Lasts Tomorrow.","جميع الحقوق محفوظة لآثار ATHAR – 2026":"All rights reserved to ATHAR – 2026","تم اختيار اللغة العربية 🇸🇦":"Arabic language selected 🇸🇦","English language selected 🇬🇧":"English language selected 🇬🇧","تم اختيار المظهر التلقائي 📱":"System appearance selected 📱","تم اختيار المظهر الفاتح ☀️":"Light appearance selected ☀️","تم اختيار المظهر الداكن 🌙":"Dark appearance selected 🌙","المظهر الداكن":"Dark Appearance","المظهر الفاتح":"Light Appearance","تلقائي":"System Default","فاتح":"Light","داكن":"Dark","اللغة":"Language","اختر لغة التطبيق":"Choose App Language","العربية":"Arabic","الإنجليزية":"English","استخدام التطبيق باللغة العربية":"Use the app in Arabic","استخدام التطبيق باللغة الإنجليزية":"Use the app in English"});
 /* ATHAR — استكمال ترجمة بوابات الدخول وإزالة كلمة «التطبيق» من شاشة اختيار الدخول */
 Object.assign(atharEnglishDictionary,{
-"اختر طريقة استخدامك للتطبيق":"Choose how you want to use the app",
+"اختر طريقة استخدامك للتطبيق":"اختر طريقة استخدامك",
 "اختر طريقة استخدامك":"Choose how you want to continue",
 "مرحباً بك":"Welcome",
 "مرحبًا":"Welcome",
@@ -3797,7 +2775,7 @@ Object.assign(atharEnglishDictionary,{"آثار | ATHAR":"ATHAR | ATHAR","آثا
   const originalNodes=new WeakMap();
   const originalAttrs=new WeakMap();
   const normalize=value=>String(value||'').replace(/\s+/g,' ').trim();
-  function translateText(value){const raw=String(value??'');const key=normalize(raw);if(!key)return value;if(atharEnglishDictionary[key]){const lead=raw.match(/^\s*/)?.[0]||'';const tail=raw.match(/\s*$/)?.[0]||'';return lead+atharEnglishDictionary[key]+tail;}let result=raw;const phrasePairs=[["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]];for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "],["رقم الطلب: ","Order number: "],["رقم الطلب ","Order number "],["سعر الساعة: ","Hourly rate: "],["الحجز: ","Reservation: "],["الوقت الفعلي: ","Actual time: "],["قيمة العمل: ","Work value: "],["المبلغ المحجوز/التقديري: ","Reserved/estimated amount: "],["المبلغ الإضافي المطلوب: ","Additional amount due: "],["المبلغ الزائد المسترد تجريبيًا: ","Test refund amount: "],["النهائي: ","Final: "],["العميل: ","Customer: "],["التاريخ: ","Date: "],["أنت على بعد ","You are "]];for(const [ar,en] of prefixes){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;return value;}
+  function translateText(value){const raw=String(value??'');const key=normalize(raw);if(!key)return value;if(atharEnglishDictionary[key]){const lead=raw.match(/^\s*/)?.[0]||'';const tail=raw.match(/\s*$/)?.[0]||'';return lead+atharEnglishDictionary[key]+tail;}let result=raw;const phrasePairs=[["اختر طريقة استخدامك للتطبيق","Choose how you want to continue"],["تسجيل الدخول للمتابعة","Log in to continue"],["تسجيل الدخول إلى حسابك","Log in to your account"],["ليس لديك حساب؟","Don't have an account?"],["لديك حساب؟","Already have an account?"],["أدخل بياناتك","Enter your details"],["أدخل بريدك الإلكتروني","Enter your email address"],["أدخل كلمة المرور","Enter your password"]];for(const [ar,en] of phrasePairs){if(result.includes(ar))result=result.replaceAll(ar,en);}if(result!==String(value))return result;const prefixes=[["الحالة: ","Status: "],["المبلغ: ","Amount: "],["موظف الدعم: ","Support Agent: "],["سبب التصعيد: ","Escalation reason: "],["رقم الشكوى: ","Ticket number: "],["صاحب المعدة: ","Equipment owner: "],["الموقع: ","Location: "],["المدة: ","Duration: "],["المبلغ المستحق: ","Amount due: "]];for(const [ar,en] of prefixes){if(result.trim().startsWith(ar))return result.replace(ar,en);}return value;}
   window.ma3daTranslateText=value=>translateText(value);
   function translateNewAttributes(root){const attrs=['placeholder','aria-label','title'];const nodes=[];if(root.nodeType===1)nodes.push(root);if(root.querySelectorAll)nodes.push(...root.querySelectorAll('input,textarea,button,[aria-label],[title]'));nodes.forEach(el=>attrs.forEach(attr=>{if(!el.hasAttribute?.(attr))return;let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved);}if(saved[attr]===undefined)saved[attr]=el.getAttribute(attr);el.setAttribute(attr,translateText(saved[attr]));}));}
 
@@ -4341,7 +3319,7 @@ async function loadOperatorDashboard(){
 }
  
 /* OPERATOR NEW REQUESTS: CUSTOMER + PROJECT REQUESTS */
-let operatorRequestTab = "customers";
+let operatorRequestTab = "projects";
 
 function setOperatorRequestTab(tab){
   operatorRequestTab = tab === "projects" ? "projects" : "customers";
@@ -4394,7 +3372,7 @@ function renderOperatorRequestCards(list, requests, kind){
 }
 
 async function loadOperatorNewRequests(){
-  const customerList = document.getElementById("operatorNewRequestsList");
+  const customerList = null;
   const projectList = document.getElementById("operatorProjectRequestsList");
   const refreshButton = document.getElementById("refreshOperatorRequestsBtn");
   const updatedLabel = document.getElementById("operatorRequestsLastUpdated");
@@ -4431,13 +3409,12 @@ async function loadOperatorNewRequests(){
       const legacyContractorRequest=!data.projectId&&(role==='contractor'||role==='project'||!!data.contractorId);
       if(legacyContractorRequest)return;
       const isProjectRequest=!!data.projectId&&(role==='contractor'||role==='project'||role==='project_manager'||!!data.contractorId);
+      if(!isProjectRequest) return;
       const request={...data};
-      (isProjectRequest ? projectRequests : customerRequests).push(request);
+      projectRequests.push(request);
     });
     const sortNewest=(a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt);
-    customerRequests.sort(sortNewest);
     projectRequests.sort(sortNewest);
-    renderOperatorRequestCards(customerList,customerRequests,"customers");
     renderOperatorRequestCards(projectList,projectRequests,"projects");
     if(updatedLabel){
       updatedLabel.textContent='آخر تحديث: '+new Date().toLocaleTimeString("ar-SA",{hour:"2-digit",minute:"2-digit"});
@@ -4740,8 +3717,7 @@ async function acceptOperatorRequest(
       setOperatorProjectOrdersFilter("current");
       showScreen("operatorProjectOrdersScreen");
     }else{
-      await loadOperatorCurrentOrder();
-      showScreen("operatorCurrentOrderScreen");
+      throw new Error("تم إيقاف دورة طلبات العملاء القديمة.");
     }
  
   }catch(error){
@@ -4806,214 +3782,6 @@ async function rejectOperatorRequest(
  
 }
  
-/* آثار 2026 — تحقق حقيقي من وصول صاحب المعدة (GPS + مسافة كيلومتر) */
-let ma3daOwnerPosition = null;
-let ma3daArrivalDistanceKm = null;
-function ma3daDistanceKm(a,b){
-  if(!a||!b)return Infinity;
-  const rad=v=>v*Math.PI/180;
-  const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng);
-  const x=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
-  return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));
-}
-function ma3daUpdateArrivalEligibility(data){
-  const btn=document.getElementById('operatorArrivedBtn');
-  const feedback=document.getElementById('operatorDistanceFeedback');
-  const target=ma3daCustomerCoordinates(data||window.ma3daActiveRequestData||{});
-  const distance=target&&ma3daOwnerPosition?ma3daDistanceKm(ma3daOwnerPosition,target):Infinity;
-  ma3daArrivalDistanceKm=distance;
-  const eligible=Number.isFinite(distance)&&distance<=1&&Number(ma3daOwnerPosition?.accuracy||Infinity)<=100&&String((data||{}).status||'accepted')==='accepted';
-  if(btn){btn.disabled=!eligible;btn.setAttribute('aria-disabled',String(!eligible));}
-  if(feedback){
-    if(!target)feedback.textContent='موقع العميل غير محفوظ بإحداثيات دقيقة؛ لا يمكن تأكيد الوصول حتى يحدد العميل موقعه بدقة.';
-    else if(!ma3daOwnerPosition)feedback.textContent='اضغط «التحقق من المسافة» للسماح بتحديد موقعك والتحقق من أنك ضمن كيلومتر واحد.';
-    else feedback.textContent=eligible?`أنت ضمن نطاق الوصول (${(distance*1000).toFixed(0)} متر). يمكنك تأكيد الوصول.`:`أنت على بُعد ${(distance).toFixed(2)} كم من العميل. زر الوصول سيتاح عند دخول نطاق 1 كم.`;
-  }
-  return eligible;
-}
-function ma3daGetOwnerPosition(){
-  return new Promise((resolve,reject)=>{
-    if(!navigator.geolocation){reject(new Error('هذا الجهاز لا يدعم تحديد الموقع.'));return;}
-    navigator.geolocation.getCurrentPosition(
-      p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy}),
-      e=>reject(new Error(e.code===1?'اسمح للتطبيق بالوصول إلى موقعك للتحقق من المسافة.':'تعذر تحديد موقعك بدقة. حاول مرة أخرى في مكان مفتوح.')),
-      {enableHighAccuracy:true,timeout:20000,maximumAge:0}
-    );
-  });
-}
-const operatorCheckDistanceBtn=document.getElementById('operatorCheckDistanceBtn');
-if(operatorCheckDistanceBtn){operatorCheckDistanceBtn.addEventListener('click',async()=>{
-  const original=operatorCheckDistanceBtn.textContent;
-  operatorCheckDistanceBtn.disabled=true;operatorCheckDistanceBtn.textContent='جارٍ التحقق من موقعك…';
-  try{
-    ma3daOwnerPosition=await ma3daGetOwnerPosition();
-    let latest=window.ma3daActiveRequestData||{};
-    const id=localStorage.getItem('currentRequestId');
-    if(id&&window.ma3daDB&&window.ma3daDoc&&window.ma3daGetDoc){const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));if(snap.exists())latest=window.ma3daActiveRequestData=snap.data()||latest;}
-    if(!ma3daCustomerCoordinates(latest)){throw new Error('موقع العميل غير محفوظ كإحداثيات دقيقة؛ لا يمكن حساب المسافة بأمان.');}
-    ma3daUpdateArrivalEligibility(latest);
-  }catch(error){ma3daOwnerPosition=null;ma3daUpdateArrivalEligibility(window.ma3daActiveRequestData||{});alert(error.message||'تعذر التحقق من المسافة.');}
-  finally{operatorCheckDistanceBtn.disabled=false;operatorCheckDistanceBtn.textContent=original;}
-});}
-const operatorCustomerMapBtn=document.getElementById('operatorCustomerMapBtn');
-if(operatorCustomerMapBtn){operatorCustomerMapBtn.addEventListener('click',async()=>{
-  try{
-    const id=localStorage.getItem('currentRequestId');if(!id)throw new Error('لا يوجد طلب حالي.');
-    if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
-    const snap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id));
-    if(!snap.exists())throw new Error('الطلب غير موجود.');
-    ma3daOpenCustomerMap(snap.data()||{});
-  }catch(error){alert(error.message||'تعذر فتح موقع العميل.');}
-});}
-
-/* OPERATOR TIMER */
- 
-function startOperatorTimer(
-  startTime
-){
- 
-  clearInterval(
-    operatorTimerInterval
-  );
- 
-  const timer =
-    document.getElementById("operatorTimer");
- 
-  if(!timer)
-    return;
- 
-  function update(){
- 
-    const elapsed =
-      Math.max(
-        0,
-        Date.now() -
-        Number(
-          startTime ||
-          Date.now()
-        )
-      );
- 
-    const totalSeconds =
-      Math.floor(
-        elapsed / 1000
-      );
- 
-    const hours =
-      Math.floor(
-        totalSeconds / 3600
-      );
- 
-    const minutes =
-      Math.floor(
-        (totalSeconds % 3600) / 60
-      );
- 
-    const seconds =
-      totalSeconds % 60;
- 
-    timer.textContent =
-      `${String(hours).padStart(2,"0")}:` +
-      `${String(minutes).padStart(2,"0")}:` +
-      `${String(seconds).padStart(2,"0")}`;
- 
-  }
- 
-  update();
- 
-  operatorTimerInterval =
-    setInterval(
-      update,
-      1000
-    );
- 
-}
- 
-/* 04 — وظائف صاحب المعدة: طلبات العملاء الحالية والسابقة في صفحة واحدة */
-let operatorCustomerOrdersFilter = "current";
-
-function setOperatorCustomerOrdersFilter(filter){
-  operatorCustomerOrdersFilter = filter === "previous" ? "previous" : "current";
-  const currentTab=document.getElementById("operatorCustomerCurrentTab");
-  const previousTab=document.getElementById("operatorCustomerPreviousTab");
-  const currentPanel=document.getElementById("operatorCustomerCurrentPanel");
-  const previousPanel=document.getElementById("operatorCustomerPreviousPanel");
-  if(currentTab){currentTab.classList.toggle("is-active",operatorCustomerOrdersFilter==="current");currentTab.setAttribute("aria-selected",String(operatorCustomerOrdersFilter==="current"));}
-  if(previousTab){previousTab.classList.toggle("is-active",operatorCustomerOrdersFilter==="previous");previousTab.setAttribute("aria-selected",String(operatorCustomerOrdersFilter==="previous"));}
-  if(currentPanel)currentPanel.hidden=operatorCustomerOrdersFilter!=="current";
-  if(previousPanel)previousPanel.hidden=operatorCustomerOrdersFilter!=="previous";
-}
-
-function renderOwnerCustomerOrderCards(list, requests, previous){
-  if(!list)return;
-  if(!requests.length){
-    list.innerHTML=`<div class="card center"><div class="success-icon">${previous?'✓':'🚜'}</div><h3>${previous?'لا توجد طلبات عملاء سابقة':'لا توجد طلبات عملاء حالية'}</h3><p>${previous?'ستظهر هنا الطلبات بعد اكتمالها أو رفضها.':'ستظهر هنا طلبات العملاء المقبولة أو الجاري تنفيذها.'}</p></div>`;
-    return;
-  }
-  list.innerHTML="";
-  requests.forEach(r=>{
-    const esc=v=>String(v??"—").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const card=document.createElement("article");
-    card.className="card operator-new-request-card";
-    const statusLabels={accepted:"مقبول",arrived:"وصلت المعدة",working:"قيد العمل",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي",in_progress:"قيد التنفيذ"};
-    card.innerHTML=`
-      <div class="request-title"><span>🚜</span><div><h2>${esc(r.equipment||r.equipmentType||"معدة")}</h2><p>طلب عميل</p></div></div>
-      <div class="operator-info">
-        <div class="operator-info-row"><span>👤 العميل</span><strong>${esc(r.customerName||r.requesterName||"عميل")}</strong></div>
-        <div class="operator-info-row"><span>📍 الموقع</span><strong>${esc(r.location||"—")}</strong></div>
-        <div class="operator-info-row"><span>⏱️ المدة</span><strong>${esc(r.duration||"—")}</strong></div>
-        <div class="operator-info-row"><span>💰 المبلغ</span><strong>${Number(r.price||0).toLocaleString("ar-SA")} ريال</strong></div>
-        <div class="operator-info-row"><span>📌 الحالة</span><strong>${esc(statusLabels[r.status]||r.status||"—")}</strong></div>
-      </div>
-      ${!previous?`<button type="button" class="main-btn" data-owner-customer-open="${esc(r.id)}">عرض تفاصيل الطلب</button>`:`<div class="operator-current-status"><strong>${r.status==="completed"?"تم إكمال الطلب":"انتهى الطلب دون إكمال"}</strong></div>`}`;
-    list.appendChild(card);
-  });
-}
-
-async function loadOperatorCustomerOrders(){
-  const currentList=document.getElementById("operatorCustomerCurrentList");
-  const previousList=document.getElementById("operatorCustomerPreviousList");
-  const updated=document.getElementById("operatorCustomerOrdersUpdated");
-  if(!currentList&&!previousList)return;
-  if(currentList)currentList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات الحالية...</p></div>';
-  if(previousList)previousList.innerHTML='<div class="card center"><p>جاري تحميل الطلبات السابقة...</p></div>';
-  try{
-    const user=await getOperatorCurrentUser();
-    if(!user?.uid){const msg='<div class="card center"><p>سجّل الدخول بحساب صاحب المعدة لعرض طلبات العملاء.</p></div>';if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;return;}
-    const ownerCustomerRows=await ma3daReadUserRows("requests", ["equipmentOwnerId", "ownerId", "operatorId"], user.uid);
-    const current=[],previous=[];
-    ownerCustomerRows.forEach(d=>{
-      d=d||{};
-      const owner=d.equipmentOwnerId||d.ownerId||d.operatorId||"";
-      const role=String(d.requesterRole||d.requesterType||d.role||"").toLowerCase();
-      const isProject=!!d.projectId&&(role==="contractor"||role==="project"||role==="project_manager"||!!d.contractorId);
-      if(owner!==user.uid||isProject)return;
-      const r={...d};
-      if(["completed","rejected","cancelled"].includes(String(d.status||"")))previous.push(r);
-      else if(["accepted","arrived","working","in_progress","duration_expired"].includes(String(d.status||"")))current.push(r);
-    });
-    const sort=(a,b)=>operatorRequestDateValue(b.acceptedAt||b.createdAt)-operatorRequestDateValue(a.acceptedAt||a.createdAt);
-    current.sort(sort);
-    previous.sort((a,b)=>operatorRequestDateValue(b.completedAt||b.updatedAt||b.createdAt)-operatorRequestDateValue(a.completedAt||a.updatedAt||a.createdAt));
-    renderOwnerCustomerOrderCards(currentList,current,false);
-    renderOwnerCustomerOrderCards(previousList,previous,true);
-  }catch(error){
-    console.error("تعذر تحميل طلبات العملاء لصاحب المعدة:",error);
-    const msg='<div class="card center"><h3>تعذر تحميل الطلبات</h3><p>تحقق من الاتصال ثم أعد فتح الصفحة.</p></div>';
-    if(currentList)currentList.innerHTML=msg;if(previousList)previousList.innerHTML=msg;
-  }
-}
-
-window.loadOperatorCustomerOrders=loadOperatorCustomerOrders;
-
-document.addEventListener("click",event=>{
-  const tab=event.target.closest("[data-owner-customer-filter]");
-  if(tab){setOperatorCustomerOrdersFilter(tab.dataset.ownerCustomerFilter);return;}
-  if(event.target.closest("#refreshOperatorCustomerOrdersBtn")){loadOperatorCustomerOrders();return;}
-  const open=event.target.closest("[data-owner-customer-open]");
-  if(open){localStorage.setItem("currentRequestId",open.dataset.ownerCustomerOpen);loadOperatorCurrentOrder().then(()=>showScreen("operatorCurrentOrderScreen"));}
-});
-
 /* OPERATOR PREVIOUS ORDERS */
  
 async function loadOperatorPreviousOrders(){
@@ -6020,17 +4788,6 @@ if(operatorNewRequestsBtn){
  
 }
  
-const operatorCustomerOrdersBtn=document.getElementById("operatorCustomerOrdersBtn");
-if(operatorCustomerOrdersBtn){
-  operatorCustomerOrdersBtn.addEventListener("click",async()=>{
-    setOperatorCustomerOrdersFilter("current");
-    await loadOperatorCustomerOrders();
-    showScreen("operatorCustomerOrdersScreen");
-  });
-}
-const backOperatorCustomerOrdersBtn=document.getElementById("backFromOperatorCustomerOrdersBtn");
-if(backOperatorCustomerOrdersBtn){backOperatorCustomerOrdersBtn.addEventListener("click",()=>showScreen("operatorHomeScreen"));}
- 
 /* صفحة طلبات المشاريع الحالية والسابقة — مستقلة عن طلبات العملاء */
 const operatorProjectOrdersBtn=document.getElementById("operatorProjectOrdersBtn");
 if(operatorProjectOrdersBtn){operatorProjectOrdersBtn.addEventListener("click",async()=>{await loadOperatorProjectOrders();setOperatorProjectOrdersFilter("current");showScreen("operatorProjectOrdersScreen");});}
@@ -6257,94 +5014,6 @@ if(operatorSupportWhatsAppBtn){
   );
  
 }
- 
-/* OPERATOR CALL CUSTOMER */
- 
-const operatorCallCustomerBtn =
-  document.getElementById("operatorCallCustomerBtn");
- 
-if(operatorCallCustomerBtn){
- 
-  operatorCallCustomerBtn.addEventListener(
-    "click",
-    async()=>{
- 
-      try{
- 
-        const requestId =
-          localStorage.getItem("currentRequestId");
- 
-        if(!requestId){
- 
-          alert(
-            "لا يوجد طلب حالي."
-          );
- 
-          return;
- 
-        }
- 
-        const requestRef =
-          window.ma3daDoc(
-            window.ma3daDB,
-            "requests",
-            requestId
-          );
- 
-        const snapshot =
-          await window.ma3daGetDoc(
-            requestRef
-          );
- 
-        if(!snapshot.exists()){
- 
-          alert(
-            "تعذر العثور على الطلب."
-          );
- 
-          return;
- 
-        }
- 
-        const data =
-          snapshot.data();
- 
-        const phone =
-          data.customerPhone ||
-          "";
- 
-        if(!phone){
- 
-          alert(
-            "رقم العميل غير متوفر حاليًا."
-          );
- 
-          return;
- 
-        }
- 
-        window.location.href =
-          `tel:${phone}`;
- 
-      }catch(error){
- 
-        console.error(
-          "تعذر الاتصال بالعميل:",
-          error
-        );
- 
-        alert(
-          "تعذر الاتصال حاليًا."
-        );
- 
-      }
- 
-    }
-  );
-  
-}
- 
-/* OPERATOR CHAT: handler is registered in the shared chat section above. */
  
 /* BACK BUTTONS */
  
@@ -8002,7 +6671,7 @@ async function loadOwnerInformationCenter(){
     const subcard=(label,value,view)=>`<button type="button" class="owner-admin-subcard" data-owner-view="${safe(view)}">${safe(label)}<strong>${safe(value)}</strong></button>`;
     const openView=async view=>{
       if(!details||!title||!content)return;
-      details.hidden=false;let html="";const registrationPanel=document.getElementById('ownerRegistrationPanel');if(registrationPanel)registrationPanel.hidden=true;
+      details.hidden=false;let html="";
       if(view==="users"){
         title.textContent="المستخدمون";
         html=`<div class="owner-admin-subcards">${subcard("عدد العملاء",available("customers")?customerRows.length.toLocaleString("ar-SA"):"غير متاح","customers")}${subcard("أصحاب المعدات",available("contractors")?contractorRows.length.toLocaleString("ar-SA"):"غير متاح","contractors")}${subcard("عدد المعدات",available("equipment")?equipmentRows.length.toLocaleString("ar-SA"):"غير متاح","equipment")}${subcard("مسؤولو المشاريع",available("operators")?operatorRows.length.toLocaleString("ar-SA"):"غير متاح","operators")}${subcard("المشاريع القائمة",projectRows.filter(x=>!['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsCurrent")}${subcard("المشاريع السابقة",projectRows.filter(x=>['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase())).length.toLocaleString("ar-SA"),"projectsPrevious")}</div><p>اختر أي بطاقة لعرض البيانات التفصيلية.</p>`;
@@ -8017,7 +6686,7 @@ async function loadOwnerInformationCenter(){
       }else if(view==="projectsCurrent"||view==="projectsPrevious"||view==="projects"){
         const previous=view==="projectsPrevious";title.textContent=previous?"المشاريع السابقة":"المشاريع القائمة";const rows=projectRows.filter(x=>{const done=['completed','closed','cancelled','canceled','archived'].includes(String(x.status||'').toLowerCase());return view==="projects"?true:previous?done:!done;});html=listHtml(rows,x=>x.name||x.title||x.projectName||x.id,x=>`الحالة: ${x.status||"غير محددة"}`,x=>`المعرّف: ${x.id}`,"لا توجد مشاريع ضمن هذا القسم.");
       }else if(view==="complaints"){
-        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}${subcard("التصعيدات الواردة","عرض التصعيدات","escalations")}</div><h3>مراجعة التسجيلات الجديدة</h3><p>تظهر هنا الحسابات التي اجتازت المراجعة المبدئية لدى الدعم، لاعتمادها النهائي ومراجعة صورها ومستنداتها.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="support-btn support-primary" id="ownerFinalRegistrationsBtn">الاعتماد النهائي للمسجلين الجدد</button><button type="button" class="support-btn" id="ownerRegistrationMonitoringBtn">مراقبة الدعم وطلبات التسجيل المتعثرة</button></div><p>اختر أحد القسمين لمراجعة بيانات المسجل وصوره واتخاذ القرار النهائي.</p>`;
+        title.textContent="الشكاوى وموظفو الدعم";html=`<div class="owner-admin-subcards">${subcard("عدد الشكاوى",available("supportTickets")?ticketRows.length.toLocaleString("ar-SA"):"غير متاح","tickets")}${subcard("موظفو الدعم",available("supportStaff")?staffRows.filter(x=>x.active!==false&&x.role!=="owner").length.toLocaleString("ar-SA"):"غير متاح","staff")}${subcard("التصعيدات الواردة","عرض التصعيدات","escalations")}</div><p>اختر الشكاوى أو موظفي الدعم أو التصعيدات الواردة لعرض التفاصيل.</p>`;
       }else if(view==="tickets"){
         title.textContent="الشكاوى";html=listHtml(ticketRows,x=>x.subject||x.title||x.category||"شكوى",x=>x.message||x.description||"لا يوجد وصف مسجل",x=>`الحالة: ${x.status||"غير محددة"} · المعرّف: ${x.id}`,"لا توجد شكاوى مسجلة أو تعذرت قراءتها.");
       }else if(view==="staff"){
@@ -9534,7 +8203,7 @@ async function openContractorHome() {
     const returnProjectFilter=editingId?contractorProjectFilter:'current';
     try{
       const profile=contractorGetProfile()||{};const now=new Date();
-      const projectData={contractorId:user.uid,ownerId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorEmail:user.email||profile.email||'',contractorCompany:profile.company||'',name,projectName:name,city,location:address||city,address,latitude:lat,longitude:lng,coordinates:{latitude:lat,longitude:lng},notes,status:editingId?(contractorSelectedProject?.status||'active'):'active',updatedAt:now};
+      const projectData={contractorId:user.uid,ownerId:user.uid,contractorName:profile.name||'',contractorPhone:profile.phone||'',contractorCompany:profile.company||'',name,projectName:name,city,location:address||city,address,latitude:lat,longitude:lng,coordinates:{latitude:lat,longitude:lng},notes,status:editingId?(contractorSelectedProject?.status||'active'):'active',updatedAt:now};
       const pendingRegistration=atharGetPendingRegistration();
       if(pendingRegistration?.newRegistration && pendingRegistration.uid===user.uid && pendingRegistration.role==="contractor" && !editingId){
         await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'registrationRequests',user.uid),{
@@ -9969,7 +8638,6 @@ async function loadContractorProjects() {
       contractorSelectedProject=project;
       const title=document.getElementById('contractorPickerProjectName');if(title)title.textContent=project.name||project.projectName||'مشروعك';
       const loc=document.getElementById('contractorPickerProjectLocation');if(loc)loc.textContent=`📍 ${project.city||''} ${project.address||project.location||''}`;
-      const manager=document.getElementById('contractorPickerProjectManager');const profile=contractorGetProfile()||{};if(manager)manager.textContent=`مسؤول المشروع: ${profile.name||project.contractorName||'المسؤول المسجل'} · الجوال: ${profile.phone||project.contractorPhone||'—'}`;
       contractorShowScreen('contractorEquipmentPickerScreen');await loadContractorNearbyEquipment();await loadContractorProjectRequestTracking();
     }catch(error){console.error('Open project equipment picker error:',error);alert('تعذر فتح المشروع.');}
   });
@@ -10814,8 +9482,7 @@ document.addEventListener("click", function(event){
     const previousShowScreen = showScreen;
     showScreen = function(id){
       document.querySelectorAll(".screen").forEach(node=>node.classList.remove("active"));
-      // Preserve the original return value (true/false) for callers that verify navigation.
-      return previousShowScreen(id);
+      previousShowScreen(id);
     };
     window.__ma3daDynamicScreenNavigation = true;
   }
@@ -11311,7 +9978,7 @@ async function staffTicketRows(){
       }else{
         const reason=await window.ma3daRequestText('اكتب سبب رفض التعديل ليظهر لصاحب المعدة:','اكتب سبب الرفض وما المطلوب تعديله...');
         if(reason===null)return;
-        if(typeof reason!=='string'||!reason.trim())throw new Error('سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.');
+        if(!reason.trim())throw new Error('سبب الرفض مطلوب حتى يعرف صاحب المعدة ما الذي يحتاج إلى تصحيح.');
         await window.ma3daUpdateDoc(ref,{pendingChanges:null,editStatus:'rejected',editReviewedAt:now,editReviewedBy:user.uid,editReviewNote:reason.trim(),ownerNotice:{type:'equipment_edit_rejected',message:reason.trim(),createdAt:now,read:false}});
         alert('تم رفض التعديل وإرسال سبب الرفض لصاحب المعدة.');
       }
@@ -11331,7 +9998,7 @@ async function staffTicketRows(){
       let reason='';
       if(!approve){reason=prompt('اكتب سبب رفض إضافة المعدة ليظهر لصاحبها:');if(reason===null)return;if(!reason.trim())throw new Error('سبب الرفض مطلوب.');}
       const now=new Date();
-      await window.ma3daUpdateDoc(ref,approve?{verificationStatus:'verified',approved:true,equipmentStatus:'active',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:'تم اعتماد المعدة',ownerNotice:{type:'equipment_approved',message:'تم اعتماد معدتك من الدعم الفني.',createdAt:now,read:false}}:{verificationStatus:'rejected',equipmentStatus:'rejected',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:reason.trim(),ownerNotice:{type:'equipment_rejected',message:reason.trim(),createdAt:now,read:false}});
+      await window.ma3daUpdateDoc(ref,approve?{verificationStatus:'verified',equipmentStatus:'active',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:'تم اعتماد المعدة',ownerNotice:{type:'equipment_approved',message:'تم اعتماد معدتك من الدعم الفني.',createdAt:now,read:false}}:{verificationStatus:'rejected',equipmentStatus:'rejected',verificationReviewedAt:now,verificationReviewedBy:user.uid,verificationReviewNote:reason.trim(),ownerNotice:{type:'equipment_rejected',message:reason.trim(),createdAt:now,read:false}});
       alert(approve?'تم اعتماد المعدة وأصبحت موثقة.':'تم رفض إضافة المعدة وإرسال السبب لصاحبها.');
       await loadPendingEquipmentEdits();
       if(typeof loadSupportEquipment==='function')await loadSupportEquipment();
@@ -11549,30 +10216,29 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   window.ma3daOpenCustomerFinance = () => openFinance('customer');
   function setOwnerFinanceSubpage(page){
     ownerFinanceSubpage=page||'menu';
-    const menu=$f('ownerFinancePagesNav'),toolbar=$f('ownerFinancePageToolbar');
-    const projects=ownerFinanceSubpage==='contractors';
-    const rentalCustomers=ownerFinanceSubpage==='customers';
+    const menu=$f('ownerFinancePagesNav'), toolbar=$f('ownerFinancePageToolbar');
+    const customer=ownerFinanceSubpage==='customers', projects=ownerFinanceSubpage==='contractors';
     if(menu)menu.hidden=ownerFinanceSubpage!=='menu';
     if(toolbar)toolbar.hidden=ownerFinanceSubpage==='menu';
-    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=true;
-    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=true;
-    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=true;
-    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true;
-    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!(projects||rentalCustomers);
-    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=projects?'فواتير المشاريع':rentalCustomers?'فواتير تأجير المعدات':'الفواتير والمستحقات';
-    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=projects?'فواتير اتفاقات المشاريع والدفعات المشتركة.':rentalCustomers?'فواتير طلبات تأجير المعدات المسجلة.':'اختر نوع الفواتير التي تريد مراجعتها.';
+    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+    if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true; // نظام المراحل القديم مؤرشف
+    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=!projects;
+    if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=customer?'فواتير العملاء':projects?'فواتير المقاولين':'فواتير التأجير ومستحقاتي';
+    if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=customer?'فواتير طلبات التأجير الخاصة بالعملاء وحالة السداد.':projects?'فواتير مراحل المشاريع والدفعات والمبالغ المستحقة.':'اختر نوع الفواتير التي تريد مراجعتها.';
   }
   function openFinance(mode){
-    financeMode=mode==='owner'?'owner':mode==='customer'?'customer':'contractor';
+    financeMode=['owner','customer'].includes(mode)?mode:'contractor';
     showScreen('contractorFinanceScreen');
     const owner=financeMode==='owner'; const customer=financeMode==='customer';
     if($f('financeScreenTitle'))$f('financeScreenTitle').textContent=owner?'فواتير التأجير ومستحقاتي':customer?'فواتيري والمدفوعات':'فواتير المشروع والسداد';
     if($f('financeScreenSubtitle'))$f('financeScreenSubtitle').textContent=owner?'أصدر فاتورة الطلب بعد انتهاء العمل، وتابع حالة السداد ومستحقاتك.':customer?'راجع فواتيرك ومبالغها وحالة الدفع من مكان واحد.':'استعرض فواتير المشروع والدفعات وحالة السداد.';
     if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true; // النظام المرحلي القديم مؤرشف وغير نشط
-    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=true;
-    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=true;
-    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=true;
-    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=owner;
+    if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!owner;
+    if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+    if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!(customer||owner);
+    if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
     if($f('contractorStageManagerCard'))$f('contractorStageManagerCard').hidden=true; // النظام المرحلي القديم مؤرشف وغير نشط
     if($f('contractorCreateInvoiceCard'))$f('contractorCreateInvoiceCard').hidden=true;
     if($f('contractorSubmitPaymentCard'))$f('contractorSubmitPaymentCard').hidden=owner||customer;
@@ -11585,10 +10251,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if($f('ownerFinancePagesNav'))$f('ownerFinancePagesNav').hidden=true;
       if($f('ownerFinancePageToolbar'))$f('ownerFinancePageToolbar').hidden=true;
       if($f('ownerIssueInvoiceCard'))$f('ownerIssueInvoiceCard').hidden=true;
-      if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=true;
-      if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=true;
-      if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=true;
-      if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=false;
+      if($f('ownerBookingInvoiceCard'))$f('ownerBookingInvoiceCard').hidden=!customer;
+      if($f('bookingInvoicesList'))$f('bookingInvoicesList').hidden=!customer;
+      if($f('bookingInvoiceGatewayNotice'))$f('bookingInvoiceGatewayNotice').hidden=!customer;
+      if($f('contractorInvoicesList'))$f('contractorInvoicesList').hidden=customer;
     }
     return loadFinance().catch(err=>{console.error('Load Ma3da finance failed:',err);say(owner?'ownerInvoiceFeedback':'contractorPaymentFeedback','تعذر تحميل بيانات الفواتير. تحقق من الاتصال وصلاحيات Firebase.',true);throw err;});
   }
@@ -11629,23 +10295,28 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const phaseFields=financeMode==='owner'?['ownerId']:['contractorId'];
     const [projects,invoices,payments,requests,phaseRows]=await Promise.all([
       projectFields.length?ma3daReadUserRows('projects',projectFields,user.uid):Promise.resolve([]),
-      ma3daReadUserRows('projectInvoices',invoiceFields,user.uid).catch(err=>{console.warn('projectInvoices غير متاحة وفق قواعد Firestore الحالية؛ ستستخدم نسخة الفاتورة المحفوظة داخل الطلب.',err);return []; }),
+      ma3daReadUserRows('projectInvoices',invoiceFields,user.uid),
       ma3daReadUserRows('projectInvoicePayments',paymentFields,user.uid).catch(err=>{console.warn('Related payment rows are not readable yet.',err);return []; }),
       ma3daReadUserRows('requests',requestFields,user.uid),
       ma3daReadUserRows('projectPhaseTasks',phaseFields,user.uid).catch(err=>{console.warn('Project phase tasks are not readable yet; check Firestore rules.',err);return [];})
     ]);
     cachedProjects=projects.filter(p=>(p.contractorId||p.ownerId||p.userId)===user.uid);
     cachedAllRequests=requests;
+    const bookingRows=requests.filter(r=>{
+      const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';
+      if(financeMode==='customer') return r.customerId===user.uid && !!r.invoiceNumber;
+      if(financeMode==='owner') return ownerId===user.uid && ['invoice_pending','invoice_issued','payment_pending','paid','completed'].includes(String(r.status||'')) && (r.invoiceNumber || ['invoice_pending','completed'].includes(String(r.status||'')));
+      return false;
+    });
+    renderBookingInvoices(bookingRows);
     cachedManagerRequests=requests.filter(r=>!!r.projectId && (r.contractorId===user.uid || r.requesterId===user.uid || r.customerId===user.uid) && (r.requesterRole==='contractor'||r.requesterType==='contractor'||!!r.contractorId) && !['rejected','cancelled','مرفوض','ملغي'].includes(String(r.status||'').toLowerCase()));
     cachedRequests=requests.filter(r=>{
       const isProject=!!(r.projectId && (r.requesterRole==='contractor'||r.requesterType==='contractor'||r.contractorId));
       const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';
-      const accepted=['accepted','arrived','working','completed','complete','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
+      const accepted=['accepted','arrived','working','completed','complete','invoice_pending','invoice_issued','payment_pending','paid','تم القبول','قيد العمل','مكتمل'].includes(String(r.status||'').toLowerCase());
       return isProject && ownerId===user.uid && accepted;
     });
-    const embeddedInvoices=requests.filter(r=>r.invoiceSnapshot&&r.invoiceSnapshot.invoiceKind==='equipment_rental').map(r=>({...r.invoiceSnapshot,id:'embedded-'+r.id,requestId:r.id,invoiceNumber:r.invoiceNumber||r.invoiceSnapshot.invoiceNumber,customerId:r.customerId||r.invoiceSnapshot.customerId,ownerId:r.equipmentOwnerId||r.ownerId||r.operatorId||r.invoiceSnapshot.ownerId,equipmentOwnerId:r.equipmentOwnerId||r.ownerId||r.operatorId||r.invoiceSnapshot.equipmentOwnerId}));
-    const allInvoices=[...invoices,...embeddedInvoices.filter(e=>!invoices.some(i=>i.requestId===e.requestId))];
-    cachedInvoices=allInvoices.filter(i=>financeMode==='customer'?(i.invoiceKind==='equipment_rental'&&i.customerId===user.uid):financeMode==='owner'?((i.invoiceKind==='equipment_rental'&&(i.ownerId===user.uid||i.equipmentOwnerId===user.uid))||(i.invoiceKind==='agreement_installment'&&(i.ownerId===user.uid||i.equipmentOwnerId===user.uid))):(i.invoiceKind==='agreement_installment'&&i.contractorId===user.uid));
+    cachedInvoices=invoices.filter(i=>{const activeKind=i.invoiceKind==='agreement_installment'||i.invoiceKind==='customer_booking';if(!activeKind)return false;if(financeMode==='owner')return (i.ownerId===user.uid||i.equipmentOwnerId===user.uid);if(financeMode==='customer')return i.customerId===user.uid;return i.invoiceKind==='agreement_installment'&&i.contractorId===user.uid;});
     cachedPhases=phaseRows.filter(ph=>financeMode==='owner'?ph.ownerId===user.uid:ph.contractorId===user.uid);
     const invoiceIds=new Set(cachedInvoices.map(i=>i.id));
     cachedPayments=payments.filter(p=>invoiceIds.has(p.invoiceId));
@@ -11662,6 +10333,72 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const confirmed=cachedPayments.filter(p=>['verified','confirmed'].includes(p.status)).reduce((sum,p)=>sum+Number(p.amount||0),0);
     const disputed=ownerInvoices.filter(i=>['disputed','under_review'].includes(i.settlementStatus||i.paymentStatus)).reduce((sum,i)=>sum+Math.max(0,Number(i.remainingAmount??i.invoiceAmount??0)),0);
     metrics.innerHTML=`<p><strong>الرصيد المتاح للتحويل:</strong> غير متاح حتى ربط نظام تسويات وتحويلات فعلي</p><p><strong>المستحقات غير المسددة:</strong> ${money(outstanding)}</p><p><strong>المبالغ قيد التحقق:</strong> ${money(pending)}</p><p><strong>الدفعات المؤكدة:</strong> ${money(confirmed)}</p><p><strong>مبالغ محل اعتراض:</strong> ${money(disputed)}</p>`;
+  }
+  function renderBookingInvoices(rows){
+    const list=$f('bookingInvoicesList');
+    if(list){
+      if(!rows.length){list.innerHTML='<div class="card"><h3>لا توجد فواتير طلبات حتى الآن</h3><p>ستظهر الفاتورة هنا بعد إصدارها. الطلب المنتهي يبقى مفتوحًا ماليًا حتى تأكيد السداد من بوابة دفع موثوقة.</p></div>';}
+      else {list.innerHTML='<h3>فواتير طلبات التأجير</h3>'+rows.sort((a,b)=>Number(b.invoiceIssuedAt||b.workCompletedAt||b.completedAt||0)-Number(a.invoiceIssuedAt||a.workCompletedAt||a.completedAt||0)).map(r=>{
+        const amount=Number(r.invoiceAmount||r.finalAmount||r.price||0);
+        const state=r.paymentStatus==='paid'?'مسددة ومؤكدة':r.invoiceStatus==='issued'?'الفاتورة صادرة — بانتظار الدفع':r.status==='invoice_pending'?'بانتظار إصدار الفاتورة':'بانتظار التسوية';
+        const sharedInvoice=cachedInvoices.find(i=>i.id===r.sharedInvoiceId||i.requestId===r.id&&i.invoiceKind==='customer_booking');
+        const invoicePayments=sharedInvoice?cachedPayments.filter(p=>p.invoiceId===sharedInvoice.id):[];
+        const confirmButtons=financeMode==='owner'?invoicePayments.filter(p=>p.status==='pending_verification').map(p=>`<div class="ma3da-finance-row"><p>إثبات سداد: ${money(p.amount)} — ${esc(p.reference||'بدون مرجع')}</p><button class="main-btn" type="button" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button></div>`).join(''):'';
+        const issueButton='';
+        const payButton='';
+        const payNotice='';
+        return `<div class="ma3da-finance-row"><h3>${esc(r.invoiceNumber||'فاتورة لم تصدر بعد')}</h3><p><strong>رقم الطلب:</strong> ${esc(r.id)}</p><p><strong>المعدة:</strong> ${esc(r.equipment||'معدة')}</p><p><strong>الموقع:</strong> ${esc(r.location||'—')}</p><p><strong>تاريخ الفاتورة:</strong> ${when(r.invoiceIssuedAt||r.workCompletedAt||r.completedAt)}</p><p><strong>قيمة الفاتورة:</strong> ${money(amount)}</p><p><strong>حالة الفاتورة والسداد:</strong> <span class="ma3da-finance-status">${esc(state)}</span></p><p><strong>حالة الطلب:</strong> ${esc(r.requestClosed?'مغلق ماليًا':'مفتوح حتى تأكيد السداد')}</p>${issueButton}${payButton}${payNotice}${confirmButtons}</div>`;
+      }).join('');}
+    }
+    const select=$f('ownerBookingInvoiceRequest');
+    if(select){const eligible=rows.filter(r=>!r.invoiceNumber&&(r.status==='invoice_pending'||r.status==='completed'));select.innerHTML='<option value="">اختر طلبًا انتهى العمل فيه</option>'+eligible.map(r=>`<option value="${esc(r.id)}">${esc(r.equipment||'معدة')} — ${esc(r.location||'الموقع غير محدد')} — ${money(r.price||0)}</option>`).join('');if(!eligible.length)select.innerHTML='<option value="">لا توجد طلبات بانتظار إصدار فاتورة</option>';}
+  }
+  async function submitBookingPaymentProof(requestId){
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      if(typeof window.ma3daRunTransaction!=='function'||typeof window.ma3daNewPaymentRef!=='function')throw new Error('طبقة المعاملات المالية غير جاهزة.');
+      const requestRef=window.ma3daDoc(window.ma3daDB,'requests',requestId);
+      const paymentRef=window.ma3daNewPaymentRef();
+      const cachedInvoice=cachedInvoices.find(i=>i.requestId===requestId&&i.invoiceKind==='customer_booking');
+      const cachedPaid=cachedInvoice?cachedPayments.filter(x=>x.invoiceId===cachedInvoice.id&&['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0):0;
+      const cachedPending=cachedInvoice?cachedPayments.filter(x=>x.invoiceId===cachedInvoice.id&&x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0):0;
+      const suggested=Math.max(0,Number(cachedInvoice?.invoiceAmount||0)-cachedPaid-cachedPending);
+      const raw=prompt('أدخل مبلغ إثبات السداد (ريال سعودي):',suggested.toFixed(2));if(raw===null)return;const amount=Math.round(Number(raw)*100)/100;if(!Number.isFinite(amount)||amount<=0||amount>suggested)throw new Error('أدخل مبلغًا صحيحًا لا يتجاوز المتبقي الظاهر.');
+      const reference=(prompt('رقم مرجع التحويل أو وصف السداد النقدي (اختياري):','')||'').trim();
+      await window.ma3daRunTransaction(async tx=>{
+        const rs=await tx.get(requestRef);if(!rs.exists())throw new Error('الطلب غير موجود.');const request=rs.data()||{};
+        if(request.customerId!==user.uid)throw new Error('هذه الفاتورة ليست مرتبطة بحسابك.');
+        if(!request.sharedInvoiceId)throw new Error('الفاتورة المشتركة غير جاهزة؛ اطلب من صاحب المعدة إصدارها.');
+        const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices',request.sharedInvoiceId);const ins=await tx.get(invoiceRef);if(!ins.exists())throw new Error('تعذر العثور على الفاتورة المشتركة.');const invoice={...ins.data(),id:ins.id};
+        if(invoice.invoiceKind!=='customer_booking'||invoice.requestId!==requestId)throw new Error('الفاتورة لا تطابق طلب العميل.');
+        if(invoice.paymentStatus==='paid')throw new Error('الفاتورة مسددة بالفعل.');
+        const q=window.ma3daQuery(window.ma3daCollection(window.ma3daDB,'projectInvoicePayments'),window.ma3daWhere('invoiceId','==',invoice.id));const snaps=await tx.get(q);const rows=[];snaps.forEach(d=>rows.push({...d.data(),id:d.id}));
+        const paid=rows.filter(x=>['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0);const pending=rows.filter(x=>x.status==='pending_verification').reduce((n,x)=>n+Number(x.amount||0),0);const remaining=Math.max(0,Math.round((Number(invoice.invoiceAmount||0)-paid-pending)*100)/100);if(remaining<=0)throw new Error('المبلغ المتبقي مغطى بدفعات مؤكدة أو معلقة.');
+        if(amount>remaining+0.009)throw new Error('تغير الرصيد أثناء التسجيل؛ أعد فتح الفاتورة وتحقق من المتبقي.');const now=new Date();
+        tx.set(paymentRef,{invoiceId:invoice.id,invoiceKind:'customer_booking',invoiceNumber:invoice.invoiceNumber||'',requestId,customerId:user.uid,ownerId:invoice.ownerId||invoice.equipmentOwnerId||'',amount,currency:'SAR',reference,method:'manual_receipt',status:'pending_verification',submittedBy:user.uid,submittedAt:now,note:'إثبات يدوي غير مؤكد؛ لا يُعد السداد نهائيًا إلا بعد مراجعة صاحب المعدة.',schemaVersion:5});
+        const ledger=(Array.isArray(request.paymentLedger)?request.paymentLedger:[]).filter(x=>x.paymentId!==paymentRef.id&&x.id!==paymentRef.id);ledger.push({id:paymentRef.id,paymentId:paymentRef.id,invoiceId:invoice.id,amount,reference,status:'pending_owner_review',submittedAt:now,submittedBy:user.uid});
+        tx.update(requestRef,{paymentLedger:ledger,paymentStatus:'pending_review',lastPaymentSubmittedAt:now,updatedAt:now});tx.update(invoiceRef,{paymentStatus:'payment_submitted',lastPaymentSubmittedAt:now,updatedAt:now});
+      });
+      alert('تم تسجيل إثبات السداد للمراجعة فقط؛ لم يتم تأكيد وصول المال أو تنفيذ دفع إلكتروني.');await loadFinance();
+    }catch(err){if(err.message!=='أُلغي تسجيل إثبات السداد.')console.error('Submit booking payment proof failed:',err);if(err.message!=='أُلغي تسجيل إثبات السداد.')alert(err.message||'تعذر تسجيل إثبات السداد.');}
+  }
+  async function issueBookingInvoice(requestIdFromButton){
+    const btn=$f('ownerIssueBookingInvoiceBtn');if(btn)btn.disabled=true;
+    try{
+      const user=await getUser();if(!user?.uid)throw new Error('سجّل الدخول أولًا.');
+      if(typeof window.ma3daRunTransaction!=='function'||typeof window.ma3daNewInvoiceRef!=='function')throw new Error('طبقة المعاملات المالية غير جاهزة.');
+      const requestId=requestIdFromButton||$f('ownerBookingInvoiceRequest')?.value;if(!requestId)throw new Error('اختر الطلب أولًا.');
+      const ref=window.ma3daDoc(window.ma3daDB,'requests',requestId);const invoiceRef=window.ma3daNewInvoiceRef();const now=new Date();
+      await window.ma3daRunTransaction(async tx=>{
+        const snap=await tx.get(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const r=snap.data()||{};
+        const ownerId=r.equipmentOwnerId||r.ownerId||r.operatorId||'';if(ownerId!==user.uid)throw new Error('لا تملك صلاحية إصدار فاتورة لهذا الطلب.');
+        if(r.invoiceNumber||r.sharedInvoiceId)throw new Error('صدرت فاتورة لهذا الطلب بالفعل.');if(!['invoice_pending','completed'].includes(String(r.status||'')))throw new Error('لا تصدر الفاتورة إلا بعد تسجيل انتهاء العمل.');
+        const amount=Number(requestIdFromButton?(r.price||0):$f('ownerBookingInvoiceAmount')?.value);if(!Number.isFinite(amount)||amount<=0)throw new Error('أدخل مبلغًا صحيحًا للفاتورة.');const finalAmount=Math.round(amount*100)/100;const invoiceNumber='M3-B-'+Date.now();const description=($f('ownerBookingInvoiceDescription')?.value||'').trim()||'فاتورة تأجير '+(r.equipment||'معدة');
+        tx.set(invoiceRef,{invoiceKind:'customer_booking',invoiceNumber,requestId,customerId:r.customerId||'',customerEmail:r.customerEmail||'',ownerId,equipmentOwnerId:ownerId,ownerEmail:user.email||'',equipment:r.equipment||'معدة',equipmentId:r.equipmentId||'',projectName:r.projectName||'',invoiceAmount:finalAmount,paidAmount:0,remainingAmount:finalAmount,currency:'SAR',description,paymentMethod:'manual_receipt',status:'issued',paymentStatus:'unpaid',settlementStatus:'settlement_pending',paymentEvents:[],createdBy:user.uid,createdAt:now,updatedAt:now,schemaVersion:5,financialPolicyVersion:'ma3da-finance-v1'});
+        tx.update(ref,{invoiceNumber,sharedInvoiceId:invoiceRef.id,invoiceAmount:finalAmount,invoiceDescription:description,invoiceStatus:'issued',paymentStatus:'unpaid',paidTotal:0,remainingBalance:finalAmount,invoiceIssuedAt:now,invoiceIssuedBy:user.uid,updatedAt:now,status:'invoice_issued',requestClosed:false,financialPolicyVersion:'ma3da-finance-v1'});
+      });
+      say('ownerBookingInvoiceFeedback','صدرت الفاتورة المشتركة وحُفظ رابطها مع الطلب في معاملة واحدة. لا يعني ذلك تحصيلًا إلكترونيًا.');if($f('ownerBookingInvoiceAmount'))$f('ownerBookingInvoiceAmount').value='';if($f('ownerBookingInvoiceDescription'))$f('ownerBookingInvoiceDescription').value='';await loadFinance();
+    }catch(err){console.error('Issue booking invoice failed:',err);say('ownerBookingInvoiceFeedback',err.message||'تعذر إصدار الفاتورة.',true);}finally{if(btn)btn.disabled=false;}
   }
   function renderOwnerRequestOptions(){
     const el=$f('ownerInvoiceRequest');if(!el)return;
@@ -11736,17 +10473,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   function renderInvoiceCards(){
     const list=$f('contractorInvoicesList');if(!list)return;
-    const activeInvoices=cachedInvoices.filter(i=>financeMode==='customer'?i.invoiceKind==='equipment_rental':financeMode==='owner'?(ownerFinanceSubpage==='customers'?i.invoiceKind==='equipment_rental':i.invoiceKind==='agreement_installment'):i.invoiceKind==='agreement_installment');
-    if(!activeInvoices.length){list.innerHTML=`<div class="card"><h3>${financeMode==='customer'?'لا توجد فواتير صادرة لطلباتك حتى الآن':financeMode==='owner'?'لا توجد فواتير حتى الآن':'لا توجد فواتير مشاريع واردة حتى الآن'}</h3><p>${financeMode==='customer'?'ستظهر هنا فواتير طلبات تأجير المعدات بعد انتهاء العمل.':financeMode==='owner'?'ستظهر هنا فواتير تأجير المعدات والمشاريع.':'ستظهر هنا الفواتير المشتركة لاتفاقيات تأجير المعدات للمشاريع.'}</p></div>`;return;}
+    const activeInvoices=cachedInvoices.filter(i=>i.invoiceKind==='agreement_installment');
+    if(!activeInvoices.length){list.innerHTML=`<div class="card"><h3>${financeMode==='owner'?'لا توجد فواتير مشاريع حتى الآن':'لا توجد فواتير مشاريع واردة حتى الآن'}</h3><p>${financeMode==='owner'?'ستظهر هنا فواتير اتفاقيات تأجير المعدات للمشاريع.':'ستظهر هنا الفواتير المشتركة لاتفاقيات تأجير المعدات للمشاريع.'}</p></div>`;return;}
     const sorted=[...activeInvoices].sort((a,b)=>{
       const toTime=v=>{try{return (v?.toDate?v.toDate():new Date(v||0)).getTime()||0}catch(_){return 0}};
       return toTime(b.createdAt)-toTime(a.createdAt);
     });
-    list.innerHTML='<div class="card"><h3>'+(financeMode==='owner'?'فواتير معداتي ومستحقاتي':financeMode==='customer'?'فواتيري ومدفوعاتي':'الفواتير المطلوب سدادها')+'</h3><p>راجع قيمة الفاتورة والدفعات وحالة السداد من هنا.</p>'+sorted.map(inv=>{
+    list.innerHTML='<div class="card"><h3>'+(financeMode==='owner'?'فواتير معداتي ومستحقاتي':'الفواتير المطلوب سدادها')+'</h3><p>راجع قيمة الفاتورة والدفعات وحالة السداد من هنا.</p>'+sorted.map(inv=>{
       const s=paymentSummary(inv); const st=s.remaining<=0?'paid':s.paid>0?'partial':(s.pending>0?'pending_verification':'issued');
       const payRows=cachedPayments.filter(p=>p.invoiceId===inv.id).map(p=>`<div class="ma3da-finance-row"><strong>دفعة: ${money(p.amount)}</strong><p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(p.status))}</span></p><p>المرجع: ${esc(p.reference||'—')}</p>${financeMode==='owner'&&p.status==='pending_verification'?`<button type="button" class="main-btn" data-owner-confirm-payment="${esc(p.id)}">تأكيد استلام الدفعة</button>`:''}</div>`).join('');
-      const counterparty=financeMode==='owner'?`<p><strong>${inv.invoiceKind==='equipment_rental'?'العميل':'مسؤول المشروع'}:</strong> ${esc(inv.customerName||inv.contractorName||inv.contractorEmail||'الطرف الآخر')}</p>`:`<p><strong>صاحب المعدة:</strong> ${esc(inv.ownerName||inv.ownerEmail||'صاحب المعدة')}</p>`;
-      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3>${counterparty}${inv.projectName?`<p><strong>المشروع:</strong> ${esc(inv.projectName)}</p>`:''}${inv.stageNumber?`<p><strong>المرحلة:</strong> ${esc(inv.stageName||stageName(inv.stageNumber))}</p>`:''}<p><strong>المعدة:</strong> ${esc(inv.equipment||'—')}</p><p><strong>تاريخ الإصدار:</strong> ${when(inv.createdAt)}</p><p><strong>التفاصيل:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p>${inv.invoiceKind==='agreement_installment'?`<p><strong>الدفعة:</strong> ${esc(inv.installmentLabel||`${inv.installmentIndex||''} من ${inv.installmentCount||''}`)}</p><p><strong>تاريخ الاستحقاق:</strong> ${when(inv.dueAt)}</p>`:''}${inv.invoiceKind==='equipment_rental'?`<p><strong>رقم الطلب:</strong> ${esc(inv.orderNumber||inv.requestId||'—')}</p><p class="muted">فاتورة سجلية للتوثيق؛ لا تعني تحصيلًا إلكترونيًا أو إصدار فاتورة ضريبية.</p>`:''}${financeMode==='owner'?`<p><strong>حالة التسوية:</strong> ${esc(statusLabel(inv.settlementStatus||'settlement_pending'))}</p>`:''}<p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(st))}</span></p>${inv.paymentMethod==='gateway'&&s.remaining>0&&financeMode==='owner'?`<p class="muted">وسائل الدفع الإلكتروني (Apple Pay، مدى، Visa وMastercard) تتطلب ربط بوابة الدفع وتأكيدها الموثوق؛ لم تُفعّل عملية دفع غير مربوطة.</p>`:''}${financeMode==='contractor'&&s.remaining>0&&inv.paymentMethod==='cash'?`<button type="button" class="main-btn" data-finance-pay-invoice="${esc(inv.id)}">توثيق سداد نقدي لهذه الفاتورة</button>`:''}${financeMode==='contractor'&&s.remaining>0&&inv.paymentMethod!=='cash'?`<p class="muted">الدفع الإلكتروني غير مفعّل حتى ربط بوابة دفع وتأكيد العملية منها؛ لا تسجّل زرًا بديلًا على أنه دفع ناجح.</p>`:''}${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
+      const counterparty=financeMode==='owner'?`<p><strong>مسؤول المشروع:</strong> ${esc(inv.contractorName||inv.contractorEmail||'المقاول')}</p>`:`<p><strong>صاحب المعدة:</strong> ${esc(inv.ownerName||inv.ownerEmail||'صاحب المعدة')}</p>`;
+      return `<div class="ma3da-finance-row"><h3>${esc(inv.invoiceNumber||'فاتورة')}</h3>${counterparty}<p><strong>المشروع:</strong> ${esc(inv.projectName||'—')}</p>${inv.stageNumber?`<p><strong>المرحلة:</strong> ${esc(inv.stageName||stageName(inv.stageNumber))}</p>`:''}<p><strong>المعدة:</strong> ${esc(inv.equipment||'—')}</p><p><strong>تاريخ الإصدار:</strong> ${when(inv.createdAt)}</p><p><strong>التفاصيل:</strong> ${esc(inv.description||'—')}</p><p><strong>قيمة الفاتورة:</strong> ${money(inv.invoiceAmount)}</p><p><strong>المدفوع المؤكد:</strong> ${money(s.paid)}</p><p><strong>دفعات بانتظار التحقق:</strong> ${money(s.pending)}</p><p><strong>المتبقي:</strong> ${money(s.remaining)}</p>${inv.invoiceKind==='agreement_installment'?`<p><strong>الدفعة:</strong> ${esc(inv.installmentLabel||`${inv.installmentIndex||''} من ${inv.installmentCount||''}`)}</p><p><strong>تاريخ الاستحقاق:</strong> ${when(inv.dueAt)}</p>`:''}${financeMode==='owner'?`<p><strong>حالة التسوية:</strong> ${esc(statusLabel(inv.settlementStatus||'settlement_pending'))}</p>`:''}<p>الحالة: <span class="ma3da-finance-status">${esc(statusLabel(st))}</span></p>${inv.paymentMethod==='gateway'&&s.remaining>0&&financeMode==='owner'?`<p class="muted">وسائل الدفع الإلكتروني (Apple Pay، مدى، Visa وMastercard) تتطلب ربط بوابة الدفع وتأكيدها الموثوق؛ لم تُفعّل عملية دفع غير مربوطة.</p>`:''}${financeMode==='contractor'&&s.remaining>0&&inv.paymentMethod==='cash'?`<button type="button" class="main-btn" data-finance-pay-invoice="${esc(inv.id)}">توثيق سداد نقدي لهذه الفاتورة</button>`:''}${financeMode==='contractor'&&s.remaining>0&&inv.paymentMethod!=='cash'?`<p class="muted">الدفع الإلكتروني غير مفعّل حتى ربط بوابة دفع وتأكيد العملية منها؛ لا تسجّل زرًا بديلًا على أنه دفع ناجح.</p>`:''}${payRows?'<details><summary>تفاصيل الدفعات</summary>'+payRows+'</details>':''}</div>`;
     }).join('')+'</div>';
   }
   async function reviewOwnerPhase(decision){
@@ -11830,7 +10567,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         const is=await tx.get(invoiceRef); if(!is.exists()) throw new Error('الفاتورة المرتبطة بالدفعة غير موجودة.');
         const invoice={...is.data(),id:is.id};
         if((invoice.ownerId||invoice.equipmentOwnerId)!==user.uid || (payment.ownerId && payment.ownerId!==user.uid)) throw new Error('لا تملك صلاحية تأكيد هذه الفاتورة.');
-        if(invoice.invoiceKind!=='agreement_installment') throw new Error('نوع الفاتورة غير معتمد في مسار فواتير المشاريع.');
+        if(!['agreement_installment','customer_booking'].includes(invoice.invoiceKind)) throw new Error('نوع الفاتورة غير معتمد في المسار المالي الحالي.');
         const requestRef=invoice.requestId?window.ma3daDoc(window.ma3daDB,'requests',invoice.requestId):null;
         const rs=requestRef?await tx.get(requestRef):null;
         const request=rs&&rs.exists()?(rs.data()||{}):null;
@@ -11855,16 +10592,17 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         let requestPatch=null;
         if(request){
           const paidAcrossRequest=reqPayments.filter(x=>x.id!==payment.id&&['verified','confirmed'].includes(x.status)).reduce((n,x)=>n+Number(x.amount||0),0)+amount;
-          const requestTotal=Number(request.price||request.agreementTotal||invoice.agreementTotal||invoiceTotal);
+          const isBooking=invoice.invoiceKind==='customer_booking';
+          const requestTotal=isBooking?invoiceTotal:Number(request.price||request.agreementTotal||invoice.agreementTotal||invoiceTotal);
           const requestPaid=Math.round(paidAcrossRequest*100)/100; const remaining=Math.max(0,Math.round((requestTotal-requestPaid)*100)/100);
           let schedule=Array.isArray(request.paymentSchedule)?request.paymentSchedule.map(x=>({...x})):[];
           if(!isBooking && Number(invoice.installmentIndex)>0){
             const idx=schedule.findIndex(x=>Number(x.installment)===Number(invoice.installmentIndex));
             if(idx>=0){const paidOnInvoice=totalAfter;schedule[idx]={...schedule[idx],paidAmount:paidOnInvoice,status:invoiceRemaining<=0?'paid':'due',paidAt:invoiceRemaining<=0?now:(schedule[idx].paidAt||null),reviewStatus:invoiceRemaining<=0?'confirmed':'partial'};}
           }
-          const canClose=remaining<=0&&['completed','complete','invoice_issued','paid'].includes(String(request.status||''));
+          const canClose=isBooking?remaining<=0:(remaining<=0&&['completed','complete','invoice_issued','paid'].includes(String(request.status||'')));
           requestPatch={paymentLedger:ledger,paidTotal:requestPaid,remainingBalance:remaining,paymentStatus:remaining<=0?'paid':(requestPaid>0?'partially_paid':'unpaid'),paymentSchedule:schedule,settlementStatus:remaining<=0?'settled':'needs_settlement',requestClosed:canClose,lastPaymentConfirmedAt:now,updatedAt:now};
-          
+          if(isBooking&&remaining<=0){requestPatch.status='paid';requestPatch.invoiceStatus='paid';requestPatch.paymentStatus='paid';}
         }
         tx.update(paymentRef,{status:'verified',verifiedBy:user.uid,verifiedAt:now,verificationMethod:'owner_confirmed_receipt',updatedAt:now});
         tx.update(invoiceRef,{paymentStatus:invoiceRemaining<=0?'paid':'partially_paid',paidAmount:totalAfter,remainingAmount:invoiceRemaining,settlementStatus:invoiceRemaining<=0?'settled':'settlement_pending',lastPaymentConfirmedAt:now,paymentEvents:[...events,{type:'payment_confirmed',paymentId:payment.id,amount,verifiedBy:user.uid,verifiedAt:now,method:payment.reference?'cash_or_transfer_receipt':'manual_receipt_review'}],updatedAt:now});
@@ -11908,7 +10646,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(target.id==='ownerFinanceMenuBackBtn'){showScreen('operatorHomeScreen');return;}
     if(target.id==='ownerFinanceSubpageBackBtn'){setOwnerFinanceSubpage('menu');return;}
     if(target.id==='ownerFinanceMenuRefreshBtn'||target.id==='ownerFinanceSubpageRefreshBtn'){loadFinance().catch(err=>{console.error('Refresh Ma3da finance failed:',err);say('ownerInvoiceFeedback','تعذر تحديث الفواتير. تحقق من الاتصال.',true);});return;}
-    if(target.id==='customerFinanceBtn'){openFinance('customer').catch(err=>{console.error('Customer invoice page failed:',err);say('contractorPaymentFeedback','تعذر تحميل فواتيرك. تحقق من الاتصال والصلاحيات.',true);});return;}
+    if(target.id==='customerFinanceBtn'){openFinance('customer');return;}
     if(target.id==='contractorFinanceBackBtn'){
       if(financeMode==='owner'&&ownerFinanceSubpage!=='menu'){setOwnerFinanceSubpage('menu');return;}
       showScreen(financeMode==='owner'?'operatorHomeScreen':financeMode==='customer'?'customerHomeScreen':'contractorHomeScreen');return;
@@ -11988,8 +10726,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   }
   function backFallback(currentId){
     const groups={
-      customer:['customerDataScreen','customerHomeScreen','currentOrdersScreen','previousOrdersScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','technicalSupportScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','ratingScreen','thankYouScreen'],
-      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'],
+      customer:['customerDataScreen','customerHomeScreen','customerSettingsScreen','editPhoneScreen','editEmailScreen','changePasswordScreen','technicalSupportScreen'],
+      operator:['operatorDataScreen','operatorHomeScreen','operatorEquipmentScreen','operatorNewRequestsScreen','operatorProjectOrdersScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorSupportScreen','operatorScreen'],
       contractor:['contractorDataScreen','contractorHomeScreen','contractorRequestScreen','contractorEquipmentPickerScreen','contractorProjectsScreen','contractorFinanceScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','contractorSupportScreen'],
       support:['supportLoginScreen','supportForgotScreen','supportDashboardScreen']
     };
@@ -11998,8 +10736,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
       if(currentId==='contractorEquipmentPickerScreen') return 'contractorProjectsScreen';
       if(currentId==='contractorRequestScreen') return 'contractorProjectsScreen';
       if(currentId==='editPhoneScreen'||currentId==='editEmailScreen'||currentId==='changePasswordScreen'||false) return 'customerSettingsScreen';
-      if(['searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','ratingScreen','thankYouScreen'].includes(currentId)) return 'customerHomeScreen';
-      if(['operatorCurrentOrderScreen','operatorCustomerOrdersScreen','operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorCompletedScreen','operatorScreen','operatorAcceptedScreen','operatorArrivedScreen'].includes(currentId)) return 'operatorHomeScreen';
+      
+      if(['operatorProjectOrdersScreen','operatorNewRequestsScreen','operatorEquipmentScreen','operatorIncomeScreen','operatorRatingsScreen','operatorSettingsScreen','operatorScreen'].includes(currentId)) return 'operatorHomeScreen';
       if(currentId==='contractorSupportScreen'||currentId==='contractorSettingsScreen'||currentId==='contractorAccountScreen'||currentId==='contractorSettingsPrefsScreen'||currentId==='contractorFinanceScreen') return 'contractorHomeScreen';
       if(currentId==='supportDashboardScreen'||currentId==='supportForgotScreen') return 'supportLoginScreen';
       if(currentId==='customerDataScreen'||currentId==='operatorDataScreen'||currentId==='contractorDataScreen') return 'roleScreen';
@@ -12038,14 +10776,10 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   const refreshMap={
     customerHomeScreen:()=>typeof window.loadLatestCustomerRequest==='function'?window.loadLatestCustomerRequest():null,
-    currentOrdersScreen:()=>typeof window.loadCustomerOrders==='function'?window.loadCustomerOrders('current'):null,
-    previousOrdersScreen:()=>typeof window.loadCustomerOrders==='function'?window.loadCustomerOrders('previous'):null,
     customerSettingsScreen:()=>typeof window.loadCustomerSettings==='function'?window.loadCustomerSettings():null,
     operatorDataScreen:()=>typeof window.loadOperatorData==='function'?window.loadOperatorData():null,
     operatorHomeScreen:()=>typeof window.loadOperatorHome==='function'?window.loadOperatorHome():null,
     operatorNewRequestsScreen:()=>typeof window.loadOperatorNewRequests==='function'?window.loadOperatorNewRequests():null,
-    operatorCurrentOrderScreen:()=>typeof window.loadOperatorCurrentOrder==='function'?window.loadOperatorCurrentOrder():null,
-    operatorCustomerOrdersScreen:()=>typeof window.loadOperatorCustomerOrders==='function'?window.loadOperatorCustomerOrders():null,
     operatorProjectOrdersScreen:()=>typeof window.loadOperatorProjectOrders==='function'?window.loadOperatorProjectOrders():null,
     operatorIncomeScreen:()=>typeof window.loadOperatorIncome==='function'?window.loadOperatorIncome():null,
     operatorRatingsScreen:()=>typeof window.loadOperatorRatings==='function'?window.loadOperatorRatings():null,
@@ -12082,7 +10816,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         if(typeof refresh==='function'){
           await refresh();
           status.textContent='تم تنفيذ تحديث بيانات الصفحة.';
-        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','createAccountScreen','requestScreen','searchingScreen','matchedScreen','chatScreen','trackingScreen','arrivedScreen','workingScreen','completedScreen','ratingScreen','thankYouScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
+        }else if(['ma3daSupportHomeScreen','ma3daSupportLandingScreen','technicalSupportScreen','operatorSupportScreen','contractorSupportScreen','introScreen','whyMa3daScreen','howMa3daScreen','howWorksScreen','roleScreen','phoneScreen','otpScreen','createAccountScreen','contractorRequestScreen','contractorSettingsScreen','contractorAccountScreen','contractorSettingsPrefsScreen','supportLoginScreen','supportForgotScreen'].includes(screen.id)){
           status.textContent='هذه الصفحة لا تحتوي على بيانات مستقلة تحتاج إلى تحديث.';
         }else{
           status.textContent='لا توجد وظيفة تحديث مستقلة لهذه الصفحة. لم يتم مسح أي بيانات كتبتها.';
@@ -12107,7 +10841,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   ]);
   // These screens update through the existing live/polling listeners; do not show a manual refresh button.
   const noRefreshToolbarScreenIds = new Set([
-    'matchedScreen','operatorAcceptedScreen','chatScreen'
+    
   ]);
   function hasOwnRefreshControl(screen){
     return [...screen.querySelectorAll('button,[role="button"]')].some(b=>{
@@ -14895,7 +13629,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   const defaults = {
     classic: {
       name: "آثار الأساسية", primary: "#171717", accent: "#c8a45b",
-      buttonBg: "#FFFFFF", buttonText: "#171717",
+      buttonBg: "#D6B45E", buttonText: "#171717",
       surface: "#f7f7f5", text: "#191919", image: "",
       taglines: {
         customer: "خطوتك الأولى نحو مشروع يليق بطموحك.",
@@ -15245,7 +13979,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     const nodes = [];
     if (root.matches?.(selector)) nodes.push(root);
     root.querySelectorAll?.(selector).forEach(node=>nodes.push(node));
-    const ornament = activeIdentity === "classic" ? "none" : motifFor(activeIdentity, getComputedStyle(document.documentElement).getPropertyValue("--athar-identity-accent").trim() || "#c8a45b");
+    const ornament = motifFor(activeIdentity, getComputedStyle(document.documentElement).getPropertyValue("--athar-identity-accent").trim() || "#c8a45b");
     nodes.forEach(node=>{
       if (node.classList?.contains("athar-identity-card")) return;
       node.style.setProperty("background-color","var(--athar-button-bg,#D6B45E)","important");
@@ -15295,9 +14029,8 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     root.style.setProperty("--athar-identity-text", identity.text);
     root.style.setProperty("--athar-identity-image", identity.image ? `url("${identity.image}")` : "none");
     const activeMotif = motifFor(activeIdentity, identity.accent);
-    const activeButtonMotif = activeIdentity === "classic" ? "none" : activeMotif;
-    root.style.setProperty("--athar-button-ornament", activeButtonMotif);
-    // نقوش الصفحات تتبع الهوية؛ الهوية الأساسية أزرارها بيضاء بلا نقوش.
+    root.style.setProperty("--athar-button-ornament", activeMotif);
+    // نفس النقش واللون يُستخدمان في الصفحات والبطاقات والأزرار حسب الهوية النشطة.
     root.style.setProperty("--athar-page-ornament", activeMotif);
     // تحديث كل الأزرار والشاشات عند كل تبديل للهوية، وليس صفحة العميل فقط.
     decorateAllScreens();
@@ -15566,7 +14299,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     if(status==='owner_approved'){
       const p=x.personalData||{};if(x.role==='operator'){
         await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'operators',x.uid),{uid:x.uid,operatorId:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',email:p.email||u.email||'',approved:true,updatedAt:now},{merge:true});
-        await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'equipment',x.uid),{...(x.equipment||{}),ownerId:x.uid,operatorId:x.uid,ownerEmail:p.email||'',availability:(x.equipment||{}).availability||'available',equipmentStatus:'active',verificationStatus:'pending_verification',approved:true,updatedAt:now},{merge:true});
+        await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'equipment',x.uid),{...(x.equipment||{}),ownerId:x.uid,operatorId:x.uid,ownerEmail:p.email||'',verificationStatus:'pending_verification',approved:true,updatedAt:now},{merge:true});
       }else{
         await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'contractors',x.uid),{uid:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',company:p.company||'',email:p.email||'',role:'contractor',approved:true,updatedAt:now},{merge:true});
         const project=x.project||{};const projectRef=window.ma3daDoc(window.ma3daDB,'projects',`registration_${x.uid}`);await window.ma3daSetDoc(projectRef,{...project,contractorId:x.uid,ownerId:x.uid,status:'active',createdAt:new Date(now),updatedAt:new Date(now)},{merge:true});
@@ -15574,6 +14307,9 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
     }
     await window.ma3daUpdateDoc(ref,update);
   }
+  const ownerDetailsTitle=$('ownerAdminDetailsTitle'),ownerActions=$('ownerRegistrationActions');
+  function syncOwnerRegistrationActions(){if(!ownerActions)return;const dashboard=$('ownerPortalDashboardScreen');ownerActions.style.display=dashboard?.classList.contains('active')&&!$('ownerAdminDetails')?.hidden?'flex':'none';}
+  if(ownerDetailsTitle&&typeof MutationObserver!=='undefined'){new MutationObserver(syncOwnerRegistrationActions).observe(ownerDetailsTitle,{childList:true,characterData:true,subtree:true});syncOwnerRegistrationActions();}
 
   document.addEventListener('click',async event=>{
     const t=event.target.closest('button');if(!t)return;
@@ -15595,810 +14331,134 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 
-/* ATHAR English labels for the newly introduced rental lifecycle */
-Object.assign(atharEnglishDictionary,{
- 'المعدات المتاحة في منطقتك':'Available Equipment in Your Area','المعدات المتاحة':'Available Equipment','المعدات المتاحة بالقرب منك':'Available Equipment Near You','اختر المعدة المناسبة من المعدات المتاحة':'Choose from the available equipment','جاري البحث عن المعدات المتاحة...':'Searching available equipment...','جاري البحث عن المعدات...':'Searching for equipment...','لا توجد معدات متاحة مطابقة':'No matching equipment is available','جرّب نوعًا آخر أو عدّل الموقع/المدة.':'Try another equipment type or adjust location/duration.','تعذر تحميل المعدات':'Could not load equipment','تحقق من الاتصال وصلاحيات Firebase ثم أعد المحاولة.':'Check your connection and Firebase permissions, then try again.','اختيار هذه المعدة':'Select This Equipment','عرض المعدات المتاحة':'Show Available Equipment','تم إرسال طلبك للمعدة المختارة':'Your request has been sent to the selected equipment owner','بانتظار موافقة صاحب المعدة':'Waiting for equipment owner approval','حجز مبلغ الطلب':'Reserve the Booking Amount','ملاحظة للاختبار:':'Test Notice:','خيار النقد هنا تأكيد تجريبي للحجز فقط؛ لا يتم حجز أموال حقيقية أو تحصيلها.':'Cash here is a test booking confirmation only; no real funds are held or collected.','أوافق على تأكيد الحجز التجريبي (كاش)':'I agree to confirm the test booking (cash)','تأكيد الحجز التجريبي':'Confirm Test Booking','حدد الموافقة على الحجز التجريبي أولاً.':'Please agree to the test booking first.','الحجز مؤكد تجريبيًا؛ لا يبدأ العمل حتى يتحقق صاحب المعدة من الرمز.':'Test booking confirmed; work cannot start until the equipment owner verifies the code.','رمز التحقق لبدء العمل':'Verification Code to Start Work','لا تشارك الرمز إلا مع صاحب المعدة عند وصوله للموقع.':'Share the code only with the equipment owner when they arrive at the site.','تحقق رمز العميل':'Verify Customer Code','أدخل الرمز الذي استلمه العميل':'Enter the code received by the customer','تحقق واسمح ببدء العمل':'Verify and Allow Work to Start','أدخل رمزًا من ستة أرقام.':'Enter a six-digit code.','يجب تسجيل الوصول أولًا.':'Arrival must be confirmed first.','رمز التحقق غير صحيح.':'Incorrect verification code.','تم التحقق بنجاح. يمكنك بدء العمل الآن.':'Verification successful. You may start work now.','تحقق من موقعك قبل تأكيد الوصول.':'Check your location before confirming arrival.','تحقق من موقعك قبل تأكيد الوصول.':'Check your location before confirming arrival.','إحداثيات موقع العميل غير متاحة؛ لا يمكن تأكيد الوصول.':'Customer coordinates are unavailable; arrival cannot be confirmed.','تم إنهاء العمل — التسوية التجريبية مكتملة':'Work completed — test settlement is complete','تم تقييم المعدة':'Equipment rated','لا يمكن إنهاء العمل قبل بدء التنفيذ.':'Work cannot be ended before it starts.','التقييم متاح بعد انتهاء العمل والتسوية.':'Rating is available after work and settlement.','الحجز مؤكد — بيانات التواصل ورمز التحقق متاحان':'Booking confirmed — contact details and verification code are available','صاحب المعدة وصل — بانتظار التحقق':'Equipment owner arrived — awaiting verification','تم التحقق — جاهز لبدء العمل':'Verified — ready to start work','انتهى العمل وتمت التسوية التجريبية':'Work completed and test settlement finished','تم تقييم المعدة':'Equipment rated','اعتذر صاحب المعدة عن الطلب.':'The equipment owner declined the request.','لا توجد طلبات حالية':'No current requests','لا توجد طلبات سابقة':'No previous requests','عند تقديم طلب جديد ستظهر تفاصيله هنا.':'Your new requests will appear here.','ستظهر الطلبات المنتهية أو المرفوضة هنا.':'Completed or rejected requests will appear here.','فتح الطلب ومتابعته':'Open and Track Request','المبلغ المحجوز/التقديري:':'Reserved / Estimated Amount:','رقم الطلب:':'Order Number:','أعط الرمز لصاحب المعدة بعد وصوله.':'Give the code to the equipment owner after arrival.','لا يبدأ العمل قبل تحقق رمز العميل.':'Work cannot start before the customer code is verified.','تم قبول الطلب — في الطريق إلى العميل':'Request accepted — on the way to customer','تم تأكيد الحجز التجريبي — توجه للموقع':'Test booking confirmed — proceed to the site','وصلت للموقع — تحقق من رمز العميل':'Arrived — verify the customer code','تم التحقق من رمز العميل — جاهز لبدء العمل':'Customer code verified — ready to start work','العمل جارٍ':'Work in progress','انتهى العمل — التسوية التجريبية مكتملة':'Work completed — test settlement completed'
-});
+/* =========================================================
+   ATHAR — دورة طلب العميل الجديدة (14 مرحلة)
+   هذا المسار مستقل تمامًا عن دورة طلبات المشاريع.
+   الدفع هنا كاش تجريبي ولا ينفذ تحصيلًا إلكترونيًا.
+========================================================= */
+(function initAtharCustomerOrderLifecycle(){
+  if(window.__atharCustomerLifecycleV2) return;
+  window.__atharCustomerLifecycleV2 = true;
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = v => (Number(v)||0).toLocaleString('ar-SA',{maximumFractionDigits:2});
+  const dateLabel = v => {const d=v?.toDate?v.toDate():v instanceof Date?v:new Date(v||0);return Number.isNaN(d.getTime())?'—':d.toLocaleString('ar-SA');};
+  const dbReady = async()=>{await Promise.resolve(window.ma3daFirebaseReady);if(!window.ma3daDB||!window.ma3daAuth?.currentUser)throw new Error('سجّل الدخول أولًا.');return window.ma3daAuth.currentUser;};
+  const docRef=(id)=>window.ma3daDoc(window.ma3daDB,'requests',id);
+  const getRequest=async id=>{const s=await window.ma3daGetDoc(docRef(id));if(!s.exists())throw new Error('الطلب غير موجود.');return {id:s.id,...(s.data()||{})};};
+  const setRequest=async(id,patch)=>window.ma3daUpdateDoc(docRef(id),{...patch,updatedAt:new Date()});
+  const coords=(d,prefix)=>{const lat=Number(d?.[prefix+'Latitude']??d?.[prefix+'Lat']??d?.[prefix+'Coordinates']?.latitude??d?.[prefix+'Location']?.latitude);const lng=Number(d?.[prefix+'Longitude']??d?.[prefix+'Lng']??d?.[prefix+'Coordinates']?.longitude??d?.[prefix+'Location']?.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&(lat!==0||lng!==0)?{lat,lng}:null;};
+  const ownerIdOf=r=>r.equipmentOwnerId||r.ownerId||r.operatorId||'';
+  const isCustomerRequest=r=>!r.projectId && r.requestType==='customer_order' && Number(r.lifecycleVersion)===2;
+  const stageNames={request_sent:'تم إرسال الطلب — بانتظار صاحب المعدة',accepted:'قبل صاحب المعدة — بانتظار تأكيد الحجز بالكاش',booking_confirmed:'تم تأكيد الحجز — بيانات التواصل متاحة',arrived:'أكد صاحب المعدة الوصول — بانتظار رمز OTP',otp_verified:'تم التحقق من الرمز — جاهز لبدء العمل',working:'العمل جارٍ',work_finished:'انتهى العمل — بانتظار مراجعة العميل',amount_review:'العميل يراجع المبلغ والمدة',disputed:'اعتراض قيد مراجعة الدعم',settlement_confirmed:'أكد العميل التسوية',settled:'اكتملت التسوية — بانتظار التقييم',rated:'تم التقييم',extension_pending:'طلب التمديد بانتظار صاحب المعدة',rejected:'تم رفض الطلب',cancelled:'تم إلغاء الطلب'};
+  let requestMap=null,requestMarkers=[],selectedEquipment=null,customerPin=null,customerLatLng=null,chatUnsub=null,activeRequest=null,activeChatReturnScreen='atharCustomerOrderScreen',orderUnsub=null,listeningRequestId=null,ownerWatchId=null,ownerWatchRequestId=null,lastOwnerLocation=null,lastOwnerLocationAt=0;
 
+  const style=document.createElement('style');style.id='athar-customer-lifecycle-styles';style.textContent=`
+  #atharCustomerRequestScreen,#atharCustomerOrderScreen{direction:rtl;text-align:right;max-width:900px;margin:0 auto;padding:14px;color:#171717}
+  #atharCustomerRequestScreen .card,#atharCustomerOrderScreen .card,#atharOwnerCustomerOrdersPanel .card{background:#fffdf8;border:1px solid #dfd0a8;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #00000008}
+  #atharCustomerRequestScreen input,#atharCustomerRequestScreen textarea,#atharCustomerRequestScreen select,#atharCustomerOrderScreen input,#atharCustomerOrderScreen textarea{box-sizing:border-box;width:100%;padding:11px;border:1px solid #d8cfbc;border-radius:10px;background:white;font:inherit;margin:5px 0 10px}
+  #atharCustomerRequestMap{height:330px;border-radius:14px;border:1px solid #d8cfbc;overflow:hidden;background:#eee}
+  .athar-equip-choice{display:flex;align-items:center;gap:12px;border:1px solid #e2d5b8;background:#fff;border-radius:12px;padding:12px;margin:8px 0;cursor:pointer}
+  .athar-equip-choice.selected{border:2px solid #b58a35;background:#fff8e8}.athar-equip-choice img{width:74px;height:64px;object-fit:cover;border-radius:9px}
+  .athar-cycle-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.athar-cycle-actions button{min-height:45px;padding:10px;border-radius:11px;border:1px solid #b58a35;background:#f6edda;color:#332817;font:inherit;font-weight:800;cursor:pointer}.athar-cycle-actions button.primary{background:#b58a35;color:#fff}.athar-cycle-actions button:disabled{opacity:.5}
+  .athar-cycle-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eee5d2}.athar-cycle-row span{color:#665b49}.athar-cycle-stage{padding:13px;border-radius:12px;background:#f7f0e1;border:1px solid #dfd0a8;font-weight:800}
+  .athar-cycle-note{font-size:13px;color:#716753;line-height:1.7}.athar-owner-request-card{border:1px solid #dfd0a8;background:#fffdf8;border-radius:14px;padding:14px;margin:10px 0}
+  #atharCustomerChatMessages{height:260px;overflow:auto;border:1px solid #e6dcc8;border-radius:12px;padding:10px;background:#fff}.athar-chat-line{max-width:85%;padding:9px 12px;margin:7px 0;border-radius:12px;background:#f3ead7;overflow-wrap:anywhere}.athar-chat-line.mine{margin-right:auto;background:#e4efd9}
+  @media(max-width:520px){.athar-cycle-actions{grid-template-columns:1fr}.athar-equip-choice img{width:60px;height:56px}}
+  `;document.head.appendChild(style);
 
-/* Legacy customer/equipment-owner rental invoices are no longer used by the new reservation lifecycle. */
-const customerFinanceOld=$('customerFinanceBtn');if(customerFinanceOld){const fresh=customerFinanceOld.cloneNode(true);customerFinanceOld.replaceWith(fresh);fresh.addEventListener('click',e=>{e.stopPropagation();window.ma3daOpenCustomerFinance?.();});fresh.querySelector('.home-menu-text strong')?.replaceChildren(document.createTextNode('فواتيري ومدفوعاتي'));fresh.querySelector('.home-menu-text span')?.replaceChildren(document.createTextNode('راجع فواتير طلباتك وحالة التسوية'));}
-const ownerIncomeOld=$('operatorIncomeBtn');if(ownerIncomeOld){const fresh=ownerIncomeOld.cloneNode(true);ownerIncomeOld.replaceWith(fresh);fresh.addEventListener('click',()=>{showScreen('operatorCustomerOrdersScreen');window.loadOperatorCustomerOrders?.();});fresh.querySelector('.operator-menu-content strong')?.replaceChildren(document.createTextNode('طلبات العملاء وتسوياتها'));fresh.querySelector('.operator-menu-content span')?.replaceChildren(document.createTextNode('متابعة الطلبات والتسوية الفعلية'));}
-['ownerBookingInvoiceCard','bookingInvoicesList','bookingInvoiceGatewayNotice','ownerIssueInvoiceCard','contractorCreateInvoiceCard','contractorSubmitPaymentCard'].forEach(id=>{const el=$(id);if(el)el.hidden=true;});
+  function addScreen(id,title,body){let s=$(id);if(s)return s;s=document.createElement('section');s.id=id;s.className='screen';s.innerHTML=`<button type="button" class="back-btn" data-athar-back>← الرجوع</button><div class="hero"><div class="hero-icon">🚜</div><h1>${title}</h1><p>آثار | ATHAR</p></div>${body}`;document.body.appendChild(s);return s;}
+  const reqScreen=addScreen('atharCustomerRequestScreen','إرسال طلب معدة',`<div class="card"><h3>1 — اختر المعدة من الخريطة</h3><p class="athar-cycle-note">تظهر المعدات المتاحة المسجلة في آثار. اضغط على علامة المعدة أو اخترها من القائمة.</p><div id="atharCustomerRequestMap"></div><div id="atharEquipmentChoices">جارٍ تحميل المعدات…</div><div class="athar-cycle-row"><span>المعدة المختارة</span><strong id="atharSelectedEquipmentLabel">لم يتم الاختيار</strong></div></div><div class="card"><h3>موقع تنفيذ العمل</h3><p class="athar-cycle-note">اضغط على الخريطة لتحديد موقع العميل، أو استخدم موقعك الحالي.</p><button class="back-btn" id="atharCustomerLocateBtn" type="button">📍 تحديد موقعي الحالي</button><div class="athar-cycle-row"><span>الإحداثيات</span><strong id="atharCustomerCoordsLabel">لم يحدد الموقع</strong></div><label>مدة العمل بالساعات</label><input id="atharCustomerDuration" type="number" min="1" max="1000" value="8"><label>ملاحظات للمالك</label><textarea id="atharCustomerRequestNotes" rows="3" maxlength="500" placeholder="اكتب تفاصيل العمل"></textarea><p id="atharCustomerPricePreview">السعر التقديري: —</p><button class="main-btn" id="atharSendCustomerRequestBtn" type="button">إرسال الطلب</button></div>`);
+  const orderScreen=addScreen('atharCustomerOrderScreen','متابعة طلبك',`<button type="button" class="back-btn" id="atharCustomerOrderRefreshBtn">⟳ تحديث حالة الطلب</button><div id="atharCustomerOrderContent"><div class="card">جارٍ تحميل طلبك…</div></div>`);
+  const chatScreen=addScreen('atharCustomerChatScreen','محادثة الطلب',`<div class="card"><div id="atharCustomerChatMessages"></div><div style="display:flex;gap:8px;margin-top:10px"><input id="atharCustomerChatInput" placeholder="اكتب رسالتك…" style="flex:1;padding:10px;border:1px solid #d8cfbc;border-radius:9px"><button id="atharCustomerChatSend" class="main-btn" type="button">إرسال</button></div></div>`);
 
-
-/* Customer confirmation panel for cash-test settlement differences */
-if(!$('atharTestSettlementPanel')){const p=document.createElement('div');p.id='atharTestSettlementPanel';p.className='card';p.hidden=true;p.innerHTML='<h3>تسوية المبلغ حسب الوقت الفعلي</h3><p id="atharSettlementSummary"></p><button type="button" id="atharConfirmExtraSettlement" class="main-btn">تأكيد تسوية المبلغ الإضافي (اختبار نقدي)</button><p id="atharSettlementFeedback"></p>';$('completedScreen')?.querySelector('.card')?.appendChild(p);}
-
-async function atharLegacyProjectAcceptOperatorRequest(
-  requestId
-){
- 
-  try{
- 
-    const user =
-      await getOperatorCurrentUser();
- 
-    if(!user)
-      return;
- 
-    const requestRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "requests",
-        requestId
-      );
- 
-    const requestSnap =
-      await window.ma3daGetDoc(
-        requestRef
-      );
- 
-    if(!requestSnap.exists()){
- 
-      alert(
-        "الطلب غير موجود."
-      );
- 
-      return;
- 
-    }
- 
-    const request =
-      requestSnap.data() || {};
-    let customerProfile = {};
-    if (request.customerId && window.ma3daDoc && window.ma3daGetDoc) {
-      try {
-        const customerSnap = await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB, "customers", request.customerId));
-        if (customerSnap.exists()) customerProfile = customerSnap.data() || {};
-      } catch (customerProfileError) { console.warn("تعذر تحميل بيانات العميل:", customerProfileError); }
-    }
- 
-    if(
-      request.status !==
-      "searching"
-    ){
- 
-      alert(
-        "هذا الطلب لم يعد متاحًا."
-      );
- 
-      await loadOperatorNewRequests();
- 
-      return;
- 
-    }
- 
-    const operatorRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "operators",
-        user.uid
-      );
- 
-    const operatorSnap =
-      await window.ma3daGetDoc(
-        operatorRef
-      );
- 
-    const operatorData =
-      operatorSnap.exists()
-        ? operatorSnap.data()
-        : {};
- 
-    const equipment =
-      await getOperatorEquipment();
- 
-    const requestRole=String(request.requesterRole || request.requesterType || request.role || '').toLowerCase();
-    const isProjectRequest = !!request.projectId && (requestRole === 'contractor' || requestRole === 'project' || requestRole === 'project_manager' || !!request.contractorId);
-    if(isProjectRequest && (!request.scheduledStartAt || !request.scheduledEndAt || !Array.isArray(request.workDays) || !request.workDays.length || !request.dailyStartTime || !request.dailyEndTime || !request.paymentTerms || !Array.isArray(request.paymentSchedule) || !request.paymentSchedule.length)){
-      alert('لا يمكن قبول الطلب: بيانات الجدول أو شروط الدفع أو خطة الدفعات غير مكتملة.');return;
-    }
-    if(isProjectRequest && (!request.equipmentOwnerId || request.equipmentOwnerId !== user.uid)){
-      alert('لا يمكن قبول طلب مشروع دون ربطه بصاحب المعدة الصحيح.');return;
-    }
-    const acceptedPaymentSchedule=isProjectRequest?(request.paymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||(request.paymentPlan==='four_installments'&&index===0))?'due':item.status||'not_due'})):request.paymentSchedule;
-    await window.ma3daUpdateDoc(
-      requestRef,
-      {
- 
-        status:
-          "accepted",
-        ...(isProjectRequest ? {agreementStatus:'accepted',agreementAcceptedAt:new Date(),agreementAcceptedBy:user.uid,paymentSchedule:acceptedPaymentSchedule,workStatus:'scheduled',acceptedTermsVersion:request.agreementVersion||1} : {}),
- 
-        operatorId:
-          user.uid,
- 
-        operatorName:
-          operatorData.name ||
-          "صاحب المعدة",
- 
-        operatorPhone:
-          operatorData.phone ||
-          "",
-        customerName: request.customerName || request.customerFullName || customerProfile.name || customerProfile.fullName || customerProfile.displayName || "العميل",
- 
-        operatorRating:
-          Number(
-            operatorData.rating || 5
-          ),
- 
-        operatorEquipment:
-          equipment?.type || equipment?.equipmentType || equipment?.name || equipment?.model || request.equipment || "",
-        equipmentLocationAddress: equipment?.locationAddress || equipment?.address || equipment?.location || equipment?.city || "",
-        equipmentLocationLatitude: Number.isFinite(Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude)) ? Number(equipment?.latitude ?? equipment?.locationLatitude ?? equipment?.coordinates?.latitude) : null,
-        equipmentLocationLongitude: Number.isFinite(Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude)) ? Number(equipment?.longitude ?? equipment?.locationLongitude ?? equipment?.coordinates?.longitude) : null,
- 
-        acceptedAt:
-          Date.now(),
-        agreedDuration: request.duration || "",
-        agreedPrice: Number(request.price || 0),
-        agreedHourlyPrice: Number(request.hourlyPrice || 0),
-        agreementVersion: 1,
-        extensionStatus: "none",
-        workStatus: "scheduled"
- 
-      }
-    );
-    if(isProjectRequest){
-      const acceptedSchedule=(acceptedPaymentSchedule||[]).map((item,index)=>({...item,status:(item.dueRule==='on_acceptance'||index===0&&request.paymentPlan==='four_installments')?'due':item.status||'not_due'}));
-      await window.ma3daCreateSharedProjectInvoices(requestId,{...request,operatorId:user.uid},acceptedSchedule);
-    }
- 
-    localStorage.setItem("currentRequestId", requestId);
- 
-    localStorage.setItem("orderState", "accepted");
- 
-    if(isProjectRequest){
-      await loadOperatorProjectOrders();
-      setOperatorProjectOrdersFilter("current");
-      showScreen("operatorProjectOrdersScreen");
-    }else{
-      await loadOperatorCurrentOrder();
-      showScreen("operatorCurrentOrderScreen");
-    }
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في قبول الطلب:",
-      error
-    );
- 
-    alert(
-      "تعذر قبول الطلب."
-    );
- 
+  // زر بدء الطلب وزر متابعة الطلب في واجهة العميل.
+  const homeCard=$('customerHomeScreen')?.querySelector('.home-request-card');
+  if(homeCard&&!$('atharStartCustomerRequestBtn')){const actions=document.createElement('div');actions.className='athar-cycle-actions';actions.innerHTML='<button type="button" class="primary" id="atharStartCustomerRequestBtn">＋ اطلب معدة الآن</button><button type="button" id="atharOpenCustomerOrderBtn">متابعة الطلب الحالي</button>';homeCard.appendChild(actions);}
+  // تبويب العملاء مستقل عن تبويب طلبات المشاريع.
+  const ownerReq=$('operatorNewRequestsScreen');
+  if(ownerReq&&!$('operatorCustomerRequestsTab')){
+    const tabs=ownerReq.querySelector('.operator-request-tabs');if(tabs){const b=document.createElement('button');b.id='operatorCustomerRequestsTab';b.className='operator-request-tab';b.type='button';b.role='tab';b.setAttribute('aria-selected','false');b.setAttribute('aria-controls','operatorCustomerRequestsPanel');b.dataset.operatorRequestTab='customers';b.textContent='🚜 طلبات العملاء';tabs.appendChild(b);}
+    const panel=document.createElement('div');panel.id='operatorCustomerRequestsPanel';panel.hidden=true;panel.innerHTML='<div id="atharOwnerCustomerOrdersPanel"><div class="card">جارٍ تحميل طلبات العملاء…</div></div>';ownerReq.appendChild(panel);
   }
- 
-}
- 
 
-async function atharLegacyProjectRejectOperatorRequest(
-  requestId
-){
- 
-  try{
-    const user=await getOperatorCurrentUser();
-    if(!user?.uid){alert('سجّل الدخول بحساب صاحب المعدة.');return;}
-    const requestRef =
-      window.ma3daDoc(
-        window.ma3daDB,
-        "requests",
-        requestId
-      );
- 
-    const snap=await window.ma3daGetDoc(requestRef);
-    if(!snap.exists()){alert('الطلب غير موجود.');return;}
-    const data=snap.data()||{};
-    const targetedOwner=data.equipmentOwnerId||data.ownerId||data.operatorId||'';
-    if(targetedOwner && targetedOwner!==user.uid){alert('لا تملك صلاحية رفض هذا الطلب.');return;}
-    if(data.projectId && data.agreementStatus==='accepted'){alert('لا يمكن رفض طلب مشروع بعد قبول الاتفاق؛ استخدم مسار الإنهاء المبكر عبر الدعم.');return;}
-    await window.ma3daUpdateDoc(
-      requestRef,
-      {
-        status:'rejected',agreementStatus:data.projectId?'rejected':(data.agreementStatus||''),
-        rejectedBy:user.uid,rejectedAt:new Date(),updatedAt:new Date()
-      }
-    );
- 
-    await loadOperatorNewRequests();
- 
-  }catch(error){
- 
-    console.error(
-      "خطأ في رفض الطلب:",
-      error
-    );
- 
-    alert(
-      "تعذر رفض الطلب."
-    );
- 
+  function show(id){if(typeof window.showScreen==='function')window.showScreen(id);else if(typeof showScreen==='function')showScreen(id);else{document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');window.scrollTo(0,0);}}
+  async function loadLeaflet(){if(window.L)return window.L;await new Promise((resolve,reject)=>{let s=document.querySelector('script[data-athar-leaflet]');if(!s){s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.dataset.atharLeaflet='1';document.head.appendChild(s);}s.addEventListener('load',resolve,{once:true});s.addEventListener('error',reject,{once:true});});if(!window.L)throw new Error('تعذر تحميل الخريطة.');return window.L;}
+  function equipmentCoords(e){const lat=Number(e.latitude??e.lat??e.locationLatitude??e.coordinates?.latitude??e.location?.latitude);const lng=Number(e.longitude??e.lng??e.locationLongitude??e.coordinates?.longitude??e.location?.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&(lat!==0||lng!==0)?{lat,lng}:null;}
+  async function initRequestMap(){const L=await loadLeaflet();const el=$('atharCustomerRequestMap');if(!el)return;if(!requestMap){requestMap=L.map(el).setView([24.7136,46.6753],5);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(requestMap);requestMap.on('click',e=>{customerLatLng={lat:e.latlng.lat,lng:e.latlng.lng};if(customerPin)customerPin.setLatLng(e.latlng);else customerPin=L.marker(e.latlng).addTo(requestMap);$('atharCustomerCoordsLabel').textContent=customerLatLng.lat.toFixed(5)+', '+customerLatLng.lng.toFixed(5);});}setTimeout(()=>requestMap.invalidateSize(),120);}
+  function selectEquipment(e){selectedEquipment=e;const label=$('atharSelectedEquipmentLabel');if(label)label.textContent=(e.type||e.equipmentType||e.name||'معدة')+' — '+(e.city||'');document.querySelectorAll('.athar-equip-choice').forEach(x=>x.classList.toggle('selected',x.dataset.equipmentId===e.id));const h=Number($('atharCustomerDuration')?.value||8),price=Number(e.hourlyPrice||e.pricePerHour||e.price||0)*h;$('atharCustomerPricePreview').textContent='السعر التقديري: '+money(price)+' ريال ('+money(e.hourlyPrice||e.pricePerHour||e.price||0)+' ريال/ساعة)';}
+  async function loadEquipmentForMap(){const box=$('atharEquipmentChoices');if(!box)return;try{await dbReady();const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment'));const rows=[];snap.forEach(d=>{const e={id:d.id,...(d.data()||{})};const status=String(e.equipmentStatus||e.status||'active').toLowerCase();const verification=String(e.verificationStatus||'approved').toLowerCase();if(['inactive','unavailable','busy','rented'].includes(status)||['rejected','pending','pending_verification','pending_approval'].includes(verification))return;if(!(e.ownerId||e.operatorId||e.userId))return;rows.push(e);});box.innerHTML='';if(!rows.length){box.innerHTML='<div class="card">لا توجد معدات متاحة مسجلة حاليًا.</div>';return;}const L=await loadLeaflet();await initRequestMap();requestMarkers.forEach(m=>m.remove());requestMarkers=[];rows.forEach(e=>{const c=equipmentCoords(e);if(c){const marker=L.marker([c.lat,c.lng]).addTo(requestMap).bindPopup(esc(e.type||e.equipmentType||e.name||'معدة')+' — '+esc(e.city||''));marker.on('click',()=>selectEquipment(e));requestMarkers.push(marker);}const card=document.createElement('button');card.type='button';card.className='athar-equip-choice';card.dataset.equipmentId=e.id;card.innerHTML=`${e.image||e.imageUrl?`<img src="${esc(e.image||e.imageUrl)}" alt="المعدة">`:'<span style="font-size:30px">🚜</span>'}<span style="flex:1"><strong>${esc(e.type||e.equipmentType||e.name||'معدة')}</strong><br><small>${esc(e.city||'الموقع غير محدد')} · ${money(e.hourlyPrice||e.pricePerHour||e.price||0)} ريال/ساعة</small></span>`;card.addEventListener('click',()=>{selectEquipment(e);if(c)requestMap.setView([c.lat,c.lng],13);});box.appendChild(card);});}catch(e){console.error('تحميل معدات الخريطة:',e);box.textContent='تعذر تحميل المعدات. تحقق من صلاحيات قراءة المعدات في Firebase.';}}
+  async function customerProfile(uid){try{const s=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'customers',uid));return s.exists()?s.data():{};}catch(_){return {};}}
+  async function sendCustomerRequest(){const btn=$('atharSendCustomerRequestBtn');if(!selectedEquipment){alert('اختر المعدة من الخريطة أولًا.');return;}if(!customerLatLng){alert('حدد موقع تنفيذ العمل على الخريطة.');return;}const duration=Number($('atharCustomerDuration')?.value);if(!Number.isFinite(duration)||duration<1||duration>1000){alert('أدخل مدة صحيحة بالساعات.');return;}btn.disabled=true;try{const user=await dbReady();const profile=await customerProfile(user.uid);const ownerId=selectedEquipment.ownerId||selectedEquipment.operatorId||selectedEquipment.userId;const price=Number(selectedEquipment.hourlyPrice||selectedEquipment.pricePerHour||selectedEquipment.price||0)*duration;if(!ownerId||price<=0)throw new Error('بيانات صاحب المعدة أو سعر الساعة غير مكتملة.');const customerName=profile.name||profile.fullName||user.displayName||'العميل';const data={requestType:'customer_order',lifecycleVersion:2,requesterRole:'customer',requesterType:'customer',customerId:user.uid,requesterId:user.uid,customerName,customerPhone:profile.phone||'',customerEmail:user.email||'',equipmentId:selectedEquipment.id,equipment:selectedEquipment.type||selectedEquipment.equipmentType||selectedEquipment.name||'معدة',equipmentModel:selectedEquipment.model||'',equipmentImage:selectedEquipment.image||selectedEquipment.imageUrl||'',equipmentOwnerId:ownerId,ownerId,operatorId:ownerId,equipmentCity:selectedEquipment.city||'',equipmentLatitude:equipmentCoords(selectedEquipment)?.lat??null,equipmentLongitude:equipmentCoords(selectedEquipment)?.lng??null,equipmentLocationLatitude:equipmentCoords(selectedEquipment)?.lat??null,equipmentLocationLongitude:equipmentCoords(selectedEquipment)?.lng??null,equipmentLocationAddress:selectedEquipment.address||selectedEquipment.locationAddress||selectedEquipment.city||'',customerLocationLatitude:customerLatLng.lat,customerLocationLongitude:customerLatLng.lng,customerLatitude:customerLatLng.lat,customerLongitude:customerLatLng.lng,location:`${customerLatLng.lat.toFixed(6)}, ${customerLatLng.lng.toFixed(6)}`,duration,durationUnit:'hours',hourlyPrice:Number(selectedEquipment.hourlyPrice||selectedEquipment.pricePerHour||selectedEquipment.price||0),price:Math.round(price*100)/100,agreedPrice:Math.round(price*100)/100,notes:$('atharCustomerRequestNotes')?.value.trim()||'',paymentPlan:'cash',paymentMethod:'cash_test',paymentStatus:'awaiting_customer_confirmation',bookingConfirmed:false,contactUnlocked:false,status:'searching',stage:'request_sent',stageLabel:stageNames.request_sent,createdAt:new Date(),updatedAt:new Date(),extensionStatus:'none',extensionHistory:[],schemaVersion:1};const ref=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),data);localStorage.setItem('currentRequestId',ref.id);alert('تم إرسال طلبك إلى صاحب المعدة.');await renderCustomerOrder(ref.id);show('atharCustomerOrderScreen');}catch(e){console.error('إرسال طلب العميل:',e);alert(e.message||'تعذر إرسال الطلب. تحقق من صلاحيات Firebase.');}finally{btn.disabled=false;}}
+  async function findCustomerActiveRequest(){const user=await dbReady();const rows=await ma3daReadUserRows('requests',['customerId','requesterId'],user.uid);const list=rows.filter(r=>isCustomerRequest(r)&&!['rated','rejected','cancelled'].includes(String(r.stage||'')));list.sort((a,b)=>new Date(b.createdAt?.toDate?.()||b.createdAt||0)-new Date(a.createdAt?.toDate?.()||a.createdAt||0));return list[0]||null;}
+  function mapLink(lat,lng){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat+','+lng)}`;}
+  function distanceKm(a,b){const rad=x=>x*Math.PI/180;const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng);const q=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));}
+  function currentGeoPosition(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(new Error('تحديد الموقع غير مدعوم.'));navigator.geolocation.getCurrentPosition(p=>resolve({lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy}),e=>reject(new Error('تعذر التحقق من موقعك. اسمح بالوصول للموقع ثم حاول مجددًا.')),{enableHighAccuracy:true,timeout:15000,maximumAge:0});});}
+  async function ensureChatListener(request){if(chatUnsub){chatUnsub();chatUnsub=null;}const messages=$('atharCustomerChatMessages');if(!messages)return;const ref=window.ma3daCollection(window.ma3daDB,'requests',request.id,'messages');if(!window.ma3daOnSnapshot)return;chatUnsub=window.ma3daOnSnapshot(window.ma3daQuery(ref,window.ma3daOrderBy('createdAt','asc')),(snap)=>{messages.innerHTML='';snap.forEach(d=>{const m=d.data()||{};const line=document.createElement('div');line.className='athar-chat-line'+(m.senderId===window.ma3daAuth.currentUser?.uid?' mine':'');line.textContent=m.text||'';messages.appendChild(line);});messages.scrollTop=messages.scrollHeight;},e=>{console.warn('Chat listener:',e);messages.textContent='تعذر تحميل المحادثة؛ تحقق من صلاحيات المحادثات.';});}
+  async function openChat(request){if(!request.contactUnlocked)throw new Error('تُفتح المحادثة بعد تأكيد الحجز بالكاش التجريبي.');activeRequest=request;const user=await dbReady();activeChatReturnScreen=ownerIdOf(request)===user.uid?'operatorNewRequestsScreen':'atharCustomerOrderScreen';show('atharCustomerChatScreen');await ensureChatListener(request);}
+  async function sendChat(){const text=$('atharCustomerChatInput')?.value.trim();if(!text||!activeRequest)return;const user=await dbReady();await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests',activeRequest.id,'messages'),{text,senderId:user.uid,senderRole:ownerIdOf(activeRequest)===user.uid?'operator':'customer',createdAt:new Date()});$('atharCustomerChatInput').value='';}
+  async function renderCustomerOrder(requestId,fromListener=false){let r=requestId?await getRequest(requestId):await findCustomerActiveRequest();if(!r){$('atharCustomerOrderContent').innerHTML='<div class="card">لا يوجد طلب نشط حاليًا.</div>';return;}activeRequest=r;localStorage.setItem('currentRequestId',r.id);const user=await dbReady();if(r.customerId!==user.uid)throw new Error('هذا الطلب لا يخص حساب العميل الحالي.');const ownerId=ownerIdOf(r);let owner={};try{const s=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',ownerId));if(s.exists())owner=s.data()||{};}catch(_){}const stage=r.stage||({searching:'request_sent',accepted:'accepted',working:'working',completed:'work_finished'}[r.status]||'request_sent');const customerOwns=r.customerId===user.uid;const contact=r.contactUnlocked&&['booking_confirmed','arrived','otp_verified','working','work_finished','amount_review','disputed','settlement_confirmed','settled','rated','extension_pending'].includes(stage);let actions='';if(stage==='accepted')actions='<button class="primary" data-athar-customer-cash>تأكيد الحجز بالكاش التجريبي</button>';if(['booking_confirmed','arrived','otp_verified','working','extension_pending','work_finished','amount_review','disputed'].includes(stage)){actions+='<button data-athar-customer-chat>المحادثة</button><button data-athar-customer-call>الاتصال بصاحب المعدة</button><button data-athar-customer-owner-map>موقع المعدة / التتبع</button><button data-athar-customer-my-location>مشاركة موقعي الحالي</button>';}if(stage==='work_finished'||stage==='amount_review'){actions+='<button class="primary" data-athar-customer-settlement>تأكيد المبلغ والمدة وإتمام التسوية</button><button data-athar-customer-dispute>اعتراض على المبلغ أو المدة</button>';}if(stage==='settled')actions+='<button class="primary" data-athar-customer-rate>تقييم المعدة</button>';if(stage==='working')actions+='<button data-athar-customer-extension>طلب تمديد العمل</button>';if(stage==='extension_pending')actions+='<p>طلب التمديد بانتظار موافقة صاحب المعدة.</p>';
+    const customerLoc=coords(r,'customerLocation'),ownerLoc=coords(r,'equipmentLocation');const invoice=r.invoiceNumber?`<div class="athar-cycle-row"><span>رقم الفاتورة</span><strong>${esc(r.invoiceNumber)}</strong></div>`:'';
+    $('atharCustomerOrderContent').innerHTML=`<div class="card"><div class="athar-cycle-stage">${esc(stageNames[stage]||stageNames[r.stage]||stage)}</div><div class="athar-cycle-row"><span>رقم الطلب</span><strong>ATH-${esc(r.id.slice(-8).toUpperCase())}</strong></div><div class="athar-cycle-row"><span>المعدة</span><strong>${esc(r.equipment)}</strong></div><div class="athar-cycle-row"><span>صاحب المعدة</span><strong>${esc(r.operatorName||owner.name||'صاحب المعدة')}</strong></div><div class="athar-cycle-row"><span>المدة</span><strong>${money(r.actualDurationHours??r.duration)} ساعة</strong></div><div class="athar-cycle-row"><span>المبلغ</span><strong>${money(r.finalAmount??r.price)} ريال</strong></div><div class="athar-cycle-row"><span>طريقة الدفع</span><strong>كاش تجريبي</strong></div><div class="athar-cycle-row"><span>تتبع المعدة</span><strong id="atharLiveTrackingStatus">${r.ownerLiveLocationUpdatedAt?'آخر تحديث: '+esc(dateLabel(r.ownerLiveLocationUpdatedAt)):'بانتظار مشاركة موقع المعدة'}</strong></div>${invoice}<p class="athar-cycle-note">${esc(r.notes||'')}</p>${contact?`<div class="athar-cycle-row"><span>جوال صاحب المعدة</span><strong>${esc(owner.phone||r.operatorPhone||'غير متوفر')}</strong></div>`:''}<div class="athar-cycle-actions">${actions}</div></div>${stage==='arrived'?'<div class="card"><strong>رمز التحقق</strong><p>رمز تجريبي داخل التطبيق. شاركه مع صاحب المعدة عند وجودك في الموقع. يلزم ربط خدمة تحقق خلفية قبل استخدامه كوسيلة أمان إنتاجية.</p><button id="atharGenerateOtpBtn" class="main-btn">إنشاء رمز OTP</button><p id="atharOtpDisplay"></p></div>':''}${stage==='otp_verified'?'<div class="card"><strong>تم التحقق من رمز العميل. يستطيع صاحب المعدة بدء العمل الآن.</strong></div>':''}${stage==='work_finished'||stage==='amount_review'?`<div class="card"><strong>مراجعة الفاتورة</strong><div class="athar-cycle-row"><span>المدة الفعلية</span><strong>${money(r.actualDurationHours||r.duration)} ساعة</strong></div><div class="athar-cycle-row"><span>المبلغ النهائي</span><strong>${money(r.finalAmount||r.price)} ريال</strong></div></div>`:''}`;
+    if(!fromListener&&window.ma3daOnSnapshot&&listeningRequestId!==r.id){if(orderUnsub){orderUnsub();orderUnsub=null;}listeningRequestId=r.id;orderUnsub=window.ma3daOnSnapshot(docRef(r.id),snap=>{if(snap.exists()&&$('atharCustomerOrderScreen')?.classList.contains('active'))renderCustomerOrder(r.id,true).catch(e=>console.warn('تحديث حالة الطلب:',e));},e=>console.warn('تتبع حالة الطلب المباشر:',e));}
   }
- 
-}
- 
+  async function renderOwnerCustomerOrders(){const box=$('atharOwnerCustomerOrdersPanel');if(!box)return;box.innerHTML='<div class="card">جارٍ تحميل طلبات العملاء…</div>';try{const user=await dbReady();const rows=await ma3daReadUserRows('requests',['equipmentOwnerId','ownerId','operatorId'],user.uid);const list=rows.filter(r=>isCustomerRequest(r)&&ownerIdOf(r)===user.uid&&!['rated','rejected','cancelled'].includes(String(r.stage||'')));list.sort((a,b)=>new Date(b.createdAt?.toDate?.()||b.createdAt||0)-new Date(a.createdAt?.toDate?.()||a.createdAt||0));if(!list.length){box.innerHTML='<div class="card">لا توجد طلبات عملاء حاليًا.</div>';return;}box.innerHTML='';list.forEach(r=>{const stage=r.stage||'request_sent';const card=document.createElement('article');card.className='athar-owner-request-card';let buttons='';if(stage==='request_sent')buttons='<button class="primary" data-athar-owner-accept>قبول الطلب</button><button data-athar-owner-reject>رفض الطلب</button>';if(stage==='booking_confirmed')buttons='<button data-athar-owner-arrived>تأكيد الوصول للموقع</button>';
+if(stage==='arrived')buttons='<label>رمز OTP الذي أعطاك العميل</label><input inputmode="numeric" maxlength="6" data-athar-otp-input placeholder="000000"><button class="primary" data-athar-owner-verify>التحقق من الرمز</button>';if(stage==='otp_verified')buttons='<button class="primary" data-athar-owner-start>بدء العمل</button>';if(stage==='working')buttons='<label>مدة العمل الفعلية بالساعات</label><input type="number" min="1" step="0.5" value="'+esc(r.duration||1)+'" data-athar-actual-hours><button class="primary" data-athar-owner-finish>إنهاء العمل وإصدار الفاتورة</button>';if(stage==='extension_pending')buttons='<button class="primary" data-athar-owner-extension-approve>الموافقة على التمديد</button><button data-athar-owner-extension-reject>رفض التمديد</button>';if(stage==='disputed')buttons='<p>يوجد اعتراض؛ بانتظار مراجعة الدعم الفني.</p>';if(['booking_confirmed','arrived','otp_verified','working','extension_pending','work_finished','amount_review','disputed'].includes(stage))buttons+='<button data-athar-owner-chat>المحادثة</button><button data-athar-owner-call>الاتصال بالعميل</button><button data-athar-owner-map>فتح موقع العميل</button><button data-athar-owner-start-tracking>تشغيل التتبع المباشر</button>'+(ownerWatchRequestId===r.id?'<button data-athar-owner-stop-tracking>إيقاف التتبع</button>':'');card.innerHTML=`<h3>${esc(r.equipment||'معدة')} — ${esc(r.customerName||'العميل')}</h3><div class="athar-cycle-row"><span>رقم الطلب</span><strong>ATH-${esc(r.id.slice(-8).toUpperCase())}</strong></div><div class="athar-cycle-row"><span>الحالة</span><strong>${esc(stageNames[stage]||stage)}</strong></div><div class="athar-cycle-row"><span>المدة / السعر</span><strong>${money(r.duration)} ساعة · ${money(r.price)} ريال</strong></div><div class="athar-cycle-row"><span>موقع العميل</span><strong>${esc(r.location||'')}</strong></div><div class="athar-cycle-actions">${buttons}</div>`;card.dataset.requestId=r.id;box.appendChild(card);});}catch(e){console.error('طلبات العملاء للمالك:',e);box.innerHTML='<div class="card">تعذر تحميل طلبات العملاء. تحقق من صلاحيات قراءة الطلبات في Firebase.</div>';}}
+  async function ownerUpdate(r,patch){const user=await dbReady();if(ownerIdOf(r)!==user.uid)throw new Error('لا تملك صلاحية هذا الطلب.');await setRequest(r.id,patch);await renderOwnerCustomerOrders();}
+  async function hashOtp(code,salt){const bytes=new TextEncoder().encode(salt+':'+code);const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');}
 
+  // شاشة مراجعة اعتراضات دورة العميل لفريق الدعم؛ لا تغيّر طلبات المشاريع.
+  const supportDash=$('supportDashboardScreen');
+  if(supportDash&&!$('atharSupportOrderDisputes')){const panel=document.createElement('section');panel.id='atharSupportOrderDisputes';panel.className='support-section support-panel';panel.innerHTML='<h2>اعتراضات طلبات العملاء</h2><button type="button" class="back-btn" id="atharSupportDisputesRefresh">⟳ تحديث الاعتراضات</button><div id="atharSupportDisputesList"><div class="card">ستظهر الاعتراضات هنا.</div></div>';supportDash.querySelector('.support-dashboard-content,.support-content,.support-dashboard')?.appendChild(panel)||supportDash.appendChild(panel);}
+  async function renderSupportDisputes(){const box=$('atharSupportDisputesList');if(!box)return;try{await dbReady();const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'supportEscalations'));const rows=[];snap.forEach(d=>{const x={id:d.id,...(d.data()||{})};if(x.kind==='customer_order_dispute'&&x.status==='open')rows.push(x);});box.innerHTML='';if(!rows.length){box.innerHTML='<div class="card">لا توجد اعتراضات مفتوحة.</div>';return;}rows.forEach(x=>{const c=document.createElement('article');c.className='card';c.dataset.disputeId=x.id;c.dataset.requestId=x.requestId;c.innerHTML=`<h3>اعتراض طلب ATH-${esc(String(x.requestId||'').slice(-8).toUpperCase())}</h3><p>${esc(x.reason||'')}</p><label>ملاحظات مراجعة الدعم</label><textarea data-athar-support-notes rows=3 maxlength=1000 placeholder="اكتب نتيجة المراجعة والتوجيه للعميل"></textarea><div class="athar-cycle-actions"><button class="primary" data-athar-support-resolve>إنهاء المراجعة وإحالة القرار للعميل</button></div>`;box.appendChild(c);});}catch(e){console.warn('تحميل اعتراضات العميل للدعم:',e);box.textContent='تعذر تحميل الاعتراضات. تحقق من صلاحيات الدعم.';}}
+  $('atharSupportDisputesRefresh')?.addEventListener('click',renderSupportDisputes);
+  $('supportDashboardBtn')?.addEventListener('click',renderSupportDisputes);
+  if(supportDash&&typeof MutationObserver!=='undefined'){new MutationObserver(()=>{if(supportDash.classList.contains('active'))renderSupportDisputes();}).observe(supportDash,{attributes:true,attributeFilter:['class']});}
+  document.addEventListener('click',async ev=>{const btn=ev.target.closest('[data-athar-support-resolve]');if(!btn)return;const card=btn.closest('[data-request-id]');try{btn.disabled=true;const requestId=card.dataset.requestId;const r=await getRequest(requestId);const notes=card.querySelector('[data-athar-support-notes]')?.value.trim()||'';await setRequest(requestId,{stage:'amount_review',stageLabel:stageNames.amount_review,disputeStatus:'support_reviewed',supportReviewedAt:new Date(),supportReviewedBy:(await dbReady()).uid,supportDecisionNotes:notes,settlementStatus:'pending_customer_review'});await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'supportEscalations',card.dataset.disputeId),{status:'resolved',resolvedAt:new Date(),resolvedBy:(await dbReady()).uid});await renderSupportDisputes();alert('تم تسجيل مراجعة الدعم وإعادة الطلب للعميل لاتخاذ قرار التسوية.');}catch(e){alert(e.message||'تعذر حفظ مراجعة الاعتراض.');}finally{btn.disabled=false;}});
 
-Object.assign(atharEnglishDictionary, {
-  "© جميع الحقوق محفوظة لآثار ATHAR – 2026": "© All rights reserved to ATHAR – 2026",
-  "أهلًا بك في آثار. اكتب سؤالك وسأبحث في الإجابات المعتمدة.\n      إذا لم أجد إجابة موثوقة، سأحوّل سؤالك إلى فريق الدعم.": "Welcome to ATHAR. Ask your question and I will search the approved answers.\n      If I cannot find a reliable answer, I will forward your question to support.",
-  "إذا واجهت مشكلة أو لديك استفسار حول آثار،\n      تواصل معنا وسنساعدك.": "If you have an issue or question about ATHAR,\n      contact us and we will help.",
-  "إذا واجهت مشكلة في الطلبات أو الحساب أو المعدة،\n      تواصل معنا وسنساعدك.": "If you have an issue with requests, your account, or equipment,\n      contact us and we will help.",
-  "الاعتماد النهائي للمسجلين الجدد": "Final Approval for New Registrations",
-  "العودة إلى تسجيل الدخول": "Return to Login",
-  "انتظر حتى مراجعة الفريق المختص": "Please wait for the review team",
-  "تحديث التسجيلات": "Refresh Registrations",
-  "تم إنشاء حسابك بنجاح": "Your account was created successfully",
-  "جارٍ تحميل التسجيلات...": "Loading registrations...",
-  "راجع بيانات صاحب المعدة أو مسؤول المشروع والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.": "Review the equipment owner or project manager details and attachments, then choose preliminary approval or rejection with a reason.",
-  "سيتم إشعارك بعد انتهاء مراجعة بياناتك ومستنداتك.": "You will be notified when your information and documents have been reviewed.",
-  "صفحة تدقيق بيانات التسجيل": "Registration Audit Page",
-  "طلبات التسجيل": "Registration Requests",
-  "لأننا نسهّل عليك الوصول إلى المعدات الثقيلة\n      وأصحابها في مكان واحد وبطريقة أسرع وأسهل.": "We make it easier and faster to find heavy equipment\n      and its owners in one place.",
-  "لا يمكنك استخدام خدمات صاحب المعدة أو إدارة المشروع قبل الاعتماد النهائي من مالك التطبيق.": "You cannot use equipment owner or project management services before the platform owner grants final approval.",
-  "مراجعة التسجيلات الجديدة": "Review New Registrations",
-  "مراجعة المالك قبل الاعتماد النهائي": "Owner Review Before Final Approval",
-  "مراقبة الدعم وطلبات التسجيل المتعثرة": "Monitor Support and Stalled Registrations",
-  "منصة تربطك بأصحاب المعدات الثقيلة والمشغلين،\n      وتساعدك في طلب المعدة التي تحتاجها بسهولة.": "A platform connecting you with heavy equipment owners and operators,\n      helping you request the equipment you need.",
-  "هذه إعدادات السياسة المستقبلية. لن تتغير الفواتير القديمة أو\n      تُعاد حساباتها تلقائياً عند تعديل هذه القيم.": "These settings apply to future policy. Existing invoices will not be changed or automatically recalculated when these values are edited.",
-  "هنا تظهر الأسئلة التي لم يجد المساعد لها إجابة معتمدة.\n    أجب عن السؤال، ثم أغلقه بعد حلّه.\n    لا تُعتمد إجابتك في قاعدة المعرفة إلا بموافقة المالك.": "Questions without an approved answer appear here.\n    Answer the question and close it once resolved.\n    Your answer is added to the knowledge base only after owner approval.",
-  "يتطلب التسليم الفعلي إلى شاشة الجوال ربط Firebase Cloud Messaging\n      وخادم إرسال آمن وتسجيل رموز أجهزة المستخدمين. حفظ الحملة هنا\n      لا يعني أنها أُرسلت بالفعل.": "Actual mobile delivery requires Firebase Cloud Messaging,\n      a secure sending server, and user device tokens. Saving a campaign here\n      does not mean it has been sent.",
-  "← العودة إلى التسجيلات": "← Back to Registrations"
-} );
-
-
-Object.assign(atharEnglishDictionary, {
-  "تم تحديد الموافقة. يمكنك إكمال إنشاء الحساب.": "Agreement confirmed. You can complete account creation.",
-  "المقاول أو صاحب المشروع": "Contractor or Project Owner",
-  "التالي": "Next",
-  "متاحة الآن": "Available Now",
-  "لا توجد طلبات مشاريع جديدة": "No New Project Requests",
-  "ستظهر هنا طلبات المقاولين وأصحاب المشاريع الموجهة لمعدتك.": "Project requests directed to your equipment will appear here.",
-  "طلب مشروع": "Project Request",
-  "طلب تمديد بانتظار موافقتك": "Extension Request Awaiting Your Approval",
-  "المشروع": "Project",
-  "تم إكمال الطلب": "Request Completed",
-  "مكتمل": "Completed",
-  "متاحة": "Available",
-  "المشاريع السابقة": "Previous Projects",
-  "غير نشط": "Inactive",
-  "رفضت قواعد Firebase قراءة الملاحظات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة ownerDailyNotes.": "Firebase denied reading notes (permission-denied). Check platform-owner access to ownerDailyNotes.",
-  "مفتوحة": "Open",
-  "رفضت قواعد Firebase قراءة التصعيدات (permission-denied). تحقق من صلاحية مالك التطبيق لمجموعة supportEscalations.": "Firebase denied reading escalations (permission-denied). Check platform-owner access to supportEscalations.",
-  "الطلبات الناجحة": "Successful Requests",
-  "المصدر: projectInvoices": "Source: projectInvoices",
-  "مدير دعم": "Support Manager",
-  "تم اعتماد آخر تعديل": "Last Edit Approved",
-  "جعلها غير متاحة": "Set Unavailable",
-  "تعديل بيانات المعدة": "Edit Equipment Details",
-  "سيُرسل التعديل إلى موظفي الدعم للمراجعة، ولن تُستبدل البيانات الحالية قبل الموافقة.": "The changes will be sent to support for review. Existing equipment details will not be replaced until approval.",
-  "تم حفظ الرد وإرساله للمالك كمقترح غير معتمد.": "Reply saved and sent to the platform owner as an unapproved suggestion.",
-  "معتمدة": "Approved",
-  "متوقفة": "Stopped",
-  "تفعيل الإجابة": "Enable Answer",
-  "تم تعديل الإجابة المعتمدة.": "Approved answer updated.",
-  "تم حذف الخلفية العامة فقط.": "Only the global background was deleted.",
-  "الهوية النشطة ✓": "Active Identity ✓",
-  "مسؤوليتنا": "Our Responsibility",
-  "حقوقنا": "Our Rights",
-  "رؤيتنا": "Our Vision",
-  "من نحن": "About ATHAR",
-  "تواصل معنا": "Contact Us",
-  "في آثار ATHAR نؤمن أن الثقة أساس كل تعامل ناجح؛ لذلك نتعامل مع المعلومات والبيانات الشخصية التي يشاركها المستخدم معنا بمسؤولية واهتمام، ونسعى إلى حمايتها وعدم استخدامها إلا للأغراض المشروعة والمرتبطة بتقديم خدمات المنصة وتشغيلها وتحسينها.": "At ATHAR, we believe trust is the foundation of every successful interaction. We handle the information and personal data users share with us responsibly and carefully, protecting it and using it only for legitimate purposes related to providing, operating, and improving the platform.",
-  "كيف نتعامل مع معلوماتكم؟": "How Do We Handle Your Information?",
-  "نطلب المعلومات اللازمة لإنشاء الحساب، والتحقق منه، وتقديم الخدمات وإدارة الطلبات والتواصل بشأنها.": "We request the information needed to create and verify accounts, provide services, manage requests, and communicate about them.",
-  "نحرص على وضوح الغرض من جمع البيانات، وتقليل البيانات المطلوبة إلى القدر الذي تحتاجه الخدمة.": "We make the purpose of data collection clear and limit the information requested to what the service needs.",
-  "نقصر الوصول إلى المعلومات على من تستلزم طبيعة عمله الاطلاع عليها، ونتخذ تدابير تنظيمية وتقنية مناسبة للمحافظة على سريتها وسلامتها.": "Access to information is limited to those whose work requires it. We use appropriate organizational and technical measures to protect confidentiality and integrity.",
-  "لا نشارك البيانات خارج نطاق تقديم الخدمة إلا وفق مسوغ نظامي أو موافقة معتبرة، أو عندما يكون ذلك لازمًا لتنفيذ طلب المستخدم، وبالقدر اللازم لذلك.": "We share data outside service delivery only when legally justified, with valid consent, or as necessary to fulfill a user request—and only to the extent needed.",
-  "نعمل على معالجة البيانات بدقة، وتحديثها عند الحاجة، وعدم الاحتفاظ بها لمدة تتجاوز الغرض من جمعها، مع مراعاة المتطلبات النظامية.": "We process data accurately, update it when needed, and do not retain it longer than necessary for its purpose, subject to legal requirements.",
-  "حقوق المستخدم وواجباتنا": "User Rights and Our Responsibilities",
-  "نحترم حقوق أصحاب البيانات الشخصية، بما في ذلك حقهم في العلم والوصول إلى بياناتهم وطلب نسخة منها أو تصحيحها أو إتلافها، والعدول عن الموافقة متى انطبق ذلك، وفق نظام حماية البيانات الشخصية ولوائحه والاستثناءات الواردة فيه.": "We respect personal-data rights, including the right to know, access, obtain a copy, correct, or request deletion of data, and withdraw consent where applicable, in accordance with Saudi personal-data law, regulations, and exceptions.",
-  "كما نعمل على تطوير إجراءاتنا وممارساتنا باستمرار، ونشجع المستخدم على المحافظة على سرية بيانات الدخول وعدم مشاركة رموز التحقق مع الآخرين. وتُستكمل التفاصيل والإجراءات من خلال سياسة الخصوصية وشروط الاستخدام المعتمدة للمنصة.": "We continually improve our procedures and practices. Users should keep login details confidential and never share verification codes. Further details are provided in the platform’s approved Privacy Policy and Terms of Use.",
-  "أثرٌ يواكب طموح وطن": "An Impact That Matches Our Nation’s Ambition",
-  "تنطلق رؤيتنا من إيماننا بأن نهضة المدن والمشاريع تبدأ بتكامل الجهود، وسهولة الوصول إلى الموارد، وتحويل الطموحات إلى أعمال تُرى آثارها على أرض الواقع.": "Our vision is grounded in the belief that thriving cities and projects begin with coordinated efforts, easy access to resources, and turning ambitions into real-world achievements.",
-  "ونستلهم توجه المملكة العربية السعودية في ظل رؤية 2030 نحو اقتصاد مزدهر، وبيئة أعمال أكثر تنافسية، وتحول رقمي يرفع كفاءة الخدمات، ويدعم نمو المنشآت، ويعزز مشاركة القطاع الخاص في مسيرة التنمية.": "We are inspired by Saudi Arabia’s Vision 2030—toward a prosperous economy, a more competitive business environment, digital transformation that improves services, supports businesses, and strengthens private-sector participation in development.",
-  "نحو قطاع إنشائي أكثر ترابطًا": "Toward a More Connected Construction Sector",
-  "نتطلع إلى أن تسهم آثار في تقريب المسافة بين العملاء وأصحاب المعدات والمشغلين وأصحاب المشاريع؛ من خلال تسهيل الوصول إلى المعدات والخدمات المناسبة، وتنظيم الطلبات والتواصل، ومساندة إنجاز الأعمال بوضوح وكفاءة.": "ATHAR aims to bring customers, equipment owners, operators, and project owners closer by making suitable equipment and services easier to find, organizing requests and communication, and supporting clear and efficient work.",
-  "ونؤمن أن كل معدة تُستثمر بكفاءة، وكل مورد يصل إلى مشروعه في الوقت المناسب، وكل تعاون ناجح بين أطراف العمل؛ يمكن أن يصنع فرقًا في الإنتاجية ويضيف لبنة جديدة في مسيرة الإعمار.": "We believe every efficiently used machine, every resource delivered to the right project at the right time, and every successful collaboration can improve productivity and contribute to building progress.",
-  "طموحنا أن نكون جسرًا رقميًا موثوقًا يساند أعمال اليوم، ويشارك في بناء فرص الغد، بما ينسجم مع مستهدفات التنمية والابتكار والاستدامة في المملكة، دون أن ندّعي تمثيل أي جهة أو برنامج حكومي.": "Our ambition is to be a trusted digital bridge supporting today’s work and tomorrow’s opportunities, aligned with Saudi development, innovation, and sustainability goals—without claiming to represent any government entity or program.",
-  "آثار ATHAR — منصة تجمع أطراف الإنجاز": "ATHAR — Connecting the People Behind Every Achievement",
-  "آثار منصة رقمية سعودية التوجه، صُممت لتكون حلقة وصل بين العملاء والمقاولين وأصحاب المعدات والمشغلين وأصحاب ومسؤولي المشاريع، في مساحة واحدة تساعدهم على الوصول إلى احتياجاتهم والتواصل بشأنها بصورة أكثر تنظيمًا ووضوحًا.": "ATHAR is a Saudi-oriented digital platform connecting customers, contractors, equipment owners, operators, and project owners or managers in one place to help them find what they need and communicate more clearly and efficiently.",
-  "تخدم المنصة رحلة العمل من تحديد الاحتياج، واستعراض الخيارات المتاحة، وإرسال الطلبات، والتواصل بين الأطراف، ومتابعة مراحل التنفيذ والخدمات المرتبطة بالمشروع، بحسب الخصائص المتاحة داخل التطبيق.": "The platform supports the workflow—from identifying needs and reviewing available options to submitting requests, communicating, and tracking work and project-related services, according to available app features.",
-  "ماذا نقدم؟": "What Do We Offer?",
-  "للعملاء والمقاولين:": "For Customers and Contractors:",
-  "وسيلة أسهل للوصول إلى المعدات والخدمات التي تتطلبها الأعمال والمشاريع.": "An easier way to find equipment and services needed for work and projects.",
-  "لأصحاب المعدات:": "For Equipment Owners:",
-  "مساحة لعرض المعدات وإدارة الطلبات والتواصل مع طالبي الخدمة.": "A place to list equipment, manage requests, and communicate with service seekers.",
-  "لأصحاب ومسؤولي المشاريع:": "For Project Owners and Managers:",
-  "أدوات تساعد على تنظيم احتياجات المشروع وربطها بالمعدات ومقدمي الخدمات.": "Tools to organize project needs and connect them with equipment and service providers.",
-  "نركز على تسهيل التواصل، ورفع وضوح المعلومات، وتنظيم خطوات العمل، وتقديم تجربة رقمية تراعي احتياجات مختلف الأطراف.": "We focus on easier communication, clearer information, organized workflows, and a digital experience that considers the needs of all parties.",
-  "وتعمل آثار بوصفها منصة تقنية وسيطة لتنظيم التواصل والطلبات؛ ولا تحل محل الأطراف المتعاقدة في مسؤولياتهم، ولا تُعد بديلاً عن التحقق المباشر من المعدات أو الاتفاق على تفاصيل الخدمة وشروطها قبل التنفيذ.": "ATHAR operates as a technology platform that organizes communication and requests. It does not replace contracting parties’ responsibilities or direct equipment inspection and agreement on service details and terms before work begins.",
-  "شعارنا:": "Our Motto:",
-  "آثار… نبني اليوم ما يبقى غدًا.": "ATHAR… Building Today What Lasts Tomorrow.",
-  "نسعد بتواصلكم": "We Welcome Your Feedback",
-  "فريق آثار يرحب باستفساراتكم وملاحظاتكم ومقترحاتكم. إذا واجهت مشكلة في الحساب، أو كان لديك استفسار عن طلب أو خدمة، أو رغبت في الإبلاغ عن ملاحظة؛ يمكنك التواصل معنا عبر قنوات الدعم الفني المعتمدة داخل التطبيق.": "The ATHAR team welcomes your questions, feedback, and suggestions. If you have an account issue, a question about a request or service, or wish to report something, contact us through the app’s approved support channels.",
-  "حتى نتمكن من مساعدتك بشكل أسرع، يرجى توضيح نوع الاستفسار وإرفاق رقم الطلب — إن وجد — وشرح مختصر للمشكلة، مع تجنب إرسال كلمات المرور أو رموز التحقق أو بيانات الدفع السرية.": "To help you faster, specify the type of inquiry, include the request number if available, and briefly describe the issue. Do not send passwords, verification codes, or confidential payment details.",
-  "نقدّر ثقتكم وملاحظاتكم؛ فهي تساعدنا على تحسين تجربة آثار وتطوير خدماتها باستمرار.": "We appreciate your trust and feedback; they help us continuously improve ATHAR and its services."
-} );
-
-Object.assign(atharEnglishDictionary, {
-  "المسافة ": "Distance ",
-  "مبلغ الحجز التجريبي ": "Test booking amount ",
-  "مشاركة بيانات التواصل": "Share Contact Details",
-  "بعد تأكيد الحجز، شارك رقمك مع العميل ليظهر لديه الاتصال المباشر.": "After booking is confirmed, share your phone number so the customer can call you directly.",
-  "إظهار بيانات التواصل للعميل": "Share Contact Details with Customer",
-  "تمت مشاركة رقم التواصل مع العميل.": "Your contact number has been shared with the customer.",
-  "رقم الجوال غير مسجل في حساب صاحب المعدة.": "The equipment owner’s phone number is not registered.",
-  "مشاركة التواصل متاحة بعد تأكيد الحجز.": "Contact sharing is available after booking confirmation.",
-  "هذا الطلب ليس لمعدتك.": "This request is not assigned to your equipment.",
-  "هذا الطلب ليس لحسابك.": "This request is not assigned to your account.",
-  "لا تتوفر بيانات مدينة/إحداثيات لجميع المعدات؛ يعرض النظام المعدات المعتمدة والمتاحة من النوع المختار، وقد لا تكون كلها في منطقتك. حدّث مدينة حسابك للحصول على فلترة أدق.": "City or coordinates are missing for some equipment. The system shows approved and available equipment of the selected type, which may not all be in your area. Update your account city for more precise filtering.",
-  "المبلغ المحجوز/التقديري:": "Reserved / Estimated Amount:",
-  "المبلغ الإضافي المطلوب:": "Additional Amount Due:",
-  "المبلغ الزائد المسترد تجريبيًا:": "Test Refund Amount:",
-  "قيمة العمل:": "Work Value:",
-  "الوقت الفعلي:": "Actual Time:",
-  "رقم الطلب:": "Order Number:",
-  "سعر الساعة:": "Hourly Rate:",
-  "الحجز:": "Booking:",
-  "العميل:": "Customer:",
-  "التاريخ:": "Date:",
-  "أنت على بعد ": "You are ",
-  "تم تأكيد الحجز التجريبي": "Test booking confirmed",
-  "لا يوجد طلب": "No request",
-  "لا يوجد طلب حالي": "No current request",
-  "لا يمكن بدء العمل قبل التحقق من رمز العميل.": "Work cannot start before the customer verification code is confirmed."
-} );
-
-Object.assign(atharEnglishDictionary, {"قيّم المعدة": "Rate the Equipment", "كيف كانت المعدة خلال تنفيذ العمل؟": "How was the equipment during the job?"} );
-
-/* ATHAR NEW CUSTOMER RENTAL FLOW — replaces legacy customer rental lifecycle */
-(function atharNewRentalFlow(){
-  'use strict';
-  const $=id=>document.getElementById(id);
-  const money=n=>`${Number(n||0).toLocaleString('ar-SA',{maximumFractionDigits:2})} ريال`;
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const readUser=async()=>window.ma3daGetCurrentUser?await window.ma3daGetCurrentUser():window.ma3daAuth?.currentUser||null;
-  const equipmentCollection=()=>window.ma3daCollection(window.ma3daDB,'equipment');
-  const requestRef=id=>window.ma3daDoc(window.ma3daDB,'requests',id);
-  let draft=null,available=[];
-  let availableMap=null,availableMarkers=[],availableCustomerMarker=null,availableMapLoadPromise=null;
-  let watcher=null;
-  const legacyAcceptOperatorRequest=window.atharLegacyProjectAcceptOperatorRequest;
-  const legacyRejectOperatorRequest=window.atharLegacyProjectRejectOperatorRequest;
-  let otpDraft='';
-
-  // ربط زر الطلب مبكرًا وبالتفويض من document؛ حتى لا يعتمد على بقاء
-  // عنصر الزر نفسه أو على وصول التنفيذ إلى نهاية وحدة الطلبات.
-  const initialRequestButton=$('requestBtn');
-  if(initialRequestButton){
-    const cleanRequestButton=initialRequestButton.cloneNode(true);
-    cleanRequestButton.type='button';
-    cleanRequestButton.disabled=false;
-    cleanRequestButton.removeAttribute('disabled');
-    initialRequestButton.replaceWith(cleanRequestButton);
-  }
-  document.addEventListener('click', async function atharRequestButtonClick(event){
-    const button=event.target?.closest?.('#requestBtn');
-    if(!button) return;
-    event.preventDefault();
-    if(button.dataset.atharBusy==='1') return;
-
-    const location=String($('locationInput')?.value||'').trim();
-    const type=String($('equipmentSelect')?.value||'').trim();
-    const duration=String($('durationSelect')?.value||'').trim();
-    const operator=String($('operatorSelect')?.value||'مع مشغل').trim();
-    const notes=String($('notesInput')?.value||'').trim();
-    if(!location||!type||!duration){alert('حدد موقع العمل ونوع المعدة ومدة العمل أولاً.');return;}
-    const coordMatch=location.match(/(-?\d+(?:\.\d+)?)\s*[,،]\s*(-?\d+(?:\.\d+)?)/);
-    if(!coordMatch){alert('تعذر قراءة إحداثيات الموقع. اضغط «تحديد موقعي بدقة» مرة أخرى.');return;}
-    const latitude=Number(coordMatch[1]),longitude=Number(coordMatch[2]);
-    if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180){alert('إحداثيات الموقع غير صحيحة. أعد تحديد موقع العمل.');return;}
-
-    button.dataset.atharBusy='1';
-    button.disabled=true;
-    const originalText=button.textContent;
-    button.textContent='جارٍ البحث عن المعدات…';
-    try{
-      if(window.ma3daFirebaseReady){
-        await Promise.race([
-          window.ma3daFirebaseReady,
-          new Promise((_,reject)=>setTimeout(()=>reject(new Error('تأخر تجهيز الاتصال بقاعدة البيانات. أعد تحميل الصفحة وحاول مجددًا.')),12000))
-        ]);
-      }
-      const user=await readUser();
-      if(!user?.uid) throw new Error('انتهت جلسة الدخول أو لم يكتمل تسجيل الدخول. سجّل الدخول ثم حاول مجددًا.');
-      if(typeof window.ma3daCollection!=='function'||typeof window.ma3daWhere!=='function'||typeof window.ma3daQuery!=='function'||typeof window.ma3daGetDocs!=='function'){
-        throw new Error('خدمات قاعدة البيانات لم تجهز بعد. أعد تحميل الصفحة وحاول مرة أخرى.');
-      }
-      draft={location,type,duration,operator,notes,customerId:user.uid,locationCoordinates:{latitude,longitude},createdAt:Date.now()};
-      const list=$('atharAvailableEquipmentList');
-      if(!list) throw new Error('تعذر تجهيز شاشة المعدات المتاحة. أعد تحميل الصفحة.');
-      list.innerHTML='<div class="card center">جاري البحث عن المعدات المتاحة…</div>';
-      if(!showScreen('atharAvailableScreen')) throw new Error('تعذر فتح شاشة المعدات المتاحة.');
-      requestAnimationFrame(()=>availableMap?.invalidateSize());
-      await loadAvailable();
-    }catch(error){
-      console.error('ATHAR request button failed:',error);
-      alert(error?.message||'تعذر تنفيذ طلب المعدة. تحقق من الاتصال ثم حاول مرة أخرى.');
-    }finally{
-      button.dataset.atharBusy='0';
-      button.disabled=false;
-      button.textContent=originalText||'اطلب الآن';
+  document.addEventListener('click',async ev=>{const b=ev.target.closest('button');if(!b)return;try{
+    if(b.id==='atharStartCustomerRequestBtn'){selectedEquipment=null;customerLatLng=null;show('atharCustomerRequestScreen');await loadEquipmentForMap();return;}
+    if(b.id==='atharOpenCustomerOrderBtn'){await renderCustomerOrder();show('atharCustomerOrderScreen');return;}
+    if(b.id==='atharCustomerOrderRefreshBtn'){await renderCustomerOrder(localStorage.getItem('currentRequestId')||undefined);return;}
+    if(b.id==='atharSendCustomerRequestBtn'){await sendCustomerRequest();return;}
+    if(b.id==='atharCustomerLocateBtn'){if(!navigator.geolocation)throw new Error('تحديد الموقع غير مدعوم.');navigator.geolocation.getCurrentPosition(p=>{customerLatLng={lat:p.coords.latitude,lng:p.coords.longitude};$('atharCustomerCoordsLabel').textContent=customerLatLng.lat.toFixed(5)+', '+customerLatLng.lng.toFixed(5);if(requestMap){requestMap.setView([customerLatLng.lat,customerLatLng.lng],15);const L=window.L;if(customerPin)customerPin.setLatLng([customerLatLng.lat,customerLatLng.lng]);else customerPin=L.marker([customerLatLng.lat,customerLatLng.lng]).addTo(requestMap);}},()=>alert('تعذر تحديد موقعك. اسمح بالوصول للموقع ثم حاول مجددًا.'),{enableHighAccuracy:true,timeout:12000});return;}
+    if(b.hasAttribute('data-athar-back')){if($('atharCustomerChatScreen')?.classList.contains('active')){if(chatUnsub){chatUnsub();chatUnsub=null;}show(activeChatReturnScreen);return;}if($('atharCustomerOrderScreen')?.classList.contains('active')){show('customerHomeScreen');return;}show('customerHomeScreen');return;}
+    if(b.id==='atharCustomerChatSend'){await sendChat();return;}
+    if(b.hasAttribute('data-athar-customer-cash')){const r=await getRequest(localStorage.getItem('currentRequestId'));if(r.customerId!==(await dbReady()).uid)throw new Error('هذا الطلب لا يخص حسابك.');await setRequest(r.id,{status:'accepted',stage:'booking_confirmed',stageLabel:stageNames.booking_confirmed,bookingConfirmed:true,bookingConfirmedAt:new Date(),paymentMethod:'cash_test',paymentStatus:'cash_pending',contactUnlocked:true});await renderCustomerOrder(r.id);alert('تم تأكيد الحجز بالكاش التجريبي وفتح بيانات التواصل. لا يوجد تحصيل إلكتروني.');return;}
+    if(b.hasAttribute('data-athar-customer-chat')){await openChat(await getRequest(localStorage.getItem('currentRequestId')));return;}
+    if(b.hasAttribute('data-athar-customer-call')){const r=await getRequest(localStorage.getItem('currentRequestId'));const o=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',ownerIdOf(r)));const phone=o.exists()?o.data().phone:r.operatorPhone;if(!phone)throw new Error('رقم صاحب المعدة غير متوفر.');location.href='tel:'+phone;return;}
+    if(b.hasAttribute('data-athar-customer-owner-map')){const r=await getRequest(localStorage.getItem('currentRequestId'));const c=Number.isFinite(Number(r.ownerLiveLatitude))?{lat:Number(r.ownerLiveLatitude),lng:Number(r.ownerLiveLongitude)}:coords(r,'equipmentLocation');if(!c)throw new Error('موقع المعدة غير مسجل. اطلب من صاحب المعدة تحديث موقعه.');window.open(mapLink(c.lat,c.lng),'_blank','noopener');return;}
+    if(b.hasAttribute('data-athar-customer-my-location')){const r=await getRequest(localStorage.getItem('currentRequestId'));if(!navigator.geolocation)throw new Error('تحديد الموقع غير مدعوم.');navigator.geolocation.getCurrentPosition(async p=>{try{await setRequest(r.id,{customerLiveLatitude:p.coords.latitude,customerLiveLongitude:p.coords.longitude,customerLiveLocationUpdatedAt:new Date()});alert('تم تحديث موقعك للطرف الآخر.');}catch(e){alert(e.message||'تعذر مشاركة الموقع.');}},()=>alert('تعذر تحديد الموقع.'),{enableHighAccuracy:true,timeout:10000});return;}
+    if(b.id==='atharGenerateOtpBtn'){const r=await getRequest(localStorage.getItem('currentRequestId'));const random=new Uint32Array(1);crypto.getRandomValues(random);const code=String(100000+(random[0]%900000));const salt=crypto.randomUUID();const digest=await hashOtp(code,salt);await setRequest(r.id,{otpHash:digest,otpSalt:salt,otpCreatedAt:new Date(),otpVerified:false});$('atharOtpDisplay').textContent='رمزك التجريبي: '+code+' — شاركه مع صاحب المعدة عند وصوله.';return;}
+    if(b.hasAttribute('data-athar-customer-settlement')){const r=await getRequest(localStorage.getItem('currentRequestId'));await setRequest(r.id,{stage:'settled',stageLabel:stageNames.settled,customerApprovedAmount:true,customerApprovedAt:new Date(),settlementStatus:'settled',paymentStatus:'paid',cashSettlementConfirmedBy:(await dbReady()).uid,cashSettlementConfirmedAt:new Date()});if(r.invoiceId){await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',r.invoiceId),{paidAmount:Number(r.finalAmount||r.price||0),remainingAmount:0,paymentStatus:'paid',status:'paid',settlementStatus:'settled',paymentMethod:'cash_test',paidAt:new Date(),updatedAt:new Date()});}await renderCustomerOrder(r.id);alert('تم تأكيد المبلغ والمدة.');return;}
+    if(b.hasAttribute('data-athar-customer-dispute')){const r=await getRequest(localStorage.getItem('currentRequestId'));const reason=prompt('اكتب سبب الاعتراض على المبلغ أو المدة:');if(!reason?.trim())return;await setRequest(r.id,{stage:'disputed',stageLabel:stageNames.disputed,disputeStatus:'pending_support',disputeReason:reason.trim(),disputeCreatedAt:new Date()});await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'supportEscalations'),{kind:'customer_order_dispute',requestId:r.id,customerId:r.customerId,equipmentOwnerId:ownerIdOf(r),reason:reason.trim(),status:'open',createdAt:new Date()});await renderCustomerOrder(r.id);alert('تم إرسال الاعتراض للدعم الفني.');return;}
+    if(b.hasAttribute('data-athar-customer-rate')){const r=await getRequest(localStorage.getItem('currentRequestId'));const rating=Number(prompt('قيّم المعدة من 1 إلى 5 نجوم:'));if(!Number.isInteger(rating)||rating<1||rating>5)throw new Error('أدخل تقييمًا من 1 إلى 5.');const note=prompt('ملاحظة (اختياري):')||'';await setRequest(r.id,{stage:'rated',stageLabel:stageNames.rated,rating,operatorRating:rating,ratingNote:note,customerRatingNote:note,ratedBy:(await dbReady()).uid,ratedAt:new Date()});await renderCustomerOrder(r.id);alert('شكرًا لك، تم حفظ التقييم.');return;}
+    if(b.hasAttribute('data-athar-customer-extension')){const r=await getRequest(localStorage.getItem('currentRequestId'));const hours=Number(prompt('كم ساعة إضافية تريد؟'));if(!Number.isFinite(hours)||hours<=0||hours>1000)throw new Error('أدخل عدد ساعات صحيحًا.');const reason=prompt('سبب التمديد (اختياري):')||'';const amount=Math.round(hours*Number(r.hourlyPrice||0)*100)/100;await setRequest(r.id,{stage:'extension_pending',stageLabel:stageNames.extension_pending,extensionStatus:'pending',extensionRequest:{requestedBy:(await dbReady()).uid,requestedAt:new Date(),extraHours:hours,reason,proposedAmount:amount}});await renderCustomerOrder(r.id);alert('تم إرسال طلب التمديد لصاحب المعدة بقيمة إضافية '+money(amount)+' ريال.');return;}
+    const card=b.closest('.athar-owner-request-card');if(card){const id=card.dataset.requestId;const r=await getRequest(id);
+      if(b.hasAttribute('data-athar-owner-accept')){await ownerUpdate(r,{status:'accepted',stage:'accepted',stageLabel:stageNames.accepted,operatorId:(await dbReady()).uid,acceptedAt:new Date(),operatorName:(await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',(await dbReady()).uid))).data()?.name||'صاحب المعدة'});alert('تم قبول الطلب. ينتظر تأكيد الحجز بالكاش من العميل.');return;}
+      if(b.hasAttribute('data-athar-owner-reject')){await ownerUpdate(r,{status:'rejected',stage:'rejected',stageLabel:stageNames.rejected,rejectedAt:new Date()});return;}
+      if(b.hasAttribute('data-athar-owner-arrived')){const destination=Number.isFinite(Number(r.customerLiveLatitude))?{lat:Number(r.customerLiveLatitude),lng:Number(r.customerLiveLongitude)}:coords(r,'customerLocation');if(!destination)throw new Error('موقع العميل غير محدد بدقة؛ لا يمكن التحقق من الوصول.');const here=await currentGeoPosition();const distance=distanceKm(here,destination);if(distance>1)throw new Error('أنت خارج نطاق الوصول المسموح. المسافة الحالية نحو '+distance.toFixed(2)+' كم؛ يجب أن تكون داخل كيلومتر واحد.');await ownerUpdate(r,{stage:'arrived',stageLabel:stageNames.arrived,arrivedAt:new Date(),arrivalConfirmedBy:(await dbReady()).uid,arrivalLatitude:here.lat,arrivalLongitude:here.lng,arrivalDistanceKm:Number(distance.toFixed(3))});alert('تم تأكيد الوصول؛ أنت ضمن نطاق كيلومتر واحد من موقع العميل.');return;}
+      if(b.hasAttribute('data-athar-owner-verify')){const code=card.querySelector('[data-athar-otp-input]')?.value.trim();if(!/^\d{6}$/.test(code||''))throw new Error('أدخل رمزًا مكوّنًا من 6 أرقام.');if(!r.otpHash||!r.otpSalt)throw new Error('لم ينشئ العميل رمز OTP بعد.');const digest=await hashOtp(code,r.otpSalt);if(digest!==r.otpHash)throw new Error('رمز OTP غير صحيح.');await ownerUpdate(r,{stage:'otp_verified',stageLabel:stageNames.otp_verified,otpVerified:true,otpVerifiedAt:new Date(),otpVerifiedBy:(await dbReady()).uid,otpHash:null,otpSalt:null});return;}
+      if(b.hasAttribute('data-athar-owner-start')){await ownerUpdate(r,{status:'working',stage:'working',stageLabel:stageNames.working,workStartedAt:new Date(),workStartedBy:(await dbReady()).uid});return;}
+      if(b.hasAttribute('data-athar-owner-finish')){const hours=Number(card.querySelector('[data-athar-actual-hours]')?.value);if(!Number.isFinite(hours)||hours<=0)throw new Error('أدخل مدة العمل الفعلية.');const amount=Math.round(hours*Number(r.hourlyPrice||0)*100)/100;const invoiceNumber='ATH-'+new Date().getFullYear().toString().slice(-2)+String(Date.now()).slice(-8);const invoiceRef=window.ma3daDoc(window.ma3daDB,'projectInvoices','ATHC_'+r.id.replace(/[^a-zA-Z0-9_-]/g,'_'));await window.ma3daSetDoc(invoiceRef,{invoiceKind:'customer_booking',invoiceNumber,requestId:r.id,customerId:r.customerId,customerName:r.customerName,equipmentOwnerId:ownerIdOf(r),ownerId:ownerIdOf(r),equipment:r.equipment,equipmentId:r.equipmentId,invoiceAmount:amount,paidAmount:0,remainingAmount:amount,currency:'SAR',paymentMethod:'cash_test',paymentStatus:'awaiting_customer_review',settlementStatus:'pending_customer_review',status:'issued',description:'فاتورة طلب معدة — '+r.equipment,createdAt:new Date(),updatedAt:new Date()},{merge:true});await ownerUpdate(r,{sharedInvoiceId:invoiceRef.id,status:'completed',stage:'work_finished',stageLabel:stageNames.work_finished,workCompletedAt:new Date(),actualDurationHours:hours,finalAmount:amount,invoiceId:invoiceRef.id,invoiceNumber,settlementStatus:'pending_customer_review'});alert('تم إنهاء العمل وإصدار الفاتورة.');return;}
+      if(b.hasAttribute('data-athar-owner-chat')){await openChat(r);return;}
+      if(b.hasAttribute('data-athar-owner-call')){const phone=r.customerPhone;if(!phone)throw new Error('رقم العميل غير متوفر.');location.href='tel:'+phone;return;}
+      if(b.hasAttribute('data-athar-owner-map')){const c=Number.isFinite(Number(r.customerLiveLatitude))?{lat:Number(r.customerLiveLatitude),lng:Number(r.customerLiveLongitude)}:coords(r,'customerLocation');if(!c)throw new Error('موقع العميل غير مسجل.');window.open(mapLink(c.lat,c.lng),'_blank','noopener');return;}
+      if(b.hasAttribute('data-athar-owner-start-tracking')){if(!navigator.geolocation)throw new Error('تحديد الموقع غير مدعوم.');if(ownerWatchId!==null)navigator.geolocation.clearWatch(ownerWatchId);ownerWatchRequestId=r.id;lastOwnerLocation=null;lastOwnerLocationAt=0;ownerWatchId=navigator.geolocation.watchPosition(async p=>{const lat=p.coords.latitude,lng=p.coords.longitude,now=Date.now();const moved=!lastOwnerLocation||Math.abs(lat-lastOwnerLocation.lat)+Math.abs(lng-lastOwnerLocation.lng)>0.00025;if(moved||now-lastOwnerLocationAt>30000){try{await setRequest(r.id,{ownerLiveLatitude:lat,ownerLiveLongitude:lng,ownerLiveLocationUpdatedAt:new Date(),ownerTrackingActive:true});lastOwnerLocation={lat,lng};lastOwnerLocationAt=now;}catch(e){console.warn('تعذر تحديث التتبع المباشر:',e);}}},e=>alert('تعذر تشغيل التتبع: '+(e.message||'تحقق من إذن الموقع.')),{enableHighAccuracy:true,maximumAge:5000,timeout:15000});await renderOwnerCustomerOrders();alert('بدأ التتبع المباشر للمعدة. سيُحدّث موقعها عند تحركها أو مرور 30 ثانية.');return;}
+      if(b.hasAttribute('data-athar-owner-stop-tracking')){if(ownerWatchId!==null)navigator.geolocation.clearWatch(ownerWatchId);ownerWatchId=null;ownerWatchRequestId=null;await setRequest(r.id,{ownerTrackingActive:false,ownerTrackingStoppedAt:new Date()});await renderOwnerCustomerOrders();alert('تم إيقاف التتبع المباشر.');return;}
+      if(b.hasAttribute('data-athar-owner-share-location')){if(!navigator.geolocation)throw new Error('تحديد الموقع غير مدعوم.');navigator.geolocation.getCurrentPosition(async p=>{try{await ownerUpdate(r,{ownerLiveLatitude:p.coords.latitude,ownerLiveLongitude:p.coords.longitude,ownerLiveLocationUpdatedAt:new Date()});alert('تم تحديث موقع المعدة للطرف الآخر.');}catch(e){alert(e.message||'تعذر تحديث الموقع.');}},()=>alert('تعذر تحديد موقع المعدة.'),{enableHighAccuracy:true,timeout:10000});return;}
+      if(b.hasAttribute('data-athar-owner-extension-approve')){const ext=r.extensionRequest||{};const amount=Number(ext.proposedAmount||0);await ownerUpdate(r,{stage:'working',stageLabel:stageNames.working,status:'working',extensionStatus:'approved',duration:Number(r.duration||0)+Number(ext.extraHours||0),price:Math.round((Number(r.price||0)+amount)*100)/100,agreedPrice:Math.round((Number(r.agreedPrice||r.price||0)+amount)*100)/100,extensionHistory:[...(r.extensionHistory||[]),{...ext,approvedAt:new Date(),approvedBy:(await dbReady()).uid,approvedAmount:amount}],extensionRequest:null});alert('تمت الموافقة على التمديد وتحديث المدة والمبلغ.');return;}
+      if(b.hasAttribute('data-athar-owner-extension-reject')){await ownerUpdate(r,{stage:'working',stageLabel:stageNames.working,status:'working',extensionStatus:'rejected',extensionDecisionAt:new Date(),extensionRequest:null});return;}
     }
-  }, true);
-  const styles=`<style id="atharNewRentalStyle">
-  #atharAvailableScreen{position:relative;min-height:calc(100vh - 24px);padding:0!important;overflow:hidden;background:#f7f5ef}
-  #atharAvailableScreen .athar-uber-top{position:absolute;z-index:1002;top:12px;right:12px;left:12px;display:flex;align-items:center;gap:10px;pointer-events:none}
-  #atharAvailableScreen .athar-uber-top>*{pointer-events:auto}
-  #atharAvailableScreen .athar-uber-top .back-btn{width:44px;height:44px;padding:0;border-radius:50%;background:#fff;color:#171717;border:0;box-shadow:0 2px 12px #0002;font-size:20px}
-  #atharAvailableScreen .athar-map-shell{position:relative;height:calc(100vh - 24px);min-height:560px;background:#e9e6dc}
-  #atharAvailableMap{position:absolute;inset:0;width:100%;height:100%;z-index:1}
-  #atharAvailableScreen .athar-map-status{position:absolute;z-index:500;top:68px;right:14px;left:14px;width:max-content;max-width:calc(100% - 28px);padding:8px 12px;border-radius:20px;background:#fff;color:#252525;box-shadow:0 2px 12px #0002;font-size:12px;font-weight:800}
-  #atharAvailableScreen .athar-bottom-sheet{position:absolute;z-index:600;right:0;bottom:0;left:0;max-height:53%;min-height:178px;display:flex;flex-direction:column;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -5px 24px #0002;transition:max-height .22s ease;overflow:hidden}
-  #atharAvailableScreen .athar-bottom-sheet.is-collapsed{max-height:112px;min-height:112px}
-  #atharAvailableScreen .athar-sheet-head{flex:none;padding:9px 16px 12px;border-bottom:1px solid #eee;cursor:pointer;touch-action:pan-y}
-  #atharAvailableScreen .athar-sheet-handle{width:42px;height:5px;border-radius:8px;background:#c9c9c9;margin:0 auto 10px}
-  #atharAvailableScreen .athar-sheet-title{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#171717;font-weight:900}
-  #atharAvailableScreen .athar-sheet-title small{font-size:12px;font-weight:600;color:#777}
-  #atharAvailableScreen .athar-sheet-content{overflow:auto;padding:4px 12px 18px;overscroll-behavior:contain}
-  #atharAvailableScreen .athar-bottom-sheet.is-collapsed .athar-sheet-content{display:none}
-  #atharAvailableScreen .card,#atharBookingScreen .card{background:#fff;border:1px solid #e5dfd2;border-radius:16px;padding:14px;margin:10px 0;color:#171717}
-  #atharAvailableScreen button,#atharBookingScreen button{background:#fff;color:#171717;border:1px solid #c8a45b;border-radius:12px;padding:12px;font:inherit;font-weight:700}
-  #atharAvailableScreen .athar-uber-top button{border:0}
-  .athar-equip-choice{display:grid;grid-template-columns:68px 1fr;gap:10px;align-items:center;border:1px solid #e8e3d8;border-radius:15px;padding:11px;margin:9px 0;background:#fff;scroll-margin:12px}
-  .athar-equip-choice.is-active{border:2px solid #c8a45b;background:#fffdf7}
-  .athar-equip-choice img{width:68px;height:68px;object-fit:cover;border-radius:11px}
-  .athar-equip-choice .pick{grid-column:1/-1;width:100%;background:#171717!important;color:#fff!important;border-color:#171717!important}
-  .athar-equip-choice .athar-distance{font-size:12px;color:#8a682b;font-weight:800}
-  .athar-map-pin{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:2px solid #fff;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);background:#171717;color:#fff;box-shadow:0 2px 8px #0005;font-size:18px}
-  .athar-map-pin span{transform:rotate(45deg)}
-  .athar-map-pin.customer{background:#c8a45b;color:#171717;width:42px;height:42px}
-  .athar-new-flow-badge{border:1px solid #c8a45b;border-radius:999px;padding:6px 10px;display:inline-block;font-weight:700}
-  @media(max-width:600px){#atharAvailableScreen .athar-map-shell{height:calc(100dvh - 24px);min-height:520px}#atharAvailableScreen .athar-bottom-sheet{max-height:55%}}
-  </style>`;
-  if(!$('atharNewRentalStyle'))document.head.insertAdjacentHTML('beforeend',styles);
-  function mountScreens(){
-    const contractorHome=$('contractorHomeScreen');
-    if(contractorHome&&!$('atharContractorDirectRentalBtn')){
-      const card=document.createElement('div');card.className='card';card.innerHTML='<h3>تأجير المعدات عبر آثار</h3><p>استخدم رحلة طلب المعدة نفسها المتاحة للعملاء، مع بقاء بيانات حسابك كمقاول.</p><button type="button" id="atharContractorDirectRentalBtn" class="main-btn">طلب معدة لمشروعي</button><button type="button" id="atharContractorRentalOrdersBtn" class="back-btn">طلباتي من المعدات</button>';
-      contractorHome.appendChild(card);
-      $('atharContractorDirectRentalBtn')?.addEventListener('click',()=>{selectedRole='contractor';localStorage.setItem('selectedRole','contractor');showScreen('requestScreen');});
-      $('atharContractorRentalOrdersBtn')?.addEventListener('click',async()=>{selectedRole='contractor';localStorage.setItem('selectedRole','contractor');showScreen('currentOrdersScreen');await window.loadCustomerOrders?.('current');});
-    }
-    if(!$('atharAvailableScreen')){
-      const s=document.createElement('section');s.id='atharAvailableScreen';s.className='screen';
-      s.innerHTML=`<div class="athar-map-shell"><div id="atharAvailableMap" aria-label="خريطة المعدات المتاحة"></div><div class="athar-uber-top"><button type="button" class="back-btn" data-athar-back-request aria-label="رجوع">←</button></div><div class="athar-map-status" id="atharMapStatus">جارٍ البحث عن المعدات القريبة…</div><div class="athar-bottom-sheet" id="atharEquipmentSheet"><div class="athar-sheet-head" id="atharEquipmentSheetHead"><div class="athar-sheet-handle"></div><div class="athar-sheet-title"><span>المعدات القريبة منك</span><small id="atharEquipmentCount">جارٍ البحث…</small></div></div><div class="athar-sheet-content" id="atharAvailableEquipmentList"><div class="card center">جاري البحث عن المعدات...</div></div></div></div>`;
-      $('requestScreen')?.insertAdjacentElement('afterend',s);
-    }
-    if(!$('atharBookingScreen')){
-      const s=document.createElement('section');s.id='atharBookingScreen';s.className='screen';
-      s.innerHTML=`<div class="card"><h2>تأكيد الحجز وطريقة الدفع</h2><p id="atharBookingDetails"></p><p><strong>الدفع النقدي متاح مؤقتًا للاختبار:</strong> هذا تسجيل تجريبي لتأكيد الحجز ومتابعة جميع مراحل الطلب، ولا يعني تحصيل مبلغ نقدي أو إلكتروني فعلي.</p><label for="atharPaymentMethod">طريقة الدفع</label><select id="atharPaymentMethod" required><option value="cash_test">كاش — دفع نقدي مؤقت للاختبار</option><option value="online" disabled>الدفع الإلكتروني — سيُتاح لاحقًا</option></select><button type="button" id="atharConfirmBooking" class="main-btn">تأكيد الحجز بالكاش (اختبار)</button><p id="atharBookingFeedback" role="status"></p></div>`;
-      $('matchedScreen')?.insertAdjacentElement('beforebegin',s);
-    }
-    // Show a customer-only OTP panel after reservation confirmation.
-    if(!$('atharCustomerOtpPanel')){
-      const p=document.createElement('div');p.id='atharCustomerOtpPanel';p.className='card';p.hidden=true;
-      p.innerHTML=`<h3>رمز التحقق لبدء العمل</h3><p>لا تشارك الرمز إلا مع صاحب المعدة عند وصوله للموقع.</p><strong id="atharCustomerOtp" style="font-size:2rem;letter-spacing:.2em"></strong><p id="atharCustomerOtpState"></p>`;
-      $('matchedScreen')?.querySelector('.card')?.appendChild(p);
-    }
-    // Owner input: hidden until the owner has arrived.
-    if(!$('atharOwnerExtensionPanel')){
-      const p=document.createElement('div');p.id='atharOwnerExtensionPanel';p.className='card';p.hidden=true;
-      p.innerHTML='<h3>طلب تمديد مدة التأجير</h3><p>أرسل عدد الساعات الإضافية للعميل. لا يبدأ التمديد إلا بعد موافقته وتأكيد الدفع التجريبي.</p><label for="atharExtensionHours">الساعات الإضافية</label><input id="atharExtensionHours" type="number" min="1" max="240" step="1" value="1"><button type="button" id="atharRequestExtensionBtn" class="main-btn">إرسال طلب التمديد</button><p id="atharExtensionOwnerFeedback" role="status"></p><div id="atharExtensionOwnerState"></div>';
-      $('operatorCurrentOrderScreen')?.querySelector('.card')?.appendChild(p);
-    }
-    if(!$('atharCustomerExtensionPanel')){
-      const p=document.createElement('div');p.id='atharCustomerExtensionPanel';p.className='card';p.hidden=true;
-      p.innerHTML='<h3>طلب تمديد من صاحب المعدة</h3><p id="atharCustomerExtensionDetails"></p><label for="atharExtensionPaymentMethod">طريقة دفع التمديد</label><select id="atharExtensionPaymentMethod" required><option value="cash_test">كاش — دفع نقدي مؤقت للاختبار</option><option value="online" disabled>الدفع الإلكتروني — سيُتاح لاحقًا</option></select><p>بموافقتك سيتم تسجيل الدفع النقدي كتأكيد تجريبي حتى نختبر استمرار العمل والتسوية.</p><button type="button" id="atharApproveExtensionBtn" class="main-btn">موافقة وتأكيد الكاش (اختبار)</button><button type="button" id="atharRejectExtensionBtn" class="back-btn">رفض التمديد</button><p id="atharExtensionCustomerFeedback" role="status"></p>';
-      $('workingScreen')?.querySelector('.card')?.appendChild(p);
-    }
-    if(!$('atharCustomerFinalReviewPanel')){
-      const p=document.createElement('div');p.id='atharCustomerFinalReviewPanel';p.className='card';p.hidden=true;
-      p.innerHTML='<h3>مراجعة نهاية العمل والتسوية</h3><p id="atharCustomerFinalSummary"></p><button type="button" id="atharConfirmFinalSettlementBtn" class="main-btn">تأكيد التسوية النهائية (اختبار نقدي)</button><button type="button" id="atharOpenRentalDisputeBtn" class="back-btn">اعتراض على الوقت أو المبلغ</button><p id="atharFinalReviewFeedback" role="status"></p>';
-      $('completedScreen')?.querySelector('.card')?.appendChild(p);
-    }
-    if(!$('supportSectionRentalDisputes')){
-      const nav=document.querySelector('#supportDashboardScreen .support-nav');
-      if(nav){const b=document.createElement('button');b.type='button';b.className='support-btn';b.dataset.supportSection='rentalDisputes';b.textContent='نزاعات طلبات التأجير';nav.appendChild(b);}
-      const section=document.createElement('div');section.id='supportSectionRentalDisputes';section.className='support-section support-panel';
-      section.innerHTML='<h2>نزاعات طلبات التأجير</h2><p>مراجعة الاعتراضات وسجل الوقت والتمديد. القرار هنا توثيقي ولا ينفذ استردادًا أو تحويلًا ماليًا.</p><button type="button" id="atharRefreshRentalDisputesBtn" class="support-btn">تحديث النزاعات</button><div id="atharRentalDisputesList" class="support-list">اضغط تحديث لعرض النزاعات.</div>';
-      document.querySelector('#supportDashboardScreen .support-wrap')?.appendChild(section);
-    }
-    if(!$('atharOwnerOtpPanel')){
-      const p=document.createElement('div');p.id='atharOwnerOtpPanel';p.className='card';p.hidden=true;
-      p.innerHTML=`<h3>تحقق رمز العميل</h3><label for="atharOwnerOtpInput">أدخل الرمز الذي استلمه العميل</label><input id="atharOwnerOtpInput" inputmode="numeric" maxlength="6" autocomplete="one-time-code"><button type="button" id="atharVerifyOtpBtn" class="main-btn">تحقق واسمح ببدء العمل</button><p id="atharOwnerOtpFeedback" role="status"></p>`;
-      $('operatorCurrentOrderScreen')?.querySelector('.card')?.appendChild(p);
-    }
-  }
-  if(!$('atharOwnerContactPanel')){const p=document.createElement('div');p.id='atharOwnerContactPanel';p.className='card';p.hidden=true;p.innerHTML='<h3>مشاركة بيانات التواصل</h3><p>بعد تأكيد الحجز، شارك رقمك مع العميل ليظهر لديه الاتصال المباشر.</p><button type="button" id="atharShareOwnerContactBtn" class="main-btn">إظهار بيانات التواصل للعميل</button><p id="atharOwnerContactFeedback"></p>'; $('operatorCurrentOrderScreen')?.querySelector('.card')?.appendChild(p);}
-  try{mountScreens();}catch(mountError){console.error('تعذر تركيب بعض شاشات رحلة التأجير، وسيستمر تشغيل بقية وظائف الطلبات:',mountError);}
-  function ensureAvailableMapLibrary(){
-    if(window.L)return Promise.resolve(window.L);
-    if(availableMapLoadPromise)return availableMapLoadPromise;
-    availableMapLoadPromise=new Promise((resolve,reject)=>{
-      const existing=document.querySelector('script[data-athar-leaflet]');
-      if(existing){existing.addEventListener('load',()=>window.L?resolve(window.L):reject(new Error('تعذر تشغيل مكتبة الخريطة.')),{once:true});existing.addEventListener('error',()=>reject(new Error('تعذر تحميل مكتبة الخريطة.')),{once:true});return;}
-      const tag=document.createElement('script');tag.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';tag.dataset.atharLeaflet='1';tag.onload=()=>window.L?resolve(window.L):reject(new Error('تعذر تشغيل مكتبة الخريطة.'));tag.onerror=()=>reject(new Error('تعذر تحميل مكتبة الخريطة.'));document.head.appendChild(tag);
-    });
-    return availableMapLoadPromise;
-  }
-  async function renderAvailableMap(){
-    const mapEl=$('atharAvailableMap'),status=$('atharMapStatus');if(!mapEl||!draft)return;
-    try{
-      const L=await ensureAvailableMapLibrary();
-      if(!availableMap){availableMap=L.map(mapEl,{zoomControl:false,preferCanvas:true}).setView([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(availableMap);L.control.zoom({position:'bottomright'}).addTo(availableMap);}
-      else{availableMap.setView([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],12);availableMarkers.forEach(m=>availableMap.removeLayer(m));availableMarkers=[];if(availableCustomerMarker)availableMap.removeLayer(availableCustomerMarker);availableCustomerMarker=null;}
-      const customerIcon=L.divIcon({className:'',html:'<div class="athar-map-pin customer"><span>📍</span></div>',iconSize:[42,42],iconAnchor:[21,38]});
-      availableCustomerMarker=L.marker([draft.locationCoordinates.latitude,draft.locationCoordinates.longitude],{icon:customerIcon,zIndexOffset:1000}).addTo(availableMap).bindPopup('موقع العمل المحدد');
-      const bounds=[[draft.locationCoordinates.latitude,draft.locationCoordinates.longitude]];
-      available.forEach((e,index)=>{if(!e.mapPoint)return;const pin=L.divIcon({className:'',html:'<div class="athar-map-pin"><span>🚜</span></div>',iconSize:[38,38],iconAnchor:[19,35]});const marker=L.marker([e.mapPoint.lat,e.mapPoint.lng],{icon:pin}).addTo(availableMap);marker.bindPopup(`<strong>${esc(e.type||e.equipmentType||draft.type)}</strong><br>${esc(e.model||'')}${e.distanceKm!=null?`<br>${e.distanceKm.toFixed(1)} كم`:''}`);marker.on('click',()=>{document.querySelectorAll('.athar-equip-choice').forEach(c=>c.classList.remove('is-active'));const card=$(`[data-athar-card="${index}"]`);if(card){card.classList.add('is-active');card.scrollIntoView({behavior:'smooth',block:'nearest'});}const sheet=$('atharEquipmentSheet');sheet?.classList.remove('is-collapsed');});availableMarkers.push(marker);bounds.push([e.mapPoint.lat,e.mapPoint.lng]);});
-      if(bounds.length>1)availableMap.fitBounds(bounds,{padding:[35,35],maxZoom:13});
-      if(status)status.textContent=`${available.length} معدة مطابقة لطلبك`;
-      requestAnimationFrame(()=>availableMap?.invalidateSize());
-    }catch(error){console.warn('ATHAR map unavailable:',error);if(status)status.textContent='تعذر تحميل الخريطة؛ يمكنك اختيار المعدة من القائمة';}
-  }
-  function bindEquipmentSheet(){const head=$('atharEquipmentSheetHead'),sheet=$('atharEquipmentSheet');if(!head||head.dataset.bound)return;head.dataset.bound='1';let startY=0,suppressClickUntil=0;head.addEventListener('click',()=>{if(Date.now()<suppressClickUntil)return;sheet.classList.toggle('is-collapsed');});head.addEventListener('touchstart',e=>{startY=e.touches?.[0]?.clientY||0;},{passive:true});head.addEventListener('touchend',e=>{const endY=e.changedTouches?.[0]?.clientY||startY,delta=endY-startY;if(Math.abs(delta)>25){suppressClickUntil=Date.now()+450;if(delta>0)sheet.classList.add('is-collapsed');else sheet.classList.remove('is-collapsed');}},{passive:true});}
-  window.loadCustomerOrders=async function(type){const list=$(type==='current'?'currentOrdersList':'previousOrdersList');if(!list)return;list.innerHTML='<p>جاري تحميل الطلبات...</p>';try{const user=await Promise.race([readUser(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة التحقق من تسجيل الدخول. أعد تحميل الصفحة ثم حاول مرة أخرى.')),15000))]);if(!user?.uid)throw new Error('سجّل الدخول أولًا.');const rows=await Promise.race([ma3daReadUserRows('requests',['customerId','requesterId'],user.uid),new Promise((_,reject)=>setTimeout(()=>reject(new Error('انتهت مهلة تحميل الطلبات بعد 15 ثانية. تحقق من اتصال Firebase وقواعد قراءة الطلبات.' )),15000))]);const current=['owner_decision_pending','owner_accepted','booking_confirmed','owner_arrived','otp_verified','working','completed_pending_customer','disputed'];const previous=['completed','rated','rejected','cancelled'];const orders=rows.filter(d=>(d.customerId||d.requesterId)===user.uid&&(type==='current'?current.includes(String(d.status||'')):previous.includes(String(d.status||'')))).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));if(!orders.length){list.innerHTML=`<div class="empty-state"><h3>${type==='current'?'لا توجد طلبات حالية':'لا توجد طلبات سابقة'}</h3><p>${type==='current'?'عند تقديم طلب جديد ستظهر تفاصيله هنا.':'ستظهر الطلبات المنتهية أو المرفوضة هنا.'}</p></div>`;return;}list.innerHTML='';orders.forEach(d=>{const card=document.createElement('article');card.className='customer-order-card';card.innerHTML=`<div class="customer-order-header"><strong>🚜 ${esc(d.equipment||'معدة')}</strong><span class="customer-order-status">${esc(window.ma3daNewRentalStatusText(d.status))}</span></div><div class="customer-order-info"><div>رقم الطلب: <strong>${esc(d.orderNumber||d.id)}</strong></div><div>الموقع: ${esc(d.location||'—')}</div><div>المدة: ${esc(d.duration||'—')}</div><div>المبلغ المحجوز/التقديري: ${money(d.reservedAmount||d.price)}</div><div>تاريخ: ${esc(new Date(Number(d.createdAt||Date.now())).toLocaleDateString('ar-SA'))}</div></div><button type="button" class="main-btn" data-customer-open-order="${esc(d.id)}">فتح الطلب ومتابعته</button>`;list.appendChild(card);});}catch(error){console.error('new customer order list error',error);list.innerHTML='<div class="empty-state">تعذر تحميل الطلبات؛ تحقق من الاتصال.</div>';}};
-  // تم نقل ربط زر الطلب إلى بداية مسار التأجير باستخدام تفويض أحداث موحد.
-  async function loadAvailable(){
-    try{
-      if(window.ma3daFirebaseReady)await window.ma3daFirebaseReady;
-      const equipmentQuery=window.ma3daQuery(equipmentCollection(),window.ma3daWhere('availability','==','available'));const snap=await Promise.race([window.ma3daGetDocs(equipmentQuery),new Promise((_,reject)=>setTimeout(()=>reject(new Error('تأخر تحميل المعدات من قاعدة البيانات. تحقق من الاتصال وصلاحيات قراءة المعدات.' )),12000))]);available=[];
-      const user=await readUser();
-      const profileCollection=(selectedRole==='contractor'||localStorage.getItem('selectedRole')==='contractor')?'contractors':'customers';const customerProfile= user?.uid && window.ma3daDoc&&window.ma3daGetDoc ? await (async()=>{try{const s=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,profileCollection,user.uid));return s.exists()?s.data()||{}:{};}catch(_){return {};}})():{};
-      const city=String(customerProfile.city||customerProfile.locationCity||'').trim();
-      const customerPoint=draft.locationCoordinates;
-      const coordOf=e=>{const lat=Number(e.latitude??e.locationLatitude??e.locationCoordinates?.latitude??e.equipmentLocationLatitude??e.equipmentLatitude??e.coordinates?.latitude),lng=Number(e.longitude??e.locationLongitude??e.locationCoordinates?.longitude??e.equipmentLocationLongitude??e.equipmentLongitude??e.coordinates?.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat,lng}:null;};
-      const distanceKm=(a,b)=>{const rad=v=>v*Math.PI/180,dl=rad(b.lat-a.lat),dn=rad(b.lng-a.lng),x=Math.sin(dl/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dn/2)**2;return 6371*2*Math.atan2(Math.sqrt(x),Math.sqrt(Math.max(0,1-x)));};
-      let locationFiltered=false;
-      snap.forEach(doc=>{const e=doc.data()||{};const owner=e.ownerId||doc.id;if(owner===user?.uid||e.availability!=='available')return;
-        const t=String(e.type||e.equipmentType||e.name||'');if(t!==draft.type)return;
-        if(e.approved!==true||!['verified','approved'].includes(String(e.verificationStatus||'').toLowerCase())||String(e.equipmentStatus||'active').toLowerCase()!=='active')return;const approval=String(e.registrationStatus||e.ownerApprovalStatus||e.accountStatus||'approved').toLowerCase();if(['pending','pending_approval','rejected','suspended'].includes(approval))return;
-        const eCity=String(e.city||e.locationCity||e.locationAddress||'').trim();const cityMatch=!!(city&&eCity&&(eCity.toLowerCase().includes(city.toLowerCase())||city.toLowerCase().includes(eCity.toLowerCase())));if(city&&eCity&&!cityMatch)return;
-        const ePoint=coordOf(e);if(customerPoint&&ePoint&&distanceKm(customerPoint,ePoint)>50)return;if(cityMatch||customerPoint&&ePoint)locationFiltered=true;
-        const distance=ePoint?distanceKm(customerPoint,ePoint):null;
-        available.push({id:doc.id,ownerId:owner,...e,mapPoint:ePoint,distanceKm:distance});
-      });
-      available.sort((a,b)=>(a.distanceKm??Infinity)-(b.distanceKm??Infinity));
-      const list=$('atharAvailableEquipmentList');if(!list)return;
-      bindEquipmentSheet();
-      const count=$('atharEquipmentCount');if(count)count.textContent=`${available.length} نتيجة`;
-      if(!available.length){list.innerHTML='<div class="card center"><h3>لا توجد معدات متاحة مطابقة</h3><p>جرّب نوعًا آخر أو عدّل الموقع/المدة.</p></div>';const status=$('atharMapStatus');if(status)status.textContent='لا توجد معدات مطابقة بالقرب منك';renderAvailableMap().catch(error=>console.warn('خريطة المعدات غير متاحة:',error));return;}
-      list.innerHTML='';if(!locationFiltered){const note=document.createElement('div');note.className='card';note.textContent='بعض المعدات لا تملك إحداثيات دقيقة؛ تظهر في القائمة دون علامة على الخريطة.';list.appendChild(note);}available.forEach((e,i)=>{const card=document.createElement('article');card.className='athar-equip-choice';card.dataset.atharCard=String(i);card.innerHTML=`${e.image?`<img src="${esc(e.image)}" alt="معدة">`:'<div style="font-size:2rem">🚜</div>'}<div><strong>${esc(e.type||e.equipmentType||draft.type)}</strong><div>${esc(e.model||'')}</div><small>${esc(e.city||e.locationAddress||'')}</small><div>سعر الساعة: ${money(e.hourlyPrice)}</div><div class="athar-distance">${e.distanceKm!=null?`يبعد ${e.distanceKm.toFixed(1)} كم`:'المسافة غير متاحة'}</div></div><button class="pick" type="button" data-athar-pick="${i}">اختيار هذه المعدة</button>`;list.appendChild(card);});
-      // لا ننتظر مكتبة الخريطة الخارجية حتى لا يبقى زر (اطلب الآن) معطلاً؛ تظهر القائمة أولاً.
-      renderAvailableMap().catch(error=>console.warn('خريطة المعدات غير متاحة:',error));
-    }catch(error){console.error('تعذر عرض المعدات المتاحة:',error);$('atharAvailableEquipmentList').innerHTML='<div class="card center"><h3>تعذر تحميل المعدات</h3><p>تحقق من الاتصال وصلاحيات Firebase ثم أعد المحاولة.</p></div>';}
-  }
-  async function nextOrderNumber(){
-    const year=String(new Date().getFullYear()).slice(-2);
-    // Counter lives in requests because the currently deployed policy gives signed-in users
-    // request read/write access, while ma3daSettings is restricted to the platform owner.
-    const counterRef=window.ma3daDoc(window.ma3daDB,'requests','_atharOrderCounter');
-    if(typeof window.ma3daRunTransaction!=='function')throw new Error('لا يمكن إصدار رقم الطلب التسلسلي دون معاملة Firebase آمنة.');
-    let sequence=0;
-    await window.ma3daRunTransaction(async tx=>{
-      const snap=await tx.get(counterRef),d=snap.exists()?snap.data()||{}:{};
-      sequence=Number(d.year)===Number(year)?Number(d.sequence||0)+1:1;
-      tx.set(counterRef,{systemRecord:true,recordType:'athar_order_counter',year:Number(year),sequence,updatedAt:Date.now()});
-    });
-    return `ATH${year}${String(sequence).padStart(5,'0')}`;
-  }
-  async function pickEquipment(index){
-    const e=available[index];if(!e||!draft)return;
-    const user=await readUser();if(!user?.uid)return;
-    const hourly=Number(e.hourlyPrice||0);const hours=({'ساعة واحدة':1,'4 ساعات':4,'8 ساعات':8,'يوم كامل':10})[draft.duration]||4;
-    const reserve=Math.round(hourly*hours*100)/100;
-    if(!reserve){alert('المعدة ليس لديها سعر ساعة صحيح.');return;}
-    const btn=$(`[data-athar-pick="${index}"]`);if(btn)btn.disabled=true;
-    try{
-      const orderNumber=await nextOrderNumber();
-      const profileCollection=(selectedRole==='contractor'||localStorage.getItem('selectedRole')==='contractor')?'contractors':'customers';const customerSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,profileCollection,user.uid));const customer=customerSnap.exists()?customerSnap.data()||{}:{};
-      const customerCity=String(customer.city||customer.locationCity||'').trim();const data={orderNumber,location:customerCity||'ضمن المنطقة المحددة',locationArea:customerCity||'منطقة العميل',locationCoordinates:null,equipment:draft.type,equipmentId:e.id,equipmentOwnerId:e.ownerId,ownerId:e.ownerId,operatorId:e.ownerId,operatorName:e.ownerName||e.ownerDisplayName||'صاحب المعدة',operatorPhone:'',operatorEquipment:e.type||draft.type,equipmentModel:e.model||'',equipmentCity:e.city||'',hourlyPrice:hourly,duration:draft.duration,durationHours:hours,operator:draft.operator,notes:draft.notes,price:reserve,reservedAmount:reserve,customerId:user.uid,requesterId:user.uid,requesterRole:(selectedRole==='contractor'||localStorage.getItem('selectedRole')==='contractor')?'contractor':'customer',customerName:customer.name||customer.fullName||user.displayName||'',status:'owner_decision_pending',stage:'owner_approval',bookingStatus:'not_started',paymentStatus:'not_reserved',paymentMethod:'',createdAt:Date.now(),updatedAt:Date.now(),schemaVersion:6,flowVersion:'ATHAR-RENTAL-2026-NEW'};
-      const ref=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'requests'),data);
-      if(!ref?.id)throw new Error('لم يرجع Firebase رقم الطلب.');
-      try{await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'requests',ref.id,'customerPrivate','location'),{customerId:user.uid,location:draft.location,locationCoordinates:draft.locationCoordinates||null,createdAt:Date.now()});}catch(privateLocationError){console.warn('Private customer location could not be saved:',privateLocationError);}
-      localStorage.setItem('currentRequestId',ref.id);localStorage.setItem('currentOrder',JSON.stringify({location:draft.location,locationCoordinates:draft.locationCoordinates,equipment:draft.type,duration:draft.duration,operator:draft.operator,notes:draft.notes,price:reserve}));localStorage.setItem('orderState','owner_decision_pending');
-      showScreen('searchingScreen');const h=$('searchingScreen')?.querySelector('h2');if(h)h.textContent='تم إرسال طلبك للمعدة المختارة';const p=$('searchingScreen')?.querySelector('p');if(p)p.textContent=`رقم الطلب ${orderNumber} — بانتظار موافقة صاحب المعدة`;
-      startAcceptanceWatcher();
-    }catch(error){console.error('تعذر إنشاء طلب اختيار المعدة:',error);alert(error.message||'تعذر إرسال الطلب إلى صاحب المعدة.');if(btn)btn.disabled=false;}
-  }
-  document.addEventListener('click',event=>{const pick=event.target.closest('[data-athar-pick]');if(pick){pickEquipment(Number(pick.dataset.atharPick));return;}if(event.target.closest('[data-athar-back-request]'))showScreen('requestScreen');});
-  // New owner request list filter (customers only; project request logic is untouched).
-  window.loadOperatorNewRequests=async function(){
-    const c=$('operatorNewRequestsList'),p=$('operatorProjectRequestsList'),refresh=$('refreshOperatorRequestsBtn'),label=$('operatorRequestsLastUpdated');if(refresh)refresh.disabled=true;
-    try{const user=await getOperatorCurrentUser();if(!user?.uid){if(c)c.innerHTML='<div class="card">سجّل الدخول لعرض الطلبات.</div>';return;}const rows=await ma3daReadUserRows('requests',['equipmentOwnerId','ownerId','operatorId'],user.uid);const customers=[],projects=[];rows.forEach(d=>{const targeted=d.equipmentOwnerId||d.ownerId||d.operatorId;if(targeted!==user.uid)return;if(d.status==='owner_decision_pending')customers.push(d);else if(d.projectId&&(d.status==='searching'||d.status==='extension_requested'))projects.push(d);});customers.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));projects.sort((a,b)=>operatorRequestDateValue(b.createdAt)-operatorRequestDateValue(a.createdAt));renderOperatorRequestCards(c,customers,'customers');renderOperatorRequestCards(p,projects,'projects');if(label)label.textContent='آخر تحديث: '+new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
-    }catch(error){console.error('new owner request list error',error);if(c)c.innerHTML='<div class="card">تعذر تحميل طلبات العملاء الجديدة.</div>';}finally{if(refresh)refresh.disabled=false;}
-  };
-  window.acceptOperatorRequest=async function(requestId){try{const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');const ref=requestRef(requestId),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const data=snap.data()||{};if(data.projectId){if(typeof legacyAcceptOperatorRequest==='function')return await legacyAcceptOperatorRequest(requestId);throw new Error('تعذر استدعاء مسار طلب المشروع القديم.');}if(data.status!=='owner_decision_pending'||(data.equipmentOwnerId||data.ownerId||data.operatorId)!==user.uid)throw new Error('الطلب لم يعد متاحًا أو لا يخص معدتك.');await window.ma3daUpdateDoc(ref,{status:'owner_accepted',stage:'booking',ownerAcceptedAt:Date.now(),ownerAcceptedBy:user.uid,updatedAt:Date.now()});localStorage.setItem('currentRequestId',requestId);await loadOperatorCurrentOrder();showScreen('operatorCurrentOrderScreen');}catch(error){alert(error.message||'تعذر قبول الطلب.');await loadOperatorNewRequests();}};
-  window.rejectOperatorRequest=async function(requestId){try{const user=await getOperatorCurrentUser();const ref=requestRef(requestId),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.projectId){if(typeof legacyRejectOperatorRequest==='function')return await legacyRejectOperatorRequest(requestId);throw new Error('تعذر استدعاء مسار طلب المشروع القديم.');}if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==user?.uid||d.status!=='owner_decision_pending')throw new Error('لا يمكنك رفض هذا الطلب.');await window.ma3daUpdateDoc(ref,{status:'rejected',stage:'rejected',rejectedBy:user.uid,rejectedAt:Date.now(),updatedAt:Date.now()});await loadOperatorNewRequests();}catch(error){alert(error.message||'تعذر رفض الطلب.');}};
-  // Booking confirmation is explicitly a test-cash path until an escrow-capable provider is connected.
-  $('atharConfirmBooking')?.addEventListener('click',async()=>{const method=$('atharPaymentMethod')?.value;const feedback=$('atharBookingFeedback');const id=localStorage.getItem('currentRequestId');if(method!=='cash_test'){if(feedback)feedback.textContent='اختر الكاش المؤقت لإكمال تجربة الحجز.';return;}try{const ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.status!=='owner_accepted'||d.customerId!==(await readUser())?.uid)throw new Error('لم يوافق صاحب المعدة بعد أو الطلب لا يخص حسابك.');const otpBytes=new Uint32Array(1);crypto.getRandomValues(otpBytes);const code=String(100000+(otpBytes[0]%900000));const hash=await otpHash(code);const user=await readUser();const profileCollection=d.requesterRole==='contractor'?'contractors':'customers';const customerProfileSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,profileCollection,user.uid));const customerProfile=customerProfileSnap.exists()?customerProfileSnap.data()||{}:{};const savedOrder=JSON.parse(localStorage.getItem('currentOrder')||'{}');let privateLocation={};try{const privateSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'requests',id,'customerPrivate','location'));if(privateSnap.exists())privateLocation=privateSnap.data()||{};}catch(_privateReadError){}const preciseLocation=String(savedOrder.location||privateLocation.location||d.location||'');const coordinates=savedOrder.locationCoordinates||privateLocation.locationCoordinates||null;await window.ma3daUpdateDoc(ref,{status:'booking_confirmed',stage:'contact_and_otp',bookingStatus:'test_cash_confirmed',paymentStatus:'cash_test_confirmed',paymentMethod:'cash_test',bookingConfirmedAt:Date.now(),reservedAmount:Number(d.price||0),otpHash:hash,otpCodeCustomer:code,otpCreatedAt:Date.now(),location:preciseLocation,locationCoordinates:coordinates,customerPhone:String(customerProfile.phone||customerProfile.mobile||''),contactSharedAt:Date.now(),updatedAt:Date.now()});otpDraft=code;localStorage.setItem('orderState','booking_confirmed');showCustomerOrder({...d,status:'booking_confirmed',otpCodeCustomer:code,operatorPhone:d.operatorPhone||'',location:preciseLocation,locationCoordinates:coordinates});startAcceptanceWatcher();}catch(error){if(feedback)feedback.textContent=error.message||'تعذر تأكيد الحجز.';}});
-  async function otpHash(code){const bytes=new TextEncoder().encode(String(code));const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-  function showBooking(data){$('atharBookingDetails').textContent=`${data.orderNumber||''} · ${data.equipment||'معدة'} · ${data.duration||''} · مبلغ الحجز ${money(data.reservedAmount||data.price)}`;const method=$('atharPaymentMethod');if(method)method.value='cash_test';const feedback=$('atharBookingFeedback');if(feedback)feedback.textContent='';showScreen('atharBookingScreen');}
-  function showCustomerOrder(data){
-    if(data.status==='owner_accepted'){showBooking(data);return;}
-    if(data.status==='rejected'){stopAcceptanceWatcher();alert('اعتذر صاحب المعدة عن الطلب.');showScreen('roleScreen');return;}
-    if(['booking_confirmed','owner_arrived','otp_verified','working','completed_pending_customer','disputed','completed','rated'].includes(data.status)){
-      const otpPanel=$('atharCustomerOtpPanel');if(otpPanel){otpPanel.hidden=false;$('atharCustomerOtp').textContent=data.otpCodeCustomer||otpDraft||'------';$('atharCustomerOtpState').textContent=data.otpVerified?'تم التحقق من الرمز.':data.status==='owner_arrived'?'صاحب المعدة وصل؛ سلّمه الرمز عند الموقع.':'لا تشارك الرمز إلا مع صاحب المعدة عند الوصول.';}
-      let orderNumberEl=$('atharCustomerOrderNumber');if(!orderNumberEl){orderNumberEl=document.createElement('p');orderNumberEl.id='atharCustomerOrderNumber';orderNumberEl.className='athar-new-flow-badge';$('matchedScreen')?.querySelector('.card')?.prepend(orderNumberEl);}if(orderNumberEl)orderNumberEl.textContent=`رقم الطلب: ${data.orderNumber||data.id||''}`;
-      const call=$('callBtn');if(call)call.hidden=!String(data.operatorPhone||'').trim();
-      const name=$('matchedOperatorName');if(name)name.textContent=data.operatorName||'صاحب المعدة';
-      const type=$('matchedOperatorType');if(type)type.textContent=data.equipment||'المعدة';
-      const loc=$('matchedLocation');if(loc)loc.textContent=data.location||'موقع العمل';
-      const notes=$('matchedRequestNotes');if(notes)notes.textContent=data.notes||'لا توجد ملاحظات';
-      const screen={booking_confirmed:'matchedScreen',owner_arrived:'arrivedCustomerScreen',otp_verified:'arrivedCustomerScreen',working:'workingScreen',completed_pending_customer:'completedScreen',disputed:'completedScreen',completed:data.settlementStatus==='settled_test'?'ratingScreen':'completedScreen',rated:'thankYouScreen'}[data.status]||'matchedScreen';if(data.status==='completed'){const finalEl=$('finalPrice');if(finalEl)finalEl.textContent=money(data.finalAmount||data.finalPrice||0);}
-      if(['completed_pending_customer','disputed','completed'].includes(data.status)){const panel=$('atharCustomerFinalReviewPanel');if(panel){panel.hidden=data.status==='completed';$('atharCustomerFinalSummary').textContent=`الوقت الفعلي: ${Number(data.actualMinutes||0)} دقيقة · قيمة العمل: ${money(data.finalAmount||0)} · إجمالي الحجز والتمديد التجريبي: ${money(data.reservedAmount||0)} · ${Number(data.additionalAmountDue||0)>0?'المبلغ الإضافي: '+money(data.additionalAmountDue):'المبلغ الزائد المستحق للاسترداد تجريبيًا: '+money(data.refundAmount||0)} · حالة الاعتراض: ${data.disputeStatus||'لا يوجد'}`;const b=$('atharConfirmFinalSettlementBtn');if(b)b.disabled=data.status==='disputed';const d=$('atharOpenRentalDisputeBtn');if(d)d.disabled=data.status==='disputed';}}
-       const extPanel=$('atharCustomerExtensionPanel');if(extPanel){const x=data.extensionRequest||{};extPanel.hidden=!(data.status==='working'&&x.status==='pending_customer');const detail=$('atharCustomerExtensionDetails');if(detail)detail.textContent=`طلب صاحب المعدة تمديد ${Number(x.hours||0)} ساعة بمبلغ ${money(x.amount||0)}. لن يتم اعتماد التمديد قبل موافقتك وتأكيد الدفع التجريبي.`;}
+  }catch(e){console.error('ATHAR customer lifecycle action:',e);alert(e.message||'تعذر تنفيذ الإجراء. تحقق من اتصال Firebase والصلاحيات.');}});
 
-      if(screen==='arrivedCustomerScreen'){const e=$('arrivedCustomerEquipment');if(e)e.textContent=data.equipment||'المعدة';const l=$('arrivedCustomerLocation');if(l)l.textContent=data.location||'موقعك';}
-      if(screen==='workingScreen'){updateWorkingScreen();const start=Number(data.workStartedAt||Date.now());if(start!==customerTimerStart){customerTimerStart=start;workStartTime=start;clearInterval(timerInterval);timerInterval=setInterval(updateTimer,1000);updateTimer();}}else if(customerTimerStart){clearInterval(timerInterval);customerTimerStart=0;}
-      if(screen==='ratingScreen')showScreen('ratingScreen');else showScreen(screen);
-    }
-  }
-  function stopAcceptanceWatcher(){if(window.stopAcceptanceWatcher)window.stopAcceptanceWatcher();}
-  window.stopAcceptanceWatcher=function(){if(watcher){try{watcher();}catch(_e){}watcher=null;watcherRequestId='';}};
-  window.startAcceptanceWatcher=function(){const id=localStorage.getItem('currentRequestId');if(!id||!window.ma3daDB||!window.ma3daOnSnapshot)return;const currentUser=readUser();Promise.resolve(currentUser).then(user=>{if(!user?.uid){window.stopAcceptanceWatcher();return;}if(watcherRequestId===id&&watcher)return;window.stopAcceptanceWatcher();watcherRequestId=id;watcher=window.ma3daOnSnapshot(requestRef(id),snapshot=>{if(!snapshot.exists())return;const data=snapshot.data()||{};showCustomerOrder(data);if(['rated','rejected'].includes(data.status)||(data.status==='completed'&&data.customerSettlementConfirmed))window.stopAcceptanceWatcher();},error=>{console.warn('ATHAR customer order listener error',error);window.stopAcceptanceWatcher();});});};
-  // Current owner screen lifecycle and security guards.
-  const arrival=$('operatorArrivedBtn'),start=$('operatorStartWorkBtn'),finish=$('operatorEndWorkBtn');
-  for(const btn of [arrival,start,finish])if(btn){const clone=btn.cloneNode(true);btn.replaceWith(clone);}
-  function ownerScreenStatus(data){const status=$('operatorCurrentStatusText'),icon=$('operatorCurrentStatusIcon'),arr=$('operatorArrivedBtn'),st=$('operatorStartWorkBtn'),end=$('operatorEndWorkBtn'),timer=$('operatorWorkTimerBox'),otp=$('atharOwnerOtpPanel');
-    if(!data){if(status)status.textContent='لا يوجد طلب';if(arr)arr.hidden=true;if(st)st.hidden=true;if(end)end.hidden=true;if(timer)timer.hidden=true;if(otp)otp.hidden=true;const contactPanel=$('atharOwnerContactPanel');if(contactPanel)contactPanel.hidden=true;['operatorOpenCustomerMapBtn','operatorChatCustomerBtn','operatorCallCustomerBtn'].forEach(id=>{const b=$(id);if(b)b.hidden=true;});const gps=$('operatorCheckDistanceBtn');if(gps)gps.style.display='none';return;}
-    if(status)status.textContent=data.status==='completed_pending_customer'?'انتهى العمل — بانتظار مراجعة العميل':data.status==='disputed'?'الطلب متوقف — الاعتراض لدى الدعم':data.status==='completed'&&data.settlementStatus==='needs_settlement_test'?'انتهى العمل — بانتظار تأكيد التسوية التجريبية':({owner_accepted:'موافقة صاحب المعدة — بانتظار حجز العميل',booking_confirmed:'تم تأكيد الحجز التجريبي — توجه للموقع',owner_arrived:'وصلت للموقع — تحقق من رمز العميل',otp_verified:'تم التحقق من رمز العميل — جاهز لبدء العمل',working:'العمل جارٍ',completed:'انتهى العمل — التسوية التجريبية مكتملة',rated:'اكتمل الطلب والتقييم'})[data.status]||data.status;
-    if(icon)icon.textContent=data.status==='working'?'🔵':data.status==='completed'||data.status==='rated'?'✅':'🟡';
-    if(arr){arr.style.display=data.status==='booking_confirmed'?'block':'none';arr.disabled=true;}
-    if(st)st.style.display=data.status==='otp_verified'?'block':'none';
-    if(end)end.style.display=data.status==='working'?'block':'none';const ext=$('atharOwnerExtensionPanel');if(ext)ext.hidden=data.status!=='working';const extState=$('atharExtensionOwnerState');if(extState){const x=data.extensionRequest||{};extState.textContent=x.status==='pending_customer'?`طلب تمديد ${x.hours} ساعة بمبلغ ${money(x.amount)} — بانتظار العميل`:x.status==='approved_paid_test'?'وافق العميل وأكد الدفع التجريبي؛ يمكن مواصلة العمل.':x.status==='rejected'?'رفض العميل التمديد.':'';}
-    if(timer)timer.style.display=data.status==='working'?'block':'none';
-    if(otp)otp.hidden=data.status!=='owner_arrived';
-    const contactReady=['booking_confirmed','owner_arrived','otp_verified','working','completed','rated'].includes(data.status);const contactPanel=$('atharOwnerContactPanel');if(contactPanel)contactPanel.hidden=!['booking_confirmed','owner_arrived','otp_verified','working','completed','rated'].includes(data.status);const shareBtn=$('atharShareOwnerContactBtn');if(shareBtn)shareBtn.hidden=!!data.operatorPhone;
-
-    ['operatorOpenCustomerMapBtn','operatorChatCustomerBtn'].forEach(id=>{const b=$(id);if(b)b.hidden=!contactReady;});const ownerCall=$('operatorCallCustomerBtn');if(ownerCall)ownerCall.hidden=!(contactReady&&String(data.customerPhone||'').trim());
-    const locationRow=$('operatorCurrentLocation')?.closest('.info-row');if(locationRow)locationRow.hidden=!contactReady;
-    const customerNameRow=$('operatorCurrentCustomerName')?.closest('.info-row');if(customerNameRow)customerNameRow.hidden=!contactReady;
-    const gps=$('operatorCheckDistanceBtn');if(gps)gps.style.display=data.status==='booking_confirmed'?'block':'none';
-    if(data.status==='working'&&data.workStartedAt&&Number(data.workStartedAt)!==ownerTimerStart&&typeof startOperatorTimer==='function'){ownerTimerStart=Number(data.workStartedAt);startOperatorTimer(data.workStartedAt);}else if(data.status!=='working'&&ownerTimerStart){clearInterval(operatorTimerInterval);ownerTimerStart=0;}
-  }
-  window.updateOperatorCurrentUI=function(data){ownerScreenStatus(data);if(!data)return;let orderNumberEl=$('atharOwnerOrderNumber');if(!orderNumberEl){orderNumberEl=document.createElement('p');orderNumberEl.id='atharOwnerOrderNumber';orderNumberEl.className='athar-new-flow-badge';$('operatorCurrentOrderScreen')?.querySelector('.card')?.prepend(orderNumberEl);}if(orderNumberEl)orderNumberEl.textContent=`رقم الطلب: ${data.orderNumber||data.id||''}`;['operatorCurrentEquipment','operatorCurrentLocation','operatorCurrentDuration','operatorCurrentPrice','operatorCurrentCustomerName'].forEach((id,i)=>{const el=$(id);if(!el)return;const vals=[data.equipment,data.location,data.duration,money(data.reservedAmount||data.price),data.customerName];el.textContent=vals[i]||'—';});window.ma3daActiveRequestData=data;};
-  window.loadOperatorCurrentOrder=async function(){const id=localStorage.getItem('currentRequestId');if(!id){ownerScreenStatus(null);if(ownerWatcher){try{ownerWatcher();}catch(_e){}ownerWatcher=null;ownerWatcherRequestId='';}return;}try{const ownerUser=await getOperatorCurrentUser();if(!ownerUser?.uid){ownerScreenStatus(null);if(ownerWatcher){try{ownerWatcher();}catch(_e){}ownerWatcher=null;ownerWatcherRequestId='';}return;}const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists()){ownerScreenStatus(null);return;}window.updateOperatorCurrentUI(snap.data()||{});if(ownerWatcherRequestId!==id){if(ownerWatcher){try{ownerWatcher();}catch(_e){}}ownerWatcherRequestId=id;ownerWatcher=window.ma3daOnSnapshot(requestRef(id),fresh=>{if(!fresh.exists())return;const latest=fresh.data()||{};window.updateOperatorCurrentUI(latest);if(['rated','rejected'].includes(latest.status)){try{ownerWatcher();}catch(_e){}ownerWatcher=null;ownerWatcherRequestId='';}},error=>{console.warn('owner rental order listener error',error);if(ownerWatcher){try{ownerWatcher();}catch(_e){}}ownerWatcher=null;ownerWatcherRequestId='';});}}catch(error){console.error('new owner current order load error',error);}};
-  window.ma3daUpdateArrivalEligibility=function(data){const btn=$('operatorArrivedBtn'),feedback=$('operatorDistanceFeedback');const target=ma3daCustomerCoordinates(data||window.ma3daActiveRequestData||{});const distance=target&&ma3daOwnerPosition?ma3daDistanceKm(ma3daOwnerPosition,target):Infinity;const eligible=!!(Number.isFinite(distance)&&distance<=1&&Number(ma3daOwnerPosition?.accuracy||Infinity)<=100&&String((data||{}).status||'')==='booking_confirmed');if(btn){btn.disabled=!eligible;btn.setAttribute('aria-disabled',String(!eligible));}if(feedback){if(!target)feedback.textContent='إحداثيات موقع العميل غير متاحة؛ لا يمكن تأكيد الوصول.';else if(!ma3daOwnerPosition)feedback.textContent='تحقق من موقعك قبل تأكيد الوصول.';else feedback.textContent=eligible?`أنت على بعد ${distance.toFixed(2)} كم. يمكنك تأكيد الوصول.`:`المسافة ${Number.isFinite(distance)?distance.toFixed(2):'—'} كم؛ يجب أن تكون داخل 1 كم ودقة GPS أقل من 100 متر.`;}};
-  window.operatorMarkArrived=async function(){const id=localStorage.getItem('currentRequestId');try{const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.status!=='booking_confirmed')throw new Error('الوصول متاح بعد تأكيد الحجز.');const owner=await getOperatorCurrentUser();if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==owner?.uid)throw new Error('هذا الطلب ليس لمعدتك.');ma3daOwnerPosition=await ma3daGetOwnerPosition();const target=ma3daCustomerCoordinates(d);if(!target||!ma3daOwnerPosition||ma3daOwnerPosition.accuracy>100||ma3daDistanceKm(ma3daOwnerPosition,target)>1)throw new Error('يجب أن تكون على بُعد كيلومتر أو أقل ودقة GPS مناسبة.');await window.ma3daUpdateDoc(requestRef(id),{status:'owner_arrived',stage:'otp_verification',arrivedAt:Date.now(),arrivalDistanceKm:ma3daDistanceKm(ma3daOwnerPosition,target),updatedAt:Date.now()});await window.loadOperatorCurrentOrder();}catch(error){alert(error.message||'تعذر تأكيد الوصول.');}};
-  window.operatorStartWork=async function(){const id=localStorage.getItem('currentRequestId');try{const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.status!=='otp_verified'||!d.otpVerified)throw new Error('لا يبدأ العمل قبل تحقق رمز العميل.');const owner=await getOperatorCurrentUser();if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==owner?.uid)throw new Error('هذا الطلب ليس لمعدتك.');const now=Date.now();const authorizedHours=Number(d.durationHours||4);if(!Number.isFinite(authorizedHours)||authorizedHours<=0)throw new Error('مدة الحجز غير صحيحة.');await window.ma3daUpdateDoc(requestRef(id),{status:'working',stage:'work_started',workStartedAt:now,plannedEndAt:now+authorizedHours*3600000,updatedAt:now});await window.loadOperatorCurrentOrder();}catch(error){alert(error.message||'تعذر بدء العمل.');}};
-  window.operatorFinishWork=async function(){
-    const id=localStorage.getItem('currentRequestId');
-    try{
-      const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');
-      const d=snap.data()||{};if(d.status!=='working'||!d.workStartedAt)throw new Error('لا يمكن إنهاء العمل قبل بدء التنفيذ.');
-      const owner=await getOperatorCurrentUser();if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==owner?.uid)throw new Error('هذا الطلب ليس لمعدتك.');
-      const ended=Date.now(),minutes=Math.max(1,Math.ceil((ended-Number(d.workStartedAt))/60000)),rate=Number(d.hourlyPrice||0);
-      const authorizedMinutes=Math.max(1,Math.round(Number(d.durationHours||0)*60));
-      const billableMinutes=Math.min(minutes,authorizedMinutes),overrunMinutes=Math.max(0,minutes-authorizedMinutes);
-      const finalAmount=Math.round(rate*billableMinutes/60*100)/100,reserved=Number(d.reservedAmount||d.price||0);
-      const refund=Math.max(0,Math.round((reserved-finalAmount)*100)/100),extra=Math.max(0,Math.round((finalAmount-reserved)*100)/100);
-      await window.ma3daUpdateDoc(requestRef(id),{status:'completed_pending_customer',stage:'customer_final_review',workCompletedAt:ended,actualMinutes:minutes,billableMinutes,overrunMinutes,authorizedMinutes,finalAmount,finalPrice:finalAmount,settlementStatus:'awaiting_customer_confirmation',paymentStatus:extra>0?'cash_test_due':'cash_test_review',cashTestSettlement:true,refundAmount:refund,additionalAmountDue:extra,customerSettlementConfirmed:false,updatedAt:ended});
-      const invoiceNumber='ATH-INV-'+String(d.orderNumber||id).replace(/[^A-Za-z0-9-]/g,'');
-      const invoiceData={invoiceKind:'equipment_rental',invoiceNumber,requestId:id,orderNumber:d.orderNumber||id,customerId:d.customerId||'',customerName:d.customerName||'',ownerId:owner.uid,equipmentOwnerId:owner.uid,ownerName:d.operatorName||'صاحب المعدة',ownerEmail:owner.email||'',equipment:d.equipment||'معدة',equipmentId:d.equipmentId||'',hourlyPrice:rate,actualMinutes:minutes,billableMinutes,overrunMinutes,authorizedMinutes,reservedAmount:reserved,invoiceAmount:finalAmount,refundAmount:refund,additionalAmountDue:extra,platformCommissionStatus:'not_configured',ownerNetAmountStatus:'not_calculated',currency:'SAR',paymentStatus:'cash_test_review',settlementStatus:'awaiting_customer_confirmation',paymentMethod:'cash_test',description:'فاتورة توثيقية للاختبار النقدي؛ لا تمثل تحصيلًا أو استردادًا أو تحويلًا إلكترونيًا.',createdAt:new Date(ended),createdAtMs:ended,updatedAt:new Date(ended),schemaVersion:2};
-      try{
-        if(!d.invoiceId&&typeof window.ma3daAddDoc==='function'){
-          const invoiceRef=await window.ma3daAddDoc(window.ma3daCollection(window.ma3daDB,'projectInvoices'),invoiceData);
-          await window.ma3daUpdateDoc(requestRef(id),{invoiceId:invoiceRef.id,invoiceNumber,invoiceSnapshot:invoiceData,invoiceWriteStatus:'saved_collection',updatedAt:Date.now()});
-        }
-      }catch(invoiceError){
-        console.warn('تعذر إنشاء وثيقة الفاتورة في projectInvoices؛ حفظ نسخة داخل الطلب:',invoiceError);
-        await window.ma3daUpdateDoc(requestRef(id),{invoiceNumber,invoiceSnapshot:invoiceData,invoiceWriteStatus:'embedded_fallback',invoiceWriteError:String(invoiceError?.code||invoiceError?.message||'unknown'),updatedAt:Date.now()});
-      }
-      localStorage.setItem('finalPrice',String(finalAmount));const priceEl=$('finalPrice');if(priceEl)priceEl.textContent=money(finalAmount);
-      clearInterval(operatorTimerInterval);await window.loadOperatorCurrentOrder();showScreen('operatorCompletedScreen');
-      alert('تم تسجيل نهاية العمل. تنتظر التسوية الآن تأكيد العميل أو اعتراضه.');
-    }catch(error){alert(error.message||'تعذر إنهاء العمل.');}
-  };
-  if($('operatorArrivedBtn'))$('operatorArrivedBtn').addEventListener('click',window.operatorMarkArrived);
-  if($('operatorStartWorkBtn'))$('operatorStartWorkBtn').addEventListener('click',window.operatorStartWork);
-  if($('operatorEndWorkBtn'))$('operatorEndWorkBtn').addEventListener('click',window.operatorFinishWork);
-  // طلب التمديد: لا يعتمد إلا بموافقة العميل وتأكيد الدفع التجريبي.
-  $('atharRequestExtensionBtn')?.addEventListener('click',async()=>{
-    const id=localStorage.getItem('currentRequestId'),hours=Number($('atharExtensionHours')?.value||0),feedback=$('atharExtensionOwnerFeedback');
-    try{
-      if(!Number.isInteger(hours)||hours<1||hours>240)throw new Error('أدخل عدد ساعات صحيحًا بين 1 و240.');
-      const user=await getOperatorCurrentUser(),ref=requestRef(id),snap=await window.ma3daGetDoc(ref);
-      if(!snap.exists())throw new Error('الطلب غير موجود.');
-      const d=snap.data()||{};if(d.status!=='working')throw new Error('التمديد متاح أثناء العمل فقط.');if(Number(d.plannedEndAt||0)&&Date.now()>=Number(d.plannedEndAt))throw new Error('انتهت المدة المعتمدة؛ لا يمكن طلب تمديد بأثر رجعي.');
-      if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==user?.uid)throw new Error('هذا الطلب لا يخص معدتك.');
-      if(d.extensionRequest?.status==='pending_customer')throw new Error('يوجد طلب تمديد بانتظار العميل.');
-      const amount=Math.round(Number(d.hourlyPrice||0)*hours*100)/100;if(!amount)throw new Error('سعر الساعة غير صحيح.');
-      await window.ma3daUpdateDoc(ref,{extensionRequest:{id:'EXT-'+Date.now(),hours,amount,status:'pending_customer',requestedBy:user.uid,requestedAt:Date.now(),hourlyPrice:Number(d.hourlyPrice||0)},updatedAt:Date.now()});
-      if(feedback)feedback.textContent=`تم إرسال طلب تمديد ${hours} ساعة بمبلغ ${money(amount)} للعميل.`;
-      await window.loadOperatorCurrentOrder();
-    }catch(error){if(feedback)feedback.textContent=error.message||'تعذر إرسال التمديد.';}
-  });
-  $('atharApproveExtensionBtn')?.addEventListener('click',async()=>{
-    const id=localStorage.getItem('currentRequestId'),feedback=$('atharExtensionCustomerFeedback');
-    try{
-      if($('atharExtensionPaymentMethod')?.value!=='cash_test')throw new Error('اختر الكاش المؤقت لتأكيد التمديد.');
-      const user=await readUser(),ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');
-      const d=snap.data()||{},x=d.extensionRequest||{};if(d.customerId!==user?.uid||d.status!=='working'||x.status!=='pending_customer')throw new Error('طلب التمديد لم يعد متاحًا لهذا الحساب.');if(Number(d.plannedEndAt||0)&&Date.now()>=Number(d.plannedEndAt))throw new Error('انتهت المدة الأصلية قبل اعتماد التمديد؛ لا يمكن تفعيله بأثر رجعي.');
-      const newReserved=Math.round((Number(d.reservedAmount||d.price||0)+Number(x.amount||0))*100)/100;
-      const history=[...(Array.isArray(d.extensionHistory)?d.extensionHistory:[]),{...x,status:'approved_paid_test',approvedBy:user.uid,approvedAt:Date.now(),paymentMethod:'cash_test',paymentStatus:'cash_test_confirmed'}];
-      await window.ma3daUpdateDoc(ref,{extensionRequest:{...x,status:'approved_paid_test',approvedBy:user.uid,approvedAt:Date.now(),paymentMethod:'cash_test',paymentStatus:'cash_test_confirmed'},extensionHistory:history,extensionPaymentMethod:'cash_test',reservedAmount:newReserved,price:newReserved,durationHours:Number(d.durationHours||0)+Number(x.hours||0),plannedEndAt:Number(d.plannedEndAt||Date.now())+Number(x.hours||0)*3600000,extensionPaymentStatus:'cash_test_confirmed',updatedAt:Date.now()});
-      if(feedback)feedback.textContent='تم اعتماد التمديد وتسجيل الدفع التجريبي. يمكن استمرار العمل.';
-    }catch(error){if(feedback)feedback.textContent=error.message||'تعذر اعتماد التمديد.';}
-  });
-  $('atharRejectExtensionBtn')?.addEventListener('click',async()=>{
-    const id=localStorage.getItem('currentRequestId'),feedback=$('atharExtensionCustomerFeedback');
-    try{const user=await readUser(),ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{},x=d.extensionRequest||{};if(d.customerId!==user?.uid||x.status!=='pending_customer')throw new Error('لا يوجد تمديد بانتظار موافقتك.');await window.ma3daUpdateDoc(ref,{extensionRequest:{...x,status:'rejected',rejectedBy:user.uid,rejectedAt:Date.now()},updatedAt:Date.now()});if(feedback)feedback.textContent='تم رفض التمديد؛ تبقى المدة الأصلية/المعتمدة فقط.';}catch(error){if(feedback)feedback.textContent=error.message||'تعذر رفض التمديد.';}
-  });
-  $('atharConfirmFinalSettlementBtn')?.addEventListener('click',async()=>{
-    const id=localStorage.getItem('currentRequestId'),feedback=$('atharFinalReviewFeedback');
-    try{const user=await readUser(),ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.customerId!==user?.uid||d.status!=='completed_pending_customer')throw new Error('لا يمكن تأكيد هذه التسوية الآن.');const now=Date.now();const patch={status:'completed',stage:'customer_confirmed',customerSettlementConfirmed:true,customerSettlementConfirmedAt:now,settlementStatus:'settled_test',paymentStatus:Number(d.additionalAmountDue||0)>0?'cash_test_settled':'cash_test_reviewed',refundStatus:Number(d.refundAmount||0)>0?'refund_recorded_test':'not_applicable',settledAt:now,requestClosed:true,updatedAt:now};await window.ma3daUpdateDoc(ref,{...patch,invoiceSnapshot:d.invoiceSnapshot?{...d.invoiceSnapshot,settlementStatus:'settled_test',paymentStatus:patch.paymentStatus,refundAmount:Number(d.refundAmount||0),additionalAmountDue:Number(d.additionalAmountDue||0),customerSettlementConfirmedAt:now,updatedAt:new Date(now)}:d.invoiceSnapshot});if(d.invoiceId){try{await window.ma3daUpdateDoc(window.ma3daDoc(window.ma3daDB,'projectInvoices',d.invoiceId),{settlementStatus:'settled_test',paymentStatus:patch.paymentStatus,refundAmount:Number(d.refundAmount||0),additionalAmountDue:Number(d.additionalAmountDue||0),customerSettlementConfirmedAt:now,updatedAt:now});}catch(e){console.warn('تعذر تحديث سجل الفاتورة:',e);}}if(feedback)feedback.textContent='تم تسجيل موافقتك على التسوية التجريبية.';showScreen('ratingScreen');}catch(error){if(feedback)feedback.textContent=error.message||'تعذر تأكيد التسوية.';}
-  });
-  $('atharOpenRentalDisputeBtn')?.addEventListener('click',async()=>{
-    const id=localStorage.getItem('currentRequestId'),feedback=$('atharFinalReviewFeedback');
-    try{const reason=prompt('اكتب سبب الاعتراض على الوقت أو المبلغ:');if(reason===null)return;if(!reason.trim())throw new Error('اكتب سبب الاعتراض.');const user=await readUser(),ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.customerId!==user?.uid||d.status!=='completed_pending_customer')throw new Error('لا يمكن فتح اعتراض لهذا الطلب الآن.');await window.ma3daUpdateDoc(ref,{status:'disputed',stage:'support_dispute',disputeStatus:'pending_support',dispute:{reason:reason.trim(),openedBy:user.uid,openedAt:Date.now(),status:'pending_support'},settlementStatus:'disputed',updatedAt:Date.now()});if(feedback)feedback.textContent='تم رفع الاعتراض وإيقاف اعتماد التسوية حتى مراجعة الدعم.';}catch(error){if(feedback)feedback.textContent=error.message||'تعذر رفع الاعتراض.';}
-  });
-  async function loadAtharRentalDisputes(){
-    const list=$('atharRentalDisputesList');if(!list)return;list.textContent='جاري تحميل النزاعات...';
-    try{const user=window.ma3daAuth?.currentUser;if(!user?.uid)throw new Error('سجّل الدخول بحساب الدعم.');const staffSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'supportStaff',user.uid));const staff=staffSnap.exists()?staffSnap.data()||{}:{};const claims=await user.getIdTokenResult?.();if(!(staff.active===true||staff.status==='active'||['support','admin','owner'].includes(String(staff.role||claims?.claims?.role||''))))throw new Error('هذا القسم مخصص لموظفي الدعم المعتمدين.');
-      const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'requests'));const rows=[];snap.forEach(doc=>{const d=doc.data()||{};if(d.flowVersion==='ATHAR-RENTAL-2026-NEW'&&['pending_support','support_review_required'].includes(d.disputeStatus))rows.push({id:doc.id,...d});});
-      list.innerHTML=rows.length?rows.map(r=>`<article class="card"><h3>${esc(r.orderNumber||r.id)} — ${esc(r.equipment||'معدة')}</h3><p>العميل: ${esc(r.customerName||'—')} · صاحب المعدة: ${esc(r.operatorName||'—')}</p><p>وقت البداية: ${esc(String(r.workStartedAt||'—'))} · وقت النهاية: ${esc(String(r.workCompletedAt||'—'))}</p><p>المدة الفعلية: ${Number(r.actualMinutes||0)} دقيقة · القيمة: ${money(r.finalAmount||0)} ريال</p><p>سبب الاعتراض: ${esc(r.dispute?.reason||'—')}</p><button type="button" class="main-btn" data-athar-dispute-decision="confirm" data-request-id="${esc(r.id)}">إغلاق الاعتراض وإحالة التسوية للعميل</button><button type="button" class="back-btn" data-athar-dispute-decision="uphold" data-request-id="${esc(r.id)}">تثبيت الاعتراض وإبقاء الطلب للمراجعة</button></article>`).join(''):'<div class="card">لا توجد نزاعات تأجير معلقة.</div>';
-    }catch(error){list.textContent=error.message||'تعذر تحميل النزاعات.';}
-  }
-  $('atharRefreshRentalDisputesBtn')?.addEventListener('click',loadAtharRentalDisputes);
-  document.addEventListener('click',async event=>{
-    const b=event.target.closest('[data-athar-dispute-decision]');if(!b)return;const id=b.dataset.requestId,decision=b.dataset.atharDisputeDecision;
-    try{const user=window.ma3daAuth?.currentUser;if(!user?.uid)throw new Error('سجّل الدخول بحساب الدعم.');const staffSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'supportStaff',user.uid));const staff=staffSnap.exists()?staffSnap.data()||{}:{};const claims=await user.getIdTokenResult?.();if(!(staff.active===true||staff.status==='active'||['support','admin','owner'].includes(String(staff.role||claims?.claims?.role||''))))throw new Error('غير مصرح لك.');const ref=requestRef(id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.disputeStatus!=='pending_support')throw new Error('تم تحديث حالة الاعتراض مسبقًا.');const now=Date.now();if(decision==='confirm'){await window.ma3daUpdateDoc(ref,{status:'completed_pending_customer',stage:'customer_final_review',disputeStatus:'resolved_for_customer_confirmation',dispute:{...(d.dispute||{}),status:'resolved_for_customer_confirmation',decision:'return_to_customer',decidedBy:user.uid,decidedAt:now},settlementStatus:'awaiting_customer_confirmation',updatedAt:now});}else{await window.ma3daUpdateDoc(ref,{disputeStatus:'support_review_required',dispute:{...(d.dispute||{}),status:'support_review_required',decision:'upheld_pending_review',decidedBy:user.uid,decidedAt:now},settlementStatus:'disputed',updatedAt:now});}alert('تم حفظ قرار المراجعة التوثيقي. لم يتم تنفيذ أي استرداد أو تحويل مالي.');await loadAtharRentalDisputes();}catch(error){alert(error.message||'تعذر حفظ قرار الدعم.');}
-  });
-  document.querySelector('[data-support-section="rentalDisputes"]')?.addEventListener('click',()=>{supportSetSection('rentalDisputes');loadAtharRentalDisputes();});
-  $('operatorOpenCustomerMapBtn')?.addEventListener('click',async()=>{try{const id=localStorage.getItem('currentRequestId');if(!id)throw new Error('لا يوجد طلب حالي.');const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(!['booking_confirmed','owner_arrived','otp_verified','working','completed','rated'].includes(d.status))throw new Error('الموقع يظهر بعد تأكيد الحجز.');ma3daOpenCustomerMap(d);}catch(error){alert(error.message||'تعذر فتح موقع العميل.');}});
-  $('atharShareOwnerContactBtn')?.addEventListener('click',async()=>{const id=localStorage.getItem('currentRequestId'),feedback=$('atharOwnerContactFeedback');try{const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');const requestSnap=await window.ma3daGetDoc(requestRef(id));if(!requestSnap.exists())throw new Error('الطلب غير موجود.');const r=requestSnap.data()||{};if((r.equipmentOwnerId||r.ownerId||r.operatorId)!==user.uid)throw new Error('هذا الطلب ليس لمعدتك.');if(!['booking_confirmed','owner_arrived','otp_verified','working','completed'].includes(r.status))throw new Error('مشاركة التواصل متاحة بعد تأكيد الحجز.');const profileSnap=await window.ma3daGetDoc(window.ma3daDoc(window.ma3daDB,'operators',user.uid));const profile=profileSnap.exists()?profileSnap.data()||{}:{};const phone=String(profile.phone||profile.mobile||'').trim();const name=String(profile.name||profile.fullName||profile.displayName||'صاحب المعدة').trim();if(!phone)throw new Error('رقم الجوال غير مسجل في حساب صاحب المعدة.');await window.ma3daUpdateDoc(requestRef(id),{operatorPhone:phone,operatorName:name,contactSharedAt:Date.now(),contactSharedBy:user.uid,updatedAt:Date.now()});if(feedback)feedback.textContent='تمت مشاركة رقم التواصل مع العميل.';await window.loadOperatorCurrentOrder();}catch(error){if(feedback)feedback.textContent=error.message||'تعذر مشاركة بيانات التواصل.';}});
-  $('atharVerifyOtpBtn')?.addEventListener('click',async()=>{const id=localStorage.getItem('currentRequestId'),input=$('atharOwnerOtpInput'),feedback=$('atharOwnerOtpFeedback');const code=String(input?.value||'').trim();try{if(!/^\d{6}$/.test(code))throw new Error('أدخل رمزًا من ستة أرقام.');const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.status!=='owner_arrived')throw new Error('يجب تسجيل الوصول أولًا.');const owner=await getOperatorCurrentUser();if((d.equipmentOwnerId||d.ownerId||d.operatorId)!==owner?.uid)throw new Error('هذا الطلب ليس لمعدتك.');if(await otpHash(code)!==String(d.otpHash||''))throw new Error('رمز التحقق غير صحيح.');await window.ma3daUpdateDoc(requestRef(id),{status:'otp_verified',stage:'otp_verified',otpVerified:true,otpVerifiedAt:Date.now(),otpVerifiedBy:(await getOperatorCurrentUser())?.uid||'',updatedAt:Date.now()});if(feedback)feedback.textContent='تم التحقق بنجاح. يمكنك بدء العمل الآن.';await window.loadOperatorCurrentOrder();}catch(error){if(feedback)feedback.textContent=error.message||'فشل التحقق.';}});
-  // Clear old legacy payment/rating handlers; this lifecycle owns the rental order now.
-  const oldRating=$('ratingBtn');if(oldRating){const freshRating=oldRating.cloneNode(true);oldRating.replaceWith(freshRating);}
-  document.querySelectorAll('.stars button').forEach(star=>star.addEventListener('click',()=>{selectedRating=Number(star.dataset.rating||0);const b=$('ratingBtn');if(b)b.disabled=!selectedRating;}));
-  const newRatingBtn=$('ratingBtn');if(newRatingBtn)newRatingBtn.addEventListener('click',async()=>{if(!selectedRating){alert('اختر تقييمًا أولًا.');return;}const id=localStorage.getItem('currentRequestId');try{const snap=await window.ma3daGetDoc(requestRef(id));if(!snap.exists())throw new Error('الطلب غير موجود.');const d=snap.data()||{};if(d.status!=='completed'||d.settlementStatus!=='settled_test')throw new Error('التقييم متاح بعد انتهاء العمل والتسوية.');const user=await readUser();if(d.customerId!==user?.uid)throw new Error('هذا الطلب ليس لحسابك.');await window.ma3daUpdateDoc(requestRef(id),{status:'rated',stage:'rated',rating:selectedRating,equipmentRating:selectedRating,ratingTarget:'equipment',ratedAt:Date.now(),ratedBy:user?.uid||'',updatedAt:Date.now()});showScreen('thankYouScreen');}catch(error){alert(error.message||'تعذر حفظ التقييم.');}});
-  // Contact buttons and tracking are hidden before booking; the screen itself is not opened until reservation.
-  // Customer OTP panel also appears on the arrival screen, so the customer can show it at the site.
-  if(!$('atharCustomerOtpArrivalPanel')){const panel=document.createElement('div');panel.id='atharCustomerOtpArrivalPanel';panel.className='card';panel.hidden=true;panel.innerHTML='<h3>رمز التحقق</h3><strong id="atharCustomerOtpArrival" style="font-size:2rem;letter-spacing:.2em"></strong><p>أعط الرمز لصاحب المعدة بعد وصوله.</p>'; $('arrivedCustomerScreen')?.appendChild(panel);}
- // استعادة تحديث بطاقة آخر طلب في الصفحة الرئيسية للعميل بعد استبدال دورة الطلب القديمة.
-  // لا يعيد هذا المقطع نظام المنافسة؛ بل يقرأ أحدث طلب للعميل ويعرض حالته من دورة ATHAR الجديدة.
-  window.loadLatestCustomerRequest=async function(){
-    try{
-      const user=await readUser();
-      if(!user?.uid) return false;
-      const rows=await ma3daReadUserRows('requests',['customerId','requesterId'],user.uid);
-      const toMillis=value=>{
-        if(value&&typeof value.toMillis==='function') return value.toMillis();
-        if(value&&typeof value.seconds==='number') return value.seconds*1000;
-        if(value instanceof Date) return value.getTime();
-        const n=Number(value||0);
-        return Number.isFinite(n)?n:0;
-      };
-      const latest=rows
-        .filter(row=>(row.customerId||row.requesterId)===user.uid)
-        .sort((a,b)=>toMillis(b.createdAt||b.createdAtMs||b.updatedAt)-toMillis(a.createdAt||a.createdAtMs||a.updatedAt))[0];
-      if(!latest) return false;
-      localStorage.setItem('currentRequestId',latest.id);
-      localStorage.setItem('orderState',String(latest.status||''));
-      localStorage.setItem('currentOrder',JSON.stringify({
-        orderNumber:latest.orderNumber||'',
-        location:latest.location||'',
-        equipment:latest.equipment||'',
-        duration:latest.duration||'',
-        operator:latest.operator||'',
-        notes:latest.notes||'',
-        price:Number(latest.reservedAmount||latest.price||0)
-      }));
-      showCustomerOrder({...latest,id:latest.id});
-      if(!['completed','rated','rejected','cancelled'].includes(String(latest.status||''))) window.startAcceptanceWatcher?.();
-      return latest;
-    }catch(error){
-      console.error('تعذر تحديث أحدث طلب للعميل:',error);
-      return false;
-    }
-  };
-
-  window.loadOperatorCustomerOrders=async function(){const current=$('operatorCustomerCurrentList'),previous=$('operatorCustomerPreviousList');if(!current&&!previous)return;try{const user=await getOperatorCurrentUser();if(!user?.uid)throw new Error('سجّل الدخول بحساب صاحب المعدة.');const rows=await ma3daReadUserRows('requests',['equipmentOwnerId','ownerId','operatorId'],user.uid);const cur=['owner_decision_pending','owner_accepted','booking_confirmed','owner_arrived','otp_verified','working','completed_pending_customer','disputed'];const prev=['completed','rated','rejected','cancelled'];const currentRows=rows.filter(d=>(d.equipmentOwnerId||d.ownerId||d.operatorId)===user.uid&&cur.includes(d.status)).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));const previousRows=rows.filter(d=>(d.equipmentOwnerId||d.ownerId||d.operatorId)===user.uid&&prev.includes(d.status)).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));function render(target,arr,isPrevious){if(!target)return;if(!arr.length){target.innerHTML=`<div class="card center"><h3>${isPrevious?'لا توجد طلبات سابقة':'لا توجد طلبات حالية'}</h3></div>`;return;}target.innerHTML='';arr.forEach(d=>{const card=document.createElement('article');card.className='card';card.innerHTML=`<h3>${esc(d.orderNumber||d.id)} · ${esc(d.equipment||'معدة')}</h3><p>العميل: ${esc(d.customerName||'العميل')}</p><p>الحالة: ${esc(window.ma3daNewRentalStatusText(d.status))}</p><p>الحجز: ${money(d.reservedAmount||d.price)} · النهائي: ${money(d.finalAmount||0)}</p><p>الوقت الفعلي: ${Number(d.actualMinutes||0)} دقيقة</p><button type="button" class="main-btn" data-athar-owner-open-order="${esc(d.id)}">فتح الطلب</button>`;target.appendChild(card);});}render(current,currentRows,false);render(previous,previousRows,true);}catch(error){if(current)current.textContent=error.message||'تعذر تحميل الطلبات';if(previous)previous.textContent=error.message||'تعذر تحميل الطلبات';}};
-  document.addEventListener('click',event=>{const b=event.target.closest('[data-athar-owner-open-order]');if(!b)return;const id=b.dataset.atharOwnerOpenOrder;localStorage.setItem('currentRequestId',id);window.loadOperatorCurrentOrder?.().then(()=>showScreen('operatorCurrentOrderScreen'));});
-  window.ma3daNewRentalStatusText=status=>({owner_decision_pending:'بانتظار موافقة صاحب المعدة',owner_accepted:'وافق صاحب المعدة — بانتظار حجز المبلغ',booking_confirmed:'الحجز مؤكد — بيانات التواصل ورمز التحقق متاحان',owner_arrived:'صاحب المعدة وصل — بانتظار التحقق',otp_verified:'تم التحقق — جاهز لبدء العمل',working:'العمل جارٍ',completed_pending_customer:'انتهى العمل — بانتظار تأكيد العميل',disputed:'الاعتراض لدى الدعم',completed:'تم تأكيد التسوية التجريبية',rated:'تم تقييم المعدة',rejected:'تم رفض الطلب'})[status]||status;
+  document.addEventListener('input',ev=>{if(ev.target.id==='atharCustomerDuration'&&selectedEquipment)selectEquipment(selectedEquipment);});
+  const openOwnerRequests=$('operatorNewRequestsBtn');openOwnerRequests?.addEventListener('click',()=>{renderOwnerCustomerOrders();});
+  $('refreshOperatorRequestsBtn')?.addEventListener('click',()=>renderOwnerCustomerOrders());
+  $('atharCustomerChatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendChat().catch(err=>alert(err.message));}});
+  // customer home refresh / entry point for existing current session
+  const originalShow=window.showScreen;
+  if(typeof originalShow==='function'&&!window.__atharShowWrapped){window.__atharShowWrapped=true;window.showScreen=function(id){const result=originalShow.apply(this,arguments);if(id==='atharCustomerOrderScreen')renderCustomerOrder().catch(e=>console.warn(e));if(id==='operatorNewRequestsScreen')renderOwnerCustomerOrders().catch(e=>console.warn(e));return result;};}
+  window.atharLoadCustomerOrder=renderCustomerOrder;
+  window.atharLoadOwnerCustomerOrders=renderOwnerCustomerOrders;
 })();
