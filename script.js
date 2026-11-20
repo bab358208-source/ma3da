@@ -413,30 +413,74 @@ if(backFromForgotPasswordBtn){
  
 }
  
-/* فتح بوابة صاحب المعدة بعد تسجيل الدخول.
-   نعتمد مسار لوحة التحكم الموحد لأنه يبحث عن المعدة بواسطة ownerId/operatorId/userId
-   ويدعم الوثائق ذات المعرّفات التلقائية، وليس equipment/{uid} فقط. */
+/* فتح صفحة صاحب المعدة حسب وجود */
+ 
 async function openOperatorAfterLogin(){
-  try{
-    await Promise.resolve(window.ma3daFirebaseReady);
+  const errorElement = document.getElementById("emailError");
+  const waitFor = (promise, label) => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(label)), 12000);
+    Promise.resolve(promise).then(
+      value => { clearTimeout(timer); resolve(value); },
+      error => { clearTimeout(timer); reject(error); }
+    );
+  });
 
+  try{
     const user = window.ma3daGetCurrentUser
-      ? await window.ma3daGetCurrentUser()
+      ? await waitFor(window.ma3daGetCurrentUser(), "انتهت مهلة استعادة جلسة الدخول. حاول مرة أخرى.")
       : window.ma3daAuth?.currentUser;
 
     if(!user?.uid){
-      throw new Error("تعذر استعادة جلسة تسجيل الدخول. سجّل الدخول مرة أخرى.");
+      throw new Error("تعذر استعادة تسجيل الدخول. حاول مرة أخرى.");
     }
     if(!window.ma3daDB || typeof window.ma3daDoc !== "function" || typeof window.ma3daGetDoc !== "function"){
       throw new Error("اتصال Firebase غير مكتمل. أعد تحميل الصفحة وحاول مرة أخرى.");
     }
 
-    // openOperatorDashboard يتولى تحديد الصفحة الصحيحة:
-    // بيانات صاحب المعدة، إضافة المعدة، أو الصفحة الرئيسية.
-    await openOperatorDashboard();
+    // أولاً: المسار القديم equipment/{uid} دون تغيير.
+    const equipmentRef = window.ma3daDoc(window.ma3daDB, "equipment", user.uid);
+    const equipmentSnapshot = await waitFor(
+      window.ma3daGetDoc(equipmentRef),
+      "تأخر تحميل بيانات المعدة. تحقق من الاتصال ثم أعد المحاولة."
+    );
+
+    let equipment = equipmentSnapshot.exists()
+      ? { id: equipmentSnapshot.id, ...(equipmentSnapshot.data() || {}) }
+      : null;
+
+    // ثانياً: دعم السجلات ذات المعرّفات التلقائية عند عدم وجود equipment/{uid}.
+    if(!equipment && typeof getOperatorEquipment === "function"){
+      equipment = await waitFor(
+        getOperatorEquipment(),
+        "تأخر البحث عن معدتك. تحقق من الاتصال ثم أعد المحاولة."
+      );
+    }
+
+    if(!equipment){
+      showScreen("addEquipmentScreen");
+      return;
+    }
+
+    // حفظ السجل الذي تم العثور عليه حتى تستخدمه واجهة صاحب المعدة.
+    try{ localStorage.setItem("myEquipment", JSON.stringify(equipment)); }catch(_){ }
+
+    const hasOperatorData = await waitFor(
+      loadOperatorData(),
+      "تأخر تحميل بيانات صاحب المعدة. تحقق من الاتصال ثم أعد المحاولة."
+    );
+
+    if(!hasOperatorData){
+      showScreen("operatorDataScreen");
+      return;
+    }
+
+    await waitFor(
+      loadOperatorDashboard(),
+      "تأخر تحميل لوحة صاحب المعدة. تحقق من الاتصال ثم أعد المحاولة."
+    );
+    showScreen("operatorHomeScreen");
   }catch(error){
     console.error("خطأ في فتح بوابة صاحب المعدة بعد تسجيل الدخول:", error);
-    const errorElement = document.getElementById("emailError");
     if(errorElement) errorElement.textContent = error?.message || "تعذر فتح بوابة أصحاب المعدات.";
     else alert(error?.message || "تعذر فتح بوابة أصحاب المعدات.");
   }
@@ -14399,4 +14443,5 @@ if(stage==='arrived')buttons='<label>رمز OTP الذي أعطاك العميل
   const originalShow=window.showScreen;
   if(typeof originalShow==='function'&&!window.__atharShowWrapped){window.__atharShowWrapped=true;window.showScreen=function(id){const result=originalShow.apply(this,arguments);if(id==='atharCustomerOrderScreen')renderCustomerOrder().catch(e=>console.warn(e));if(id==='operatorNewRequestsScreen')renderOwnerCustomerOrders().catch(e=>console.warn(e));return result;};}
   window.atharLoadCustomerOrder=renderCustomerOrder;
-  window.atharLoadOwnerCustomerOrders=renderOwnerC
+  window.atharLoadOwnerCustomerOrders=renderOwnerCustomerOrders;
+})();
