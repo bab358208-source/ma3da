@@ -14461,3 +14461,4 @@ if(stage==='arrived')buttons='<label>رمز OTP الذي أعطاك العميل
   if(typeof originalShow==='function'&&!window.__atharShowWrapped){window.__atharShowWrapped=true;window.showScreen=function(id){const result=originalShow.apply(this,arguments);if(id==='atharCustomerOrderScreen')renderCustomerOrder().catch(e=>console.warn(e));if(id==='operatorNewRequestsScreen')renderOwnerCustomerOrders().catch(e=>console.warn(e));return result;};}
   window.atharLoadCustomerOrder=renderCustomerOrder;
   window.atharLoadOwnerCustomerOrders=renderOwnerCustomerOrders;
+})();
