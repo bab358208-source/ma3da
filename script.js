@@ -200,7 +200,9 @@ if(operatorRoleBtn){
  
       localStorage.setItem("selectedRole", "operator");
  
-      stopAcceptanceWatcher();
+      if (typeof stopAcceptanceWatcher === "function") {
+        stopAcceptanceWatcher();
+      }
  
       const text =
         document.getElementById("phoneRoleText");
@@ -416,89 +418,93 @@ if(backFromForgotPasswordBtn){
 /* فتح صفحة صاحب المعدة حسب وجود */
  
 async function openOperatorAfterLogin(){
-  const errorElement = document.getElementById("emailError");
-  const withTimeout = (task, message, ms = 12000) => {
-    let timer;
-    return Promise.race([
-      Promise.resolve(task),
-      new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(message)), ms);
-      })
-    ]).finally(() => clearTimeout(timer));
-  };
-
-  try{
-    await withTimeout(
-      Promise.resolve(window.ma3daFirebaseReady),
-      "تأخر اتصال Firebase. تحقق من الإنترنت ثم أعد المحاولة."
+ 
+  const user =
+    window.ma3daGetCurrentUser
+      ? await window.ma3daGetCurrentUser()
+      : window.ma3daAuth?.currentUser;
+ 
+  if(!user){
+ 
+    alert(
+      "تعذر استعادة تسجيل الدخول"
     );
-
-    const user = window.ma3daAuth?.currentUser || (
-      typeof window.ma3daGetCurrentUser === "function"
-        ? await withTimeout(window.ma3daGetCurrentUser(), "تعذر استعادة جلسة الدخول.")
-        : null
+ 
+    showScreen(
+      "phoneScreen"
     );
-
-    if(!user?.uid) throw new Error("تعذر استعادة تسجيل الدخول. سجّل الدخول مرة أخرى.");
-    if(!window.ma3daDB || typeof window.ma3daDoc !== "function" || typeof window.ma3daGetDoc !== "function"){
-      throw new Error("اتصال Firebase غير مكتمل. أعد تحميل الصفحة وحاول مرة أخرى.");
-    }
-
-    // المسار القديم أولاً: equipment/{uid}، ثم السجلات ذات المعرّفات التلقائية.
-    const equipmentRef = window.ma3daDoc(window.ma3daDB, "equipment", user.uid);
-    const directSnapshot = await withTimeout(
-      window.ma3daGetDoc(equipmentRef),
-      "تأخر تحميل بيانات المعدة. تحقق من الاتصال ثم أعد المحاولة."
-    );
-
-    let equipment = directSnapshot.exists()
-      ? { id: directSnapshot.id, ...(directSnapshot.data() || {}) }
-      : null;
-
-    if(!equipment){
-      if(typeof ma3daReadUserRows !== "function"){
-        throw new Error("تعذر البحث عن سجل المعدة. أعد تحميل الصفحة وحاول مرة أخرى.");
-      }
-      const rows = await withTimeout(
-        ma3daReadUserRows("equipment", ["ownerId", "operatorId", "userId"], user.uid),
-        "تأخر البحث عن معدتك. تحقق من الإنترنت وصلاحيات الحساب ثم أعد المحاولة."
-      );
-      equipment = rows[0] || null;
-    }
-
-    if(!equipment){
-      showScreen("addEquipmentScreen");
-      return;
-    }
-
-    // مرّر سجل المعدة نفسه لتفادي إعادة قراءته من Firebase في نفس عملية الدخول.
-    await withTimeout(
-      displayMyEquipment(equipment),
-      "تأخر عرض بيانات المعدة. أعد المحاولة."
-    );
-
-    const hasOperatorData = await withTimeout(
-      loadOperatorData(),
-      "تأخر تحميل بيانات صاحب المعدة. أعد المحاولة."
-    );
-
-    if(!hasOperatorData){
-      showScreen("operatorDataScreen");
-      return;
-    }
-
-    await withTimeout(
-      loadOperatorHome(equipment),
-      "تأخر تحميل الصفحة الرئيسية لصاحب المعدة. أعد المحاولة."
-    );
-    showScreen("operatorHomeScreen");
-  }catch(error){
-    console.error("خطأ في فتح بوابة صاحب المعدة بعد تسجيل الدخول:", error);
-    if(errorElement) errorElement.textContent = error?.message || "تعذر فتح بوابة أصحاب المعدات.";
-    else alert(error?.message || "تعذر فتح بوابة أصحاب المعدات.");
+ 
+    return;
+ 
   }
+ 
+  if(!window.ma3daDB){
+ 
+    alert(
+      "Firebase غير متصل"
+    );
+ 
+    return;
+ 
+  }
+ 
+  try{
+ 
+    const ref =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+ 
+    const snapshot =
+      await window.ma3daGetDoc(ref);
+ 
+    if(snapshot.exists()){
+ 
+      await displayMyEquipment();
+ 
+      const hasOperatorData =
+        await loadOperatorData();
+ 
+      if(!hasOperatorData){
+ 
+        showScreen(
+          "operatorDataScreen"
+        );
+ 
+        return;
+ 
+      }
+ 
+      await loadOperatorHome();
+ 
+      showScreen(
+        "operatorHomeScreen"
+      );
+ 
+    }else{
+ 
+      showScreen(
+        "addEquipmentScreen"
+      );
+ 
+    }
+ 
+  }catch(error){
+ 
+    console.error(
+      "خطأ في فحص المعدة:",
+      error
+    );
+ 
+    alert(
+      "تعذر تحميل بيانات المعدة"
+    );
+ 
+  }
+ 
 }
-
 if(emailLoginBtn){
  
   emailLoginBtn.addEventListener(
@@ -1341,7 +1347,7 @@ if(
  
 /* LOAD EQUIPMENT */
  
-async function displayMyEquipment(equipmentRecord = null){
+async function displayMyEquipment(){
  
   try{
  
@@ -1370,17 +1376,30 @@ async function displayMyEquipment(equipmentRecord = null){
  
     }
  
-    let equipment = equipmentRecord;
-
-    if(!equipment){
-      const ref = window.ma3daDoc(window.ma3daDB, "equipment", user.uid);
-      const snapshot = await window.ma3daGetDoc(ref);
-      if(!snapshot.exists()){
-        console.log("لا توجد بيانات للمعدة");
-        return false;
-      }
-      equipment = { id: snapshot.id, ...(snapshot.data() || {}) };
+    const ref =
+      window.ma3daDoc(
+        window.ma3daDB,
+        "equipment",
+        user.uid
+      );
+ 
+    const snapshot =
+      await window.ma3daGetDoc(
+        ref
+      );
+ 
+    if(!snapshot.exists()){
+ 
+      console.log(
+        "لا توجد بيانات للمعدة"
+      );
+ 
+      return false;
+ 
     }
+ 
+    const equipment =
+      snapshot.data();
  
     localStorage.setItem(
       "myEquipment",
@@ -3057,8 +3076,10 @@ if(saveOperatorDataBtn){
 /* 04 — وظائف صاحب المعدة: الصفحة الرئيسية */
 /* OPERATOR HOME */
  
-async function loadOperatorHome(equipmentRecord = null){
-  await loadOperatorDashboard(equipmentRecord);
+async function loadOperatorHome(){
+ 
+  await loadOperatorDashboard();
+ 
 }
  
 /* OPERATOR HELPERS */
@@ -3190,7 +3211,7 @@ async function openOperatorDashboard(){
 /* 04 — وظائف صاحب المعدة: لوحة التحكم والطلبات الحالية */
 /* OPERATOR DASHBOARD */
  
-async function loadOperatorDashboard(equipmentRecord = null){
+async function loadOperatorDashboard(){
  
   const user =
     await getOperatorCurrentUser();
@@ -3226,7 +3247,8 @@ async function loadOperatorDashboard(equipmentRecord = null){
  
   }
  
-  const equipment = equipmentRecord || await getOperatorEquipment();
+  const equipment =
+    await getOperatorEquipment();
  
   if(!equipment)
     return;
@@ -9545,7 +9567,16 @@ document.addEventListener("click", function(event){
     dashboard.appendChild(panel);
     return panel;
   }
-
+  function ensureRequesterRatingArea(){
+    const card=$('ma3daComplaintSendReplyBtn')?.parentElement;
+    if(!card || $('ma3daSupportStaffRating')) return;
+    const area=document.createElement('div');
+    area.id='ma3daSupportStaffRating';
+    area.style.cssText='margin-top:16px;padding:14px;border:1px solid #eadfc5;border-radius:12px;background:#fffdf8;';
+    area.hidden=true;
+    area.innerHTML='<h3>قيّم موظف الدعم</h3><p>بعد إغلاق الشكوى، قيّم تجربتك مع موظف الدعم.</p><div id="ma3daSupportRatingStars" role="group" aria-label="تقييم موظف الدعم" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-support-rating="1" aria-label="نجمة واحدة">☆</button><button type="button" data-support-rating="2" aria-label="نجمتان">☆</button><button type="button" data-support-rating="3" aria-label="ثلاث نجوم">☆</button><button type="button" data-support-rating="4" aria-label="أربع نجوم">☆</button><button type="button" data-support-rating="5" aria-label="خمس نجوم">☆</button></div><textarea id="ma3daSupportRatingComment" rows="2" maxlength="1000" placeholder="ملاحظتك (اختياري)" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea><p id="ma3daSupportRatingFeedback" role="status" aria-live="polite"></p><button id="ma3daSubmitSupportRatingBtn" class="main-btn" type="button">إرسال التقييم</button>';
+    card.appendChild(area);
+  }
   let selectedSupportRating=0;
   let activeTicket = null;
   let activeTicketMessagesUnsub = null;
@@ -9671,7 +9702,7 @@ async function loadOwnTickets(kind=activeListKind){
     if(!card || $('ma3daSupportStaffRating')) return;
     const area=document.createElement('div');area.id='ma3daSupportStaffRating';area.hidden=true;
     area.style.cssText='margin-top:16px;padding:14px;border:1px solid #eadfc5;border-radius:12px;background:#fffdf8;';
-    area.innerHTML='<h3>قيّم موظف الدعم</h3><p>بعد إغلاق الشكوى، قيّم تجربتك مع موظف الدعم.</p><div id="ma3daSupportRatingStars" role="group" aria-label="تقييم موظف الدعم" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-support-rating="1" aria-label="نجمة واحدة">☆</button><button type="button" data-support-rating="2" aria-label="نجمتان">☆</button><button type="button" data-support-rating="3" aria-label="ثلاث نجوم">☆</button><button type="button" data-support-rating="4" aria-label="أربع نجوم">☆</button><button type="button" data-support-rating="5" aria-label="خمس نجوم">☆</button></div><textarea id="ma3daSupportRatingComment" rows="2" maxlength="1000" placeholder="ملاحظتك (اختياري)" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea><p id="ma3daSupportRatingFeedback" role="status" aria-live="polite"></p><button id="ma3daSubmitSupportRatingBtn" class="main-btn" type="button">إرسال التقييم</button>';
+    area.innerHTML='<h3>قيّم موظف الدعم</h3><p>بعد إغلاق الشكوى، قيّم تجربتك مع موظف الدعم.</p><div role="group" aria-label="تقييم موظف الدعم" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" data-support-rating="1" aria-label="نجمة واحدة">☆</button><button type="button" data-support-rating="2" aria-label="نجمتان">☆</button><button type="button" data-support-rating="3" aria-label="ثلاث نجوم">☆</button><button type="button" data-support-rating="4" aria-label="أربع نجوم">☆</button><button type="button" data-support-rating="5" aria-label="خمس نجوم">☆</button></div><textarea id="ma3daSupportRatingComment" rows="2" maxlength="1000" placeholder="ملاحظتك (اختياري)" style="width:100%;box-sizing:border-box;margin-top:8px"></textarea><p id="ma3daSupportRatingFeedback" role="status" aria-live="polite"></p><button id="ma3daSubmitSupportRatingBtn" class="main-btn" type="button">إرسال التقييم</button>';
     card.appendChild(area);
   }
   async function submitRequesterSupportRating(){
