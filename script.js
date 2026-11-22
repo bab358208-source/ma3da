@@ -9950,7 +9950,7 @@ async function staffTicketRows(){
     try{
       await waitForFirebase();
       const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,'equipment'));
-      const rowsById=new Map();snap.forEach(d=>{const x=d.data()||{};const pendingEdit=x.editStatus==='pending'&&!!x.pendingChanges;const pendingNew=['pending','pending_verification','pending_approval'].includes(String(x.verificationStatus||'').toLowerCase())&&!x.pendingChanges&&x.equipmentStatus!=='cancelled'&&x.equipmentStatus!=='rejected';if(pendingEdit||pendingNew)rowsById.set(d.id,{id:d.id,...x,_reviewKind:pendingEdit?'edit':'new'});});const rows=[...rowsById.values()];
+      const rows=[];snap.forEach(d=>{const x=d.data()||{};if((x.editStatus==='pending'&&x.pendingChanges)||((x.verificationStatus==='pending'||!x.verificationStatus)&&!x.pendingChanges&&x.equipmentStatus!=='cancelled'))rows.push({id:d.id,...x,_reviewKind:x.pendingChanges?'edit':'new'});});
       rows.sort((a,b)=>(Number(b.editRequestedAt||b.createdAt||b.requestedAt||0)-Number(a.editRequestedAt||a.createdAt||a.requestedAt||0)));
       target.innerHTML=rows.length?rows.map(x=>{
         const c=x.pendingChanges||x;
@@ -9996,7 +9996,7 @@ async function staffTicketRows(){
       const snap=await window.ma3daGetDoc(ref);
       if(!snap.exists())throw new Error('المعدة غير موجودة.');
       const item=snap.data()||{};
-      if(item.pendingChanges || !['pending','pending_verification','pending_approval'].includes(String(item.verificationStatus||'').toLowerCase()) || item.equipmentStatus==='cancelled' || item.equipmentStatus==='rejected')throw new Error('هذه المعدة لم تعد بانتظار الاعتماد. حدّث قائمة المراجعة.');
+      if(item.pendingChanges || (item.verificationStatus!=='pending' && item.verificationStatus==='verified'))throw new Error('هذه المعدة لم تعد بانتظار الاعتماد.');
       let reason='';
       if(!approve){reason=prompt('اكتب سبب رفض إضافة المعدة ليظهر لصاحبها:');if(reason===null)return;if(!reason.trim())throw new Error('سبب الرفض مطلوب.');}
       const now=new Date();
@@ -13950,7 +13950,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
       /* زخرفة الهوية على كل أنواع الأزرار والروابط التفاعلية، في كل الأدوار والشاشات. */
       html[data-athar-identity] body :is(
-        button:not(.athar-identity-card),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],
+        button:not(.athar-identity-card):not(.athar-final-decision),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],
         a.button,a.btn,.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,
         .home-request-btn,.home-menu-item
       ) {
@@ -13963,7 +13963,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
         border-color:var(--athar-identity-accent,#c8a45b)!important;
       }
       html[data-athar-identity] body :is(
-        button:not(.athar-identity-card),[role="button"],a.button,a.btn,.btn,.main-btn,.primary-btn,
+        button:not(.athar-identity-card):not(.athar-final-decision),[role="button"],a.button,a.btn,.btn,.main-btn,.primary-btn,
         .secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item
       ) :is(span,strong,b,small,i,svg) {
         color:var(--athar-button-text,#171717)!important;
@@ -13977,7 +13977,7 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 
   /* يفرض زخرفة الهوية مباشرة على عناصر التفاعل حتى لا تطغى عليها قواعد CSS الأقدم. */
   function decorateAllControls(root=document){
-    const selector = 'button:not(.athar-identity-card),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item';
+    const selector = 'button:not(.athar-identity-card):not(.athar-final-decision),[role="button"],input[type="button"],input[type="submit"],input[type="reset"],a.button,a.btn,.btn,.main-btn,.primary-btn,.secondary-btn,.action-btn,.tab-btn,.nav-btn,.home-request-btn,.home-menu-item';
     const nodes = [];
     if (root.matches?.(selector)) nodes.push(root);
     root.querySelectorAll?.(selector).forEach(node=>nodes.push(node));
@@ -14235,103 +14235,83 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
 })();
 
 
-/* ATHAR — مراجعة تسجيل أصحاب المعدات ومسؤولي المشاريع */
+/* ATHAR — صفحة المسجلين الجدد داخل بوابة موظفي الدعم */
 (function initAtharRegistrationReview(){
-  if(window.__atharRegistrationReviewBound)return;
-  window.__atharRegistrationReviewBound=true;
-  const $=id=>document.getElementById(id);
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const pending=()=>{try{return JSON.parse(localStorage.getItem('atharPendingRegistration')||'null')}catch(_){return null}};
+  if(window.__atharRegistrationReviewBound)return;window.__atharRegistrationReviewBound=true;
+  const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const user=async()=>{await Promise.resolve(window.ma3daFirebaseReady);return window.ma3daAuth?.currentUser||(await window.ma3daGetCurrentUser?.());};
   const collection=()=>window.ma3daCollection(window.ma3daDB,'registrationRequests');
   async function rows(){if(!window.ma3daDB||!window.ma3daGetDocs)throw new Error('Firebase غير جاهز');const snap=await window.ma3daGetDocs(collection());return snap.docs.map(d=>({id:d.id,...(d.data()||{})}));}
-  let selectedSupportRegistration=null;
-  let selectedOwnerRegistration=null;
+  let activeTab='new',selectedSupportRegistration=null,zoomScale=1,compareSelection=[];
   const dateLabel=value=>{if(!value)return 'غير مسجل';const d=typeof value==='number'?new Date(value):(value?.toDate?value.toDate():new Date(value));return Number.isNaN(d.getTime())?'غير مسجل':d.toLocaleString('ar-SA');};
-  const isImageKey=key=>/(image|photo|picture|avatar|صورة)/i.test(String(key||''));
-  const renderReviewValue=(key,value)=>{
+  const isImageKey=key=>/(image|photo|picture|avatar|صورة|هوية|سجل|معدة)/i.test(String(key||''));
+  function renderReviewValue(key,value){
     if(value===null||value===undefined||value==='')return '';
     if(typeof value==='string'){
       const v=value.trim();
-      if(/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(v))return `<div class="athar-review-file"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener"><img src="${esc(v)}" alt="${esc(key)}" loading="lazy"></a><a href="${esc(v)}" target="_blank" rel="noopener">فتح الصورة بالحجم الكامل</a></div>`;
-      if(/^data:application\/pdf/i.test(v))return `<div class="athar-review-file"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener">فتح المستند PDF</a></div>`;
-      if(/^https?:\/\//i.test(v)){
-        const image=isImageKey(key)||/\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(v);
-        const pdf=/\.pdf(?:[?#]|$)/i.test(v);
-        return image?`<div class="athar-review-file"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener"><img src="${esc(v)}" alt="${esc(key)}" loading="lazy"></a><a href="${esc(v)}" target="_blank" rel="noopener">فتح الملف بالحجم الكامل</a></div>`:`<div class="athar-review-field"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener">${pdf?'فتح مستند PDF':'فتح الرابط / المرفق'}</a></div>`;
-      }
+      if(/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(v))return `<div class="athar-review-file"><b>${esc(key)}</b><img src="${esc(v)}" alt="${esc(key)}" loading="lazy" data-athar-review-image data-image-title="${esc(key)}"><div class="athar-review-image-actions"><button type="button" data-athar-image-open>تكبير ومعاينة</button><label><input type="checkbox" data-athar-compare-image> اختيار للمقارنة</label></div></div>`;
+      if(/^data:application\/pdf/i.test(v))return `<div class="athar-review-field"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener">فتح مستند PDF</a></div>`;
+      if(/^https?:\/\//i.test(v)){const image=isImageKey(key)||/\.(png|jpe?g|webp|gif)(?:[?#]|$)/i.test(v),pdf=/\.pdf(?:[?#]|$)/i.test(v);return image?`<div class="athar-review-file"><b>${esc(key)}</b><img src="${esc(v)}" alt="${esc(key)}" loading="lazy" data-athar-review-image data-image-title="${esc(key)}"><div class="athar-review-image-actions"><button type="button" data-athar-image-open>تكبير ومعاينة</button><label><input type="checkbox" data-athar-compare-image> اختيار للمقارنة</label></div></div>`:`<div class="athar-review-field"><b>${esc(key)}</b><a href="${esc(v)}" target="_blank" rel="noopener">${pdf?'فتح مستند PDF':'فتح الرابط / المرفق'}</a></div>`;}
       if(v.length>1200)return `<div class="athar-review-field"><b>${esc(key)}</b><span>مرفق طويل محفوظ في السجل (تعذر عرضه كنص).</span></div>`;
       return `<div class="athar-review-field"><b>${esc(key)}</b><span>${esc(v)}</span></div>`;
     }
     if(typeof value==='number'||typeof value==='boolean')return `<div class="athar-review-field"><b>${esc(key)}</b><span>${esc(String(value))}</span></div>`;
     if(Array.isArray(value))return `<section class="athar-review-subsection"><h4>${esc(key)}</h4>${value.length?value.map((v,i)=>renderReviewValue(`${key} ${i+1}`,v)).join(''):'<p>لا توجد عناصر.</p>'}</section>`;
-    if(typeof value==='object'){
-      if(typeof value.toDate==='function')return `<div class="athar-review-field"><b>${esc(key)}</b><span>${esc(dateLabel(value))}</span></div>`;
-      const entries=Object.entries(value).filter(([k])=>!['__proto__','constructor','prototype'].includes(k));
-      return `<section class="athar-review-subsection"><h4>${esc(key)}</h4>${entries.length?entries.map(([k,v])=>renderReviewValue(k,v)).join(''):'<p>لا توجد بيانات.</p>'}</section>`;
-    }
+    if(typeof value==='object'){if(typeof value.toDate==='function')return `<div class="athar-review-field"><b>${esc(key)}</b><span>${esc(dateLabel(value))}</span></div>`;const entries=Object.entries(value).filter(([k])=>!['__proto__','constructor','prototype'].includes(k));return `<section class="athar-review-subsection"><h4>${esc(key)}</h4>${entries.length?entries.map(([k,v])=>renderReviewValue(k,v)).join(''):'<p>لا توجد بيانات.</p>'}</section>`;}
     return '';
-  };
-  function renderRegistrationDetail(item,kind){
-    const target=$(kind==='support'?'supportRegistrationReviewContent':'ownerRegistrationDetailContent');if(!target)return;
-    const roleName=item.role==='operator'?'صاحب معدة':'صاحب / مسؤول مشروع';
-    const knownRootFields=new Set(['id','personalData','equipment','project','attachments','status','stage','submittedAt','createdAt','createdAtMs','updatedAt','assignedStaff','assignedStaffUid','assignedAt','supportReviewedBy','supportReviewedByUid','supportReviewedAt','supportReason','ownerReviewedBy','ownerReviewedByUid','ownerReviewedAt','ownerReason']);
-    const extraRootFields=Object.fromEntries(Object.entries(item).filter(([key])=>!knownRootFields.has(key)));
-    const roots=[['البيانات الشخصية',item.personalData||{}],...(item.equipment?[['بيانات المعدة',item.equipment]]:[]),...(item.project?[['بيانات المشروع',item.project]]:[]),...(item.attachments?[['المرفقات',item.attachments]]:[]),['بيانات التسجيل والحالة',{uid:item.uid||'',role:item.role||'',registrationType:item.registrationType||'',status:item.status||'',stage:item.stage||'',submittedAt:dateLabel(item.submittedAt),createdAt:dateLabel(item.createdAt),updatedAt:dateLabel(item.updatedAt),assignedStaff:item.assignedStaff||'',assignedStaffUid:item.assignedStaffUid||'',assignedAt:dateLabel(item.assignedAt),supportReviewedBy:item.supportReviewedBy||'',supportReviewedByUid:item.supportReviewedByUid||'',supportReviewedAt:dateLabel(item.supportReviewedAt),supportReason:item.supportReason||'',ownerReviewedBy:item.ownerReviewedBy||'',ownerReviewedByUid:item.ownerReviewedByUid||'',ownerReviewedAt:dateLabel(item.ownerReviewedAt),ownerReason:item.ownerReason||'',supportNotes:item.supportNotes||''}],...(Object.keys(extraRootFields).length?[['بقية بيانات السجل',extraRootFields]]:[])];
-    const ownerCanDecide=['support_approved','pending_owner'].includes(item.status);
-    const decisionButtons=kind==='support'?`<button type="button" class="support-btn support-primary" data-athar-support-approve="${esc(item.id)}">قبول مبدئي</button><button type="button" class="support-btn support-danger" data-athar-support-reject="${esc(item.id)}">رفض مبدئي</button>`:ownerCanDecide?`<button type="button" class="support-btn support-primary" data-athar-owner-approve="${esc(item.id)}">اعتماد نهائي</button><button type="button" class="support-btn support-danger" data-athar-owner-reject="${esc(item.id)}">رفض نهائي</button>`:`<p class="support-empty">لا يمكن الاعتماد النهائي قبل إكمال موظف الدعم للمراجعة المبدئية.</p>`;
-    target.innerHTML=`<div class="athar-review-detail-head"><div><h3>${kind==='support'?'مراجعة تسجيل':'تفاصيل التسجيل للاعتماد النهائي'} · ${roleName}</h3><p>رقم التسجيل: ${esc(item.id)} · الحالة: ${esc(item.status||'غير محددة')}</p></div></div>${roots.map(([label,data])=>renderReviewValue(label,data)).join('')}<div class="athar-review-decision">${decisionButtons}</div>`;
   }
-  function openSupportReview(id,list){const item=list.find(x=>x.id===id);if(!item)return;selectedSupportRegistration=item;renderRegistrationDetail(item,'support');const page=$('supportRegistrationReviewPage');if(page)page.hidden=false;const listEl=$('supportRegistrationsList');if(listEl)listEl.hidden=true;page?.scrollIntoView({behavior:'smooth',block:'start'});}
-  function closeSupportReview(){const page=$('supportRegistrationReviewPage');if(page)page.hidden=true;const listEl=$('supportRegistrationsList');if(listEl)listEl.hidden=false;selectedSupportRegistration=null;}
-  function renderSupport(list){const target=$('supportRegistrationsList');if(!target)return;const items=list.filter(x=>x.status==='pending_support');if(!items.length){target.innerHTML='<div class="support-empty">لا توجد تسجيلات بانتظار المراجعة المبدئية.</div>';return;}target.innerHTML=items.map(x=>{const p=x.personalData||{},d=x.equipment||x.project||{};return `<article class="support-row"><h3>${x.role==='operator'?'تسجيل صاحب معدة':'تسجيل صاحب / مسؤول مشروع'}</h3><p><b>الاسم:</b> ${esc(p.name)} · <b>الجوال:</b> ${esc(p.phone)} · <b>البريد:</b> ${esc(p.email)}</p><p><b>${x.role==='operator'?'المعدة':'المشروع'}:</b> ${esc(d.type||d.name||d.projectName||'—')} ${esc(d.model||'')} · <b>المدينة:</b> ${esc(d.city||p.city||'—')}</p><p><b>تاريخ الإرسال:</b> ${dateLabel(x.submittedAt||x.createdAt)}</p><button type="button" class="support-btn support-primary" data-athar-support-open="${esc(x.id)}">فتح صفحة التدقيق الكامل</button></article>`}).join('');}
-  async function loadSupport(){const authorized=await requireSupportEmployee();if(!authorized)return;const target=$('supportRegistrationsList');if(target)target.textContent='جارٍ تحميل التسجيلات...';try{const list=await rows();const unique=[...new Map(list.map(item=>[item.id,item])).values()];renderSupport(unique)}catch(e){if(target)target.textContent=e?.code==='permission-denied'?'صلاحيات Firebase تمنع موظف الدعم من قراءة طلبات التسجيل. يلزم تعديل قواعد Firestore.':(e.message||'تعذر تحميل التسجيلات.');}}
-  window.atharLoadSupportRegistrations=loadSupport;
-  function renderOwner(list,mode){const target=$('ownerRegistrationPanelList');if(!target)return;const items=mode==='final'?list.filter(x=>['support_approved','pending_owner'].includes(x.status)):list.filter(x=>!['owner_approved','owner_rejected'].includes(x.status));if(!items.length){target.innerHTML='<div class="support-empty">لا توجد طلبات ضمن هذا القسم.</div>';return;}target.innerHTML=items.map(x=>{const p=x.personalData||{};const wait=Math.max(0,Date.now()-Number(x.submittedAt||x.createdAt||Date.now()));const hours=Math.floor(wait/3600000);return `<article class="support-row"><h3>${x.role==='operator'?'صاحب معدة':'صاحب / مسؤول مشروع'} — ${esc(p.name)}</h3><p>الجوال: ${esc(p.phone)} · البريد: ${esc(p.email)}</p><p>الحالة: ${esc(x.status)} · موظف الدعم: ${esc(x.assignedStaff||x.supportReviewedBy||'غير مسند')}</p><p>مدة الانتظار: ${hours} ساعة · الإنذارات: ${Number(x.alertCount||0)} · التصعيدات: ${Number(x.escalationCount||0)}</p>${x.supportReason?`<p>ملاحظة الدعم: ${esc(x.supportReason)}</p>`:''}<button type="button" class="support-btn" data-athar-owner-open="${esc(x.id)}">عرض البيانات والمرفقات</button></article>`}).join('');}
-  async function loadOwner(mode){const target=$('ownerRegistrationPanelList');if(target)target.textContent='جارٍ تحميل الطلبات...';try{renderOwner(await rows(),mode);const panel=$('ownerRegistrationPanel');if(panel)panel.hidden=false;$('ownerRegistrationPanelTitle').textContent=mode==='final'?'الاعتماد النهائي للمسجلين الجدد':'مراقبة الدعم وطلبات التسجيل المتعثرة';}catch(e){if(target)target.textContent=e.message||'تعذر تحميل الطلبات.';}}
-  async function decision(id,status,role){
-    const supportActive=$('supportDashboardScreen')?.classList.contains('active');
-    const ownerActive=$('ownerPortalDashboardScreen')?.classList.contains('active');
-    if(role==='support'&&!supportActive)throw new Error('هذا الإجراء مخصص لموظفي الدعم داخل بوابتهم.');if(role==='support'&&!await requireSupportEmployee())throw new Error('يجب تسجيل الدخول بحساب موظف دعم معتمد.');
-    if(role==='owner'&&!ownerActive)throw new Error('الاعتماد النهائي مخصص لمالك التطبيق فقط.');
-    const u=await user();if(!u?.uid)throw new Error('سجّل الدخول أولاً.');const ref=window.ma3daDoc(window.ma3daDB,'registrationRequests',id);const snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب التسجيل غير موجود.');const x=snap.data()||{};
-    if(role==='support'&&x.status!=='pending_support')throw new Error('هذا التسجيل لم يعد بانتظار المراجعة المبدئية. حدّث القائمة.');
-    if(role==='owner'&&!['support_approved','pending_owner'].includes(x.status))throw new Error('لا يمكن اتخاذ قرار نهائي قبل قبول موظف الدعم المبدئي.');
-    const reason=status.endsWith('rejected')?String(await window.ma3daRequestText?.('سبب الرفض','اكتب سبب الرفض')||prompt('اكتب سبب الرفض:')||'').trim():'';if(status.endsWith('rejected')&&!reason)throw new Error('سبب الرفض مطلوب.');const now=Date.now();const update={status,updatedAt:now};if(role==='support'){update.supportReviewedBy=u.email||u.uid;update.supportReviewedByUid=u.uid;update.supportReviewedAt=now;if(reason)update.supportReason=reason;}else{update.ownerReviewedBy=u.email||u.uid;update.ownerReviewedByUid=u.uid;update.ownerReviewedAt=now;if(reason)update.ownerReason=reason;}
-    if(status==='owner_approved'){
-      const p=x.personalData||{};if(x.role==='operator'){
-        await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'operators',x.uid),{uid:x.uid,operatorId:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',email:p.email||u.email||'',approved:true,updatedAt:now},{merge:true});
-        await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'equipment',x.uid),{...(x.equipment||{}),ownerId:x.uid,operatorId:x.uid,ownerEmail:p.email||'',verificationStatus:'pending_verification',approved:true,updatedAt:now},{merge:true});
-      }else{
-        await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'contractors',x.uid),{uid:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',company:p.company||'',email:p.email||'',role:'contractor',approved:true,updatedAt:now},{merge:true});
-        const project=x.project||{};const projectRef=window.ma3daDoc(window.ma3daDB,'projects',`registration_${x.uid}`);await window.ma3daSetDoc(projectRef,{...project,contractorId:x.uid,ownerId:x.uid,status:'active',createdAt:new Date(now),updatedAt:new Date(now)},{merge:true});
-      }
-    }
+  function renderRegistrationDetail(item){
+    const target=$('supportRegistrationReviewContent');if(!target)return;const roleName=item.role==='operator'?'صاحب معدة':'صاحب / مسؤول مشروع';
+    const known=new Set(['id','personalData','equipment','project','attachments','status','stage','submittedAt','createdAt','createdAtMs','updatedAt','assignedStaff','assignedStaffUid','assignedAt','supportReviewedBy','supportReviewedByUid','supportReviewedAt','supportReason','ownerReviewedBy','ownerReviewedByUid','ownerReviewedAt','ownerReason']);
+    const extra=Object.fromEntries(Object.entries(item).filter(([k])=>!known.has(k)));
+    const roots=[['البيانات الشخصية',item.personalData||{}],...(item.equipment?[['بيانات المعدة',item.equipment]]:[]),...(item.project?[['بيانات المشروع',item.project]]:[]),...(item.attachments?[['الصور والمستندات',item.attachments]]:[]),['بيانات التسجيل والحالة',{رقم_التسجيل:item.id,نوع_الحساب:roleName,الحالة:item.status||'',تاريخ_الإرسال:dateLabel(item.submittedAt||item.createdAt),ملاحظات_الدعم:item.supportReason||''}],...(Object.keys(extra).length?[['بيانات إضافية',extra]]:[])];
+    target.innerHTML=`<div class="athar-review-detail-head"><div><h3>تفاصيل التسجيل · ${esc(roleName)}</h3><p>رقم التسجيل: ${esc(item.id)} · الحالة: ${esc(item.status||'غير محددة')}</p></div></div>${roots.map(([label,data])=>`<section class="athar-review-subsection"><h4>${esc(label)}</h4>${renderReviewValue(label,data)}</section>`).join('')}<div class="athar-review-decision"><button type="button" class="athar-final-decision" data-athar-final-reject="${esc(item.id)}">رفض</button><button type="button" class="athar-final-decision" data-athar-final-approve="${esc(item.id)}">قبول نهائي</button></div>`;
+    updateCompareBar();
+  }
+  function openReview(id,list){const item=list.find(x=>x.id===id);if(!item)return;selectedSupportRegistration=item;renderRegistrationDetail(item);$('supportRegistrationReviewPage').hidden=false;$('supportRegistrationsList').hidden=true;$('supportRegistrationReviewPage').scrollIntoView({behavior:'smooth',block:'start'});}
+  function closeReview(){$('supportRegistrationReviewPage').hidden=true;$('supportRegistrationsList').hidden=false;selectedSupportRegistration=null;compareSelection=[];updateCompareBar();}
+  function isFinal(x){return ['owner_approved','owner_rejected','support_rejected'].includes(String(x.status||''));}
+  function waitMs(x){const raw=x.submittedAt||x.createdAt||x.createdAtMs||Date.now();const n=typeof raw==='number'?raw:(raw?.toMillis?raw.toMillis():(raw?.toDate?raw.toDate().getTime():new Date(raw).getTime()));return Math.max(0,Date.now()-(Number.isFinite(n)?n:Date.now()));}
+  function renderSupport(list){
+    const target=$('supportRegistrationsList');if(!target)return;const pending=list.filter(x=>['pending_support','support_approved','pending_owner'].includes(x.status)&&!isFinal(x));
+    const fresh=pending.filter(x=>x.status==='pending_support'&&waitMs(x)<24*3600000);
+    const stalled=pending.filter(x=>x.status!=='pending_support'||waitMs(x)>=24*3600000);
+    $('atharNewRegistrationsCount').textContent=String(fresh.length);$('atharStalledRegistrationsCount').textContent=String(stalled.length);
+    const items=activeTab==='new'?fresh:stalled;
+    if(!items.length){target.innerHTML=`<div class="support-empty">${activeTab==='new'?'لا توجد تسجيلات جديدة بانتظار المراجعة.':'لا توجد طلبات تسجيل متعثرة حاليًا.'}</div>`;return;}
+    target.innerHTML=items.sort((a,b)=>waitMs(b)-waitMs(a)).map(x=>{const p=x.personalData||{},d=x.equipment||x.project||{},hours=Math.floor(waitMs(x)/3600000);return `<article class="support-row"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>${x.role==='operator'?'تسجيل صاحب معدة':'تسجيل صاحب / مسؤول مشروع'}</h3><span class="support-badge">${x.status==='pending_support'?'بانتظار المراجعة': 'يحتاج متابعة'}</span></div><p><b>الاسم:</b> ${esc(p.name||p.company||'غير مسجل')} · <b>الجوال:</b> ${esc(p.phone||'—')} · <b>البريد:</b> ${esc(p.email||'—')}</p><p><b>${x.role==='operator'?'المعدة':'المشروع'}:</b> ${esc(d.type||d.name||d.projectName||'—')} ${esc(d.model||'')} · <b>المدينة:</b> ${esc(d.city||p.city||'—')}</p><p><b>تاريخ الإرسال:</b> ${dateLabel(x.submittedAt||x.createdAt)} · <b>مدة الانتظار:</b> ${hours} ساعة</p><button type="button" class="support-btn support-primary" data-athar-support-open="${esc(x.id)}">فتح تفاصيل الطلب</button></article>`}).join('');
+  }
+  async function loadSupport(){if(!await requireSupportEmployee())return;const target=$('supportRegistrationsList');if(target)target.textContent='جارٍ تحميل التسجيلات...';try{renderSupport(await rows());}catch(e){if(target)target.textContent=e.message||'تعذر تحميل التسجيلات.';}}
+  async function finalDecision(id,approved){if(!$('supportDashboardScreen')?.classList.contains('active'))throw new Error('هذا الإجراء مخصص لموظفي الدعم.');if(!await requireSupportEmployee())throw new Error('يجب تسجيل الدخول بحساب موظف دعم معتمد.');const u=await user();if(!u?.uid)throw new Error('سجّل الدخول أولًا.');const ref=window.ma3daDoc(window.ma3daDB,'registrationRequests',id),snap=await window.ma3daGetDoc(ref);if(!snap.exists())throw new Error('طلب التسجيل غير موجود.');const x=snap.data()||{};if(!['pending_support','support_approved','pending_owner'].includes(x.status))throw new Error('حالة الطلب تغيرت. حدّث القائمة.');let reason='';if(!approved){reason=String(prompt('اكتب سبب رفض التسجيل:')||'').trim();if(!reason)throw new Error('سبب الرفض مطلوب.');}
+    const now=Date.now(),update={status:approved?'owner_approved':'owner_rejected',updatedAt:now,ownerReviewedBy:u.email||u.uid,ownerReviewedByUid:u.uid,ownerReviewedAt:now,finalDecisionBy:u.uid,finalDecisionAt:now};if(reason)update.ownerReason=reason;
+    if(approved){const p=x.personalData||{};if(!x.uid)throw new Error('رقم حساب مقدم الطلب غير موجود في سجل التسجيل.');if(x.role==='operator'){
+      await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'operators',x.uid),{uid:x.uid,operatorId:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',email:p.email||u.email||'',approved:true,updatedAt:now},{merge:true});
+      await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'equipment',x.uid),{...(x.equipment||{}),ownerId:x.uid,operatorId:x.uid,ownerEmail:p.email||'',verificationStatus:'pending_verification',approved:true,updatedAt:now},{merge:true});
+    }else{
+      await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'contractors',x.uid),{uid:x.uid,name:p.name||'',phone:p.phone||'',city:p.city||'',company:p.company||'',email:p.email||'',role:'contractor',approved:true,updatedAt:now},{merge:true});
+      const project=x.project||{};await window.ma3daSetDoc(window.ma3daDoc(window.ma3daDB,'projects',`registration_${x.uid}`),{...project,contractorId:x.uid,ownerId:x.uid,status:'active',createdAt:new Date(now),updatedAt:new Date(now)},{merge:true});
+    }}
     await window.ma3daUpdateDoc(ref,update);
   }
-  const ownerDetailsTitle=$('ownerAdminDetailsTitle'),ownerActions=$('ownerRegistrationActions');
-  function syncOwnerRegistrationActions(){if(!ownerActions)return;const dashboard=$('ownerPortalDashboardScreen');ownerActions.style.display=dashboard?.classList.contains('active')&&!$('ownerAdminDetails')?.hidden?'flex':'none';}
-  if(ownerDetailsTitle&&typeof MutationObserver!=='undefined'){new MutationObserver(syncOwnerRegistrationActions).observe(ownerDetailsTitle,{childList:true,characterData:true,subtree:true});syncOwnerRegistrationActions();}
-
-  document.addEventListener('click',async event=>{
-    const t=event.target.closest('button');if(!t)return;
-    try{
-      if(t.id==='supportRegistrationsRefreshBtn'){await loadSupport();return;}
-      if(t.id==='supportRegistrationReviewBackBtn'){closeSupportReview();return;}
-      if(t.dataset.atharSupportOpen){const list=await rows();openSupportReview(t.dataset.atharSupportOpen,list);return;}
-      if(t.dataset.atharSupportApprove){await decision(t.dataset.atharSupportApprove,'support_approved','support');closeSupportReview();await loadSupport();alert('تم القبول المبدئي وإحالة الطلب لمالك التطبيق.');return;}
-      if(t.dataset.atharSupportReject){await decision(t.dataset.atharSupportReject,'support_rejected','support');closeSupportReview();await loadSupport();alert('تم الرفض المبدئي مع حفظ السبب.');return;}
-      if(t.id==='ownerFinalRegistrationsBtn'){await loadOwner('final');return;}
-      if(t.dataset.atharOwnerOpen){const list=await rows();const item=list.find(x=>x.id===t.dataset.atharOwnerOpen);if(item){selectedOwnerRegistration=item;renderRegistrationDetail(item,'owner');const box=$('ownerRegistrationDetail');if(box)box.hidden=false;box?.scrollIntoView({behavior:'smooth',block:'start'});}return;}
-      if(t.id==='ownerRegistrationMonitoringBtn'){await loadOwner('monitor');return;}
-      if(t.id==='ownerRegistrationPanelRefreshBtn'){const title=$('ownerRegistrationPanelTitle')?.textContent||'';await loadOwner(title.includes('الاعتماد')?'final':'monitor');return;}
-      if(t.dataset.atharOwnerApprove){await decision(t.dataset.atharOwnerApprove,'owner_approved','owner');if($('ownerRegistrationDetail'))$('ownerRegistrationDetail').hidden=true;await loadOwner('final');alert('تم الاعتماد النهائي وإنشاء سجلات الحساب والمعدة أو المشروع.');return;}
-      if(t.dataset.atharOwnerReject){await decision(t.dataset.atharOwnerReject,'owner_rejected','owner');if($('ownerRegistrationDetail'))$('ownerRegistrationDetail').hidden=true;await loadOwner('final');alert('تم رفض التسجيل نهائياً مع حفظ السبب.');return;}
-      if(t.id==='atharRegistrationSubmittedBackBtn'){if(typeof showScreen==='function')showScreen('phoneScreen');return;}
-    }catch(e){console.error('ATHAR registration review:',e);alert(e.message||'تعذر تنفيذ الإجراء. تحقق من صلاحيات Firebase.');}
-  });
+  function updateCompareBar(){const bar=$('atharRegistrationCompareBar');if(!bar)return;bar.hidden=compareSelection.length===0;$('atharRegistrationCompareCount').textContent=`تم اختيار ${compareSelection.length} من صورتين`;$('atharRegistrationCompareBtn').disabled=compareSelection.length!==2;}
+  function showImage(img){const dialog=$('atharRegistrationImageDialog'),preview=$('atharRegistrationImagePreview');if(!img||!dialog||!preview)return;zoomScale=1;preview.src=img.src;preview.style.width='auto';preview.style.height='auto';preview.style.maxWidth='100%';preview.style.maxHeight='100%';$('atharRegistrationImageTitle').textContent=img.dataset.imageTitle||'معاينة الصورة';dialog.showModal?.();}
+  function setZoom(delta){zoomScale=Math.max(.25,Math.min(4,zoomScale+delta));const img=$('atharRegistrationImagePreview');if(img){img.style.maxWidth='none';img.style.maxHeight='none';img.style.width=(zoomScale*100)+'%';img.style.height='auto';}}
+  document.addEventListener('change',e=>{if(!e.target.matches('#supportDashboardScreen [data-athar-compare-image]'))return;const img=e.target.closest('.athar-review-file')?.querySelector('[data-athar-review-image]');if(!img)return;const entry={src:img.src,title:img.dataset.imageTitle||'مستند'};if(e.target.checked){if(compareSelection.length>=2){e.target.checked=false;alert('يمكن اختيار صورتين فقط للمقارنة.');return;}compareSelection.push(entry);}else compareSelection=compareSelection.filter(x=>x.src!==entry.src);updateCompareBar();});
+  document.addEventListener('click',async event=>{const t=event.target.closest('button');if(!t)return;try{
+    if(t.id==='supportRegistrationsRefreshBtn'){await loadSupport();return;}if(t.id==='supportRegistrationReviewBackBtn'){closeReview();return;}
+    if(t.dataset.registrationTab){activeTab=t.dataset.registrationTab;document.querySelectorAll('[data-registration-tab]').forEach(b=>{const on=b===t;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));});await loadSupport();return;}
+    if(t.dataset.atharSupportOpen){openReview(t.dataset.atharSupportOpen,await rows());return;}
+    if(t.dataset.atharFinalApprove||t.dataset.atharFinalReject){const id=t.dataset.atharFinalApprove||t.dataset.atharFinalReject,approved=!!t.dataset.atharFinalApprove;t.disabled=true;await finalDecision(id,approved);closeReview();await loadSupport();alert(approved?'تم القبول النهائي وإنشاء سجلات الحساب والمعدة أو المشروع.':'تم رفض التسجيل نهائيًا مع حفظ السبب.');return;}
+    if(t.hasAttribute('data-athar-image-open')){showImage(t.closest('.athar-review-file')?.querySelector('[data-athar-review-image]'));return;}
+    if(t.id==='atharRegistrationZoomIn'){setZoom(.25);return;}if(t.id==='atharRegistrationZoomOut'){setZoom(-.25);return;}if(t.id==='atharRegistrationZoomReset'){zoomScale=1;const img=$('atharRegistrationImagePreview');if(img){img.style.width='auto';img.style.height='auto';img.style.maxWidth='100%';img.style.maxHeight='100%';}return;}
+    if(t.id==='atharRegistrationImageClose')$('atharRegistrationImageDialog').close();
+    if(t.id==='atharRegistrationCompareClear'){compareSelection=[];document.querySelectorAll('[data-athar-compare-image]').forEach(c=>c.checked=false);updateCompareBar();return;}
+    if(t.id==='atharRegistrationCompareBtn'&&compareSelection.length===2){$('atharRegistrationCompareImages').innerHTML=compareSelection.map(x=>`<figure><figcaption>${esc(x.title)}</figcaption><img src="${esc(x.src)}" alt="${esc(x.title)}"></figure>`).join('');$('atharRegistrationCompareDialog').showModal();return;}
+    if(t.id==='atharRegistrationCompareClose')$('atharRegistrationCompareDialog').close();
+  }catch(e){console.error('ATHAR registration review:',e);alert(e.message||'تعذر تنفيذ الإجراء. تحقق من صلاحيات Firebase.');}finally{if(t.isConnected)t.disabled=false;}});
+  window.atharLoadSupportRegistrations=loadSupport;
+  document.addEventListener('click',e=>{if(e.target.closest('#supportDashboardScreen [data-support-section="registrations"]'))loadSupport();});
 })();
-
 
 /* =========================================================
    ATHAR — دورة طلب العميل الجديدة (14 مرحلة)
