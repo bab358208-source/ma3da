@@ -110,6 +110,35 @@
   @media(max-width:360px){#roleScreen .athar-footer-links{gap:5px}#roleScreen .athar-footer-link{min-height:82px;font-size:11px!important;border-radius:12px!important}}
 </style>
 
+
+<style id="athar-registration-hub-styles">
+#supportDashboardScreen .athar-registration-hub{direction:rtl;text-align:right;background:#fff!important;border:1px solid var(--athar-identity-frame,var(--athar-identity-accent,#c8a45b))!important;border-radius:20px;padding:clamp(12px,2vw,24px);}
+#supportDashboardScreen .athar-registration-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#supportDashboardScreen .athar-registration-heading h2{margin:0;color:var(--athar-identity-primary,#171717)}
+#supportDashboardScreen .athar-registration-heading p{margin:6px 0;color:#777}
+#supportDashboardScreen .athar-registration-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+#supportDashboardScreen .athar-registration-tabs button{min-height:54px;border:1px solid var(--athar-identity-frame,#c8a45b)!important;border-radius:14px;background:var(--athar-button-bg,#d6b45e)!important;color:var(--athar-button-text,#171717)!important;font:inherit;font-weight:800;cursor:pointer}
+#supportDashboardScreen .athar-registration-tabs button.active{outline:2px solid var(--athar-identity-accent,#c8a45b);outline-offset:2px}
+.athar-registration-tabs span{display:inline-grid;place-items:center;min-width:24px;height:24px;margin-inline-start:7px;border-radius:50%;background:#c93434;color:white;font-size:12px}
+.athar-registration-hub .support-row{border-color:var(--athar-identity-frame,#c8a45b);background:#fff;border-radius:14px;padding:16px}
+.athar-registration-hub .athar-review-decision{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.athar-registration-hub .athar-review-decision button{min-height:54px;border-radius:14px;font-weight:900;font-size:16px}
+.athar-registration-hub .athar-review-decision [data-athar-final-approve]{background:var(--athar-button-bg,#d6b45e)!important;color:var(--athar-button-text,#171717)!important;border:2px solid var(--athar-identity-accent,#c8a45b)!important}
+.athar-registration-hub .athar-review-decision [data-athar-final-reject]{background:#c93434!important;color:#fff!important;border:2px solid #c93434!important}
+.athar-registration-hub .athar-review-file{display:inline-flex;vertical-align:top;flex-direction:column;gap:8px;width:min(100%,260px);padding:10px;margin:7px;border:1px solid var(--athar-identity-frame,#c8a45b);border-radius:13px;background:#fff}
+.athar-registration-hub .athar-review-file img{width:100%;height:170px;object-fit:contain;background:#f7f7f7;border-radius:9px;cursor:zoom-in}
+.athar-review-image-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.athar-review-image-actions button,.athar-review-image-actions label{font:inherit;font-size:12px;padding:6px 9px;border:1px solid var(--athar-identity-accent,#c8a45b);border-radius:8px;background:var(--athar-button-bg,#fff);color:var(--athar-button-text,#171717);cursor:pointer}
+.athar-registration-compare-bar{position:sticky;bottom:8px;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:12px;border:1px solid var(--athar-identity-frame,#c8a45b);border-radius:14px;background:#fff;box-shadow:0 5px 22px #0002}
+.athar-registration-image-dialog,.athar-registration-compare-dialog{width:min(94vw,900px);max-width:900px;border:1px solid var(--athar-identity-frame,#c8a45b);border-radius:18px;padding:16px;background:#fff;color:#171717}
+.athar-registration-image-dialog::backdrop,.athar-registration-compare-dialog::backdrop{background:#0009}
+.athar-image-dialog-head,.athar-image-dialog-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.athar-image-zoom-stage{height:min(65vh,650px);overflow:auto;display:grid;place-items:center;background:#f5f5f5;border-radius:12px;margin:12px 0}
+.athar-image-zoom-stage img{max-width:none;max-height:none;transform-origin:center;object-fit:contain}
+.athar-compare-images{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.athar-compare-images figure{margin:0;padding:10px;border:1px solid #ddd;border-radius:12px;min-width:0}.athar-compare-images img{width:100%;height:55vh;object-fit:contain;background:#f5f5f5}
+@media(max-width:600px){#supportDashboardScreen .athar-registration-tabs{grid-template-columns:1fr}.athar-compare-images{grid-template-columns:1fr}.athar-compare-images img{height:38vh}.athar-registration-hub .athar-review-decision{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 
@@ -4120,9 +4149,7 @@
 </section>
 
 <!-- نهاية مركز التحكم الشامل -->
-    <section id="ownerAdminDetails" class="owner-admin-details" hidden aria-live="polite"><div class="owner-admin-details-head"><h2 id="ownerAdminDetailsTitle">التفاصيل</h2><button type="button" class="support-btn" id="ownerAdminDetailsClose">إغلاق ✕</button></div><div id="ownerAdminDetailsContent"></div><div id="ownerRegistrationActions" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button type="button" class="support-btn support-primary" id="ownerFinalRegistrationsBtn">الاعتماد النهائي للمسجلين الجدد</button><button type="button" class="support-btn" id="ownerRegistrationMonitoringBtn">مراقبة الدعم وطلبات التسجيل المتعثرة</button></div></section>
-    <section id="ownerRegistrationPanel" class="support-panel" hidden><h2 id="ownerRegistrationPanelTitle">طلبات التسجيل</h2><button type="button" class="support-btn" id="ownerRegistrationPanelRefreshBtn">تحديث</button><div id="ownerRegistrationPanelList"></div><section id="ownerRegistrationDetail" class="athar-registration-review-page" hidden><div class="athar-review-toolbar"><strong>مراجعة المالك قبل الاعتماد النهائي</strong></div><div id="ownerRegistrationDetailContent"></div></section></section>
-  </div></div>
+    <section id="ownerAdminDetails" class="owner-admin-details" hidden aria-live="polite"><div class="owner-admin-details-head"><h2 id="ownerAdminDetailsTitle">التفاصيل</h2><button type="button" class="support-btn" id="ownerAdminDetailsClose">إغلاق ✕</button></div><div id="ownerAdminDetailsContent"></div></section></div></div>
 </section>
 
 <!-- بوابة دخول مالك المنصة المستقلة والمخفية -->
@@ -4187,9 +4214,17 @@
       <button class="support-btn" data-support-section="settings" type="button">الإعدادات</button>
       <button class="support-btn" id="supportLogoutNavBtn" type="button">تسجيل الخروج</button>
     </div>
-    <div id="supportSectionRegistrations" class="support-section support-panel"><h2>مراجعة التسجيلات الجديدة</h2><p>راجع بيانات صاحب المعدة أو مسؤول المشروع والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.</p><button id="supportRegistrationsRefreshBtn" class="support-btn" type="button">تحديث التسجيلات</button><div id="supportRegistrationsList" class="support-list">جارٍ تحميل التسجيلات...</div><section id="supportRegistrationReviewPage" class="athar-registration-review-page" hidden><div class="athar-review-toolbar"><button id="supportRegistrationReviewBackBtn" type="button" class="support-btn">← العودة إلى التسجيلات</button><strong>صفحة تدقيق بيانات التسجيل</strong></div><div id="supportRegistrationReviewContent"></div></section></div>
+    <div id="supportSectionRegistrations" class="support-section support-panel athar-registration-hub">
+      <div class="athar-registration-heading"><div><h2>المسجلين الجدد</h2><p>مراجعة بيانات التسجيل والمستندات قبل اتخاذ القرار النهائي.</p></div><button id="supportRegistrationsRefreshBtn" class="support-btn" type="button">⟳ تحديث</button></div>
+      <div class="athar-registration-tabs" role="tablist" aria-label="طلبات التسجيل"><button id="atharNewRegistrationsTab" class="active" data-registration-tab="new" type="button" role="tab" aria-selected="true">المسجلين الجدد <span id="atharNewRegistrationsCount">0</span></button><button id="atharStalledRegistrationsTab" data-registration-tab="stalled" type="button" role="tab" aria-selected="false">طلبات التسجيل المتعثرة <span id="atharStalledRegistrationsCount">0</span></button></div>
+      <div id="supportRegistrationsList" class="support-list">جارٍ تحميل التسجيلات...</div>
+      <section id="supportRegistrationReviewPage" class="athar-registration-review-page" hidden><div class="athar-review-toolbar"><button id="supportRegistrationReviewBackBtn" type="button" class="support-btn">← العودة إلى التسجيلات</button><strong>تفاصيل طلب التسجيل</strong></div><div id="supportRegistrationReviewContent"></div></section>
+      <div id="atharRegistrationCompareBar" class="athar-registration-compare-bar" hidden><span id="atharRegistrationCompareCount">اختر صورتين للمقارنة</span><button id="atharRegistrationCompareBtn" class="support-btn" type="button">مقارنة الصور المحددة</button><button id="atharRegistrationCompareClear" class="support-btn" type="button">مسح التحديد</button></div>
+      <dialog id="atharRegistrationImageDialog" class="athar-registration-image-dialog"><div class="athar-image-dialog-head"><strong id="atharRegistrationImageTitle">معاينة الصورة</strong><button id="atharRegistrationImageClose" type="button" class="support-btn">إغلاق ✕</button></div><div class="athar-image-zoom-stage"><img id="atharRegistrationImagePreview" alt="معاينة المستند"></div><div class="athar-image-dialog-actions"><button id="atharRegistrationZoomOut" type="button" class="support-btn">− تصغير</button><button id="atharRegistrationZoomReset" type="button" class="support-btn">إعادة الحجم</button><button id="atharRegistrationZoomIn" type="button" class="support-btn">+ تكبير</button></div></dialog>
+      <dialog id="atharRegistrationCompareDialog" class="athar-registration-compare-dialog"><div class="athar-image-dialog-head"><strong>مقارنة المستندات</strong><button id="atharRegistrationCompareClose" type="button" class="support-btn">إغلاق ✕</button></div><div id="atharRegistrationCompareImages" class="athar-compare-images"></div></dialog>
+    </div>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة إضافات وتعديلات المعدات</h2><p>راجع كل معدة جديدة مسجلة والتعديلات المقترحة على المعدات قبل اعتمادها أو رفضها.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة تعديلات المعدات</h2><p>راجع البيانات السابقة والتعديلات المقترحة قبل اعتماد القرار.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
     <!-- أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم -->
 <div id="supportSectionAiQuestions"
      class="support-section support-panel">
@@ -5243,4 +5278,125 @@ window.ma3daOrderBy =
     </div>
   </div>
 
-  <p id="ma3daAiStatus" class="ma3da-ai-status" role="st
+  <p id="ma3daAiStatus" class="ma3da-ai-status" role="status"></p>
+
+  <form id="ma3daAiForm" class="ma3da-ai-form">
+    <input
+      id="ma3daAiInput"
+      type="text"
+      maxlength="1000"
+      placeholder="اكتب سؤالك هنا..."
+      autocomplete="off"
+      required
+    >
+    <button id="ma3daAiSend" type="submit">إرسال</button>
+  </form>
+</section>
+<!-- صفحة صندوق أسئلة المساعد لموظفي الدعم -->
+<section id="ma3daAiSupportPage" class="ma3da-ai-admin-page" hidden dir="rtl">
+  <header class="ma3da-ai-admin-header">
+    <div>
+      <h2>أسئلة المساعد الذكي</h2>
+      <p>الأسئلة التي لم يجد المساعد لها إجابة معتمدة</p>
+    </div>
+    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
+  </header>
+
+  <div class="ma3da-ai-admin-tabs">
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
+      الأسئلة الجديدة
+    </button>
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
+      تم الرد
+    </button>
+    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
+      المغلقة
+    </button>
+  </div>
+
+  <div id="ma3daAiSupportAdminList"></div>
+
+  <div id="ma3daAiSupportConversation" hidden>
+    <h3 id="ma3daAiSupportQuestionTitle"></h3>
+    <div id="ma3daAiSupportMessages" class="ma3da-ai-messages"></div>
+    <form id="ma3daAiSupportReplyForm">
+      <textarea id="ma3daAiSupportReply" required
+        placeholder="اكتب ردك للمستخدم"></textarea>
+      <button type="submit">إرسال الرد</button>
+      <button type="button" onclick="document.getElementById('ma3daAiCloseQuestion')?.click()">إغلاق المحادثة</button>
+    </form>
+    <label>
+      <input type="checkbox" id="ma3daAiSuggestAnswer">
+      إرسال الرد للمالك لمراجعته كإجابة مقترحة لقاعدة المعرفة
+    </label>
+  </div>
+</section>
+
+<!-- صفحة إدارة المالك فقط -->
+<section id="ma3daAiOwnerPage" class="ma3da-ai-admin-page" hidden dir="rtl">
+  <header class="ma3da-ai-admin-header">
+    <div>
+      <h2>إدارة المساعد الذكي</h2>
+      <p>إدارة قاعدة المعرفة واعتماد إجابات الدعم</p>
+    </div>
+    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
+  </header>
+
+  <div class="ma3da-ai-admin-stats">
+    <article>
+      <strong id="ma3daAiStatQuestions">—</strong>
+      <span>الأسئلة المحوّلة للدعم</span>
+    </article>
+    <article>
+      <strong id="ma3daAiStatPending">—</strong>
+      <span>إجابات تنتظر اعتمادك</span>
+    </article>
+    <article>
+      <strong id="ma3daAiStatKnowledge">—</strong>
+      <span>الإجابات المعتمدة</span>
+    </article>
+  </div>
+
+  <h3>إضافة سؤال وإجابة</h3>
+  <form id="ma3daAiKnowledgeForm" class="ma3da-ai-knowledge-form">
+    <input id="ma3daAiKnowledgeId" type="hidden">
+    <label for="ma3daAiKnowledgeQuestion">السؤال</label>
+    <input id="ma3daAiKnowledgeQuestion" required maxlength="500">
+    <label for="ma3daAiKnowledgeAnswer">الإجابة</label>
+    <textarea id="ma3daAiKnowledgeAnswer" required maxlength="5000"></textarea>
+    <label for="ma3daAiKnowledgeAliases">أسئلة بديلة (افصل بينها بفاصلة)</label>
+    <input id="ma3daAiKnowledgeAliases">
+    <button type="submit">حفظ واعتماد الإجابة</button>
+    <button type="button" onclick="ma3daAiResetKnowledgeForm()">إلغاء التعديل</button>
+  </form>
+
+  <h3>إجابات الدعم بانتظار اعتمادك</h3>
+  <div id="ma3daAiPendingAnswers"></div>
+
+  <h3>قاعدة المعرفة</h3>
+  <input id="ma3daAiKnowledgeSearch" placeholder="ابحث في الأسئلة والإجابات">
+  <div id="ma3daAiKnowledgeList"></div>
+</section>
+<style id="athar-six-request-fixes">
+/* 04 — تذييل آثار: يتبع ألوان الهوية النشطة دون التأثير على بقية الصفحات */
+#roleScreen .athar-support-portal-label{color:var(--athar-identity-primary,#806027)!important}
+#roleScreen .athar-support-portal-rule{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#c99b45),transparent)!important}
+#roleScreen .athar-footer-link{background:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;background-image:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;border-color:var(--athar-identity-accent,#d7ad60)!important;color:var(--athar-identity-text,#49371d)!important}
+#roleScreen .athar-footer-link span,#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-text,#49371d)!important}
+#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-primary,#a87524)!important}
+#roleScreen .athar-footer-copyright{color:var(--athar-identity-primary,#9a6b25)!important}
+#roleScreen .athar-footer-copyright:before,#roleScreen .athar-footer-copyright:after{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#d8ad62))!important}
+.athar-footer-dialog{border-color:var(--athar-identity-accent,#d7ad60)!important;background:var(--athar-identity-surface,#fffdf8)!important;color:var(--athar-identity-text,#171717)!important}
+.athar-footer-dialog h2{color:var(--athar-identity-primary,#8d6426)!important}
+
+/* 06 — اتجاه واجهة اللغة الإنجليزية فقط؛ لا يتغير اتجاه بيانات المستخدم العربية */
+html[dir="ltr"][lang="en"] body{direction:ltr}
+html[dir="ltr"][lang="en"] .screen{text-align:left}
+html[dir="ltr"][lang="en"] .screen label{text-align:left}
+html[dir="ltr"][lang="en"] .screen input,html[dir="ltr"][lang="en"] .screen textarea,html[dir="ltr"][lang="en"] .screen select{text-align:left;direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-links{direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-link{direction:ltr}
+html[dir="ltr"][lang="en"] .athar-footer-dialog{text-align:left;direction:ltr}
+</style>
+</body>
+</html>
