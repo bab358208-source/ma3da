@@ -3956,7 +3956,6 @@
     <div class="owner-admin-grid">
       <button type="button" class="owner-admin-cardlink" data-owner-view="users"><span class="owner-admin-icon">👥</span><span><strong>المستخدمون</strong><small>العملاء وأصحاب المعدات ومسؤولو المشاريع</small></span><span class="owner-admin-arrow">←</span></button>
       <button type="button" class="owner-admin-cardlink" data-owner-view="complaints"><span class="owner-admin-icon">💬</span><span><strong>الشكاوى وموظفو الدعم</strong><small>الشكاوى وتقييمات الموظفين والتصعيدات الواردة</small></span><span class="owner-admin-arrow">←</span></button>
-      <button type="button" class="owner-admin-cardlink" data-owner-view="registrations"><span class="owner-admin-icon">🛡️</span><span><strong>تدقيق التسجيلات الجديدة</strong><small>مراجعة أصحاب المعدات ومسؤولي المشاريع والاعتماد النهائي</small></span><span class="owner-admin-arrow">←</span></button>
       <button type="button" class="owner-admin-cardlink" data-owner-view="requests"><span class="owner-admin-icon">📋</span><span><strong>الطلبات</strong><small>الطلبات الناجحة والطلبات غير الناجحة</small></span><span class="owner-admin-arrow">←</span></button>
       <button type="button" class="owner-admin-cardlink" data-owner-view="notes"><span class="owner-admin-icon">📝</span><span><strong>الملاحظات اليومية</strong><small>سجل يومي لمراجعة أداء التطبيق والعمل</small></span><span class="owner-admin-arrow">←</span></button>
     </div>
@@ -4178,7 +4177,7 @@
     <div class="support-nav" aria-label="أقسام مركز الدعم">
       <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
       <button class="support-btn" data-support-section="registrations" type="button">مراجعة التسجيلات الجديدة</button>
-      <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة إضافات وتعديلات المعدات</button>
+      <button class="support-btn" data-support-section="equipmentEdits" type="button">مراجعة تعديلات المعدات</button>
       <button class="support-btn" data-support-section="aiQuestions" type="button">
   أسئلة المساعد الذكي
 </button>
@@ -4190,7 +4189,7 @@
     </div>
     <div id="supportSectionRegistrations" class="support-section support-panel"><h2>مراجعة التسجيلات الجديدة</h2><p>راجع بيانات صاحب المعدة أو مسؤول المشروع والمرفقات، ثم اختر قبولاً مبدئياً أو رفضاً مبدئياً مع السبب.</p><button id="supportRegistrationsRefreshBtn" class="support-btn" type="button">تحديث التسجيلات</button><div id="supportRegistrationsList" class="support-list">جارٍ تحميل التسجيلات...</div><section id="supportRegistrationReviewPage" class="athar-registration-review-page" hidden><div class="athar-review-toolbar"><button id="supportRegistrationReviewBackBtn" type="button" class="support-btn">← العودة إلى التسجيلات</button><strong>صفحة تدقيق بيانات التسجيل</strong></div><div id="supportRegistrationReviewContent"></div></section></div>
     <div id="supportSectionTickets" class="support-section support-panel active"><h2>طلبات الدعم المفتوحة</h2><p>افتح الشكوى لمحادثة مقدمها مباشرة، ثم أغلقها بعد إتمام الحل.</p><div id="supportTicketsList" class="support-list">جارٍ التحميل...</div></div>
-    <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة إضافات وتعديلات المعدات</h2><p>تظهر هنا كل معدة جديدة أو تعديل أرسله صاحب المعدة. لا تظهر المعدة الجديدة للعملاء أو المشاريع قبل اعتمادها.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">تحديث قائمة المراجعة</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
+    <div id="supportSectionEquipmentEdits" class="support-section support-panel"><h2>مراجعة إضافات وتعديلات المعدات</h2><p>راجع كل معدة جديدة مسجلة والتعديلات المقترحة على المعدات قبل اعتمادها أو رفضها.</p><button id="supportEquipmentEditsRefreshBtn" class="support-btn" type="button">إعادة تحميل التعديلات</button><div id="supportEquipmentEditsList" class="support-list">جارٍ التحميل...</div></div>
     <!-- أسئلة المساعد الذكي التي تحتاج تدخل موظف الدعم -->
 <div id="supportSectionAiQuestions"
      class="support-section support-panel">
@@ -5244,127 +5243,4 @@ window.ma3daOrderBy =
     </div>
   </div>
 
-  <p id="ma3daAiStatus" class="ma3da-ai-status" role="status"></p>
-
-  <form id="ma3daAiForm" class="ma3da-ai-form">
-    <input
-      id="ma3daAiInput"
-      type="text"
-      maxlength="1000"
-      placeholder="اكتب سؤالك هنا..."
-      autocomplete="off"
-      required
-    >
-    <button id="ma3daAiSend" type="submit">إرسال</button>
-  </form>
-</section>
-<!-- صفحة صندوق أسئلة المساعد لموظفي الدعم -->
-<section id="ma3daAiSupportPage" class="ma3da-ai-admin-page" hidden dir="rtl">
-  <header class="ma3da-ai-admin-header">
-    <div>
-      <h2>أسئلة المساعد الذكي</h2>
-      <p>الأسئلة التي لم يجد المساعد لها إجابة معتمدة</p>
-    </div>
-    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
-  </header>
-
-  <div class="ma3da-ai-admin-tabs">
-    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
-      الأسئلة الجديدة
-    </button>
-    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
-      تم الرد
-    </button>
-    <button type="button" onclick="window.ma3daAiOpenSupport?.()">
-      المغلقة
-    </button>
-  </div>
-
-  <div id="ma3daAiSupportAdminList"></div>
-
-  <div id="ma3daAiSupportConversation" hidden>
-    <h3 id="ma3daAiSupportQuestionTitle"></h3>
-    <div id="ma3daAiSupportMessages" class="ma3da-ai-messages"></div>
-    <form id="ma3daAiSupportReplyForm">
-      <textarea id="ma3daAiSupportReply" required
-        placeholder="اكتب ردك للمستخدم"></textarea>
-      <button type="submit">إرسال الرد</button>
-      <button type="button" onclick="document.getElementById('ma3daAiCloseQuestion')?.click()">إغلاق المحادثة</button>
-    </form>
-    <label>
-      <input type="checkbox" id="ma3daAiSuggestAnswer">
-      إرسال الرد للمالك لمراجعته كإجابة مقترحة لقاعدة المعرفة
-    </label>
-  </div>
-</section>
-
-<!-- صفحة إدارة المالك فقط -->
-<section id="ma3daAiOwnerPage" class="ma3da-ai-admin-page" hidden dir="rtl">
-  <header class="ma3da-ai-admin-header">
-    <div>
-      <h2>إدارة المساعد الذكي</h2>
-      <p>إدارة قاعدة المعرفة واعتماد إجابات الدعم</p>
-    </div>
-    <button type="button" onclick="this.closest('.ma3da-ai-admin-page')?.setAttribute('hidden', '')">رجوع</button>
-  </header>
-
-  <div class="ma3da-ai-admin-stats">
-    <article>
-      <strong id="ma3daAiStatQuestions">—</strong>
-      <span>الأسئلة المحوّلة للدعم</span>
-    </article>
-    <article>
-      <strong id="ma3daAiStatPending">—</strong>
-      <span>إجابات تنتظر اعتمادك</span>
-    </article>
-    <article>
-      <strong id="ma3daAiStatKnowledge">—</strong>
-      <span>الإجابات المعتمدة</span>
-    </article>
-  </div>
-
-  <h3>إضافة سؤال وإجابة</h3>
-  <form id="ma3daAiKnowledgeForm" class="ma3da-ai-knowledge-form">
-    <input id="ma3daAiKnowledgeId" type="hidden">
-    <label for="ma3daAiKnowledgeQuestion">السؤال</label>
-    <input id="ma3daAiKnowledgeQuestion" required maxlength="500">
-    <label for="ma3daAiKnowledgeAnswer">الإجابة</label>
-    <textarea id="ma3daAiKnowledgeAnswer" required maxlength="5000"></textarea>
-    <label for="ma3daAiKnowledgeAliases">أسئلة بديلة (افصل بينها بفاصلة)</label>
-    <input id="ma3daAiKnowledgeAliases">
-    <button type="submit">حفظ واعتماد الإجابة</button>
-    <button type="button" onclick="ma3daAiResetKnowledgeForm()">إلغاء التعديل</button>
-  </form>
-
-  <h3>إجابات الدعم بانتظار اعتمادك</h3>
-  <div id="ma3daAiPendingAnswers"></div>
-
-  <h3>قاعدة المعرفة</h3>
-  <input id="ma3daAiKnowledgeSearch" placeholder="ابحث في الأسئلة والإجابات">
-  <div id="ma3daAiKnowledgeList"></div>
-</section>
-<style id="athar-six-request-fixes">
-/* 04 — تذييل آثار: يتبع ألوان الهوية النشطة دون التأثير على بقية الصفحات */
-#roleScreen .athar-support-portal-label{color:var(--athar-identity-primary,#806027)!important}
-#roleScreen .athar-support-portal-rule{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#c99b45),transparent)!important}
-#roleScreen .athar-footer-link{background:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;background-image:linear-gradient(145deg,color-mix(in srgb,var(--athar-identity-surface,#fffdf8) 94%,var(--athar-identity-accent,#c8a45b) 6%),var(--athar-identity-surface,#fffdf8))!important;border-color:var(--athar-identity-accent,#d7ad60)!important;color:var(--athar-identity-text,#49371d)!important}
-#roleScreen .athar-footer-link span,#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-text,#49371d)!important}
-#roleScreen .athar-footer-link .athar-footer-icon{color:var(--athar-identity-primary,#a87524)!important}
-#roleScreen .athar-footer-copyright{color:var(--athar-identity-primary,#9a6b25)!important}
-#roleScreen .athar-footer-copyright:before,#roleScreen .athar-footer-copyright:after{background:linear-gradient(90deg,transparent,var(--athar-identity-accent,#d8ad62))!important}
-.athar-footer-dialog{border-color:var(--athar-identity-accent,#d7ad60)!important;background:var(--athar-identity-surface,#fffdf8)!important;color:var(--athar-identity-text,#171717)!important}
-.athar-footer-dialog h2{color:var(--athar-identity-primary,#8d6426)!important}
-
-/* 06 — اتجاه واجهة اللغة الإنجليزية فقط؛ لا يتغير اتجاه بيانات المستخدم العربية */
-html[dir="ltr"][lang="en"] body{direction:ltr}
-html[dir="ltr"][lang="en"] .screen{text-align:left}
-html[dir="ltr"][lang="en"] .screen label{text-align:left}
-html[dir="ltr"][lang="en"] .screen input,html[dir="ltr"][lang="en"] .screen textarea,html[dir="ltr"][lang="en"] .screen select{text-align:left;direction:ltr}
-html[dir="ltr"][lang="en"] .athar-footer-links{direction:ltr}
-html[dir="ltr"][lang="en"] .athar-footer-link{direction:ltr}
-html[dir="ltr"][lang="en"] .athar-footer-dialog{text-align:left;direction:ltr}
-</style>
-</body>
-</html>
-    
-  
+  <p id="ma3daAiStatus" class="ma3da-ai-status" role="st
