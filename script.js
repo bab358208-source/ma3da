@@ -14474,3 +14474,123 @@ if(stage==='arrived')buttons='<label>رمز OTP الذي أعطاك العميل
   
 window.atharLoadOwnerCustomerOrders=renderOwnerCustomerOrders;
 })();
+
+
+/* ATHAR — عدادات موظفي الدعم: قراءة أعداد فعلية فقط دون تغيير إجراءات الأقسام. */
+(function initAtharSupportDashboardCounters(){
+  if(window.__atharSupportDashboardCountersBound)return;
+  window.__atharSupportDashboardCountersBound=true;
+
+  const setCount=(id,value)=>{
+    const node=document.getElementById(id);
+    if(node)node.textContent=String(value);
+  };
+  const closedTicket=t=>['closed','resolved','complete','completed','مغلقة','مغلق','تم الحل']
+    .includes(String(t.status||'').toLowerCase());
+  const readCollection=async name=>{
+    const snap=await window.ma3daGetDocs(window.ma3daCollection(window.ma3daDB,name));
+    const rows=[];
+    snap.forEach(doc=>rows.push({id:doc.id,...(doc.data()||{})}));
+    return rows;
+  };
+
+  async function refreshCounters(){
+    if(!document.getElementById('supportDashboardScreen')?.classList.contains('active'))return;
+    try{
+      await Promise.resolve(window.ma3daFirebaseReady);
+      if(!window.ma3daDB||typeof window.ma3daGetDocs!=='function'||typeof window.ma3daCollection!=='function')
+        throw new Error('Firebase غير جاهز لقراءة العدادات.');
+
+      const [ticketsResult,registrationsResult,equipmentResult,escalationsResult,requestsResult]=await Promise.allSettled([
+        readCollection('supportTickets'),
+        readCollection('registrationRequests'),
+        readCollection('equipment'),
+        readCollection('supportEscalations'),
+        readCollection('requests')
+      ]);
+
+      if(ticketsResult.status==='fulfilled'){
+        setCount('supportStatTickets',ticketsResult.value.filter(t=>!closedTicket(t)).length);
+      }else{
+        console.warn('تعذر تحديث عداد شكاوى المستخدمين:',ticketsResult.reason);
+        setCount('supportStatTickets','—');
+      }
+
+      if(registrationsResult.status==='fulfilled'){
+        const pendingRegistrations=registrationsResult.value.filter(x=>
+          x.status==='pending_support' &&
+          ['operator','contractor','project_owner','project_manager'].includes(String(x.role||'').toLowerCase())
+        );
+        setCount('supportStatCustomers',pendingRegistrations.length);
+      }else{
+        console.warn('تعذر تحديث عداد المسجلين الجدد:',registrationsResult.reason);
+        setCount('supportStatCustomers','—');
+      }
+
+      if(equipmentResult.status==='fulfilled'){
+        const pendingEquipment=equipmentResult.value.filter(x=>
+          (x.editStatus==='pending'&&!!x.pendingChanges) ||
+          ((x.verificationStatus==='pending'||!x.verificationStatus)&&!x.pendingChanges&&x.equipmentStatus!=='cancelled')
+        );
+        setCount('supportStatOperators',pendingEquipment.length);
+      }else{
+        console.warn('تعذر تحديث عداد تعديلات المعدات:',equipmentResult.reason);
+        setCount('supportStatOperators','—');
+      }
+
+      if(escalationsResult.status==='fulfilled'&&requestsResult.status==='fulfilled'){
+        // يُحسب الطلب مرة واحدة حتى لو احتوى أكثر من نزاع أو طلب تسوية.
+        const pendingCases=new Set();
+        escalationsResult.value.forEach(x=>{
+          if(x.kind==='customer_order_dispute'&&x.status==='open'){
+            pendingCases.add(x.requestId?`request:${x.requestId}`:`escalation:${x.id}`);
+          }
+        });
+        requestsResult.value.forEach(r=>{
+          const openPaymentDispute=Array.isArray(r.paymentDisputes)&&r.paymentDisputes.some(d=>d.status==='pending_support');
+          const needsReview=
+            openPaymentDispute ||
+            r.earlyFinishStatus==='pending_support' ||
+            r.settlementReviewRequired===true ||
+            ['disputed','needs_settlement','pending_support'].includes(String(r.settlementStatus||'').toLowerCase()) ||
+            ['disputed','pending_support','open'].includes(String(r.disputeStatus||'').toLowerCase()) ||
+            String(r.stage||'').toLowerCase()==='disputed';
+          if(needsReview)pendingCases.add(`request:${r.id}`);
+        });
+        setCount('supportStatOrders',pendingCases.size);
+      }else{
+        console.warn('تعذر تحديث عداد المنازعات والتسوية:',escalationsResult.reason||requestsResult.reason);
+        setCount('supportStatOrders','—');
+      }
+    }catch(error){
+      console.warn('تعذر تحديث عدادات لوحة موظفي الدعم:',error);
+    }
+  }
+
+  // تحديث العدادات بعد اكتمال تحميل لوحة الدعم المعتاد.
+  if(typeof window.openSupportDashboard==='function'&&!window.__atharSupportDashboardCountersWrapped){
+    window.__atharSupportDashboardCountersWrapped=true;
+    const originalOpen=window.openSupportDashboard;
+    window.openSupportDashboard=async function(){
+      const result=await originalOpen.apply(this,arguments);
+      await refreshCounters();
+      return result;
+    };
+  }
+
+  // إعادة القراءة بعد تحديث اللوحة أو بعد أي قرار مراجعة قائم بالفعل.
+  document.addEventListener('click',event=>{
+    const target=event.target.closest('#supportRefreshBtn,#supportDashboardScreen [data-approve-equipment-edit],#supportDashboardScreen [data-reject-equipment-edit],#supportDashboardScreen [data-approve-new-equipment],#supportDashboardScreen [data-reject-new-equipment],#supportDashboardScreen [data-athar-support-approve],#supportDashboardScreen [data-athar-support-reject],#supportDashboardScreen [data-athar-support-resolve],#supportDashboardScreen [data-support-settle-payment-dispute],#supportDashboardScreen [data-support-uphold-payment-dispute]');
+    if(target)setTimeout(()=>refreshCounters(),1200);
+  },true);
+
+  // في حال فُتحت لوحة الدعم عبر مسار تنقل آخر.
+  const dashboard=document.getElementById('supportDashboardScreen');
+  if(dashboard&&typeof MutationObserver!=='undefined'){
+    new MutationObserver(()=>{
+      if(dashboard.classList.contains('active'))refreshCounters();
+    }).observe(dashboard,{attributes:true,attributeFilter:['class']});
+  }
+  if(dashboard?.classList.contains('active'))refreshCounters();
+  window.atharRefreshSupportDashboardCounters=refreshCounters;
+  })();
