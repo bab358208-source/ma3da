@@ -829,6 +829,35 @@
 
 
 
+<!-- صفحة مستقلة لإضافة المعدة ضمن إنشاء حساب صاحب المعدة فقط -->
+<section id="atharRegistrationEquipmentScreen" class="screen athar-register-screen">
+  <div class="athar-register-wrap">
+    <div class="athar-register-brand">
+      <span class="athar-register-mark">🚜</span>
+      <h1>آثار <span>| ATHAR</span></h1>
+      <h2>بيانات المعدة ضمن التسجيل</h2>
+      <p>أضف معدتك الآن لإكمال طلب إنشاء حساب صاحب المعدة</p>
+    </div>
+    <div class="card athar-register-card">
+      <label for="atharRegEquipmentType">نوع المعدة</label>
+      <select id="atharRegEquipmentType">
+        <option value="">اختر نوع المعدة</option><option>بوكلين</option><option>شيول</option><option>قلاب</option><option>كرين</option><option>حفار</option><option>بلدوزر</option><option>جريدر</option><option>مدحلة</option><option>رافعة شوكية</option><option>رافعة تلسكوبية</option><option>لودر</option><option>حفار صغير</option><option>سطحة</option><option>ناقلة معدات</option><option>وايت ماء</option><option>مضخة خرسانة</option><option>ماكينة فرش أسفلت</option><option value="أخرى">أخرى</option>
+      </select>
+      <div id="atharRegOtherEquipmentWrap" hidden><label for="atharRegOtherEquipment">اذكر نوع المعدة</label><input id="atharRegOtherEquipment" type="text" placeholder="اكتب نوع المعدة"></div>
+      <label for="atharRegEquipmentModel">الماركة / الموديل</label><input id="atharRegEquipmentModel" type="text" placeholder="مثال: كوماتسو PC200">
+      <label for="atharRegEquipmentImage">صورة المعدة (اختياري)</label><input id="atharRegEquipmentImage" type="file" accept="image/*">
+      <label for="atharRegEquipmentYear">سنة الصنع</label><input id="atharRegEquipmentYear" type="number" placeholder="2020">
+      <label for="atharRegEquipmentCity">المدينة</label><input id="atharRegEquipmentCity" type="text" placeholder="مثال: جدة">
+      <label for="atharRegEquipmentAvailability">حالة المعدة</label><select id="atharRegEquipmentAvailability"><option value="available">متاحة الآن</option><option value="unavailable">غير متاحة</option></select>
+      <label for="atharRegEquipmentHourlyPrice">سعر الإيجار بالساعة (ريال)</label><input id="atharRegEquipmentHourlyPrice" type="number" inputmode="numeric" min="0" placeholder="مثال: 250">
+      <p id="atharRegEquipmentError" class="phone-error" role="alert" aria-live="polite"></p>
+      <button id="atharRegEquipmentSubmit" type="button" class="main-btn">إرسال التسجيل للمراجعة</button>
+      <button id="atharRegEquipmentBack" type="button" class="back-btn">رجوع إلى بيانات الحساب</button>
+    </div>
+  </div>
+</section>
+
+
 <!-- =====================================================
      إضافة معدة
 ===================================================== -->
@@ -4196,10 +4225,10 @@
       <button id="supportDashboardBackBtn" class="support-btn" type="button" aria-label="رجوع" title="رجوع">➜ رجوع</button>
     </div>
     <div class="support-stats">
-      <div class="support-stat">شكاوى المستخدمين<strong id="supportStatTickets">0</strong></div>
-      <div class="support-stat">المسجلين الجدد<strong id="supportStatCustomers">0</strong></div>
-      <div class="support-stat">تعديلات المعدات<strong id="supportStatOperators">0</strong></div>
-      <div class="support-stat">المنازعات والتسوية<strong id="supportStatOrders">0</strong></div>
+      <div class="support-stat">طلبات الدعم المفتوحة<strong id="supportStatTickets">0</strong></div>
+      <div class="support-stat">العملاء<strong id="supportStatCustomers">0</strong></div>
+      <div class="support-stat">أصحاب المعدات<strong id="supportStatOperators">0</strong></div>
+      <div class="support-stat">الطلبات الحالية<strong id="supportStatOrders">0</strong></div>
     </div>
     <div class="support-nav" aria-label="أقسام مركز الدعم">
       <button class="support-btn" data-support-section="tickets" type="button">طلبات الدعم المفتوحة</button>
@@ -5400,6 +5429,3 @@ html[dir="ltr"][lang="en"] .athar-footer-dialog{text-align:left;direction:ltr}
 </style>
 </body>
 </html>
-
-  
-  
