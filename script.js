@@ -662,7 +662,7 @@ if(emailLoginBtn){
             const n=document.getElementById("operatorNameInput"),ph=document.getElementById("operatorPhoneInput");
             if(n)n.value=pending.name||user.displayName||""; if(ph)ph.value=pending.phone||"";
             const equipmentNext=document.getElementById("saveEquipmentBtn");if(equipmentNext)equipmentNext.textContent="إنشاء الحساب";
-            showScreen("addEquipmentScreen");
+            showScreen("atharRegistrationEquipmentScreen");
             return;
           }
  
@@ -820,7 +820,7 @@ async function atharCreateFinalRegistration({role,personalData,equipment=null,pr
 function atharUpdateRegisterRoleLabel(){
   const role=selectedRole||localStorage.getItem("selectedRole")||"customer";
   const target=document.getElementById("registerRoleDescription");
-  if(target) target.textContent=role==='operator'?'صفة الحساب: صاحب معدة — بعد التالي تنتقل إلى إضافة المعدة.':role==='contractor'?'صفة الحساب: صاحب / مسؤول مشروع — بعد التالي تنتقل إلى إنشاء المشروع.':'صفة الحساب: عميل';
+  if(target) target.textContent=role==='operator'?'صفة الحساب: صاحب معدة — بعد التالي تنتقل إلى بيانات المعدة ضمن إنشاء الحساب.':role==='contractor'?'صفة الحساب: صاحب / مسؤول مشروع — بعد التالي تنتقل إلى إنشاء المشروع.':'صفة الحساب: عميل';
   if(submitCreateAccountBtn) submitCreateAccountBtn.textContent=['operator','contractor'].includes(role)?'التالي':'إنشاء الحساب';
 }
 atharUpdateRegisterRoleLabel();
@@ -874,7 +874,7 @@ if (submitCreateAccountBtn) {
         const operatorName=document.getElementById("operatorNameInput");const operatorPhone=document.getElementById("operatorPhoneInput");
         if(operatorName)operatorName.value=fullName;if(operatorPhone)operatorPhone.value=phone;
         localStorage.setItem("ma3daRole","operator");localStorage.setItem("userRole","operator");
-        showScreen("addEquipmentScreen");
+        showScreen("atharRegistrationEquipmentScreen");
       } else {
         const profile={name:fullName,phone,email,role:"contractor"};
         localStorage.setItem("contractorProfile",JSON.stringify(profile));
@@ -1297,6 +1297,38 @@ async function saveEquipment(){
   );
  
 }
+/* ATHAR — بيانات المعدة ضمن التسجيل: مستقلة تمامًا عن إضافة المعدة داخل الحساب */
+(function bindAtharRegistrationEquipment(){
+  const $=id=>document.getElementById(id);
+  const type=$('atharRegEquipmentType'),otherWrap=$('atharRegOtherEquipmentWrap');
+  type?.addEventListener('change',()=>{if(otherWrap)otherWrap.hidden=type.value!=="أخرى";});
+  $('atharRegEquipmentBack')?.addEventListener('click',()=>showScreen('createAccountScreen'));
+  $('atharRegEquipmentSubmit')?.addEventListener('click',async()=>{
+    const button=$('atharRegEquipmentSubmit'),error=$('atharRegEquipmentError');
+    const value=id=>($(id)?.value||'').trim();
+    if(error)error.textContent='';
+    let equipmentType=value('atharRegEquipmentType');
+    if(equipmentType==='أخرى')equipmentType=value('atharRegOtherEquipment');
+    const model=value('atharRegEquipmentModel'),year=value('atharRegEquipmentYear'),city=value('atharRegEquipmentCity'),hourlyPrice=value('atharRegEquipmentHourlyPrice'),availability=value('atharRegEquipmentAvailability');
+    if(!equipmentType||!model||!year||!city||hourlyPrice===''){if(error)error.textContent='أكمل بيانات المعدة المطلوبة.';return;}
+    if(!atharRegistrationDraft||atharRegistrationDraft.role!=='operator'){if(error)error.textContent='بيانات التسجيل غير موجودة. ارجع وابدأ إنشاء الحساب من جديد.';return;}
+    if(!window.ma3daDB){if(error)error.textContent='Firebase غير متصل.';return;}
+    const equipment={type:equipmentType,model,year,city,locationAddress:city,availability,hourlyPrice:Number(hourlyPrice),image:'',ownerId:'',operatorId:'',ownerEmail:atharRegistrationDraft.email};
+    const file=$('atharRegEquipmentImage')?.files?.[0];
+    button.disabled=true;button.textContent='جارٍ إرسال طلب التسجيل…';
+    try{
+      if(file){
+        if(!file.type.startsWith('image/'))throw new Error('اختر ملف صورة صالح.');
+        const dataUrl=await atharFileAsDataUrl(file);
+        const image=new Image();
+        equipment.image=await new Promise((resolve,reject)=>{image.onload=()=>{const max=1000;let w=image.width,h=image.height;if(w>max){h=Math.round(max*h/w);w=max;}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx){reject(new Error('تعذر تجهيز صورة المعدة.'));return;}ctx.drawImage(image,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',.75));};image.onerror=()=>reject(new Error('تعذر قراءة صورة المعدة.'));image.src=dataUrl;});
+      }
+      await atharCreateFinalRegistration({role:'operator',personalData:{name:atharRegistrationDraft.name,phone:atharRegistrationDraft.phone,city,email:atharRegistrationDraft.email},equipment});
+    }catch(e){console.error('ATHAR registration equipment submit:',e);if(error)error.textContent=e.message||'تعذر إرسال التسجيل. حاول مرة أخرى.';}
+    finally{button.disabled=false;button.textContent='إرسال التسجيل للمراجعة';}
+  });
+})();
+
 /* OTHER EQUIPMENT */
  
 const equipmentType =
