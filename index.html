@@ -5427,5 +5427,47 @@ html[dir="ltr"][lang="en"] .athar-footer-links{direction:ltr}
 html[dir="ltr"][lang="en"] .athar-footer-link{direction:ltr}
 html[dir="ltr"][lang="en"] .athar-footer-dialog{text-align:left;direction:ltr}
 </style>
+
+<!-- ATHAR HAYA: شاشات دورة طلب المعدة — معرفة مباشرة داخل index.html -->
+<section id="atharCustomerRequestScreen" class="screen" dir="rtl">
+  <button type="button" class="back-btn" data-athar-back>← الرجوع</button>
+  <div class="hero"><div class="hero-icon">🚜</div><h1>طلب معدة جديدة</h1><p>آثار | ATHAR</p></div>
+  <div class="card">
+    <h3>اختر المعدة التي تحتاجها</h3>
+    <label for="atharCustomerEquipmentType">نوع المعدة</label>
+    <select id="atharCustomerEquipmentType" style="width:100%;padding:13px;border:1px solid var(--athar-identity-frame,#d8cfbc);border-radius:12px;font:inherit;background:#fff"><option value="">جارٍ تحميل أنواع المعدات…</option></select>
+    <label for="atharCustomerDuration">مدة العمل</label>
+    <select id="atharCustomerDuration" style="width:100%;padding:13px;border:1px solid var(--athar-identity-frame,#d8cfbc);border-radius:12px;font:inherit;background:#fff"><option value="8">يوم واحد (8 ساعات)</option><option value="4">4 ساعات</option><option value="12">12 ساعة</option><option value="24">يومان (24 ساعة)</option></select>
+    <h3>حدد موقع تنفيذ العمل</h3>
+    <p class="athar-cycle-note">لن تظهر الخريطة هنا. اضغط الزر لتحديد موقعك.</p>
+    <button class="back-btn" id="atharCustomerLocateBtn" type="button">📍 تحديد موقعي الحالي</button>
+    <div class="athar-cycle-row"><span>الموقع المحدد</span><strong id="atharCustomerCoordsLabel">لم يحدد الموقع</strong></div>
+    <label for="atharCustomerRequestNotes">ملاحظات (اختياري)</label>
+    <textarea id="atharCustomerRequestNotes" rows="2" maxlength="500" placeholder="اكتب تفاصيل العمل"></textarea>
+    <button class="main-btn" id="atharCustomerFindEquipmentBtn" type="button">إنشاء طلب وعرض المعدات القريبة</button>
+  </div>
+</section>
+<section id="atharCustomerEquipmentResultsScreen" class="screen" dir="rtl">
+  <button type="button" class="back-btn" data-athar-back>← الرجوع</button>
+  <div class="hero"><div class="hero-icon">📍</div><h1>اختر المعدة المناسبة بالقرب منك</h1><p>آثار | ATHAR</p></div>
+  <div class="card">
+    <div class="athar-cycle-row"><span>نوع المعدة</span><strong id="atharResultsEquipmentType">—</strong></div>
+    <div class="athar-cycle-row"><span>مدة العمل</span><strong id="atharResultsDuration">—</strong></div>
+    <div id="atharCustomerResultsMap" aria-label="خريطة المعدات القريبة"></div>
+    <p class="athar-cycle-note">تظهر هنا المعدات المتاحة من النوع الذي اخترته فقط، مرتبة حسب قربها من موقعك.</p>
+    <div id="atharNearbyEquipmentList">جارٍ البحث عن المعدات القريبة…</div>
+  </div>
+</section>
+<section id="atharCustomerOrderScreen" class="screen" dir="rtl">
+  <button type="button" class="back-btn" data-athar-back>← الرجوع</button>
+  <div class="hero"><div class="hero-icon">🚜</div><h1>متابعة طلبك</h1><p>آثار | ATHAR</p></div>
+  <button type="button" class="back-btn" id="atharCustomerOrderRefreshBtn">⟳ تحديث حالة الطلب</button>
+  <div id="atharCustomerOrderContent"><div class="card">جارٍ تحميل طلبك…</div></div>
+</section>
+<section id="atharCustomerChatScreen" class="screen" dir="rtl">
+  <button type="button" class="back-btn" data-athar-back>← الرجوع</button>
+  <div class="hero"><div class="hero-icon">💬</div><h1>محادثة الطلب</h1><p>آثار | ATHAR</p></div>
+  <div class="card"><div id="atharCustomerChatMessages"></div><div style="display:flex;gap:8px;margin-top:10px"><input id="atharCustomerChatInput" placeholder="اكتب رسالتك…" style="flex:1;padding:10px;border:1px solid #d8cfbc;border-radius:9px"><button id="atharCustomerChatSend" class="main-btn" type="button">إرسال</button></div></div>
+</section>
 </body>
 </html>
