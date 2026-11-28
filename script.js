@@ -14419,19 +14419,25 @@ window.calculateMa3daUsageAmount = calculateMa3daUsageAmount;
   function addScreen(id,title,body){let s=$(id);if(s)return s;s=document.createElement('section');s.id=id;s.className='screen';s.innerHTML=`<button type="button" class="back-btn" data-athar-back>← الرجوع</button><div class="hero"><div class="hero-icon">🚜</div><h1>${title}</h1><p>آثار | ATHAR</p></div>${body}`;document.body.appendChild(s);return s;}
   const reqScreen=addScreen('atharCustomerRequestScreen','إنشاء طلب معدة',`<div class="card"><h3>بيانات طلبك</h3><p class="athar-cycle-note">اختر نوع المعدة والمدة وحدد موقع تنفيذ العمل. ستظهر المعدات المتاحة في الخطوة التالية.</p><label for="atharCustomerEquipmentType">نوع المعدة</label><select id="atharCustomerEquipmentType"><option value="">جارٍ تحميل أنواع المعدات…</option></select><label for="atharCustomerDuration">مدة العمل</label><select id="atharCustomerDuration"><option value="1">ساعة واحدة</option><option value="2">ساعتان</option><option value="4">4 ساعات</option><option value="8" selected>8 ساعات</option><option value="12">12 ساعة</option><option value="24">يوم كامل (24 ساعة)</option><option value="48">يومان (48 ساعة)</option><option value="72">3 أيام (72 ساعة)</option><option value="168">أسبوع (168 ساعة)</option></select><label>موقع تنفيذ العمل</label><button class="back-btn" id="atharCustomerLocateBtn" type="button">📍 تحديد موقعي تلقائيًا</button><div class="athar-cycle-row"><span>حالة الموقع</span><strong id="atharCustomerCoordsLabel">لم يتم تحديد الموقع</strong></div><label for="atharCustomerRequestNotes">ملاحظات (اختياري)</label><textarea id="atharCustomerRequestNotes" rows="3" maxlength="500" placeholder="اكتب تفاصيل إضافية عن العمل"></textarea><button class="main-btn" id="atharCustomerContinueToMapBtn" type="button">عرض المعدات المتاحة ←</button></div>`);
   const resultsScreen=addScreen('atharCustomerEquipmentResultsScreen','المعدات المتاحة بالقرب منك',`<div class="card"><div class="athar-cycle-row"><span>نوع المعدة المطلوب</span><strong id="atharResultsEquipmentType">—</strong></div><div class="athar-cycle-row"><span>مدة العمل</span><strong id="atharResultsDuration">—</strong></div><p class="athar-cycle-note">اختر المعدة المناسبة من الخريطة أو من البطاقات أدناه.</p><div id="atharCustomerResultsMap"></div><div id="atharEquipmentChoices">جارٍ البحث عن المعدات المتاحة…</div><div class="athar-cycle-row"><span>المعدة المختارة</span><strong id="atharSelectedEquipmentLabel">لم يتم الاختيار</strong></div><p id="atharCustomerPricePreview">السعر التقديري: —</p><button class="main-btn" id="atharSendCustomerRequestBtn" type="button" disabled>تأكيد اختيار المعدة وإرسال الطلب</button></div>`);
-  // إصلاح مباشر لأزرار شاشة إنشاء الطلب: الاستماع على الزر نفسه في مرحلة capture حتى لا تمنع طبقات/مستمعات أخرى النقر.
+  // معالجة موحدة لزر الانتقال إلى المعدات؛ capture يمنع معالج النقر العام من تشغيله مرة ثانية.
   const continueToMapButton=$('atharCustomerContinueToMapBtn');
-  if(continueToMapButton&&!continueToMapButton.dataset.atharDirectClickFix){
-    continueToMapButton.dataset.atharDirectClickFix='1';
+  if(continueToMapButton&&!continueToMapButton.dataset.atharReliableClick){
+    continueToMapButton.dataset.atharReliableClick='1';
     continueToMapButton.addEventListener('click',async ev=>{
       ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
-      if(continueToMapButton.dataset.busy==='1')return;
-      continueToMapButton.dataset.busy='1';continueToMapButton.disabled=true;
-      const originalText=continueToMapButton.textContent;
-      continueToMapButton.textContent='جارٍ عرض المعدات…';
-      try{await showEquipmentResults();}
-      catch(error){console.error('تعذر عرض المعدات القريبة:',error);alert(error?.message||'تعذر عرض المعدات القريبة.');}
-      finally{continueToMapButton.dataset.busy='0';continueToMapButton.disabled=false;continueToMapButton.textContent=originalText;}
+      const btn=ev.currentTarget;
+      if(btn.dataset.busy==='1')return;
+      btn.dataset.busy='1';btn.disabled=true;
+      const originalText=btn.textContent;
+      btn.textContent='جارٍ البحث عن المعدات القريبة…';
+      try{
+        await showEquipmentResults();
+      }catch(error){
+        console.error('ATHAR: فشل الانتقال لعرض المعدات القريبة',error);
+        alert(error?.message||'تعذر عرض المعدات القريبة. تحقق من نوع المعدة وموقع العمل ثم حاول مرة أخرى.');
+      }finally{
+        if(btn.isConnected){btn.dataset.busy='0';btn.disabled=false;btn.textContent=originalText;}
+      }
     },true);
   }
   const locateButton=$('atharCustomerLocateBtn');
